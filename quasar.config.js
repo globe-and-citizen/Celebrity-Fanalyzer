@@ -52,7 +52,7 @@ module.exports = configure(function (/* ctx */) {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
       },
-
+      distDir: ctx.mode.spa ? 'public' : null,
       vueRouterMode: 'hash' // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
@@ -67,7 +67,6 @@ module.exports = configure(function (/* ctx */) {
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
-      // distDir
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
