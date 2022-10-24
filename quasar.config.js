@@ -52,7 +52,7 @@ module.exports = configure(function (ctx) {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
       },
-      distDir: ctx.mode.spa ? 'public' : null,
+      distDir: 'public',
       vueRouterMode: 'hash' // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
