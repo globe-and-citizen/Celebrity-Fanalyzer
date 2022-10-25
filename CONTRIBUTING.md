@@ -1,10 +1,6 @@
 # Contributing
 
-A Quasar Project
-
-## How to contribute
-
-To contribute to this project, follow these steps:
+## How to run the project
 
 ### Install the dependencies
 
@@ -18,9 +14,7 @@ npm install
 npm run dev
 ```
 
-## Plus
-
-It is done, here are some extra steps that you can do:
+## How to prettify the code
 
 ### Lint the files
 
@@ -34,11 +28,23 @@ npm run lint
 npm run format
 ```
 
+## How to build and deploy your changes
+
 ### Build the app for production
 
 ```bash
 npm run build
 ```
+
+### Deploy the app to Vercel
+
+<!-- TODO: This process will be automated -->
+
+```bash
+npm run deploy
+```
+
+---
 
 ### Customize the configuration
 
