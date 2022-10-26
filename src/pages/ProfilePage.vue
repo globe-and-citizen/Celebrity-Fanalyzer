@@ -74,4 +74,8 @@ function googleSignIn() {
 function save() {
   $q.notify({ message: 'Saving will be configured...' })
 }
+
+function logout() {
+  authStore.logout()
+}
 </script>
