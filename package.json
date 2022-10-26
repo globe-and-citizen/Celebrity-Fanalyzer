@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "build": "quasar build --mode pwa",
-    "deploy": "vercel",
+    "deploy": "vercel && rm -rf dist",
     "dev": "quasar dev",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
