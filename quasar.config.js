@@ -95,6 +95,12 @@ module.exports = configure(function (ctx) {
           negative: '#C10015',
           info: '#31CCEC',
           warning: '#F2C037'
+        },
+        notify: {
+          color: 'primary',
+          position: 'top',
+          progress: true,
+          timeout: 2500
         }
       },
 
@@ -109,7 +115,7 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: ['Notify']
     },
 
     // animations: 'all', // --- includes all animations

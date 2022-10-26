@@ -68,6 +68,10 @@ const data1 = ref('')
 const data2 = ref('')
 
 function googleSignIn() {
-  authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: authErrors[error] }))
+  authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: error }))
+}
+
+function save() {
+  $q.notify({ message: 'Saving will be configured...' })
 }
 </script>
