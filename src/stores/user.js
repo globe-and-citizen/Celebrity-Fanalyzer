@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', {
 
       if (this.getUser) {
         LocalStorage.set('user', this._user)
-        this.router.push('/')
+        this.router.go(0)
       }
     },
 
