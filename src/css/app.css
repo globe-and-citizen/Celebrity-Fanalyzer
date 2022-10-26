@@ -1,1 +1,5 @@
 /* app global css */
+
+.q-toolbar {
+  min-height: 4rem;
+}
