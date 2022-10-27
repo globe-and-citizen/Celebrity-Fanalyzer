@@ -1,13 +1,12 @@
 <template>
   <q-header>
-    <q-toolbar class="bg-white q-px-lg">
+    <q-toolbar class="bg-white q-px-lg shadow-1">
       <q-toolbar-title>
         <b class="text-secondary">Profile</b>
       </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
     </q-toolbar>
   </q-header>
-  <q-page v-if="!userStore.getUser.uid" class="flex content-center justify-center">
+  <q-page v-if="!userStore.getUser.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
     <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
       <q-avatar size="sm">

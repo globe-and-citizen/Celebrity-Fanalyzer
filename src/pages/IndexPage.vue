@@ -1,5 +1,5 @@
 <template>
-  <q-header elevated>
+  <q-header class="shadow-1">
     <q-toolbar class="bg-white q-px-lg">
       <q-toolbar-title>
         <q-icon color="primary" name="stars" size="md" />
