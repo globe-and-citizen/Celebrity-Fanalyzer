@@ -17,7 +17,48 @@
     </q-toolbar>
   </q-header>
 
-  <q-page class="flex items-center">
-    <h1 class="text-center">Search Page</h1>
+  <q-page class="q-pa-md">
+    <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 4.5rem">
+      <q-btn-toggle
+        v-model="category"
+        class="q-mb-sm q-mt-lg"
+        color="white"
+        no-caps
+        rounded
+        unelevated
+        text-color="secondary"
+        :options="categories"
+      />
+    </q-scroll-area>
+    <q-separator class="q-mb-md q-mt-xs" />
+    {{ categories.find((c) => c.value === category).label }}
   </q-page>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+
+const search = ref('')
+const category = ref('trending')
+
+const categories = ref([
+  { label: 'Trending', value: 'trending' },
+  { label: 'Lifestyle', value: 'lifestyle' },
+  { label: 'Culture', value: 'culture' },
+  { label: 'Sports', value: 'sports' },
+  { label: 'Politics', value: 'politics' },
+  { label: 'Business', value: 'business' },
+  { label: 'Technology', value: 'technology' },
+  { label: 'Science', value: 'science' },
+  { label: 'Health', value: 'health' },
+  { label: 'Education', value: 'education' }
+])
+</script>
+
+<style lang="scss">
+.q-btn-group > .q-btn-item {
+  border: 1px solid;
+  border-radius: 24px !important;
+  margin-right: 0.5rem;
+}
+</style>
