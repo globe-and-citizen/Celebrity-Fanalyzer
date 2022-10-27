@@ -9,5 +9,12 @@
 </template>
 
 <script setup>
-import MainMenu from '../components/MainMenu.vue'
+import MainMenu from 'src/components/MainMenu.vue'
 </script>
+
+<style>
+.q-page-container {
+  margin: auto;
+  max-width: 600px;
+}
+</style>
