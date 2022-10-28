@@ -12,7 +12,7 @@
     </q-toolbar>
   </q-header>
 
-  <q-page class="flex items-center">
-    <h1 class="text-center">Index Page</h1>
+  <q-page class="flex items-center justify-center">
+    <h1>HOME</h1>
   </q-page>
 </template>
