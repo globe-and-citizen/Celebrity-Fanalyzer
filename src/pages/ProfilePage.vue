@@ -6,7 +6,7 @@
       </q-toolbar-title>
     </q-toolbar>
   </q-header>
-  <q-page v-if="!userStore.getUser.uid" class="column content-center flex justify-center">
+  <q-page v-if="!userStore.isAuthenticated" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
     <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
       <q-avatar size="sm">
