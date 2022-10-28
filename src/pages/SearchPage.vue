@@ -18,10 +18,10 @@
   </q-header>
 
   <q-page class="q-pa-md">
-    <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 4.5rem">
+    <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle
         v-model="category"
-        class="q-mb-sm q-mt-lg"
+        class="q-my-sm"
         color="white"
         no-caps
         rounded
@@ -30,16 +30,48 @@
         :options="categories"
       />
     </q-scroll-area>
-    <q-separator class="q-mb-md q-mt-xs" />
-    {{ categories.find((c) => c.value === category).label }}
+    <q-separator class="q-mb-none q-mt-xs" />
+    <section v-for="post in postStore.getPosts" :key="post?.id">
+      <article
+        v-if="post.categories.includes(categories.find((c) => c.value === category).value)"
+        class="q-pt-md relative-position row"
+        v-ripple:primary
+      >
+        <div class="col-8">
+          <div class="flex items-center">
+            <q-avatar size="2rem" color="secondary" text-color="white" icon="person" />
+            <p class="q-mb-none q-ml-sm text-body1">Author Name</p>
+          </div>
+          <h2 class="q-mb-none text-body1 text-bold">{{ post.title.length > 38 ? post.title.substring(0, 38) + ' ... ' : post.title }}</h2>
+          <p class="q-my-none text-body2 text-secondary">
+            {{ post.created.toDate().toLocaleDateString('en-us', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
+          </p>
+        </div>
+        <q-img
+          class="col-4"
+          :ratio="1"
+          :src="`data:image/jpg;base64,${post.image}`"
+          spinner-color="primary"
+          spinner-size="3rem"
+          style="border-radius: 24px"
+        />
+        <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
+        <q-separator class="full-width q-mt-md" />
+      </article>
+      <h3 v-else class="text-center text-h5">No Data</h3>
+    </section>
   </q-page>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { usePostStore } from 'src/stores/posts'
 
 const search = ref('')
 const category = ref('trending')
+
+const postStore = usePostStore()
+postStore.fetchPosts()
 
 const categories = ref([
   { label: 'Trending', value: 'trending' },
