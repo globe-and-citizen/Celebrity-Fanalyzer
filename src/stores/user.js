@@ -1,9 +1,8 @@
-import { auth, db } from 'src/firebase'
-import router from 'src/router'
 import { EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from '@firebase/auth'
 import { collection, doc, getDoc, getDocs, runTransaction, updateDoc } from '@firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
+import { auth, db } from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({

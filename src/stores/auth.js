@@ -1,10 +1,9 @@
-import { auth, db } from 'src/firebase.js'
-import router from 'src/router'
-import { useUserStore } from 'src/stores/user'
 import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
+import { auth, db } from 'src/firebase.js'
+import { useUserStore } from 'src/stores/user'
 
 export const useAuthStore = defineStore('auth', {
   actions: {
