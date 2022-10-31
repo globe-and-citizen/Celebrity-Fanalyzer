@@ -20,7 +20,7 @@ export const usePostStore = defineStore('posts', {
             id: docPost.id,
             ...docPost.data()
           }))
-
+          // TODO: check error when displaying the author name
           posts.forEach(async (post) => {
             const docSnap = await getDoc(post.author)
             post.author = docSnap.data().displayName

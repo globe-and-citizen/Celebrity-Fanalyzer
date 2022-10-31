@@ -45,7 +45,7 @@
           <div class="col-8">
             <div class="flex items-center">
               <q-avatar size="2rem" color="secondary" text-color="white" icon="person" />
-              <p class="q-mb-none q-ml-sm text-body1">aa</p>
+              <p class="q-mb-none q-ml-sm text-body1">Arnon Rodrigues</p>
             </div>
             <h2 class="q-mb-none text-body1 text-bold">
               {{ post.title.length > 38 ? post.title.substring(0, 38) + ' ... ' : post.title }}
