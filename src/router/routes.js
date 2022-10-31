@@ -18,12 +18,13 @@ const routes = [
       {
         path: 'profile',
         component: () => import('pages/ProfilePage.vue')
+      },
+      {
+        path: 'post/:id',
+        component: () => import('pages/PostPage.vue')
       }
     ]
   },
-
-  // Always leave this as last one,
-  // but you can also remove it
   {
     path: '/:catchAll(.*)*',
     component: () => import('app/src/pages/404Error.vue')
