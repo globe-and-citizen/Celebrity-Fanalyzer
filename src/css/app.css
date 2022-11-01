@@ -1,5 +1,11 @@
 /* app global css */
 
+.q-btn-group > .q-btn-item {
+  border: 1px solid;
+  border-radius: 24px !important;
+  margin-right: 0.5rem;
+}
+
 .q-toolbar {
   min-height: 4rem;
 }

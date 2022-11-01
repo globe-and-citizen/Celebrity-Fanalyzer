@@ -24,6 +24,7 @@
         class="q-my-sm"
         color="white"
         no-caps
+        no-wrap
         rounded
         unelevated
         text-color="secondary"
@@ -82,12 +83,6 @@ const isLoading = ref(false)
 const postStore = usePostStore()
 const router = useRouter()
 
-onMounted(async () => {
-  isLoading.value = true
-  await postStore.fetchPosts()
-  isLoading.value = false
-})
-
 const categories = ref([
   { label: 'Trending', value: 'trending' },
   { label: 'Lifestyle', value: 'lifestyle' },
@@ -101,15 +96,13 @@ const categories = ref([
   { label: 'Education', value: 'education' }
 ])
 
+onMounted(async () => {
+  isLoading.value = true
+  await postStore.fetchPosts()
+  isLoading.value = false
+})
+
 function goToPost(slug) {
   router.push(`/post/${slug}`)
 }
 </script>
-
-<style lang="scss">
-.q-btn-group > .q-btn-item {
-  border: 1px solid;
-  border-radius: 24px !important;
-  margin-right: 0.5rem;
-}
-</style>
