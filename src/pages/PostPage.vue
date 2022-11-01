@@ -12,10 +12,13 @@
       <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" />
       <q-btn flat rounded icon="share" :label="article.info?.shares" />
     </section>
+    <q-separator />
+    <TheEntries />
   </q-page>
 </template>
 
 <script setup>
+import TheEntries from 'src/components/TheEntries.vue'
 import { usePostStore } from 'src/stores/posts'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -32,6 +35,5 @@ onMounted(async () => {
     isLoading.value = false
   }
   article.value = postStore.getPosts.find((post) => post.slug === router.currentRoute.value.params.id)
-  console.log(article.value)
 })
 </script>
