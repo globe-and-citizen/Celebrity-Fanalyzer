@@ -8,7 +8,7 @@
     </q-toolbar>
   </q-header>
   <q-page class="flex column non-selectable">
-    <q-tab-panels v-model="tab" animated swipeable infinite class="col-grow q-pa-md">
+    <q-tab-panels animated class="col-grow q-pa-md" swipeable v-model="tab">
       <q-tab-panel name="content1">
         <h1 class="text-h5">Content 1</h1>
         Lorem ipsum dolor sit amet consectetur adipisicing elit.
