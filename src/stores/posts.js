@@ -1,4 +1,4 @@
-import { collection, getDoc, getDocs } from 'firebase/firestore'
+import { addDoc, collection, getDoc, getDocs } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
@@ -37,6 +37,18 @@ export const usePostStore = defineStore('posts', {
       if (this.getPosts) {
         LocalStorage.set('posts', this._posts)
       }
+    },
+
+    async addPost(post) {
+      await addDoc(collection(db, 'posts'), { ...post, slug: 'nov-1-test' })
+        .then(() => {
+          this.$patch({ _posts: [...this.getPosts, post] })
+          LocalStorage.set('posts', this._posts)
+        })
+        .catch((error) => {
+          console.error(error)
+          throw error.code
+        })
     }
   }
 })

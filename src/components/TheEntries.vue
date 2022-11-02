@@ -15,44 +15,48 @@
     </q-scroll-area>
     <div class="flex justify-between">
       <h2 class="q-my-auto text-bold text-h5">Entries</h2>
-      <q-btn color="primary" flat icon="control_point" round @click="openDialog()" />
+      <q-btn color="primary" flat icon="control_point" round @click="dialog = true" />
     </div>
     <q-separator />
 
-    <q-dialog full-width position="bottom" v-model="seamless">
+    <q-dialog full-width position="bottom" v-model="dialog">
       <q-card>
-        <!-- <q-linear-progress :value="0.9" color="pink" /> -->
         <q-card-section class="row items-center no-wrap">
           <h2 class="q-my-none text-h6">New Post</h2>
           <q-space />
           <q-btn flat round icon="close" v-close-popup />
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <q-input label="Title" v-model="title" />
-          <q-input autogrow label="Description" v-model="description" />
-          <q-file accept=".jpg, image/*" label="Image" v-model="image" @rejected="onRejectedImage">
-            <template v-slot:append>
-              <q-icon name="image" />
-            </template>
-          </q-file>
-          <q-select
-            behavior="menu"
-            label="Categories"
-            multiple
-            :options="categoryOptions"
-            use-input
-            use-chips
-            v-model="category"
-            @filter="filterCategories"
-          >
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">No results</q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-          <q-btn class="full-width q-mt-xl" color="primary" label="Save" rounded @click="savePost()" />
+          <q-form @submit.prevent="onSubmit()">
+            <q-input label="Title" v-model="post.title" />
+            <q-input autogrow label="Description" v-model="post.description" />
+            <q-file accept=".jpg, image/*" label="Image" v-model="imageModel" @update:model-value="uploadPhoto()">
+              <template v-slot:append>
+                <q-icon name="image" />
+              </template>
+            </q-file>
+            <q-select
+              behavior="menu"
+              label="Categories"
+              multiple
+              :options="categoryOptions"
+              use-input
+              use-chips
+              v-model="post.categories"
+              @filter="filterCategories"
+            >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">No results</q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <q-img v-if="post.image" :src="post.image" />
+            <q-btn class="full-width q-mt-xl" color="primary" label="Save" rounded type="submit" />
+          </q-form>
         </q-card-section>
+        <!-- TODO: Add loading after push save button -->
+        <!-- {{ isLoading }} -->
       </q-card>
     </q-dialog>
   </section>
@@ -60,11 +64,13 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { ref } from 'vue'
+import { usePostStore } from 'src/stores/posts'
+import { reactive, ref } from 'vue'
 
 const $q = useQuasar()
+const postStore = usePostStore()
 
-const seamless = ref(false)
+const dialog = ref(false)
 const subject = ref('multinational_support')
 
 const subjects = ref([
@@ -76,33 +82,23 @@ const subjects = ref([
   { label: 'Shares', value: 'shares' }
 ])
 
-const title = ref('')
-const description = ref('')
-const image = ref([])
-const category = ref(undefined)
+const post = reactive({
+  author: '',
+  categories: [],
+  created: '',
+  description: '',
+  image: '',
+  info: { comments: 0, dislikes: 0, likes: 0, shares: 0 },
+  slug: '',
+  title: ''
+})
+const imageModel = ref([])
 const categoryOptions = ref([])
-const options = ref([
-  { label: 'Trending', value: 'trending' },
-  { label: 'Lifestyle', value: 'lifestyle' },
-  { label: 'Culture', value: 'culture' },
-  { label: 'Sports', value: 'sports' },
-  { label: 'Politics', value: 'politics' },
-  { label: 'Business', value: 'business' },
-  { label: 'Technology', value: 'technology' },
-  { label: 'Science', value: 'science' },
-  { label: 'Health', value: 'health' },
-  { label: 'Education', value: 'education' }
-])
+const isLoading = ref(false)
 
-function openDialog() {
-  console.log('add post')
-  seamless.value = true
-}
+const options = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Business', 'Technology', 'Science', 'Health', 'Education'])
 
-function onRejectedImage(file) {
-  $q.notify({ type: 'negative', message: `${file.length} file(s) did not pass validation constraints` })
-}
-
+// TODO: improve filter
 function filterCategories(val, update) {
   if (val === '') {
     update(() => (categoryOptions.value = options.value))
@@ -111,10 +107,22 @@ function filterCategories(val, update) {
   update(() => (categoryOptions.value = categoryOptions.value.filter((v) => v.label.toLowerCase().indexOf(val.toLowerCase()) > -1)))
 }
 
-function savePost() {
-  $q.notify({ type: 'positive', message: 'Feature under development' })
+function uploadPhoto() {
+  const reader = new FileReader()
+  reader.readAsDataURL(imageModel.value)
+  reader.onload = () => (post.image = reader.result)
+}
+
+function onSubmit() {
+  isLoading.value = true
+  // TODO: Add author, created, slug
+  // post.slug = post.title.toLowerCase().replace(/ /g, '-')
+  // TODO: Add validations before saving
   // TODO: load message of saving post + notification of success/failure + close dialog
-  // seamless.value = false
+  postStore.addPost(post).then(() => $q.notify({ color: 'positive', message: 'Post successfully submitted' }))
+
+  // dialog.value = false
+  isLoading.value = false
 }
 </script>
 
