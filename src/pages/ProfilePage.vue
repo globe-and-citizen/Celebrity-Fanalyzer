@@ -18,11 +18,20 @@
   <q-page v-else class="q-px-lg">
     <div class="flex items-center q-py-xl">
       <q-avatar size="5rem" color="teal" text-color="white">
-        <q-img :src="photoURL" spinner-color="primary" spinner-size="82px" />
+        <q-img :src="user.photoURL" spinner-color="primary" spinner-size="82px">
+          <div class="photo">
+            <q-icon class="q-mx-auto" color="grey-6" name="upload" size="xs" />
+            <q-file accept="image/*" borderless class="absolute-bottom" dense v-model="newPhoto" @update:model-value="uploadPhoto()">
+              <template v-slot:file>
+                <q-chip class="hidden" />
+              </template>
+            </q-file>
+          </div>
+        </q-img>
       </q-avatar>
       <div class="column flex q-ml-md text-secondary">
-        <h2 class="q-my-none text-h5 text-bold">{{ displayName }}</h2>
-        <p class="q-my-none text-body1">Some Stats...</p>
+        <h2 class="q-my-none text-h5 text-bold">{{ user.displayName }}</h2>
+        <p class="q-my-none text-body1">{{ user.bio }}</p>
       </div>
     </div>
     <q-tabs v-model="tab" active-color="primary">
@@ -33,16 +42,16 @@
 
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel class="q-gutter-y-md" name="profile">
-        <q-input v-model="name" label="Name" />
-        <q-input v-model="bio" label="Bio" />
+        <q-input v-model="user.displayName" label="Name" />
+        <q-input v-model="user.bio" label="Bio" />
         <h3 class="q-mt-lg text-bold text-h5 text-secondary">MetaData</h3>
-        <q-input v-model="data1" label="Data 1" />
-        <q-input v-model="data2" label="Data 2" />
+        <q-input v-model="user.data1" label="Data 1" />
+        <q-input v-model="user.data2" label="Data 2" />
         <q-btn class="full-width" color="primary" label="Save" padding="12px" rounded @click="save()" />
       </q-tab-panel>
       <q-tab-panel class="q-gutter-y-md" name="settings">
-        <q-input v-model="email" disable label="Email" />
-        <q-btn class="full-width" color="secondary" label="Logout" padding="12px" rounded @click="logout()" />
+        <q-input v-model="user.email" disable label="Email" />
+        <q-btn class="full-width" color="secondary" label="Logout" padding="10px" rounded @click="logout()" />
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -52,29 +61,59 @@
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/auth'
 import { useUserStore } from 'src/stores/user'
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
 const userStore = useUserStore()
 
-const { email, photoURL, displayName } = userStore.getUser
-
 const tab = ref('profile')
-const name = ref('')
-const bio = ref('')
-const data1 = ref('')
-const data2 = ref('')
+const user = reactive({ ...userStore.getUser })
+const newPhoto = ref([])
 
 function googleSignIn() {
   authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: error }))
 }
 
+function uploadPhoto() {
+  const reader = new FileReader()
+  reader.readAsDataURL(newPhoto.value)
+  reader.onload = () => (user.photoURL = reader.result)
+}
+
 function save() {
-  $q.notify({ message: 'Saving will be configured...' })
+  userStore
+    .updateProfile(user)
+    .then($q.notify({ message: 'Profile successfully updated' }))
+    .catch((error) => $q.notify({ icon: 'error', message: error }))
 }
 
 function logout() {
   authStore.logout()
 }
 </script>
+
+<style scoped lang="scss">
+.photo {
+  background-color: transparent;
+  bottom: 0;
+  height: 25%;
+  padding: 0;
+  position: absolute;
+  text-align: center;
+  transition: all 0.3s;
+  width: 100%;
+
+  & .q-icon {
+    display: none;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+
+    & .q-icon {
+      display: block;
+    }
+  }
+}
+</style>
