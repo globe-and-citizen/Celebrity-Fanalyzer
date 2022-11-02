@@ -32,7 +32,6 @@ export const useUserStore = defineStore('user', {
     },
 
     async updateProfile(user) {
-      console.log(user)
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), { ...user })
       })
