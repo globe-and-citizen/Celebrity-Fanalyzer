@@ -1,7 +1,8 @@
-import { addDoc, collection, getDoc, getDocs } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
+import { useUserStore } from './user'
 
 export const usePostStore = defineStore('posts', {
   state: () => ({
@@ -20,7 +21,7 @@ export const usePostStore = defineStore('posts', {
             id: docPost.id,
             ...docPost.data()
           }))
-          // TODO: check error when displaying the author name
+
           posts.forEach(async (post) => {
             const docSnap = await getDoc(post.author)
             post.author = docSnap.data().displayName
@@ -40,7 +41,12 @@ export const usePostStore = defineStore('posts', {
     },
 
     async addPost(post) {
-      await addDoc(collection(db, 'posts'), { ...post, slug: 'nov-1-test' })
+      const userStore = useUserStore()
+
+      post.author = doc(db, 'users', userStore.getUser.uid)
+      post.created = Timestamp.fromDate(new Date())
+
+      await addDoc(collection(db, 'posts'), post)
         .then(() => {
           this.$patch({ _posts: [...this.getPosts, post] })
           LocalStorage.set('posts', this._posts)

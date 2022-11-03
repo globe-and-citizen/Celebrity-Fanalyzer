@@ -28,20 +28,34 @@
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-form @submit.prevent="onSubmit()">
-            <q-input label="Title" v-model="post.title" />
-            <q-input autogrow label="Description" v-model="post.description" />
-            <q-file accept=".jpg, image/*" label="Image" v-model="imageModel" @update:model-value="uploadPhoto()">
+            <q-input counter hide-hint label="Title" maxlength="80" required v-model="post.title" />
+            <q-input autogrow counter label="Description" maxlength="400" required v-model="post.description" />
+            <q-file
+              accept=".jpg, image/*"
+              counter
+              hide-hint
+              hint="Max file size: 1MB"
+              label="Image"
+              :max-total-size="1000000"
+              required
+              v-model="imageModel"
+              @update:model-value="uploadPhoto()"
+            >
               <template v-slot:append>
                 <q-icon name="image" />
               </template>
             </q-file>
             <q-select
               behavior="menu"
+              counter
+              hide-hint
+              hint="Landscape images are better"
               label="Categories"
               multiple
               :options="categoryOptions"
               use-input
               use-chips
+              required
               v-model="post.categories"
               @filter="filterCategories"
             >
@@ -51,12 +65,11 @@
                 </q-item>
               </template>
             </q-select>
-            <q-img v-if="post.image" :src="post.image" />
+            <q-img v-if="post.image" class="q-mt-md" :src="post.image" />
             <q-btn class="full-width q-mt-xl" color="primary" label="Save" rounded type="submit" />
           </q-form>
         </q-card-section>
-        <!-- TODO: Add loading after push save button -->
-        <!-- {{ isLoading }} -->
+        <q-inner-loading color="primary" :showing="isLoading" />
       </q-card>
     </q-dialog>
   </section>
@@ -64,28 +77,26 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { usePostStore } from 'src/stores/posts'
+import { usePostStore } from 'src/stores/'
 import { reactive, ref } from 'vue'
 
 const $q = useQuasar()
 const postStore = usePostStore()
 
 const dialog = ref(false)
-const subject = ref('multinational_support')
+const subject = ref('Multinational Support')
 
 const subjects = ref([
-  { label: 'Multinational Support', value: 'multinational_support' },
-  { label: 'Bipartisanship', value: 'bipartisanship' },
-  { label: 'Likes', value: 'likes' },
-  { label: 'Dislikes', value: 'dislikes' },
-  { label: 'Comments', value: 'comments' },
-  { label: 'Shares', value: 'shares' }
+  { label: 'Multinational Support', value: 'Multinational Support' },
+  { label: 'Bipartisanship', value: 'Bipartisanship' },
+  { label: 'Likes', value: 'Likes' },
+  { label: 'Dislikes', value: 'Dislikes' },
+  { label: 'Comments', value: 'Comments' },
+  { label: 'Shares', value: 'Shares' }
 ])
 
 const post = reactive({
-  author: '',
   categories: [],
-  created: '',
   description: '',
   image: '',
   info: { comments: 0, dislikes: 0, likes: 0, shares: 0 },
@@ -115,15 +126,17 @@ function uploadPhoto() {
 
 function onSubmit() {
   isLoading.value = true
-  // TODO: Add author, created, slug
-  // post.slug = post.title.toLowerCase().replace(/ /g, '-')
-  // TODO: Add validations before saving
-  // TODO: load message of saving post + notification of success/failure + close dialog
-  postStore.addPost(post).then(() => $q.notify({ color: 'positive', message: 'Post successfully submitted' }))
 
-  // dialog.value = false
+  post.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${post.title}`
+    .toLowerCase()
+    .replace(/[^0-9a-z]+/g, '-')
+
+  postStore
+    .addPost(post)
+    .then(() => $q.notify({ color: 'positive', message: 'Post successfully submitted' }))
+    .catch(() => $q.notify({ color: 'negative', message: 'Post submission failed' }))
+
+  dialog.value = false
   isLoading.value = false
 }
 </script>
-
-<style lang="scss" scoped></style>
