@@ -3,7 +3,7 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page v-else>
-    <q-img :ratio="21 / 9" :src="`data:image/jpg;base64,${article.image}`" spinner-color="primary" spinner-size="82px" />
+    <q-img :ratio="21 / 9" :src="article.image" spinner-color="primary" spinner-size="82px" />
     <section class="q-pa-md">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1">{{ article.description }}</p>
