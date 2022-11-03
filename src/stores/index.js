@@ -1,6 +1,8 @@
-import { store } from 'quasar/wrappers'
 import { createPinia } from 'pinia'
-
+import { store } from 'quasar/wrappers'
+import { useAuthStore } from './auth'
+import { usePostStore } from './posts'
+import { useUserStore } from './user'
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -18,3 +20,5 @@ export default store((/* { ssrContext } */) => {
 
   return pinia
 })
+
+export { useAuthStore, usePostStore, useUserStore }
