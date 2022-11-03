@@ -32,43 +32,34 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="isLoading" class="q-my-xl text-center">
-      <q-spinner color="primary" size="3em" />
-    </section>
-    <section v-else>
-      <div v-for="post in postStore.getPosts" :key="post?.id">
-        <article
-          v-if="post.categories.includes(categories.find((c) => c.value === category).value)"
-          class="q-pt-md relative-position row"
-          v-ripple:primary
-          @click="goToPost(post.slug)"
-        >
-          <div class="col-8">
-            <div class="flex items-center">
-              <q-avatar size="2rem" color="secondary" text-color="white" icon="person" />
-              <p class="q-mb-none q-ml-sm text-body1">Arnon Rodrigues</p>
-            </div>
-            <h2 class="q-mb-none text-body1 text-bold">
-              {{ post.title.length > 38 ? post.title.substring(0, 38) + ' ... ' : post.title }}
-            </h2>
-            <p class="q-my-none text-body2 text-secondary">
-              {{ post.created.toDate().toLocaleDateString('en-us', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
-            </p>
+    <q-inner-loading color="primary" :showing="isLoading" />
+    <section v-if="postStore.getPosts.filter((post) => post.categories.includes(category)).length">
+      <article
+        v-for="post in postStore.getPosts"
+        class="q-pt-md relative-position row"
+        :key="post?.id"
+        v-ripple:primary
+        v-show="post.categories.includes(category)"
+        @click="goToPost(post.slug)"
+      >
+        <div class="col-8">
+          <div class="flex items-center">
+            <q-avatar size="2rem" color="secondary" text-color="white" icon="person" />
+            <p class="q-mb-none q-ml-sm text-body1">Arnon Rodrigues</p>
           </div>
-          <q-img
-            class="col-4"
-            :ratio="1"
-            :src="`data:image/jpg;base64,${post.image}`"
-            spinner-color="primary"
-            spinner-size="3rem"
-            style="border-radius: 24px"
-          />
-          <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
-          <q-separator class="full-width q-mt-md" />
-        </article>
-        <h3 v-else class="text-center text-h5">No Data</h3>
-      </div>
+          <h2 class="q-mb-none text-body1 text-bold">
+            {{ post.title.length > 38 ? post.title.substring(0, 38) + ' ... ' : post.title }}
+          </h2>
+          <p class="q-my-none text-body2 text-secondary">
+            {{ post.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
+          </p>
+        </div>
+        <q-img class="col-4" :ratio="1" :src="post.image" spinner-color="primary" spinner-size="3rem" style="border-radius: 24px" />
+        <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
+        <q-separator class="full-width q-mt-md" />
+      </article>
     </section>
+    <h3 v-else class="text-center text-h5">No Data</h3>
   </q-page>
 </template>
 
@@ -78,22 +69,22 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const search = ref('')
-const category = ref('trending')
+const category = ref('Trending')
 const isLoading = ref(false)
 const postStore = usePostStore()
 const router = useRouter()
 
 const categories = ref([
-  { label: 'Trending', value: 'trending' },
-  { label: 'Lifestyle', value: 'lifestyle' },
-  { label: 'Culture', value: 'culture' },
-  { label: 'Sports', value: 'sports' },
-  { label: 'Politics', value: 'politics' },
-  { label: 'Business', value: 'business' },
-  { label: 'Technology', value: 'technology' },
-  { label: 'Science', value: 'science' },
-  { label: 'Health', value: 'health' },
-  { label: 'Education', value: 'education' }
+  { label: 'Trending', value: 'Trending' },
+  { label: 'Lifestyle', value: 'Lifestyle' },
+  { label: 'Culture', value: 'Culture' },
+  { label: 'Sports', value: 'Sports' },
+  { label: 'Politics', value: 'Politics' },
+  { label: 'Business', value: 'Business' },
+  { label: 'Technology', value: 'Technology' },
+  { label: 'Science', value: 'Science' },
+  { label: 'Health', value: 'Health' },
+  { label: 'Education', value: 'Education' }
 ])
 
 onMounted(async () => {
