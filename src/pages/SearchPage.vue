@@ -35,7 +35,7 @@
     <q-inner-loading color="primary" :showing="isLoading" />
     <section v-if="postStore.getPosts.filter((post) => post.categories.includes(category)).length">
       <article
-        v-for="post in postStore.getPosts"
+        v-for="post in posts"
         class="q-pt-md relative-position row"
         :key="post?.id"
         v-ripple:primary
@@ -44,8 +44,10 @@
       >
         <div class="col-8">
           <div class="flex items-center">
-            <q-avatar size="2rem" color="secondary" text-color="white" icon="person" />
-            <p class="q-mb-none q-ml-sm text-body1">Arnon Rodrigues</p>
+            <q-avatar size="2rem">
+              <q-img :src="post.author.photoURL" />
+            </q-avatar>
+            <p class="q-mb-none q-ml-sm text-body1">{{ post.author.displayName }}</p>
           </div>
           <h2 class="q-mb-none text-body1 text-bold">
             {{ post.title.length > 38 ? post.title.substring(0, 38) + ' ... ' : post.title }}
@@ -68,11 +70,13 @@ import { usePostStore } from 'src/stores/posts'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const postStore = usePostStore()
+
 const search = ref('')
 const category = ref('Trending')
 const isLoading = ref(false)
-const postStore = usePostStore()
-const router = useRouter()
+const posts = ref([])
 
 const categories = ref([
   { label: 'Trending', value: 'Trending' },
@@ -90,6 +94,7 @@ const categories = ref([
 onMounted(async () => {
   isLoading.value = true
   await postStore.fetchPosts()
+  posts.value = postStore.getPosts
   isLoading.value = false
 })
 

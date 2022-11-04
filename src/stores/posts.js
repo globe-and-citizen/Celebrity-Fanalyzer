@@ -17,24 +17,17 @@ export const usePostStore = defineStore('posts', {
     async fetchPosts() {
       await getDocs(collection(db, 'posts'))
         .then(async (querySnapshot) => {
-          const posts = querySnapshot.docs.map((docPost) => ({
-            id: docPost.id,
-            ...docPost.data()
-          }))
+          const posts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          posts.forEach(async (post) => {
-            const docSnap = await getDoc(post.author)
-            post.author = docSnap.data().displayName
-          })
+          for (const post of posts) {
+            post.author = await getDoc(post.author).then((doc) => doc.data())
+          }
 
           this._posts = []
           this.$patch({ _posts: posts })
-          return posts
         })
-        .catch((error) => {
-          console.error(error)
-          throw error.code
-        })
+        .catch((error) => console.error(error))
+
       if (this.getPosts) {
         LocalStorage.set('posts', this._posts)
       }
@@ -51,10 +44,7 @@ export const usePostStore = defineStore('posts', {
           this.$patch({ _posts: [...this.getPosts, post] })
           LocalStorage.set('posts', this._posts)
         })
-        .catch((error) => {
-          console.error(error)
-          throw error.code
-        })
+        .catch((error) => console.error(error))
     }
   }
 })
