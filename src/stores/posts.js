@@ -6,7 +6,7 @@ import { useUserStore } from './user'
 
 export const usePostStore = defineStore('posts', {
   state: () => ({
-    _posts: []
+    _posts: LocalStorage.getItem('posts') || []
   }),
 
   getters: {

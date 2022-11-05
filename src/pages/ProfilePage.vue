@@ -39,7 +39,6 @@
       <q-tab name="settings" label="Settings" />
     </q-tabs>
     <q-separator />
-
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel class="q-gutter-y-md" name="profile">
         <q-input v-model="user.displayName" label="Name" />
@@ -59,8 +58,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/auth'
-import { useUserStore } from 'src/stores/user'
+import { useAuthStore, useUserStore } from 'src/stores/'
 import { reactive, ref } from 'vue'
 
 const $q = useQuasar()
