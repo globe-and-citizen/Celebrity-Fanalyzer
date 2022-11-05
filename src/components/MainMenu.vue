@@ -5,12 +5,19 @@
         <RouterLink v-for="(route, index) in routes" :key="index" class="col-grow flex items-center justify-center" :to="route.path">
           <q-icon :name="route.icon" size="lg" />
         </RouterLink>
+        <RouterLink v-if="userStore.isAdmin" class="col-grow flex items-center justify-center" to="/admin">
+          <q-icon name="admin_panel_settings" size="lg" />
+        </RouterLink>
       </q-toolbar-title>
     </q-toolbar>
   </q-footer>
 </template>
 
 <script setup>
+import { useUserStore } from 'src/stores'
+
+const userStore = useUserStore()
+
 const routes = [
   { icon: 'home', path: '/' },
   { icon: 'search', path: '/search' },

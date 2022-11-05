@@ -1,3 +1,5 @@
+import { useUserStore } from 'src/stores'
+
 const routes = [
   {
     path: '/',
@@ -22,6 +24,16 @@ const routes = [
       {
         path: 'post/:id',
         component: () => import('pages/PostPage.vue')
+      },
+      {
+        path: 'admin',
+        component: () => import('pages/AdminPage.vue'),
+        beforeEnter: (_to, _from, next) => {
+          const userStore = useUserStore()
+
+          if (userStore.isAdmin) next()
+          else next('/')
+        }
       }
     ]
   },
