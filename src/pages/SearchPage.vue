@@ -32,11 +32,10 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <q-inner-loading color="primary" :showing="isLoading" />
     <section v-if="isLoading">
-      <ArticleSkeleton/>
-      <ArticleSkeleton/>
-      <ArticleSkeleton/>
+      <ArticleSkeleton />
+      <ArticleSkeleton />
+      <ArticleSkeleton />
     </section>
     <section v-if="postStore.getPosts.filter((post) => post.categories.includes(category)).length">
       <article
@@ -71,10 +70,10 @@
 </template>
 
 <script setup>
+import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import { usePostStore } from 'src/stores/posts'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import ArticleSkeleton from "src/components/ArticleSkeleton.vue"
 
 const router = useRouter()
 const postStore = usePostStore()
