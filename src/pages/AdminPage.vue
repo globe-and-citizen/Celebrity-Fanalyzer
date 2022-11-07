@@ -8,7 +8,17 @@
     </q-toolbar>
   </q-header>
   <section class="q-pa-md">
-    <q-page padding>We can add some stats here...</q-page>
+    <q-page padding>
+      <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="posts" title="Manage Posts">
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+            <q-btn color="warning" flat icon="edit" round size="sm" @click="onEditPost(props.row.id)" />
+            <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeletePost(props.row.id)" />
+          </q-td>
+        </template>
+      </q-table>
+    </q-page>
+
     <q-dialog full-width position="bottom" v-model="dialog">
       <q-card>
         <q-card-section class="row items-center no-wrap">
@@ -24,7 +34,7 @@
               accept=".jpg, image/*"
               counter
               hide-hint
-              hint="Max file size: 1MB"
+              hint="Landscape images are better"
               label="Image"
               :max-total-size="1000000"
               required
@@ -39,15 +49,13 @@
               behavior="menu"
               counter
               hide-hint
-              hint="Landscape images are better"
               label="Categories"
               multiple
               :options="categoryOptions"
               use-input
               use-chips
-              required
+              :rules="[(val) => val.length > 0 || 'Please select at least one category']"
               v-model="post.categories"
-              @filter="filterCategories"
             >
               <template v-slot:no-option>
                 <q-item>
@@ -55,6 +63,7 @@
                 </q-item>
               </template>
             </q-select>
+            {{ post.categories }}
             <q-img v-if="post.image" class="q-mt-md" :src="post.image" />
             <q-btn class="full-width q-mt-xl" color="primary" label="Save" rounded type="submit" />
           </q-form>
@@ -67,36 +76,51 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { usePostStore } from 'src/stores/'
-import { reactive, ref } from 'vue'
+import { usePostStore } from 'src/stores'
+import { onMounted, reactive, ref } from 'vue'
 
 const $q = useQuasar()
 const postStore = usePostStore()
 
+const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
+const columns = [
+  {
+    name: 'created',
+    label: 'Created at',
+    align: 'left',
+    field: (row) => row.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    format: (val) => `${val}`,
+    sortable: true
+  },
+  {
+    name: 'author',
+    align: 'center',
+    label: 'Author',
+    field: (row) => row.author.displayName,
+    sortable: true
+  },
+  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
+  { name: 'actions', field: 'actions' }
+]
 const dialog = ref(false)
-
+const imageModel = ref([])
+const isLoading = ref(false)
 const post = reactive({
-  categories: [],
+  categories: null,
   description: '',
   image: '',
   info: { comments: 0, dislikes: 0, likes: 0, shares: 0 },
   slug: '',
   title: ''
 })
-const imageModel = ref([])
-const categoryOptions = ref([])
-const isLoading = ref(false)
+const posts = ref([])
 
-const options = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Business', 'Technology', 'Science', 'Health', 'Education'])
-
-// TODO: improve filter
-function filterCategories(val, update) {
-  if (val === '') {
-    update(() => (categoryOptions.value = options.value))
-    return
-  }
-  update(() => (categoryOptions.value = categoryOptions.value.filter((v) => v.label.toLowerCase().indexOf(val.toLowerCase()) > -1)))
-}
+onMounted(async () => {
+  isLoading.value = true
+  await postStore.fetchPosts()
+  posts.value = postStore.getPosts
+  isLoading.value = false
+})
 
 function uploadPhoto() {
   const reader = new FileReader()
@@ -113,10 +137,21 @@ function onSubmit() {
 
   postStore
     .addPost(post)
-    .then(() => $q.notify({ color: 'positive', message: 'Post successfully submitted' }))
-    .catch(() => $q.notify({ color: 'negative', message: 'Post submission failed' }))
+    .then(() => $q.notify({ message: 'Post successfully submitted' }))
+    .catch(() => $q.notify({ message: 'Post submission failed' }))
 
   dialog.value = false
   isLoading.value = false
+}
+
+function onEditPost(id) {
+  $q.notify({ color: 'warning', message: `This feature is under development` })
+}
+
+function onDeletePost(id) {
+  postStore
+    .deletePost(id)
+    .then(() => $q.notify({ message: 'Post successfully deleted' }))
+    .catch(() => $q.notify({ message: 'Post deletion failed' }))
 }
 </script>
