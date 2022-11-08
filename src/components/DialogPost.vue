@@ -1,11 +1,11 @@
 <template>
-  <q-btn color="primary" icon="control_point" round @click="show = true">
+  <q-btn color="primary" icon="control_point" round @click="showDialog = true">
     <q-tooltip>New Post</q-tooltip>
   </q-btn>
-  <q-dialog full-width position="bottom" v-model="show">
+  <q-dialog full-width position="bottom" v-model="showDialog" @hide="$emit('hideDialog')">
     <q-card>
       <q-card-section class="row items-center no-wrap">
-        <h2 class="q-my-none text-h6">New Post</h2>
+        <h2 class="q-my-none text-h6">{{ id ? 'Edit Post' : 'New Post' }}</h2>
         <q-space />
         <q-btn flat round icon="close" v-close-popup />
       </q-card-section>
@@ -46,9 +46,8 @@
               </q-item>
             </template>
           </q-select>
-          {{ post.categories }}
           <q-img v-if="post.image" class="q-mt-md" :src="post.image" />
-          <q-btn class="full-width q-mt-xl" color="primary" label="Save" rounded type="submit" />
+          <q-btn class="full-width q-mt-xl" color="primary" :label="id ? 'Edit' : 'Save'" rounded type="submit" />
         </q-form>
       </q-card-section>
       <q-inner-loading color="primary" :showing="isLoading" />
@@ -59,7 +58,10 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { usePostStore } from 'src/stores'
-import { reactive, ref } from 'vue'
+import { reactive, ref, watchEffect } from 'vue'
+
+defineEmits(['hideDialog'])
+const props = defineProps(['author', 'created', 'categories', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
 const postStore = usePostStore()
@@ -75,7 +77,19 @@ const post = reactive({
   slug: '',
   title: ''
 })
-const show = ref(false)
+const showDialog = ref(false)
+
+watchEffect(() => {
+  if (props.id) {
+    showDialog.value = true
+    post.categories = props.categories
+    post.description = props.description
+    post.image = props.image
+    post.info = props.info
+    post.slug = props.slug
+    post.title = props.title
+  }
+})
 
 function uploadPhoto() {
   const reader = new FileReader()
@@ -90,12 +104,27 @@ async function onSubmit() {
     .toLowerCase()
     .replace(/[^0-9a-z]+/g, '-')
 
-  await postStore
-    .addPost(post)
-    .then(() => $q.notify({ message: 'Post successfully submitted' }))
-    .catch(() => $q.notify({ message: 'Post submission failed' }))
+  if (props.id) {
+    await postStore
+      .addPost(post)
+      .then(() => $q.notify({ message: 'Post successfully submitted' }))
+      .catch(() => $q.notify({ message: 'Post submission failed' }))
+  } else {
+    // TODO: Develop edit post functionality
+    // await postStore
+    //   .editPost(props.id, post)
+    //   .then(() => $q.notify({ message: 'Post successfully edited' }))
+    //   .catch(() => $q.notify({ message: 'Post edit failed' }))
+  }
 
   isLoading.value = false
-  show.value = false
+  showDialog.value = false
 }
 </script>
+
+<style scoped>
+.q-img {
+  max-height: 20rem;
+  object-fit: cover;
+}
+</style>

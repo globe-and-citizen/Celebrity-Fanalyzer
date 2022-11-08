@@ -4,7 +4,7 @@
       <q-toolbar-title>
         <b class="text-secondary">Admin Panel</b>
       </q-toolbar-title>
-      <DialogPost />
+      <DialogPost v-bind="post" @hideDialog="post = {}" />
     </q-toolbar>
   </q-header>
   <section class="q-pa-md">
@@ -12,7 +12,7 @@
       <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="posts" title="Manage Posts">
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="onEditPost(props.row.id)" />
+            <q-btn color="warning" flat icon="edit" round size="sm" @click="post = props.row" />
             <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeletePost(props.row.id)" />
           </q-td>
         </template>
@@ -51,6 +51,7 @@ const columns = [
 ]
 const isLoading = ref(false)
 const posts = ref([])
+const post = ref({})
 
 onMounted(async () => {
   isLoading.value = true
@@ -58,10 +59,6 @@ onMounted(async () => {
   posts.value = postStore.getPosts
   isLoading.value = false
 })
-
-function onEditPost(id) {
-  $q.notify({ color: 'warning', message: `This feature is under development` })
-}
 
 function onDeletePost(id) {
   postStore
