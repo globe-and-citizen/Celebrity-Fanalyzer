@@ -20,7 +20,7 @@
             hint="Landscape images are better"
             label="Image"
             :max-total-size="1000000"
-            required
+            :required="!id"
             v-model="imageModel"
             @update:model-value="uploadPhoto()"
           >
@@ -61,7 +61,7 @@ import { usePostStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 defineEmits(['hideDialog'])
-const props = defineProps(['author', 'created', 'categories', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
 const postStore = usePostStore()
@@ -69,14 +69,7 @@ const postStore = usePostStore()
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const imageModel = ref([])
 const isLoading = ref(false)
-const post = reactive({
-  categories: null,
-  description: '',
-  image: '',
-  info: { comments: 0, dislikes: 0, likes: 0, shares: 0 },
-  slug: '',
-  title: ''
-})
+const post = reactive({})
 const showDialog = ref(false)
 
 watchEffect(() => {
@@ -84,10 +77,15 @@ watchEffect(() => {
     showDialog.value = true
     post.categories = props.categories
     post.description = props.description
+    post.id = props.id
     post.image = props.image
-    post.info = props.info
-    post.slug = props.slug
     post.title = props.title
+  } else {
+    post.categories = null
+    post.description = ''
+    post.image = ''
+    post.info = { comments: 0, dislikes: 0, likes: 0, shares: 0 }
+    post.title = ''
   }
 })
 
@@ -106,15 +104,14 @@ async function onSubmit() {
 
   if (props.id) {
     await postStore
+      .editPost(post)
+      .then(() => $q.notify({ message: 'Post successfully edited' }))
+      .catch(() => $q.notify({ message: 'Post edit failed' }))
+  } else {
+    await postStore
       .addPost(post)
       .then(() => $q.notify({ message: 'Post successfully submitted' }))
       .catch(() => $q.notify({ message: 'Post submission failed' }))
-  } else {
-    // TODO: Develop edit post functionality
-    // await postStore
-    //   .editPost(props.id, post)
-    //   .then(() => $q.notify({ message: 'Post successfully edited' }))
-    //   .catch(() => $q.notify({ message: 'Post edit failed' }))
   }
 
   isLoading.value = false

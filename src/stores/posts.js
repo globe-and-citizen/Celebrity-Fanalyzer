@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, runTransaction, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
@@ -44,6 +44,20 @@ export const usePostStore = defineStore('posts', {
       await addDoc(collection(db, 'posts'), post)
         .then(() => {
           this.$patch({ _posts: [...this.getPosts, post] })
+          LocalStorage.set('posts', this._posts)
+        })
+        .catch((error) => {
+          throw new Error(error)
+        })
+    },
+
+    async editPost(post) {
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'posts', post.id), { ...post })
+      })
+        .then(() => {
+          const index = this.getPosts.findIndex((p) => p.id === post.id)
+          this.$patch({ _posts: [...this._posts.slice(0, index), { ...this._posts[index], ...post }, ...this._posts.slice(index + 1)] })
           LocalStorage.set('posts', this._posts)
         })
         .catch((error) => {
