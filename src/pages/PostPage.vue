@@ -7,6 +7,11 @@
     <section class="q-pa-md">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1">{{ article.description }}</p>
+      <div class="q-mb-md">
+        <q-badge v-for="(category, index) of article.categories" class="q-mx-xs" :key="index" rounded>
+          {{ category }}
+        </q-badge>
+      </div>
       <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.info?.likes" />
       <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes" />
       <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" />

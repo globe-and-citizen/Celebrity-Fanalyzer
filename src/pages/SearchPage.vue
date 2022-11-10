@@ -25,10 +25,10 @@
         color="white"
         no-caps
         no-wrap
-        rounded
-        unelevated
-        text-color="secondary"
         :options="categories"
+        rounded
+        text-color="secondary"
+        unelevated
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
@@ -59,6 +59,9 @@
           <p class="q-my-none text-body2 text-secondary">
             {{ post.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
           </p>
+          <div v-if="category === 'Trending'">
+            <q-badge v-for="(item, i) of post.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
+          </div>
         </div>
         <q-img class="col-4" :ratio="1" :src="post.image" spinner-color="primary" spinner-size="3rem" style="border-radius: 24px" />
         <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
