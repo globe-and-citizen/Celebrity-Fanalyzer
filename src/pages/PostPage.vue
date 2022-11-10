@@ -66,6 +66,28 @@ onMounted(async () => {
 function toggleComments() {
   showComments.value = !showComments.value
 }
+
+function sharePost(grid) {
+  $q.bottomSheet({
+    message: 'Share (Will be developed...)',
+    grid,
+    actions: [
+      { label: 'Facebook', img: 'https://cdn.quasar.dev/img/logo_drive_128px.png', id: 'drive' },
+      { label: 'Twitter', img: 'https://cdn.quasar.dev/img/logo_keep_128px.png', id: 'keep' },
+      { label: 'Youtube', img: 'https://cdn.quasar.dev/img/logo_hangouts_128px.png', id: 'calendar' },
+      { label: 'Discord', img: 'https://cdn.quasar.dev/img/logo_calendar_128px.png', id: 'calendar' }
+    ]
+  })
+    .onOk((action) => {
+      console.log('Action chosen:', action)
+    })
+    .onCancel(() => {
+      // console.log('Dismissed')
+    })
+    .onDismiss(() => {
+      // console.log('I am triggered on both OK and Cancel')
+    })
+}
 </script>
 
 <style>
