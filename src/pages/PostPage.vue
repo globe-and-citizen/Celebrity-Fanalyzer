@@ -34,8 +34,9 @@
       </q-btn>
     </section>
     <q-separator />
-    <TheComments v-if="showComments" />
-    <TheEntries v-else />
+    <TheComments :comments="comments" v-show="showComments" />
+    <q-separator />
+    <TheEntries />
   </q-page>
 </template>
 
@@ -46,9 +47,12 @@ import { usePostStore } from 'src/stores/posts'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { useCommentStore } from '../stores/comments'
 
 const $q = useQuasar()
 const article = ref({})
+const commentStore = useCommentStore()
+const comments = ref([])
 const isLoading = ref(false)
 const postStore = usePostStore()
 const router = useRouter()
@@ -61,6 +65,13 @@ onMounted(async () => {
     isLoading.value = false
   }
   article.value = postStore.getPosts.find((post) => post.slug === router.currentRoute.value.params.id)
+})
+
+onMounted(async () => {
+  if (!commentStore.commentStore?.length) {
+    await commentStore.fetchComments(article.value.id)
+  }
+  comments.value = commentStore.getComments
 })
 
 function toggleComments() {
@@ -89,19 +100,3 @@ function sharePost(grid) {
     })
 }
 </script>
-
-<style>
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
-}
-</style>
