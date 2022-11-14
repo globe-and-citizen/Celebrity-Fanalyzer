@@ -1,6 +1,15 @@
 <template>
-  <q-btn color="primary" icon="control_point" round @click="showDialog = true">
-    <q-tooltip>New Prompt</q-tooltip>
+  <q-btn color="primary" icon="control_point" round>
+    <q-menu transition-show="jump-down" transition-hide="jump-up">
+      <q-list style="min-width: 100px">
+        <q-item clickable v-close-popup @click="showDialog = true">
+          <q-item-section>New Prompt</q-item-section>
+        </q-item>
+        <q-item clickable v-close-popup>
+          <q-item-section>New Entry</q-item-section>
+        </q-item>
+      </q-list>
+    </q-menu>
   </q-btn>
   <q-dialog full-width position="bottom" v-model="showDialog" @hide="$emit('hideDialog')">
     <q-card>
