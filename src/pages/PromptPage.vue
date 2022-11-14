@@ -29,7 +29,7 @@
       <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
         <q-tooltip>Comments</q-tooltip>
       </q-btn>
-      <q-btn flat rounded icon="share" :label="article.info?.shares" @click="sharePost(true)">
+      <q-btn flat rounded icon="share" :label="article.info?.shares" @click="sharePrompt(true)">
         <q-tooltip>Share</q-tooltip>
       </q-btn>
     </section>
@@ -41,30 +41,29 @@
 </template>
 
 <script setup>
-import TheEntries from 'src/components/TheEntries.vue'
+import { useQuasar } from 'quasar'
 import TheComments from 'src/components/TheComments.vue'
-import { usePostStore } from 'src/stores/posts'
+import TheEntries from 'src/components/TheEntries.vue'
+import { useCommentStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
-import { useCommentStore } from '../stores/comments'
 
 const $q = useQuasar()
 const article = ref({})
 const commentStore = useCommentStore()
 const comments = ref([])
 const isLoading = ref(false)
-const postStore = usePostStore()
+const promptStore = usePromptStore()
 const router = useRouter()
 const showComments = ref(false)
 
 onMounted(async () => {
-  if (!postStore.getPosts?.length) {
+  if (!promptStore.getPrompts?.length) {
     isLoading.value = true
-    await postStore.fetchPosts()
+    await promptStore.fetchPrompts()
     isLoading.value = false
   }
-  article.value = postStore.getPosts.find((post) => post.slug === router.currentRoute.value.params.id)
+  article.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
 })
 
 onMounted(async () => {
@@ -78,7 +77,7 @@ function toggleComments() {
   showComments.value = !showComments.value
 }
 
-function sharePost(grid) {
+function sharePrompt(grid) {
   $q.bottomSheet({
     message: 'Share (Will be developed...)',
     grid,

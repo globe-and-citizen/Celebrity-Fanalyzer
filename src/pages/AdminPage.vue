@@ -4,15 +4,15 @@
       <q-toolbar-title>
         <b class="text-secondary">Admin Panel</b>
       </q-toolbar-title>
-      <DialogPost v-bind="post" @hideDialog="post = {}" />
+      <DialogPrompt v-bind="prompt" @hideDialog="prompt = {}" />
     </q-toolbar>
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="posts" title="Manage Posts">
+      <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="prompts" title="Manage Prompts">
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="post = props.row" />
+            <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
             <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
           </q-td>
         </template>
@@ -22,18 +22,18 @@
     <q-dialog v-model="deleteDialog.show">
       <q-card>
         <q-card-section class="q-pb-none">
-          <h6 class="q-my-sm">Delete Post?</h6>
+          <h6 class="q-my-sm">Delete Prompt?</h6>
         </q-card-section>
         <q-card-section>
           <span class="q-ml-sm">
-            Are you sure you want to delete the post
-            <b>{{ deleteDialog.post.title }}</b>
+            Are you sure you want to delete the prompt
+            <b>{{ deleteDialog.prompt.title }}</b>
             ?
           </span>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="onDeletePost(deleteDialog.post.id)" />
+          <q-btn flat label="Delete" color="negative" @click="ondeletePrompt(deleteDialog.prompt.id)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -42,12 +42,12 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import DialogPost from 'src/components/DialogPost.vue'
-import { usePostStore } from 'src/stores'
+import DialogPrompt from 'src/components/DialogPrompt.vue'
+import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
-const postStore = usePostStore()
+const promptStore = usePromptStore()
 
 const columns = [
   {
@@ -70,28 +70,28 @@ const columns = [
 ]
 const deleteDialog = ref({})
 const isLoading = ref(false)
-const posts = ref([])
-const post = ref({})
+const prompts = ref([])
+const prompt = ref({})
 
 onMounted(async () => {
   isLoading.value = true
-  await postStore.fetchPosts()
-  posts.value = postStore.getPosts
+  await promptStore.fetchPrompts()
+  prompts.value = promptStore.getPrompts
   isLoading.value = false
 })
 
-function onDeleteDialog(post) {
+function onDeleteDialog(prompt) {
   deleteDialog.value.show = true
-  deleteDialog.value.post = post
+  deleteDialog.value.prompt = prompt
 }
 
-function onDeletePost(id) {
-  postStore
-    .deletePost(id)
-    .then(() => $q.notify({ message: 'Post successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Post deletion failed' }))
+function ondeletePrompt(id) {
+  promptStore
+    .deletePrompt(id)
+    .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
+    .catch(() => $q.notify({ message: 'Prompt deletion failed' }))
 
   deleteDialog.value.show = false
-  deleteDialog.value.post = {}
+  deleteDialog.value.prompt = {}
 }
 </script>

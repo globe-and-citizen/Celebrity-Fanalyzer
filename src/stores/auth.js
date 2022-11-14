@@ -3,7 +3,7 @@ import { doc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { auth, db } from 'src/firebase.js'
-import { useUserStore } from 'src/stores/user'
+import { useUserStore } from 'src/stores'
 
 export const useAuthStore = defineStore('auth', {
   actions: {

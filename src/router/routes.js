@@ -1,4 +1,4 @@
-import { useUserStore } from 'src/stores'
+import { useUserStore } from 'stores'
 
 const routes = [
   {
@@ -22,15 +22,14 @@ const routes = [
         component: () => import('pages/ProfilePage.vue')
       },
       {
-        path: 'post/:id',
-        component: () => import('pages/PostPage.vue')
+        path: 'prompt/:id',
+        component: () => import('pages/PromptPage.vue')
       },
       {
         path: 'admin',
         component: () => import('pages/AdminPage.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-
           if (userStore.isAdmin) next()
           else next('/')
         }
@@ -39,7 +38,7 @@ const routes = [
   },
   {
     path: '/:catchAll(.*)*',
-    component: () => import('app/src/pages/404Error.vue')
+    component: () => import('pages/404Error.vue')
   }
 ]
 

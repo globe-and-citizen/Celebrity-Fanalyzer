@@ -58,7 +58,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useAuthStore, useUserStore } from 'src/stores/'
+import { useAuthStore, useUserStore } from 'src/stores'
 import { reactive, ref } from 'vue'
 
 const $q = useQuasar()

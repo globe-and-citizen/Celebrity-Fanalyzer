@@ -13,8 +13,8 @@ export const useCommentStore = defineStore('comments', {
   },
 
   actions: {
-    async fetchComments(postId) {
-      await getDocs(collection(db, 'posts', postId, 'comments')).then(async (querySnapshot) => {
+    async fetchComments(promptId) {
+      await getDocs(collection(db, 'prompts', promptId, 'comments')).then(async (querySnapshot) => {
         const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const comment of comments) {
@@ -30,8 +30,8 @@ export const useCommentStore = defineStore('comments', {
       console.log(comment)
     },
 
-    async editComment(post) {
-      console.log(post)
+    async editComment(prompt) {
+      console.log(prompt)
     },
 
     async deleteComment(id) {
