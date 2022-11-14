@@ -26,11 +26,12 @@
             accept=".jpg, image/*"
             counter
             hide-hint
-            hint="Landscape images are better"
+            hint="Landscape images are better | Max size is 1MB"
             label="Image"
-            :max-total-size="1000000"
+            :max-total-size="1048486"
             :required="!id"
             v-model="imageModel"
+            @rejected="onRejected"
             @update:model-value="uploadPhoto()"
           >
             <template v-slot:append>
@@ -46,7 +47,7 @@
             :options="categoryOptions"
             use-input
             use-chips
-            :rules="[(val) => val.length > 0 || 'Please select at least one category']"
+            :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
             v-model="prompt.categories"
           >
             <template v-slot:no-option>
@@ -102,6 +103,10 @@ function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (prompt.image = reader.result)
+}
+
+function onRejected() {
+  $q.notify({ type: 'negative', message: `Image did not pass validation constraints` })
 }
 
 async function onSubmit() {

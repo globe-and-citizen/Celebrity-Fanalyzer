@@ -47,6 +47,7 @@ export const usePromptStore = defineStore('prompts', {
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error('Error:', error)
           throw new Error(error)
         })
     },
