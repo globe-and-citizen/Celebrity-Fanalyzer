@@ -1,8 +1,16 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, runTransaction, Timestamp } from 'firebase/firestore'
+import { getDownloadURL, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
-import { db } from 'src/firebase'
+import { db, storage } from 'src/firebase'
 import { useUserStore } from './user'
+
+// TODO: https://firebase.google.com/docs/storage/web/upload-files?hl=pt&authuser=0#upload_files
+const promptRef = ref(storage, 'prompts/007.jpeg')
+
+getDownloadURL(ref(storage, promptRef)).then((url) => {
+  console.log(url)
+})
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -40,6 +48,7 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = doc(db, 'users', userStore.getUser.uid)
       prompt.created = Timestamp.fromDate(new Date())
+      // TODO: Develop a way to add a prompt image using Firebase Storage API
 
       await addDoc(collection(db, 'prompts'), prompt)
         .then(() => {
