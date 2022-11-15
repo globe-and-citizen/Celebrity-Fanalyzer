@@ -42,7 +42,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import DialogPrompt from 'src/components/DialogPrompt.vue'
+import DialogPrompt from 'src/components/PromptDialog.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
