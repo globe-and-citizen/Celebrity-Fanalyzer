@@ -14,7 +14,7 @@
     <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
     <section class="q-pa-md">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
-      <p class="text-body1">{{ article.description }}</p>
+      <p class="text-body1" v-html="article.description"></p>
       <div class="q-mb-md">
         <q-badge v-for="(category, index) of article.categories" class="q-mx-xs" :key="index" rounded>
           {{ category }}
@@ -79,6 +79,7 @@ function toggleComments() {
 
 function sharePrompt(grid) {
   $q.bottomSheet({
+    //  TODO: Add share prompt functionality
     message: 'Share (Will be developed...)',
     grid,
     actions: [
