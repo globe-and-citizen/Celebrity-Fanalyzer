@@ -21,17 +21,31 @@
       <q-card-section class="q-pt-none">
         <q-form @submit.prevent="onSubmit()">
           <q-input counter hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
-          <q-input autogrow counter label="Description" maxlength="400" required v-model="prompt.description" />
+          <q-field counter label="Description" maxlength="400" v-model="prompt.description">
+            <template v-slot:control>
+              <q-editor
+                flat
+                class="q-mt-md"
+                min-height="5rem"
+                :toolbar="[
+                  ['bold', 'italic', 'strike', 'underline'],
+                  ['quote', 'unordered', 'ordered'],
+                  ['undo', 'redo']
+                ]"
+                v-model="prompt.description"
+              />
+            </template>
+          </q-field>
           <q-file
             accept=".jpg, image/*"
             counter
             hide-hint
-            hint="Landscape images are better | Max size is 1MB"
+            hint="Landscape images are better | Max size is 5MB"
             label="Image"
-            :max-total-size="1048486"
+            :max-total-size="5242880"
             :required="!id"
             v-model="imageModel"
-            @rejected="onRejected"
+            @rejected="onRejected()"
             @update:model-value="uploadPhoto()"
           >
             <template v-slot:append>
@@ -100,9 +114,8 @@ watchEffect(() => {
 })
 
 function uploadPhoto() {
-  const reader = new FileReader()
-  reader.readAsDataURL(imageModel.value)
-  reader.onload = () => (prompt.image = reader.result)
+  // TODO: change the file name to start with 'prompt' or 'entry'
+  promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
 }
 
 function onRejected() {
