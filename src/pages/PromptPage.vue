@@ -1,40 +1,40 @@
 <template>
-  <q-header v-if="showComments" class="shadow-1">
-    <q-toolbar class="bg-white q-px-lg">
+  <q-header v-if='showComments' class='shadow-1'>
+    <q-toolbar class='bg-white q-px-lg'>
       <q-toolbar-title>
-        <b class="text-secondary">Comments</b>
+        <b class='text-secondary'>Comments</b>
       </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
+      <q-btn flat icon='notifications' round size='1rem' text-color='secondary' />
     </q-toolbar>
   </q-header>
-  <section v-if="isLoading" class="q-my-xl text-center">
-    <q-spinner color="primary" size="3em" />
+  <section v-if='isLoading' class='q-my-xl text-center'>
+    <q-spinner color='primary' size='3em' />
   </section>
   <q-page v-else>
-    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
-    <section class="q-pa-md">
-      <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
-      <p class="text-body1" v-html="article.description"></p>
-      <div class="q-mb-md">
-        <q-badge v-for="(category, index) of article.categories" class="q-mx-xs" :key="index" rounded>
+    <q-img :ratio='21 / 9' :src='article?.image' spinner-color='primary' spinner-size='82px' />
+    <section class='q-pa-md'>
+      <h1 class='q-mt-none text-bold text-h5'>{{ article.title }}</h1>
+      <p class='text-body1' v-html='article.description'></p>
+      <div class='q-mb-md'>
+        <q-badge v-for='(category, index) of article.categories' class='q-mx-xs' :key='index' rounded>
           {{ category }}
         </q-badge>
       </div>
-      <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.info?.likes">
+      <q-btn flat rounded color='green' icon='sentiment_satisfied_alt' :label='article.info?.likes'>
         <q-tooltip>Like</q-tooltip>
       </q-btn>
-      <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes">
+      <q-btn flat rounded color='red' icon='sentiment_very_dissatisfied' :label='article.info?.dislikes'>
         <q-tooltip>Dislike</q-tooltip>
       </q-btn>
-      <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
+      <q-btn flat rounded icon='chat_bubble_outline' :label='article.info?.comments' @click='toggleComments()'>
         <q-tooltip>Comments</q-tooltip>
       </q-btn>
-      <q-btn flat rounded icon="share" :label="article.info?.shares" @click="sharePrompt(true)">
+      <q-btn flat rounded icon='share' :label='article.info?.shares' @click='onShare()'>
         <q-tooltip>Share</q-tooltip>
       </q-btn>
     </section>
     <q-separator />
-    <TheComments :comments="comments" v-show="showComments" />
+    <TheComments :comments='comments' v-show='showComments' />
     <q-separator />
     <TheEntries />
   </q-page>
@@ -72,6 +72,24 @@ onMounted(async () => {
   }
   comments.value = commentStore.getComments
 })
+
+async function onShare() {
+  const title = document.title
+  const url = document.querySelector('link[rel=canonical]') ? document.querySelector('link[rel=canonical]').href : document.location.href
+  const text = 'I find this usefully'
+  try {
+    await navigator.share({
+      title,
+      url,
+      text
+    })
+    // Show a message if the user shares something
+    alert(`Thanks for Sharing!`)
+  } catch (err) {
+    // This error will appear if the user cancels the action of sharing.
+    console.log(`Couldn't share ${err}`)
+  }
+}
 
 function toggleComments() {
   showComments.value = !showComments.value
