@@ -10,8 +10,14 @@
   <section v-if="isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
-  <q-page v-else>
-    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
+  <q-page v-else v-scroll="onScroll">
+    <q-img
+      :ratio="ratio"
+      :src="article?.image"
+      spinner-color="primary"
+      spinner-size="82px"
+      :class="{ sticky: sticky, 'not-sticky': !sticky }"
+    />
     <section class="q-pa-md">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1" v-html="article.description"></p>
@@ -47,6 +53,7 @@ import TheEntries from 'src/components/TheEntries.vue'
 import { useCommentStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useWindowScroll } from '@vueuse/core'
 
 const $q = useQuasar()
 const article = ref({})
@@ -56,6 +63,13 @@ const isLoading = ref(false)
 const promptStore = usePromptStore()
 const router = useRouter()
 const showComments = ref(false)
+const ratio = ref(21 / 9)
+const sticky = ref(false)
+const { x, y } = useWindowScroll()
+
+window.onscroll = function () {
+  onScroll()
+}
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
@@ -75,6 +89,18 @@ onMounted(async () => {
 
 function toggleComments() {
   showComments.value = !showComments.value
+}
+
+function onScroll() {
+  if (y.value >= 10) {
+    console.log('reduction')
+    ratio.value = 30 / 9
+    sticky.value = true
+  } else if (y.value < 10) {
+    console.log('Augmenation')
+    ratio.value = 21 / 9
+    sticky.value = false
+  }
 }
 
 function sharePrompt(grid) {
@@ -100,3 +126,31 @@ function sharePrompt(grid) {
     })
 }
 </script>
+
+<style lang="scss">
+.q-img {
+}
+
+.sticky {
+  & > div:first-child {
+    //transition: all, 1s;
+    top: 0;
+  }
+
+  & div {
+    position: sticky;
+    z-index: 99;
+  }
+
+  & img {
+    transform: scale(1.2);
+    transition: all, 1s;
+  }
+}
+
+.not-sticky {
+  & * {
+    transition: all, 1s;
+  }
+}
+</style>
