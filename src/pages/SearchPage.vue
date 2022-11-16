@@ -51,10 +51,12 @@
             <q-avatar size="2rem">
               <q-img :src="prompt.author.photoURL" />
             </q-avatar>
-            <p class="q-mb-none q-ml-sm text-body1">{{ prompt.author.displayName }}</p>
+            <p class="q-mb-none q-ml-sm text-body1">
+              {{ prompt.author.displayName.length > 20 ? prompt.author.displayName.substring(0, 20) + '...' : prompt.author.displayName }}
+            </p>
           </div>
           <h2 class="q-mb-none text-body1 text-bold">
-            {{ prompt.title.length > 38 ? prompt.title.substring(0, 38) + ' ... ' : prompt.title }}
+            {{ prompt.title.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
           </h2>
           <p class="q-my-none text-body2 text-secondary">
             {{ prompt.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
