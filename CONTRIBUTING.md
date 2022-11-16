@@ -1,5 +1,16 @@
 # Contributing
 
+## Tips on Submiting Pull Requests
+
+1. When you write your Commit messages, please adhere to [CommitConventions](https://www.conventionalcommits.org/en/v1.0.0/)
+2. Make sure your code conforms to all of the auto stylers that we use:
+   -- .prettierrc
+   -- .eslintrc.js
+   -- .editorconfig
+   If you would like to request a code style change, you must justify your reason, provide the relevant rule for the config file and, get team approvel.
+3. Be ready to do code walkthroughs for a reviewer before getting your changes merged.
+4. Other...
+
 ## How to run the project
 
 ### Install the dependencies
