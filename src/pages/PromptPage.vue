@@ -94,7 +94,7 @@ function toggleComments() {
 function onScroll() {
   if (y.value >= 10) {
     console.log('reduction')
-    ratio.value = 30 / 9
+    ratio.value = 27 / 9
     sticky.value = true
   } else if (y.value < 10) {
     console.log('Augmenation')
@@ -132,16 +132,6 @@ function sharePrompt(grid) {
 }
 
 .sticky {
-  & > div:first-child {
-    //transition: all, 1s;
-    top: 0;
-  }
-
-  & div {
-    position: sticky;
-    z-index: 99;
-  }
-
   & img {
     transform: scale(1.2);
     transition: all, 1s;
