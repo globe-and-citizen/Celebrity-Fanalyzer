@@ -1,6 +1,7 @@
 {
   "projects": {
-    "web": "celebrityfanalizer"
+    "web": "celebrityfanalizer",
+    "default": "celebrityfanalizer"
   },
   "targets": {},
   "etags": {},
