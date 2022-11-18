@@ -17,6 +17,9 @@
           <q-item clickable @click="prompt.dialog = true">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
+          <q-item clickable @click="entry.dialog = true">
+            <q-item-section>New Entry</q-item-section>
+          </q-item>
         </q-list>
       </q-btn-dropdown>
     </q-toolbar>
@@ -44,6 +47,10 @@
       <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
     </q-dialog>
 
+    <q-dialog full-width position="bottom" v-model="entry.dialog">
+      <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+    </q-dialog>
+
     <q-dialog v-model="deleteDialog.show">
       <q-card>
         <q-card-section class="q-pb-none">
@@ -58,7 +65,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="ondeletePrompt(deleteDialog.prompt.id)" />
+          <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -67,6 +74,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
+import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
@@ -95,6 +103,9 @@ const columns = [
 ]
 const deleteDialog = ref({})
 const isLoading = ref(false)
+const entries = ref([])
+const entry = ref({})
+const entryFilter = ref({})
 const prompts = ref([])
 const prompt = ref({})
 const promptFilter = ref('')
@@ -111,7 +122,7 @@ function onDeleteDialog(prompt) {
   deleteDialog.value.prompt = prompt
 }
 
-function ondeletePrompt(id) {
+function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
     .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
