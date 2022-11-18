@@ -14,19 +14,23 @@
         transition-hide="jump-up"
       >
         <q-list style="min-width: 100px">
-          <q-item clickable @click="promptDialog = true">
+          <q-item clickable @click="prompt.dialog = true">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
         </q-list>
       </q-btn-dropdown>
     </q-toolbar>
   </q-header>
-  <q-dialog full-width position="bottom" v-model="promptDialog">
-    <DialogPrompt v-bind="prompt" @hideDialog="prompt = {}" />
-  </q-dialog>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="prompts" title="Manage Prompts">
+      <q-table :columns="columns" :filter="promptFilter" flat :loading="isLoading" :rows="prompts" title="Prompts">
+        <template v-slot:top-right>
+          <q-input dense v-model="promptFilter" placeholder="Search">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
@@ -35,6 +39,10 @@
         </template>
       </q-table>
     </q-page>
+
+    <q-dialog full-width position="bottom" v-model="prompt.dialog">
+      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
+    </q-dialog>
 
     <q-dialog v-model="deleteDialog.show">
       <q-card>
@@ -59,7 +67,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import DialogPrompt from 'src/components/PromptDialog.vue'
+import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
@@ -89,7 +97,7 @@ const deleteDialog = ref({})
 const isLoading = ref(false)
 const prompts = ref([])
 const prompt = ref({})
-const promptDialog = ref(false)
+const promptFilter = ref('')
 
 onMounted(async () => {
   isLoading.value = true
