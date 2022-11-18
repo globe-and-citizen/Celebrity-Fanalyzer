@@ -71,7 +71,14 @@
             </template>
           </q-select>
           <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" />
-          <q-btn class="full-width q-mt-xl" color="primary" :label="id ? 'Edit' : 'Save'" rounded type="submit" />
+          <q-btn
+            class="full-width q-mt-xl"
+            color="primary"
+            :disable="!prompt.title || !prompt.description || !prompt.categories.length || !prompt.image"
+            :label="id ? 'Edit' : 'Save'"
+            rounded
+            type="submit"
+          />
         </q-form>
       </q-card-section>
       <q-inner-loading color="primary" :showing="isLoading" />
