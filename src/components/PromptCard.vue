@@ -61,7 +61,7 @@
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="!prompt.title || !prompt.description || !prompt.categories.length || !prompt.image"
+          :disable="!prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
@@ -77,6 +77,7 @@ import { useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
+const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
@@ -131,6 +132,7 @@ async function onSubmit() {
       .catch(() => $q.notify({ message: 'Prompt submission failed' }))
   }
 
+  emit('hideDialog')
   isLoading.value = false
 }
 </script>
