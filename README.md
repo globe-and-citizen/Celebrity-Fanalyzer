@@ -1,4 +1,5 @@
 # Celebrity Fanalyzer
+(just testing this pull automerge functionality)
 
 ## Purpose
 
