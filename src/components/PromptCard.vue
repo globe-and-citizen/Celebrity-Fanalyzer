@@ -105,7 +105,6 @@ watchEffect(() => {
 })
 
 function uploadPhoto() {
-  // TODO: change the file name to start with 'prompt' or 'entry'
   promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
 }
 
