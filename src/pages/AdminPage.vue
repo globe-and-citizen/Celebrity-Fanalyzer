@@ -4,9 +4,26 @@
       <q-toolbar-title>
         <b class="text-secondary">Admin Panel</b>
       </q-toolbar-title>
-      <DialogPrompt v-bind="prompt" @hideDialog="prompt = {}" />
+      <q-btn-dropdown
+        auto-close
+        color="primary"
+        dropdown-icon="control_point"
+        flat
+        rounded
+        transition-show="jump-down"
+        transition-hide="jump-up"
+      >
+        <q-list style="min-width: 100px">
+          <q-item clickable @click="promptDialog = true">
+            <q-item-section>New Prompt</q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
     </q-toolbar>
   </q-header>
+  <q-dialog full-width position="bottom" v-model="promptDialog">
+    <DialogPrompt v-bind="prompt" @hideDialog="prompt = {}" />
+  </q-dialog>
   <section class="q-pa-md">
     <q-page padding>
       <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="prompts" title="Manage Prompts">
@@ -72,6 +89,7 @@ const deleteDialog = ref({})
 const isLoading = ref(false)
 const prompts = ref([])
 const prompt = ref({})
+const promptDialog = ref(false)
 
 onMounted(async () => {
   isLoading.value = true
