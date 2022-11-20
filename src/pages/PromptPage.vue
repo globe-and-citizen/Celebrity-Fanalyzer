@@ -21,10 +21,10 @@
         </q-badge>
       </div>
       <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.info?.likes">
-        <q-tooltip>Like </q-tooltip>
+        <q-tooltip>Like</q-tooltip>
       </q-btn>
       <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes">
-        <q-tooltip>Dislike </q-tooltip>
+        <q-tooltip>Dislike</q-tooltip>
       </q-btn>
       <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
         <q-tooltip>Comments</q-tooltip>
@@ -46,7 +46,7 @@ import TheComments from 'src/components/TheComments.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useCommentStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { routerViewLocationKey, useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const article = ref({})
@@ -56,6 +56,7 @@ const isLoading = ref(false)
 const promptStore = usePromptStore()
 const router = useRouter()
 const showComments = ref(false)
+const domainUrl = 'https://celebrityfanalyzer.vercel.app/'
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
@@ -80,17 +81,37 @@ function toggleComments() {
 function sharePrompt(grid) {
   $q.bottomSheet({
     //  TODO: Add share prompt functionality
-    message: 'Share (Will be developed...)',
+    message: 'Share with Social Media',
     grid,
     actions: [
-      { label: 'Facebook', img: 'https://cdn.quasar.dev/img/logo_drive_128px.png', id: 'drive' },
-      { label: 'Twitter', img: 'https://cdn.quasar.dev/img/logo_keep_128px.png', id: 'keep' },
-      { label: 'Youtube', img: 'https://cdn.quasar.dev/img/logo_hangouts_128px.png', id: 'calendar' },
-      { label: 'Discord', img: 'https://cdn.quasar.dev/img/logo_calendar_128px.png', id: 'calendar' }
+      { label: 'Facebook', img: '../src/assets/shareButtons/facebook.svg', id: 'facebook' },
+      { label: 'Twitter', img: '../src/assets/shareButtons/twitter.svg', id: 'twitter' },
+      { label: 'Reddit', img: '../src/assets/shareButtons/reddit.svg', id: 'reddit' },
+      { label: 'LinkedIn', img: '../src/assets/shareButtons/linkedin.svg', id: 'linkedin' },
+      { label: 'WhatsApp', img: '../src/assets/shareButtons/whatsapp.svg', id: 'whatsapp' },
+      { label: 'Telegram', img: '../src/assets/shareButtons/telegram.svg', id: 'telegram' },
+      { label: 'Odnoklassniki', img: '../src/assets/shareButtons/odnoklassniki.svg', id: 'odnoklassniki' },
+      { label: 'Pinterest', img: '../src/assets/shareButtons/pinterest.svg', id: 'pinterest' }
     ]
   })
     .onOk((action) => {
-      console.log('Action chosen:', action)
+      if (action.id === 'facebook') {
+        window.open('https://www.facebook.com/sharer/sharer.php?u='+ domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'twitter') {
+        window.open('https://twitter.com/intent/tweet?text=' + domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'linkedin') {
+        window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'whatsapp') {
+        window.open('https://api.whatsapp.com/send?text=' + domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'pinterest') {
+        window.open('https://www.pinterest.com/pin/create/button/?url=' + domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'reddit') {
+        window.open('https://www.reddit.com/submit?url=' + domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'telegram') {
+        window.open('https://t.me/share/url?url=' + domainUrl + router.currentRoute.value.params.id)
+      } else if (action.id === 'odnoklassniki') {
+        window.open('https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl=' + domainUrl + router.currentRoute.value.params.id)
+      }
     })
     .onCancel(() => {
       // console.log('Dismissed')
