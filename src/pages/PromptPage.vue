@@ -92,11 +92,11 @@ function toggleComments() {
 }
 
 function onScroll() {
-  if (y.value >= 10) {
+  if (y.value >= 10 &&  ratio.value === 21 / 9) {
     console.log('reduction')
     ratio.value = 27 / 9
     sticky.value = true
-  } else if (y.value < 10) {
+  } else if (y.value < 10 && ratio.value === 27 / 9 ) {
     console.log('Augmenation')
     ratio.value = 21 / 9
     sticky.value = false
