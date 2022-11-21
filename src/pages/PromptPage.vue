@@ -56,7 +56,6 @@ const isLoading = ref(false)
 const promptStore = usePromptStore()
 const router = useRouter()
 const showComments = ref(false)
-const domainUrl = 'https://celebrityfanalyzer.vercel.app/'
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
@@ -80,44 +79,25 @@ function toggleComments() {
 
 function sharePrompt(grid) {
   $q.bottomSheet({
-    //  TODO: Add share prompt functionality
     message: 'Share with Social Media',
     grid,
     actions: [
-      { label: 'Facebook', img: '../src/assets/shareButtons/facebook.svg', id: 'facebook' },
-      { label: 'Twitter', img: '../src/assets/shareButtons/twitter.svg', id: 'twitter' },
-      { label: 'Reddit', img: '../src/assets/shareButtons/reddit.svg', id: 'reddit' },
-      { label: 'LinkedIn', img: '../src/assets/shareButtons/linkedin.svg', id: 'linkedin' },
-      { label: 'WhatsApp', img: '../src/assets/shareButtons/whatsapp.svg', id: 'whatsapp' },
-      { label: 'Telegram', img: '../src/assets/shareButtons/telegram.svg', id: 'telegram' },
-      { label: 'Odnoklassniki', img: '../src/assets/shareButtons/odnoklassniki.svg', id: 'odnoklassniki' },
-      { label: 'Pinterest', img: '../src/assets/shareButtons/pinterest.svg', id: 'pinterest' }
+      { label: 'Facebook', img: '/icons/facebook.svg', id: 'facebook', link: 'https://facebook.com/sharer/sharer.php?u=' },
+      { label: 'LinkedIn', img: '/icons/linkedin.svg', id: 'linkedin', link: 'https://linkedin.com/sharing/share-offsite/?url=' },
+      {
+        label: 'Odnoklassniki',
+        img: '/icons/odnoklassniki.svg',
+        id: 'odnoklassniki',
+        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
+      },
+      { label: 'Pinterest', img: '/icons/pinterest.svg', id: 'pinterest', link: 'https://pinterest.com/pin/create/button/?url=' },
+      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
+      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
+      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
+      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' }
     ]
+  }).onOk((action) => {
+    window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
   })
-    .onOk((action) => {
-      if (action.id === 'facebook') {
-        window.open('https://www.facebook.com/sharer/sharer.php?u='+ domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'twitter') {
-        window.open('https://twitter.com/intent/tweet?text=' + domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'linkedin') {
-        window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'whatsapp') {
-        window.open('https://api.whatsapp.com/send?text=' + domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'pinterest') {
-        window.open('https://www.pinterest.com/pin/create/button/?url=' + domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'reddit') {
-        window.open('https://www.reddit.com/submit?url=' + domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'telegram') {
-        window.open('https://t.me/share/url?url=' + domainUrl + router.currentRoute.value.params.id)
-      } else if (action.id === 'odnoklassniki') {
-        window.open('https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl=' + domainUrl + router.currentRoute.value.params.id)
-      }
-    })
-    .onCancel(() => {
-      // console.log('Dismissed')
-    })
-    .onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
-    })
 }
 </script>
