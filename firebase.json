@@ -1,12 +1,17 @@
 {
   "hosting": {
-    "public": "dist/pwa",
     "headers": [
       {
-        "source": "/service-worker.js",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ],
+        "source": "/service-worker.js"
       }
     ],
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "ignore": ["**/.*", "**/node_modules/**"],
+    "public": "dist/pwa"
   }
 }
