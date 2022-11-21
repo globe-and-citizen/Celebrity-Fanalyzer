@@ -1,8 +1,4 @@
 {
-  "firestore": {
-    "indexes": "firestore.indexes.json",
-    "rules": "firestore.rules"
-  },
   "hosting": {
     "headers": [
       {
@@ -17,8 +13,5 @@
     ],
     "ignore": ["**/.*", "**/node_modules/**"],
     "public": "dist/pwa"
-  },
-  "storage": {
-    "rules": "storage.rules"
   }
 }
