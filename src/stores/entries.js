@@ -16,7 +16,7 @@ export const useEntryStore = defineStore('entries', {
 
   actions: {
     async fetchEntries() {
-      await getDocs(collection(db, 'entries'))
+      await getDocs(collection(db, 'prompts', entry.prompt.id, 'entries'))
         .then(async (querySnapshot) => {
           const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
@@ -44,14 +44,13 @@ export const useEntryStore = defineStore('entries', {
       return getDownloadURL(ref(storage, storageRef))
     },
 
-    // TODO: Link entry to prompt
     async addEntry(entry) {
       const userStore = useUserStore()
 
       entry.author = doc(db, 'users', userStore.getUser.uid)
       entry.created = Timestamp.fromDate(new Date())
 
-      await addDoc(collection(db, 'entries'), entry)
+      await addDoc(collection(db, 'prompts', entry.prompt.value, 'entries'), entry)
         .then(() => {
           this.$patch({ _entries: [...this.getEntries, entry] })
           LocalStorage.set('entries', this._entries)
@@ -64,7 +63,7 @@ export const useEntryStore = defineStore('entries', {
 
     async editEntry(entry) {
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'entries', entry.id), { ...entry })
+        transaction.update(doc(db, 'prompts', entry.prompt.id, 'entries', entry.id), { ...entry })
       })
         .then(() => {
           const index = this.getEntries.findIndex((p) => p.id === entry.id)
@@ -79,7 +78,7 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async deleteEntry(id) {
-      await deleteDoc(doc(db, 'entries', id))
+      await deleteDoc(doc(db, 'prompts', entry.prompt.id, 'entries', id))
         .then(() => {
           const index = this._entries.findIndex((entry) => entry.id === id)
           this._entries.splice(index, 1)
