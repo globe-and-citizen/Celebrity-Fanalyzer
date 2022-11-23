@@ -19,7 +19,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+// import { useEntryStore } from 'src/stores'
+import { onMounted, ref } from 'vue'
+
+// const entryStore = useEntryStore()
+
+// onMounted(async () => {
+// TODO: obtain prompt id from props
+// await entryStore.fetchEntries()
+// })
 
 const subject = ref('Multinational Support')
 const subjects = [

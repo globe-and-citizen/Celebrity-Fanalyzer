@@ -15,8 +15,8 @@ export const useEntryStore = defineStore('entries', {
   },
 
   actions: {
-    async fetchEntries() {
-      await getDocs(collection(db, 'prompts', entry.prompt.id, 'entries'))
+    async fetchEntries(id) {
+      await getDocs(collection(db, 'prompts', id, 'entries'))
         .then(async (querySnapshot) => {
           const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
