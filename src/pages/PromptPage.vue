@@ -11,6 +11,30 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page v-else>
+    <q-dialog v-model="alert">
+      <q-card class="my-class">
+        <q-card-section>
+          <div class="text-h6">Copy to clipboard</div>
+        </q-card-section>
+          <div class="q-pa-md">
+            <q-input filled v-model="currentUrl">
+              <q-btn @click="copyToClipboard()" round color="primary q-pa-md q-ml-md">Copy</q-btn>
+            </q-input>
+          </div>
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="copied" position="top">
+      <q-card style="width: 350px">
+        <q-card-section class="row items-center no-wrap">
+          <div>
+            <div>Copied!</div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
     <section class="q-pa-md">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
@@ -56,6 +80,9 @@ const isLoading = ref(false)
 const promptStore = usePromptStore()
 const router = useRouter()
 const showComments = ref(false)
+const alert = ref(false)
+const currentUrl = ref({})
+const copied = ref(false)
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
@@ -71,6 +98,8 @@ onMounted(async () => {
     await commentStore.fetchComments(article.value.id)
   }
   comments.value = commentStore.getComments
+
+  currentUrl.value = `${window.location.href}`
 })
 
 function toggleComments() {
@@ -82,22 +111,81 @@ function sharePrompt(grid) {
     message: 'Share with Social Media',
     grid,
     actions: [
-      { label: 'Facebook', img: '/icons/facebook.svg', id: 'facebook', link: 'https://facebook.com/sharer/sharer.php?u=' },
-      { label: 'LinkedIn', img: '/icons/linkedin.svg', id: 'linkedin', link: 'https://linkedin.com/sharing/share-offsite/?url=' },
+      {
+        label: 'Copy to Clipboard',
+        img: '/icons/clipboard.svg',
+        id: 'clipboard',
+      },
+      {
+        label: 'Facebook',
+        img: '/icons/facebook.svg',
+        id: 'facebook',
+        link: 'https://facebook.com/sharer/sharer.php?u='
+      },
+      {
+        label: 'LinkedIn',
+        img: '/icons/linkedin.svg',
+        id: 'linkedin',
+        link: 'https://linkedin.com/sharing/share-offsite/?url='
+      },
+      {
+        label: 'Twitter',
+        img: '/icons/twitter.svg',
+        id: 'twitter',
+        link: 'https://twitter.com/intent/tweet?text='
+      },
+      {
+        label: 'Telegram',
+        img: '/icons/telegram.svg',
+        id: 'telegram',
+        link: 'https://t.me/share/url?url='
+      },
+      {
+        label: 'WhatsApp',
+        img: '/icons/whatsapp.svg',
+        id: 'whatsapp',
+        link: 'https://api.whatsapp.com/send?text='
+      },
+      {
+        label: 'Reddit',
+        img: '/icons/reddit.svg',
+        id: 'reddit',
+        link: 'https://reddit.com/submit?url='
+      },
+      {
+        label: 'Pinterest',
+        img: '/icons/pinterest.svg',
+        id: 'pinterest',
+        link: 'https://pinterest.com/pin/create/button/?url='
+      },
       {
         label: 'Odnoklassniki',
         img: '/icons/odnoklassniki.svg',
         id: 'odnoklassniki',
         link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
       },
-      { label: 'Pinterest', img: '/icons/pinterest.svg', id: 'pinterest', link: 'https://pinterest.com/pin/create/button/?url=' },
-      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
-      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
-      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
-      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' }
     ]
   }).onOk((action) => {
-    window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
+    if(action.id === 'clipboard'){
+      alert.value = true
+    } else {
+      window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
+    }
   })
 }
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(currentUrl.value)
+  copied.value = true
+  setInterval(() => {
+    copied.value = false
+  }, 800)
+}
 </script>
+
+<style>
+.my-class {
+  width: 100%;
+  max-width: 350px;
+}
+</style>
