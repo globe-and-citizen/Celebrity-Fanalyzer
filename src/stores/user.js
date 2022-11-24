@@ -10,8 +10,8 @@ export const useUserStore = defineStore('user', {
 
   getters: {
     getUser: (state) => LocalStorage.getItem('user') || state._user,
-    isAdmin: (state) => state._user.role === 'admin',
-    isAuthenticated: (state) => !!state._user?.uid
+    isAdmin: (getters) => getters.getUser.role === 'admin',
+    isAuthenticated: (getters) => !!getters.getUser?.uid
   },
 
   actions: {
