@@ -35,7 +35,13 @@
           {{ entry.title.length > 40 ? entry.title.substring(0, 40) + '...' : entry.title }}
         </h2>
         <p class="q-my-none text-body2 text-secondary">
-          {{ entry.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
+          {{
+            new Date(entry.created.seconds * 1000 + entry.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric'
+            })
+          }}
+          &nbsp;•&nbsp; 9 min read
         </p>
       </div>
       <q-img class="col-4" :ratio="1" :src="entry.image" spinner-color="primary" spinner-size="3rem" style="border-radius: 24px" />
@@ -47,7 +53,7 @@
 
 <script setup>
 import { useEntryStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps(['promptId'])
@@ -55,7 +61,7 @@ const props = defineProps(['promptId'])
 const router = useRouter()
 const entryStore = useEntryStore()
 
-const entries = ref([])
+const entries = ref(entryStore.getEntries)
 const subject = ref('Multinational Support')
 const subjects = [
   { label: 'Multinational Support', value: 'Multinational Support' },
@@ -66,14 +72,14 @@ const subjects = [
   { label: 'Shares', value: 'Shares' }
 ]
 
-onMounted(async () => {
-  await props.promptId
-  await entryStore.fetchEntries(props.promptId)
-  entries.value = entryStore.getEntries
+watchEffect(async () => {
+  if (props.promptId) {
+    await entryStore.fetchEntries(props.promptId)
+    entries.value = entryStore.getEntries
+  }
 })
 
 function goToEntry(slug) {
-  console.log(slug)
   router.push(`/entry/${slug}`)
 }
 </script>
