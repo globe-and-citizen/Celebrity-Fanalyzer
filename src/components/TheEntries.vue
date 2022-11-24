@@ -22,7 +22,7 @@
 // import { useEntryStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
-// const entryStore = useEntryStore()
+const props = defineProps(['promptId'])
 
 // onMounted(async () => {
 // TODO: obtain prompt id from props
