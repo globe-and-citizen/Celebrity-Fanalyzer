@@ -67,10 +67,6 @@ const ratio = ref(21 / 9)
 const sticky = ref(false)
 const { x, y } = useWindowScroll()
 
-window.onscroll = function () {
-  onScroll()
-}
-
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
     isLoading.value = true
@@ -92,11 +88,11 @@ function toggleComments() {
 }
 
 function onScroll() {
-  if (y.value >= 10 &&  ratio.value === 21 / 9) {
+  if (y.value >= 10 && ratio.value === 21 / 9) {
     console.log('reduction')
     ratio.value = 27 / 9
     sticky.value = true
-  } else if (y.value < 10 && ratio.value === 27 / 9 ) {
+  } else if (y.value < 10 && ratio.value === 27 / 9) {
     console.log('Augmenation')
     ratio.value = 21 / 9
     sticky.value = false
