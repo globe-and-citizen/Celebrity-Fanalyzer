@@ -48,8 +48,11 @@
 <script setup>
 import { useEntryStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps(['promptId'])
+
+const router = useRouter()
 const entryStore = useEntryStore()
 
 const entries = ref([])
@@ -68,4 +71,9 @@ onMounted(async () => {
   await entryStore.fetchEntries(props.promptId)
   entries.value = entryStore.getEntries
 })
+
+function goToEntry(slug) {
+  console.log(slug)
+  router.push(`/entry/${slug}`)
+}
 </script>
