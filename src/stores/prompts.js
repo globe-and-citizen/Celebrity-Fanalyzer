@@ -7,11 +7,13 @@ import { useUserStore } from './user'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _prompts: LocalStorage.getItem('prompts') || []
+    _currentPrompt: null,
+    _prompts: []
   }),
 
   getters: {
-    getPrompts: (state) => state._prompts
+    getCurrentPrompt: (state) => LocalStorage.getItem('currentPrompt') || state._currentPrompt,
+    getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts
   },
 
   actions: {

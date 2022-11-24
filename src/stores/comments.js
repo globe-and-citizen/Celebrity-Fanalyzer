@@ -5,11 +5,11 @@ import { db } from 'src/firebase'
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
-    _comments: LocalStorage.getItem('comments') || []
+    _comments: []
   }),
 
   getters: {
-    getComments: (state) => state._comments
+    getComments: (state) => LocalStorage.getItem('comments') || state._comments
   },
 
   actions: {

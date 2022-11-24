@@ -7,11 +7,11 @@ import { useUserStore } from './user'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: LocalStorage.getItem('entries') || []
+    _entries: []
   }),
 
   getters: {
-    getEntries: (state) => state._entries
+    getEntries: (state) => LocalStorage.getItem('entries') || state._entries
   },
 
   actions: {
