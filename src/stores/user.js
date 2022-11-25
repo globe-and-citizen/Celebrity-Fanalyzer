@@ -5,13 +5,13 @@ import { db } from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    _user: LocalStorage.getItem('user') || {}
+    _user: {}
   }),
 
   getters: {
-    getUser: (state) => state._user,
-    isAdmin: (state) => state._user.role === 'admin',
-    isAuthenticated: (state) => !!state._user?.uid
+    getUser: (state) => LocalStorage.getItem('user') || state._user,
+    isAdmin: (getters) => getters.getUser.role === 'admin',
+    isAuthenticated: (getters) => !!getters.getUser?.uid
   },
 
   actions: {

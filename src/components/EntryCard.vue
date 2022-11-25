@@ -43,13 +43,11 @@
           behavior="menu"
           counter
           hide-hint
-          label="Categories"
-          multiple
-          :options="categoryOptions"
-          use-input
+          label="Prompt"
+          :options="promptOptions"
           use-chips
-          :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
-          v-model="entry.categories"
+          :rules="[(val) => val || 'Please select the related prompt']"
+          v-model="entry.prompt"
         >
           <template v-slot:no-option>
             <q-item>
@@ -58,15 +56,14 @@
           </template>
         </q-select>
         <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" />
-        <q-btn class="full-width q-mt-xl" color="primary" label="Work in progress" rounded />
-        <!-- <q-btn
+        <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="!entry.title || !entry.description || !entry.categories?.length || !entry.image"
+          :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
-        /> -->
+        />
       </q-form>
     </q-card-section>
     <q-inner-loading color="primary" :showing="isLoading" />
@@ -75,19 +72,20 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'created', 'description', 'id', 'image', 'info', 'prompt', 'slug', 'title'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
+const promptStore = usePromptStore()
 
-const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
+const entry = reactive({})
 const imageModel = ref([])
 const isLoading = ref(false)
-const entry = reactive({})
+const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: prompt.title, value: prompt.id }))
 
 watchEffect(() => {
   if (props.id) {

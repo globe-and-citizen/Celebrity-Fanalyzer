@@ -13,19 +13,31 @@
   </q-header>
 
   <q-page class="q-pa-md">
-    <q-video :ratio="16 / 9" src="https://www.youtube.com/embed/k948WBArZwU" />
-    <TheEntries />
+    <section v-if="currentPrompt">
+      <a :href="`prompt/${currentPrompt.slug}`">
+        <q-img :src="currentPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+      </a>
+
+      <TheEntries :promptId="currentPrompt.id" />
+    </section>
+    <section v-else>
+      <!-- TODO: Add a spinner here -->
+      <h5>Loading...</h5>
+    </section>
   </q-page>
 </template>
 
 <script setup>
 import TheEntries from 'src/components/TheEntries.vue'
-</script>
+import { usePromptStore } from 'src/stores'
+import { ref, watchEffect } from 'vue'
 
-<style>
-.q-video {
-  border: 3px solid #e54757;
-  border-radius: 8px;
-  margin: auto 1rem;
-}
-</style>
+const promptStore = usePromptStore()
+
+const currentPrompt = ref(promptStore.getCurrentPrompt)
+
+watchEffect(async () => {
+  await promptStore.fetchCurrentPrompt()
+  currentPrompt.value = promptStore.getCurrentPrompt
+})
+</script>

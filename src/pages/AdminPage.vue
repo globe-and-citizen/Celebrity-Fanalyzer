@@ -87,7 +87,11 @@ const columns = [
     name: 'created',
     label: 'Created at',
     align: 'left',
-    field: (row) => row.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    field: (row) =>
+      new Date(row.created.seconds * 1000 + row.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      }),
     format: (val) => `${val}`,
     sortable: true
   },

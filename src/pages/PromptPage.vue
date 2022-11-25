@@ -36,7 +36,7 @@
     <q-separator />
     <TheComments :comments="comments" v-show="showComments" />
     <q-separator />
-    <TheEntries />
+    <TheEntries :promptId="article.id" />
   </q-page>
 </template>
 

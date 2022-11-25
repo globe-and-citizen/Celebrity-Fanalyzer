@@ -32,7 +32,7 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="isLoading">
+    <section v-if="!prompts && isLoading">
       <ArticleSkeleton />
       <ArticleSkeleton />
       <ArticleSkeleton />
@@ -59,7 +59,13 @@
             {{ prompt.title.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
           </h2>
           <p class="q-my-none text-body2 text-secondary">
-            {{ prompt.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} &nbsp;•&nbsp; 9 min read
+            {{
+              new Date(prompt.created.seconds * 1000 + prompt.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+              })
+            }}
+            &nbsp;•&nbsp; 9 min read
           </p>
           <div v-if="category === 'Trending'">
             <q-badge v-for="(item, i) of prompt.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
@@ -86,7 +92,7 @@ const promptStore = usePromptStore()
 const search = ref('')
 const category = ref('Trending')
 const isLoading = ref(false)
-const prompts = ref([])
+const prompts = ref(promptStore.getPrompts)
 
 const categories = ref([
   { label: 'Trending', value: 'Trending' },
