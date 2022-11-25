@@ -37,9 +37,7 @@ const promptStore = usePromptStore()
 const currentPrompt = ref(promptStore.getCurrentPrompt)
 
 watchEffect(async () => {
-  if (!currentPrompt.value) {
-    await promptStore.fetchCurrentPrompt()
-    currentPrompt.value = promptStore.getCurrentPrompt
-  }
+  await promptStore.fetchCurrentPrompt()
+  currentPrompt.value = promptStore.getCurrentPrompt
 })
 </script>
