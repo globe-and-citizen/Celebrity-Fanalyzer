@@ -14,7 +14,10 @@
 
   <q-page class="q-pa-md">
     <section v-if="currentPrompt">
-      <q-img :src="currentPrompt.image" style="border: 3px solid #e54757; border-radius: 8px" />
+      <a :href="`prompt/${currentPrompt.slug}`">
+        <q-img :src="currentPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+      </a>
+
       <TheEntries :promptId="currentPrompt.id" />
     </section>
     <section v-else>
