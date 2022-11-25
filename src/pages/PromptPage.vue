@@ -11,21 +11,6 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page v-else>
-    <q-dialog v-model="alert">
-      <q-card class="my-class">
-        <q-card-section>
-          <div class="text-h6">Copy to clipboard</div>
-        </q-card-section>
-          <div class="q-pa-md">
-            <q-input filled v-model="currentUrl">
-              <q-btn @click="copyToClipboard()" round color="primary q-pa-md q-ml-md">Copy</q-btn>
-            </q-input>
-          </div>
-        <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
     <q-dialog v-model="copied" position="top">
       <q-card style="width: 350px">
         <q-card-section class="row items-center no-wrap">
@@ -167,25 +152,17 @@ function sharePrompt(grid) {
     ]
   }).onOk((action) => {
     if(action.id === 'clipboard'){
-      alert.value = true
+      navigator.clipboard.writeText(currentUrl.value)
+      copied.value = true
+      setInterval(() => {
+        copied.value = false
+      }, 800)
     } else {
       window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
     }
   })
 }
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(currentUrl.value)
-  copied.value = true
-  setInterval(() => {
-    copied.value = false
-  }, 800)
-}
 </script>
 
 <style>
-.my-class {
-  width: 100%;
-  max-width: 350px;
-}
 </style>
