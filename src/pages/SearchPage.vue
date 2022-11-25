@@ -32,7 +32,7 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="isLoading">
+    <section v-if="!prompts && isLoading">
       <ArticleSkeleton />
       <ArticleSkeleton />
       <ArticleSkeleton />
@@ -92,7 +92,7 @@ const promptStore = usePromptStore()
 const search = ref('')
 const category = ref('Trending')
 const isLoading = ref(false)
-const prompts = ref([])
+const prompts = ref(promptStore.getPrompts)
 
 const categories = ref([
   { label: 'Trending', value: 'Trending' },
