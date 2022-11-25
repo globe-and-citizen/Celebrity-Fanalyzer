@@ -9,6 +9,7 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import MainMenu from 'src/components/MainMenu.vue'
 </script>
 
