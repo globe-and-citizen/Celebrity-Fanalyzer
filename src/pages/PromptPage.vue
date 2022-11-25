@@ -49,12 +49,14 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
-const article = ref({})
+const router = useRouter()
+
 const commentStore = useCommentStore()
+const promptStore = usePromptStore()
+
+const article = ref({})
 const comments = ref([])
 const isLoading = ref(false)
-const promptStore = usePromptStore()
-const router = useRouter()
 const showComments = ref(false)
 
 onMounted(async () => {
@@ -79,24 +81,31 @@ function toggleComments() {
 
 function sharePrompt(grid) {
   $q.bottomSheet({
-    //  TODO: Add share prompt functionality
-    message: 'Share (Will be developed...)',
+    message: 'Share with Social Media',
     grid,
     actions: [
-      { label: 'Facebook', img: 'https://cdn.quasar.dev/img/logo_drive_128px.png', id: 'drive' },
-      { label: 'Twitter', img: 'https://cdn.quasar.dev/img/logo_keep_128px.png', id: 'keep' },
-      { label: 'Youtube', img: 'https://cdn.quasar.dev/img/logo_hangouts_128px.png', id: 'calendar' },
-      { label: 'Discord', img: 'https://cdn.quasar.dev/img/logo_calendar_128px.png', id: 'calendar' }
+      { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
+      { label: 'Facebook', img: '/icons/facebook.svg', id: 'facebook', link: 'https://facebook.com/sharer/sharer.php?u=' },
+      { label: 'LinkedIn', img: '/icons/linkedin.svg', id: 'linkedin', link: 'https://linkedin.com/sharing/share-offsite/?url=' },
+      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
+      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
+      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
+      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
+      { label: 'Pinterest', img: '/icons/pinterest.svg', id: 'pinterest', link: 'https://pinterest.com/pin/create/button/?url=' },
+      {
+        label: 'Odnoklassniki',
+        img: '/icons/odnoklassniki.svg',
+        id: 'odnoklassniki',
+        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
+      }
     ]
+  }).onOk((action) => {
+    if (action.id === 'clipboard') {
+      navigator.clipboard.writeText(window.location.href)
+      $q.notify({ message: 'The link has been copied' })
+    } else {
+      window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
+    }
   })
-    .onOk((action) => {
-      console.log('Action chosen:', action)
-    })
-    .onCancel(() => {
-      // console.log('Dismissed')
-    })
-    .onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
-    })
 }
 </script>
