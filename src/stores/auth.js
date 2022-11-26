@@ -24,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
           this.fetchProfile(result.user)
         })
         .catch((error) => {
+          console.error(error)
           throw error.code
         })
     },
