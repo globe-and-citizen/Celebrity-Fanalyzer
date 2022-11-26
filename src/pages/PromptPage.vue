@@ -1,12 +1,4 @@
 <template>
-  <q-header v-if="showComments" class="shadow-1">
-    <q-toolbar class="bg-white q-px-lg">
-      <q-toolbar-title>
-        <b class="text-secondary">Comments</b>
-      </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
-    </q-toolbar>
-  </q-header>
   <section v-if="isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
@@ -26,15 +18,20 @@
       <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes">
         <q-tooltip>Dislike</q-tooltip>
       </q-btn>
-      <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
-        <q-tooltip>Comments</q-tooltip>
+      <q-btn
+        flat
+        rounded
+        icon="img:/icons/discord.svg"
+        href="https://discord.com/channels/1034461422962360380/1040994839610806343"
+        target="_blank"
+      >
+        <q-tooltip>Community on Discord</q-tooltip>
       </q-btn>
       <q-btn flat rounded icon="share" :label="article.info?.shares" @click="sharePrompt(true)">
         <q-tooltip>Share</q-tooltip>
       </q-btn>
     </section>
     <q-separator />
-    <TheComments :comments="comments" v-show="showComments" />
     <q-separator />
     <TheEntries :promptId="article.id" />
   </q-page>
@@ -42,22 +39,18 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import TheComments from 'src/components/TheComments.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useCommentStore, usePromptStore } from 'src/stores'
+import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
 
-const commentStore = useCommentStore()
 const promptStore = usePromptStore()
 
 const article = ref({})
-const comments = ref([])
 const isLoading = ref(false)
-const showComments = ref(false)
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
@@ -67,17 +60,6 @@ onMounted(async () => {
   }
   article.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
 })
-
-onMounted(async () => {
-  if (!commentStore.commentStore?.length) {
-    await commentStore.fetchComments(article.value.id)
-  }
-  comments.value = commentStore.getComments
-})
-
-function toggleComments() {
-  showComments.value = !showComments.value
-}
 
 function sharePrompt(grid) {
   $q.bottomSheet({
