@@ -10,10 +10,10 @@
   <section v-if="isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
-  <q-page v-else v-scroll="onScroll">
-    <q-img :ratio="ratio" :src="article?.image" spinner-color="primary" spinner-size="82px"
-           :class="{ sticky: sticky, 'not-sticky': !sticky }" />
-    <section class="q-pa-md">
+  <q-page v-else>
+    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px"
+           class="cf-parallax" />
+    <section class="q-pa-md cf-parallax-mt bg-white">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1" v-html="article.description"></p>
       <div class="q-mb-md">
@@ -57,8 +57,6 @@ const isLoading = ref(false)
 const promptStore = usePromptStore()
 const router = useRouter()
 const showComments = ref(false)
-const ratio = ref(21 / 9)
-const sticky = ref(false)
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
@@ -78,16 +76,6 @@ onMounted(async () => {
 
 function toggleComments() {
   showComments.value = !showComments.value
-}
-
-function onScroll(info) {
-  if (info >= 10 && ratio.value === 21 / 9) {
-    ratio.value = 27 / 9
-    sticky.value = true
-  } else if (info < 10 && ratio.value === 27 / 9) {
-    ratio.value = 21 / 9
-    sticky.value = false
-  }
 }
 
 function sharePrompt(grid) {
@@ -115,19 +103,12 @@ function sharePrompt(grid) {
 </script>
 
 <style lang="scss">
-.q-img {
+.cf-parallax{
+  position: fixed;
+  top: 0;
+  z-index: -1;
 }
-
-.sticky {
-  & img {
-    transform: scale(1.2);
-    transition: all, 1s;
-  }
-}
-
-.not-sticky {
-  & * {
-    transition: all, 1s;
-  }
+.cf-parallax-mt{
+  margin-top: 42.8571%;
 }
 </style>
