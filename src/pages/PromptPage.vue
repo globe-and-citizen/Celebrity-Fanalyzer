@@ -105,13 +105,13 @@ function sharePrompt(grid) {
         label: 'Facebook',
         img: '/icons/facebook.svg',
         id: 'facebook',
-        link: 'https://facebook.com/sharer/sharer.php?u='
+        link: 'https://www.facebook.com/sharer/sharer.php?u='
       },
       {
         label: 'LinkedIn',
         img: '/icons/linkedin.svg',
         id: 'linkedin',
-        link: 'https://linkedin.com/sharing/share-offsite/?url='
+        link: 'https://www.linkedin.com/sharing/share-offsite/?url='
       },
       {
         label: 'Twitter',
@@ -143,12 +143,6 @@ function sharePrompt(grid) {
         id: 'pinterest',
         link: 'https://pinterest.com/pin/create/button/?url='
       },
-      {
-        label: 'Odnoklassniki',
-        img: '/icons/odnoklassniki.svg',
-        id: 'odnoklassniki',
-        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
-      },
     ]
   }).onOk((action) => {
     if(action.id === 'clipboard'){
@@ -157,11 +151,14 @@ function sharePrompt(grid) {
       setInterval(() => {
         copied.value = false
       }, 800)
+    } else if( action.id === 'facebook' || action.id === 'linkedin') {
+      window.open(action.link + `${window.location.href}`, '_blank')
     } else {
       window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
     }
   })
 }
+
 </script>
 
 <style>
