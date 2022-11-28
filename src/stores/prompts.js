@@ -7,22 +7,22 @@ import { useUserStore } from './user'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _currentPrompt: null,
+    _monthPrompt: null,
     _prompts: []
   }),
 
   getters: {
-    getCurrentPrompt: (state) => LocalStorage.getItem('currentPrompt') || state._currentPrompt,
+    getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
     getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts
   },
 
   actions: {
-    async fetchCurrentPrompt() {
+    async fetchMonthPrompt() {
       const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
       const querySnapshot = await getDocs(q)
 
-      this._currentPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-      LocalStorage.set('currentPrompt', this._currentPrompt)
+      this._monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+      LocalStorage.set('monthPrompt', this._monthPrompt)
     },
 
     async fetchPrompts() {

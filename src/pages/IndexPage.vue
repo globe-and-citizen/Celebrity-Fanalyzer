@@ -13,12 +13,12 @@
   </q-header>
 
   <q-page class="q-pa-md">
-    <section v-if="currentPrompt">
-      <a :href="`prompt/${currentPrompt.slug}`">
-        <q-img :src="currentPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+    <section v-if="monthPrompt">
+      <a :href="`prompt/${monthPrompt.slug}`">
+        <q-img :src="monthPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
       </a>
 
-      <TheEntries :promptId="currentPrompt.id" />
+      <TheEntries :promptId="monthPrompt.id" />
     </section>
     <section v-else class="q-my-xl text-center">
       <q-spinner color="primary" size="3em" />
@@ -33,10 +33,10 @@ import { ref, watchEffect } from 'vue'
 
 const promptStore = usePromptStore()
 
-const currentPrompt = ref(promptStore.getCurrentPrompt)
+const monthPrompt = ref(promptStore.getMonthPrompt)
 
 watchEffect(async () => {
-  await promptStore.fetchCurrentPrompt()
-  currentPrompt.value = promptStore.getCurrentPrompt
+  await promptStore.fetchMonthPrompt()
+  monthPrompt.value = promptStore.getMonthPrompt
 })
 </script>
