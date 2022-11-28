@@ -47,7 +47,7 @@ export const useEntryStore = defineStore('entries', {
     async addEntry(entry) {
       const userStore = useUserStore()
 
-      entry.author = doc(db, 'users', userStore.getUser.uid)
+      entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
 
       await addDoc(collection(db, 'prompts', entry.prompt.value, 'entries'), entry)

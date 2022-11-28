@@ -57,7 +57,7 @@ export const usePromptStore = defineStore('prompts', {
     async addPrompt(prompt) {
       const userStore = useUserStore()
 
-      prompt.author = doc(db, 'users', userStore.getUser.uid)
+      prompt.author = userStore.getUserRef
       prompt.created = Timestamp.fromDate(new Date())
 
       await addDoc(collection(db, 'prompts'), prompt)

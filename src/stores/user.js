@@ -10,6 +10,7 @@ export const useUserStore = defineStore('user', {
 
   getters: {
     getUser: (state) => LocalStorage.getItem('user') || state._user,
+    getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
     isAuthenticated: (getters) => !!getters.getUser?.uid
   },
