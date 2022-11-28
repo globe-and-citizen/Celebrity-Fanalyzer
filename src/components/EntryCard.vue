@@ -96,7 +96,7 @@ watchEffect(() => {
   } else {
     entry.description = ''
     entry.image = ''
-    entry.info = { comments: 0, dislikes: 0, likes: 0, shares: 0 }
+    entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     entry.title = ''
   }
 })
