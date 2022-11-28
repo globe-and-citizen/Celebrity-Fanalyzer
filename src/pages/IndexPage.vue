@@ -20,9 +20,8 @@
 
       <TheEntries :promptId="currentPrompt.id" />
     </section>
-    <section v-else>
-      <!-- TODO: Add a spinner here -->
-      <h5>Loading...</h5>
+    <section v-else class="q-my-xl text-center">
+      <q-spinner color="primary" size="3em" />
     </section>
   </q-page>
 </template>
