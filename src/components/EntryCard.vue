@@ -89,13 +89,11 @@ const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: prompt.ti
 
 watchEffect(() => {
   if (props.id) {
-    entry.categories = props.categories
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
     entry.title = props.title
   } else {
-    entry.categories = null
     entry.description = ''
     entry.image = ''
     entry.info = { comments: 0, dislikes: 0, likes: 0, shares: 0 }
