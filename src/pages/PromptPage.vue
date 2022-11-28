@@ -12,12 +12,31 @@
           {{ category }}
         </q-badge>
       </div>
-      <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.info?.likes">
-        <q-tooltip>Like</q-tooltip>
-      </q-btn>
-      <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes">
-        <q-tooltip>Dislike</q-tooltip>
-      </q-btn>
+      <div class="inline-block">
+        <q-btn
+          color="green"
+          :disable="!userStore.isAuthenticated"
+          flat
+          icon="sentiment_satisfied_alt"
+          :label="article.info?.likes.length"
+          rounded
+          @click="like()"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+        </q-btn>
+        <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
+        <q-btn
+          color="red"
+          :disable="!userStore.isAuthenticated"
+          flat
+          icon="sentiment_very_dissatisfied"
+          :label="article.info?.dislikes.length"
+          rounded
+          @click="dislike()"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+        </q-btn>
+      </div>
       <q-btn
         flat
         rounded
@@ -25,10 +44,10 @@
         href="https://discord.com/channels/1034461422962360380/1040994839610806343"
         target="_blank"
       >
-        <q-tooltip>Community on Discord</q-tooltip>
+        <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
       </q-btn>
       <q-btn flat rounded icon="share" :label="article.info?.shares" @click="sharePrompt(true)">
-        <q-tooltip>Share</q-tooltip>
+        <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
       </q-btn>
     </section>
     <q-separator />
@@ -40,7 +59,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TheEntries from 'src/components/TheEntries.vue'
-import { usePromptStore } from 'src/stores'
+import { usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -48,6 +67,7 @@ const $q = useQuasar()
 const router = useRouter()
 
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
 const article = ref({})
 const isLoading = ref(false)
@@ -58,8 +78,20 @@ onMounted(async () => {
     await promptStore.fetchPrompts()
     isLoading.value = false
   }
-  article.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
+  updateArticle()
 })
+
+function updateArticle() {
+  article.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
+}
+
+function like() {
+  promptStore.addLike(article.value.id).then(() => updateArticle())
+}
+
+function dislike() {
+  promptStore.addDislike(article.value.id).then(() => updateArticle())
+}
 
 function sharePrompt(grid) {
   $q.bottomSheet({

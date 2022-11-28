@@ -1,4 +1,19 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, runTransaction, Timestamp } from 'firebase/firestore'
+import {
+  addDoc,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  runTransaction,
+  Timestamp,
+  updateDoc
+} from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
@@ -25,6 +40,23 @@ export const usePromptStore = defineStore('prompts', {
       LocalStorage.set('monthPrompt', this._monthPrompt)
     },
 
+    async fetchPrompt(id) {
+      await getDoc(doc(db, 'prompts', id))
+        .then(async (doc) => {
+          const prompt = { id: doc.id, ...doc.data() }
+          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+
+          this._prompts = this.getPrompts
+          const index = this._prompts.findIndex((p) => p.id === prompt.id)
+
+          this._prompts[index] = prompt
+          LocalStorage.set('prompts', this._prompts)
+        })
+        .catch((error) => {
+          throw new Error(error)
+        })
+    },
+
     async fetchPrompts() {
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
@@ -44,14 +76,6 @@ export const usePromptStore = defineStore('prompts', {
       if (this.getPrompts) {
         LocalStorage.set('prompts', this._prompts)
       }
-    },
-
-    async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
-
-      await uploadBytes(storageRef, file)
-
-      return getDownloadURL(ref(storage, storageRef))
     },
 
     async addPrompt(prompt) {
@@ -94,6 +118,39 @@ export const usePromptStore = defineStore('prompts', {
           this._prompts.splice(index, 1)
           LocalStorage.set('prompts', this._prompts)
         })
+        .catch((error) => {
+          throw new Error(error)
+        })
+    },
+
+    async uploadImage(file) {
+      const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
+
+      await uploadBytes(storageRef, file)
+
+      return getDownloadURL(ref(storage, storageRef))
+    },
+
+    async addLike(id) {
+      this._prompts = []
+      this.$patch({ _prompts: this.getPrompts })
+
+      await updateDoc(doc(db, 'prompts', id), {
+        'info.likes': arrayUnion(useUserStore().getUserRef),
+        'info.dislikes': arrayRemove(useUserStore().getUserRef)
+      })
+        .then(() => this.fetchPrompt(id))
+        .catch((error) => {
+          throw new Error(error)
+        })
+    },
+
+    async addDislike(id) {
+      await updateDoc(doc(db, 'prompts', id), {
+        'info.dislikes': arrayUnion(useUserStore().getUserRef),
+        'info.likes': arrayRemove(useUserStore().getUserRef)
+      })
+        .then(() => this.fetchPrompt(id))
         .catch((error) => {
           throw new Error(error)
         })
