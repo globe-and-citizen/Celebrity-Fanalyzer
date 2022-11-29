@@ -3,7 +3,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
-import { useUserStore } from './user'
+import { usePromptStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -11,7 +11,8 @@ export const useEntryStore = defineStore('entries', {
   }),
 
   getters: {
-    getEntries: (state) => LocalStorage.getItem('entries') || state._entries
+    getEntries: (state) => state._entries,
+    getEntriesFromPrompt: () => (id) => LocalStorage.getItem('prompts').find((p) => p.id === id)
   },
 
   actions: {
@@ -26,22 +27,12 @@ export const useEntryStore = defineStore('entries', {
 
           this._entries = []
           this.$patch({ _entries: entries })
+
+          await this.updateLocalEntries(id)
         })
         .catch((error) => {
           throw new Error(error)
         })
-
-      if (this.getEntries) {
-        LocalStorage.set('entries', this._entries)
-      }
-    },
-
-    async uploadImage(file) {
-      const storageRef = ref(storage, `images/entry-${file.name + Date.now()}`)
-
-      await uploadBytes(storageRef, file)
-
-      return getDownloadURL(ref(storage, storageRef))
     },
 
     async addEntry(entry) {
@@ -87,6 +78,25 @@ export const useEntryStore = defineStore('entries', {
         .catch((error) => {
           throw new Error(error)
         })
+    },
+
+    async uploadImage(file) {
+      const storageRef = ref(storage, `images/entry-${file.name + Date.now()}`)
+
+      await uploadBytes(storageRef, file)
+
+      return getDownloadURL(ref(storage, storageRef))
+    },
+
+    async updateLocalEntries(promptId) {
+      const promptStore = usePromptStore()
+
+      await promptStore.fetchPrompt(promptId)
+      const prompts = promptStore.getPrompts
+
+      const index = prompts?.findIndex((p) => p.id === promptId)
+      prompts[index].entries = this.getEntries
+      LocalStorage.set('prompts', prompts)
     }
   }
 })

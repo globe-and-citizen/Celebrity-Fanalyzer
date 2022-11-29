@@ -75,7 +75,7 @@ const subjects = [
 watchEffect(async () => {
   if (props.promptId) {
     await entryStore.fetchEntries(props.promptId)
-    entries.value = entryStore.getEntries
+    entries.value = entryStore.getEntriesFromPrompt(props.promptId).entries
   }
 })
 
