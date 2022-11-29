@@ -6,6 +6,14 @@ import { auth, db } from 'src/firebase.js'
 import { useUserStore } from 'src/stores'
 
 export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    _isLoading: false
+  }),
+
+  getters: {
+    isLoading: (state) => state._isLoading
+  },
+
   actions: {
     async fetchProfile(user) {
       const userStore = useUserStore()
@@ -14,6 +22,7 @@ export const useAuthStore = defineStore('auth', {
 
     async googleSignIn() {
       const provider = new GoogleAuthProvider()
+      this._isLoading = true
       await signInWithPopup(auth, provider)
         .then(async (result) => {
           const isNewUser = getAdditionalUserInfo(result)?.isNewUser
@@ -27,6 +36,7 @@ export const useAuthStore = defineStore('auth', {
           console.error(error)
           throw error.code
         })
+        .finally(() => (this._isLoading = false))
     },
 
     logout() {

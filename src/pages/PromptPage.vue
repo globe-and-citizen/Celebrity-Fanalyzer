@@ -1,5 +1,5 @@
 <template>
-  <section v-if="isLoading" class="q-my-xl text-center">
+  <section v-if="promptStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page v-else>
@@ -70,13 +70,10 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 
 const article = ref({})
-const isLoading = ref(false)
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
-    isLoading.value = true
     await promptStore.fetchPrompts()
-    isLoading.value = false
   }
   updateArticle()
 })

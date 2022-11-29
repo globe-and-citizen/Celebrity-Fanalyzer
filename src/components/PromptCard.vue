@@ -68,7 +68,7 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="isLoading" />
+    <q-inner-loading color="primary" :showing="promptStore.isLoading" />
   </q-card>
 </template>
 
@@ -85,7 +85,6 @@ const promptStore = usePromptStore()
 
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const imageModel = ref([])
-const isLoading = ref(false)
 const prompt = reactive({})
 
 watchEffect(() => {
@@ -113,8 +112,6 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  isLoading.value = true
-
   prompt.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${prompt.title}`
     .toLowerCase()
     .replace(/[^0-9a-z]+/g, '-')
@@ -132,7 +129,6 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
-  isLoading.value = false
 }
 </script>
 

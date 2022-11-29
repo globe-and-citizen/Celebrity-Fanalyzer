@@ -1,5 +1,8 @@
 <template>
-  <section class="q-pa-md">
+  <section v-if="entryStore.isLoading" class="q-my-xl text-center">
+    <q-spinner color="primary" size="3em" />
+  </section>
+  <section v-else class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle
         v-model="subject"
@@ -73,11 +76,13 @@ const subjects = [
 ]
 
 watchEffect(async () => {
-  if (props.promptId) {
-    await entryStore.fetchEntries(props.promptId)
-    entries.value = entryStore.getEntriesFromPrompt(props.promptId).entries
-  }
+  if (props.promptId) updateEntries()
 })
+
+async function updateEntries() {
+  await entryStore.fetchEntries(props.promptId)
+  entries.value = entryStore.getEntriesFromPrompt(props.promptId).entries
+}
 
 function goToEntry(slug) {
   router.push(`/entry/${slug}`)

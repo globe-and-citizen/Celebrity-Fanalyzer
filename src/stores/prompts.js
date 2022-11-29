@@ -18,17 +18,19 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
-import { useUserStore } from './user'
+import { useUserStore } from 'src/stores'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
+    _prompts: [],
     _monthPrompt: null,
-    _prompts: []
+    _isLoading: false
   }),
 
   getters: {
     getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
-    getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts
+    getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts,
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
@@ -41,6 +43,7 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async fetchPrompt(id) {
+      this._isLoading = true
       await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
           const prompt = { id: doc.id, ...doc.data() }
@@ -57,9 +60,11 @@ export const usePromptStore = defineStore('prompts', {
         .catch((error) => {
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     },
 
     async fetchPrompts() {
+      this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
           const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -70,14 +75,13 @@ export const usePromptStore = defineStore('prompts', {
 
           this._prompts = []
           this.$patch({ _prompts: prompts })
+
+          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
           throw new Error(error)
         })
-
-      if (this.getPrompts) {
-        LocalStorage.set('prompts', this._prompts)
-      }
+        .finally(() => (this._isLoading = false))
     },
 
     async addPrompt(prompt) {
@@ -86,6 +90,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.author = userStore.getUserRef
       prompt.created = Timestamp.fromDate(new Date())
 
+      this._isLoading = true
       await addDoc(collection(db, 'prompts'), prompt)
         .then(() => {
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
@@ -95,9 +100,11 @@ export const usePromptStore = defineStore('prompts', {
           console.error('Error:', error)
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     },
 
     async editPrompt(prompt) {
+      this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), { ...prompt })
       })
@@ -111,9 +118,11 @@ export const usePromptStore = defineStore('prompts', {
         .catch((error) => {
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
+      this._isLoading = true
       await deleteDoc(doc(db, 'prompts', id))
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
@@ -123,12 +132,13 @@ export const usePromptStore = defineStore('prompts', {
         .catch((error) => {
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     },
 
     async uploadImage(file) {
       const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
 
-      await uploadBytes(storageRef, file)
+      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     },
@@ -137,6 +147,7 @@ export const usePromptStore = defineStore('prompts', {
       this._prompts = []
       this.$patch({ _prompts: this.getPrompts })
 
+      this._isLoading = true
       await updateDoc(doc(db, 'prompts', id), {
         'info.likes': arrayUnion(useUserStore().getUserRef),
         'info.dislikes': arrayRemove(useUserStore().getUserRef)
@@ -145,9 +156,11 @@ export const usePromptStore = defineStore('prompts', {
         .catch((error) => {
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     },
 
     async addDislike(id) {
+      this._isLoading = true
       await updateDoc(doc(db, 'prompts', id), {
         'info.dislikes': arrayUnion(useUserStore().getUserRef),
         'info.likes': arrayRemove(useUserStore().getUserRef)
@@ -156,6 +169,7 @@ export const usePromptStore = defineStore('prompts', {
         .catch((error) => {
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     }
   }
 })
