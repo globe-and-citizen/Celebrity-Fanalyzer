@@ -49,7 +49,9 @@ export const usePromptStore = defineStore('prompts', {
           this._prompts = this.getPrompts
           const index = this._prompts.findIndex((p) => p.id === prompt.id)
 
-          this._prompts[index] = prompt
+          if (index === -1) this._prompts.push(prompt)
+          else this._prompts[index] = prompt
+
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
