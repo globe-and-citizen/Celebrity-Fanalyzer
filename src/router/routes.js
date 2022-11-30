@@ -26,6 +26,10 @@ const routes = [
         component: () => import('pages/PromptPage.vue')
       },
       {
+        path: 'entry/:id',
+        component: () => import('pages/EntryPage.vue')
+      },
+      {
         path: 'admin',
         component: () => import('pages/AdminPage.vue'),
         beforeEnter: (_to, _from, next) => {

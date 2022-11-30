@@ -43,13 +43,11 @@
           behavior="menu"
           counter
           hide-hint
-          label="Categories"
-          multiple
-          :options="categoryOptions"
-          use-input
+          label="Prompt"
+          :options="promptOptions"
           use-chips
-          :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
-          v-model="entry.categories"
+          :rules="[(val) => val || 'Please select the related prompt']"
+          v-model="entry.prompt"
         >
           <template v-slot:no-option>
             <q-item>
@@ -58,49 +56,46 @@
           </template>
         </q-select>
         <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" />
-        <q-btn class="full-width q-mt-xl" color="primary" label="Work in progress" rounded />
-        <!-- <q-btn
+        <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="!entry.title || !entry.description || !entry.categories?.length || !entry.image"
+          :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
-        /> -->
+        />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="isLoading" />
+    <q-inner-loading color="primary" :showing="entryStore.isLoading" />
   </q-card>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'created', 'description', 'id', 'image', 'info', 'prompt', 'slug', 'title'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
+const promptStore = usePromptStore()
 
-const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
-const imageModel = ref([])
-const isLoading = ref(false)
 const entry = reactive({})
+const imageModel = ref([])
+const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: prompt.title, value: prompt.id }))
 
 watchEffect(() => {
   if (props.id) {
-    entry.categories = props.categories
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
     entry.title = props.title
   } else {
-    entry.categories = null
     entry.description = ''
     entry.image = ''
-    entry.info = { comments: 0, dislikes: 0, likes: 0, shares: 0 }
+    entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     entry.title = ''
   }
 })
@@ -114,8 +109,6 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  isLoading.value = true
-
   entry.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${entry.title}`
     .toLowerCase()
     .replace(/[^0-9a-z]+/g, '-')
@@ -133,7 +126,6 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
-  isLoading.value = false
 }
 </script>
 

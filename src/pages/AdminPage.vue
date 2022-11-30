@@ -26,7 +26,7 @@
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" :filter="promptFilter" flat :loading="isLoading" :rows="prompts" title="Prompts">
+      <q-table :columns="columns" :filter="promptFilter" flat :loading="promptStore.isLoading" :rows="prompts" title="Prompts">
         <template v-slot:top-right>
           <q-input dense v-model="promptFilter" placeholder="Search">
             <template v-slot:append>
@@ -87,7 +87,11 @@ const columns = [
     name: 'created',
     label: 'Created at',
     align: 'left',
-    field: (row) => row.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    field: (row) =>
+      new Date(row.created.seconds * 1000 + row.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      }),
     format: (val) => `${val}`,
     sortable: true
   },
@@ -102,7 +106,6 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const isLoading = ref(false)
 const entries = ref([])
 const entry = ref({})
 const entryFilter = ref({})
@@ -111,10 +114,8 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  isLoading.value = true
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
-  isLoading.value = false
 })
 
 function onDeleteDialog(prompt) {
