@@ -1,8 +1,5 @@
 <template>
-  <section v-if="entryStore.isLoading" class="q-my-xl text-center">
-    <q-spinner color="primary" size="3em" />
-  </section>
-  <section v-else class="q-pa-md">
+  <section class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle
         v-model="subject"
@@ -18,6 +15,9 @@
     </q-scroll-area>
     <h2 class="q-my-auto text-bold text-h5">Entries</h2>
     <q-separator />
+    <div v-if="entryStore.isLoading" class="q-my-xl text-center">
+      <q-spinner color="primary" size="3em" />
+    </div>
     <article
       v-for="entry in entries"
       class="q-pt-md relative-position row"
@@ -50,22 +50,20 @@
       <q-img class="col-4" :ratio="1" :src="entry.image" spinner-color="primary" spinner-size="3rem" style="border-radius: 24px" />
       <q-separator class="full-width q-mt-md" />
     </article>
-    <h6 v-if="!entries?.length" class="text-center">NO ENTRIES</h6>
+    <h6 v-if="!entryStore.isLoading && !entries?.length" class="text-center">NO ENTRIES</h6>
   </section>
 </template>
 
 <script setup>
 import { useEntryStore } from 'src/stores'
-import { ref, watchEffect } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const props = defineProps(['promptId'])
+const props = defineProps(['entries'])
 
 const router = useRouter()
 const entryStore = useEntryStore()
 
-const entries = ref()
-const prompt = ref()
 const subject = ref('Multinational Support')
 const subjects = [
   { label: 'Multinational Support', value: 'Multinational Support' },
@@ -75,11 +73,6 @@ const subjects = [
   { label: 'Comments', value: 'Comments' },
   { label: 'Shares', value: 'Shares' }
 ]
-
-watchEffect(async () => {
-  prompt.value = await entryStore.getEntriesFromPrompt(props.promptId)
-  entries.value = prompt.value?.entries
-})
 
 function goToEntry(slug) {
   router.push(`/entry/${slug}`)
