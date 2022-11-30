@@ -12,7 +12,7 @@
   </section>
   <q-page v-else>
     <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px"
-           class="cf-parallax" />
+           class="cf-parallax q-page-container" />
     <section class="q-pa-md cf-parallax-mt bg-white">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1" v-html="article.description"></p>
