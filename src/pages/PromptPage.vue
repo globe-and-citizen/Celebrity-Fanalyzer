@@ -3,8 +3,9 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page v-else>
-    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
-    <section class="q-pa-md">
+    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px"
+           class="cf-parallax q-page-container" />
+    <section class="q-pa-md cf-parallax-mt bg-white">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1" v-html="article.description"></p>
       <div class="q-mb-md">
@@ -125,3 +126,14 @@ function sharePrompt(grid) {
   })
 }
 </script>
+
+<style lang="scss">
+.cf-parallax{
+  position: fixed;
+  top: 0;
+  z-index: -1;
+}
+.cf-parallax-mt{
+  margin-top: 42.8571%;
+}
+</style>
