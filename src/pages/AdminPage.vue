@@ -4,12 +4,36 @@
       <q-toolbar-title>
         <b class="text-secondary">Admin Panel</b>
       </q-toolbar-title>
-      <DialogPrompt v-bind="prompt" @hideDialog="prompt = {}" />
+      <q-btn-dropdown
+        auto-close
+        color="primary"
+        dropdown-icon="control_point"
+        flat
+        rounded
+        transition-show="jump-down"
+        transition-hide="jump-up"
+      >
+        <q-list style="min-width: 100px">
+          <q-item clickable @click="prompt.dialog = true">
+            <q-item-section>New Prompt</q-item-section>
+          </q-item>
+          <q-item clickable @click="entry.dialog = true">
+            <q-item-section>New Entry</q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
     </q-toolbar>
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="prompts" title="Manage Prompts">
+      <q-table :columns="columns" :filter="promptFilter" flat :loading="promptStore.isLoading" :rows="prompts" title="Prompts">
+        <template v-slot:top-right>
+          <q-input dense v-model="promptFilter" placeholder="Search">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
@@ -18,6 +42,14 @@
         </template>
       </q-table>
     </q-page>
+
+    <q-dialog full-width position="bottom" v-model="prompt.dialog">
+      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
+    </q-dialog>
+
+    <q-dialog full-width position="bottom" v-model="entry.dialog">
+      <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+    </q-dialog>
 
     <q-dialog v-model="deleteDialog.show">
       <q-card>
@@ -33,7 +65,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="ondeletePrompt(deleteDialog.prompt.id)" />
+          <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -42,7 +74,8 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import DialogPrompt from 'src/components/PromptDialog.vue'
+import EntryCard from 'src/components/EntryCard.vue'
+import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
@@ -54,7 +87,11 @@ const columns = [
     name: 'created',
     label: 'Created at',
     align: 'left',
-    field: (row) => row.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    field: (row) =>
+      new Date(row.created.seconds * 1000 + row.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      }),
     format: (val) => `${val}`,
     sortable: true
   },
@@ -69,15 +106,16 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const isLoading = ref(false)
+const entries = ref([])
+const entry = ref({})
+const entryFilter = ref({})
 const prompts = ref([])
 const prompt = ref({})
+const promptFilter = ref('')
 
 onMounted(async () => {
-  isLoading.value = true
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
-  isLoading.value = false
 })
 
 function onDeleteDialog(prompt) {
@@ -85,7 +123,7 @@ function onDeleteDialog(prompt) {
   deleteDialog.value.prompt = prompt
 }
 
-function ondeletePrompt(id) {
+function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
     .then(() => $q.notify({ message: 'Prompt successfully deleted' }))

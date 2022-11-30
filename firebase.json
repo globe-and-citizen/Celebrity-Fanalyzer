@@ -1,5 +1,17 @@
 {
   "hosting": {
-    "headers": [{ "source": "/service-worker.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }]
+    "headers": [
+      {
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ],
+        "source": "/service-worker.js"
+      }
+    ],
+    "ignore": ["**/.*", "**/node_modules/**"],
+    "public": "dist/pwa"
   }
 }

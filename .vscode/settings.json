@@ -1,7 +1,4 @@
 {
-  "[xml]": {
-    "editor.defaultFormatter": "redhat.vscode-xml"
-  },
   "editor.bracketPairColorization.enabled": true,
   "editor.codeActionsOnSave": ["source.fixAll.eslint"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",

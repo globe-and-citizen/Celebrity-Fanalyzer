@@ -1,6 +1,7 @@
 import { createPinia } from 'pinia'
 import { store } from 'quasar/wrappers'
 import { useAuthStore } from './auth'
+import { useEntryStore } from './entries'
 import { useCommentStore } from './comments'
 import { usePromptStore } from './prompts'
 import { useUserStore } from './user'
@@ -22,4 +23,4 @@ export default store((/* { ssrContext } */) => {
   return pinia
 })
 
-export { useAuthStore, useCommentStore, usePromptStore, useUserStore }
+export { useAuthStore, useCommentStore, useEntryStore, usePromptStore, useUserStore }
