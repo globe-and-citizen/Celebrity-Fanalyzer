@@ -18,7 +18,7 @@
         <q-img :src="monthPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
       </a>
 
-      <TheEntries :promptId="monthPrompt.id" />
+      <TheEntries :entries="monthPrompt.entries" />
     </section>
     <section v-else class="q-my-xl text-center">
       <q-spinner color="primary" size="3em" />
@@ -29,13 +29,13 @@
 <script setup>
 import TheEntries from 'src/components/TheEntries.vue'
 import { usePromptStore } from 'src/stores'
-import { ref, watchEffect } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const promptStore = usePromptStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)
 
-watchEffect(async () => {
+onMounted(async () => {
   await promptStore.fetchMonthPrompt()
   monthPrompt.value = promptStore.getMonthPrompt
 })

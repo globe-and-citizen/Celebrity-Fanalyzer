@@ -39,6 +39,22 @@ export const usePromptStore = defineStore('prompts', {
       const querySnapshot = await getDocs(q)
 
       this._monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      await getDocs(collection(db, 'prompts', this._monthPrompt.id, 'entries'))
+        .then(async (querySnapshot) => {
+          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const entry of entries) {
+            entry.author = await getDoc(entry.author).then((doc) => doc.data())
+          }
+
+          this._monthPrompt.entries = entries
+        })
+        .catch((error) => {
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+
       LocalStorage.set('monthPrompt', this._monthPrompt)
     },
 
