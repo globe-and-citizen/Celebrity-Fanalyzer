@@ -150,7 +150,7 @@ function sharePrompt(grid) {
       copied.value = true
       setInterval(() => {
         copied.value = false
-      }, 800)
+      }, 800) 
     } else if( action.id === 'facebook' || action.id === 'linkedin') {
       window.open(action.link + `${window.location.href}`, '_blank')
     } else {
