@@ -28,10 +28,12 @@ export const useEntryStore = defineStore('entries', {
             entry.author = await getDoc(entry.author).then((doc) => doc.data())
           }
 
+          console.log(entries)
+
           this._entries = []
           this.$patch({ _entries: entries })
 
-          await this.updateLocalEntries(id)
+          // await this.updateLocalEntries(id)
         })
         .catch((error) => {
           throw new Error(error)

@@ -1,15 +1,14 @@
 <template>
-  <section v-if="promptStore.isLoading" class="q-my-xl text-center">
+  <section v-if="promptStore.isLoading" class="absolute-center">
     <q-spinner color="primary" size="3em" />
   </section>
-  <q-page v-else>
-    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px"
-           class="cf-parallax q-page-container" />
+  <q-page>
+    <q-img :ratio="21 / 9" :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="cf-parallax q-page-container" />
     <section class="q-pa-md cf-parallax-mt bg-white">
-      <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
-      <p class="text-body1" v-html="article.description"></p>
+      <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
+      <p class="text-body1" v-html="prompt.description"></p>
       <div class="q-mb-md">
-        <q-badge v-for="(category, index) of article.categories" class="q-mx-xs" :key="index" rounded>
+        <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
           {{ category }}
         </q-badge>
       </div>
@@ -19,7 +18,7 @@
           :disable="!userStore.isAuthenticated"
           flat
           icon="sentiment_satisfied_alt"
-          :label="article.info?.likes.length"
+          :label="prompt.info?.likes.length"
           rounded
           @click="like()"
         >
@@ -31,7 +30,7 @@
           :disable="!userStore.isAuthenticated"
           flat
           icon="sentiment_very_dissatisfied"
-          :label="article.info?.dislikes.length"
+          :label="prompt.info?.dislikes.length"
           rounded
           @click="dislike()"
         >
@@ -47,48 +46,52 @@
       >
         <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
       </q-btn>
-      <q-btn flat rounded icon="share" :label="article.info?.shares" @click="sharePrompt(true)">
+      <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
         <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
       </q-btn>
     </section>
     <q-separator />
     <q-separator />
-    <TheEntries :promptId="article.id" />
+    <TheEntries :entries="entries" />
   </q-page>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
 import TheEntries from 'src/components/TheEntries.vue'
-import { usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
 
+const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const article = ref({})
+const entries = ref([])
+const prompt = ref({})
 
 onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
     await promptStore.fetchPrompts()
   }
-  updateArticle()
+  updatePrompt()
+  await entryStore.fetchEntries(prompt.value.id)
+  entries.value = entryStore.getEntries
 })
 
-function updateArticle() {
-  article.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
+function updatePrompt() {
+  prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
 }
 
 function like() {
-  promptStore.addLike(article.value.id).then(() => updateArticle())
+  promptStore.addLike(prompt.value.id).then(() => updatePrompt())
 }
 
 function dislike() {
-  promptStore.addDislike(article.value.id).then(() => updateArticle())
+  promptStore.addDislike(prompt.value.id).then(() => updatePrompt())
 }
 
 function sharePrompt(grid) {
@@ -128,12 +131,12 @@ function sharePrompt(grid) {
 </script>
 
 <style lang="scss">
-.cf-parallax{
+.cf-parallax {
   position: fixed;
   top: 0;
   z-index: -1;
 }
-.cf-parallax-mt{
+.cf-parallax-mt {
   margin-top: 42.8571%;
 }
 </style>
