@@ -15,9 +15,6 @@
     </q-scroll-area>
     <h2 class="q-my-auto text-bold text-h5">Entries</h2>
     <q-separator />
-    <div v-if="entryStore.isLoading" class="q-my-xl text-center">
-      <q-spinner color="primary" size="3em" />
-    </div>
     <article
       v-for="entry in entries"
       class="q-pt-md relative-position row"
@@ -50,7 +47,10 @@
       <q-img class="col-4" :ratio="1" :src="entry.image" spinner-color="primary" spinner-size="3rem" style="border-radius: 24px" />
       <q-separator class="full-width q-mt-md" />
     </article>
-    <h6 v-if="!entryStore.isLoading && !entries?.length" class="text-center">NO ENTRIES</h6>
+    <div v-if="entryStore.isLoading" class="q-my-xl text-center">
+      <q-spinner color="primary" size="3em" />
+    </div>
+    <h6 v-else-if="!entries?.length" class="text-center">NO ENTRIES</h6>
   </section>
 </template>
 
