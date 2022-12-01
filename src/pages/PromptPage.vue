@@ -2,7 +2,7 @@
   <section v-if="promptStore.isLoading" class="absolute-center">
     <q-spinner color="primary" size="3em" />
   </section>
-  <q-page>
+  <q-page class="bg-white">
     <q-img :ratio="21 / 9" :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="cf-parallax q-page-container" />
     <section class="q-pa-md cf-parallax-mt bg-white">
       <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
