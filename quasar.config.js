@@ -51,7 +51,7 @@ module.exports = configure(function (ctx) {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
       },
-      vueRouterMode: 'history' // available values: 'hash', 'history'
+      vueRouterMode: 'history', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
@@ -66,7 +66,22 @@ module.exports = configure(function (ctx) {
       // minify: false,
       // polyfillModulePreload: true,
 
-      // extendViteConf (viteConf) {},
+      extendViteConf(viteConf) {
+        viteConf.build.rollupOptions = {
+          output: {
+            manualChunks(id) {
+              const chunks = ['@quasar/extras', 'firebase', 'pinia', 'quasar', 'vue', 'vue-router']
+              if (id.includes('/node_modules/')) {
+                for (const chunkName of chunks) {
+                  if (id.includes(chunkName)) {
+                    return chunkName
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       // viteVuePluginOptions: {},
 
       // vitePlugins: [
