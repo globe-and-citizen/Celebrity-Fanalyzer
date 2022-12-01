@@ -13,7 +13,6 @@ export const useEntryStore = defineStore('entries', {
 
   getters: {
     getEntries: (state) => state._entries,
-    getEntriesFromPrompt: () => (id) => LocalStorage.getItem('prompts').find((p) => p.id === id),
     isLoading: (state) => state._isLoading
   },
 
@@ -28,12 +27,8 @@ export const useEntryStore = defineStore('entries', {
             entry.author = await getDoc(entry.author).then((doc) => doc.data())
           }
 
-          console.log(entries)
-
           this._entries = []
           this.$patch({ _entries: entries })
-
-          // await this.updateLocalEntries(id)
         })
         .catch((error) => {
           throw new Error(error)
@@ -98,17 +93,6 @@ export const useEntryStore = defineStore('entries', {
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
-    },
-
-    async updateLocalEntries(promptId) {
-      const promptStore = usePromptStore()
-
-      await promptStore.fetchPrompt(promptId)
-      const prompts = promptStore.getPrompts
-
-      const index = prompts?.findIndex((p) => p.id === promptId)
-      prompts[index].entries = this.getEntries
-      LocalStorage.set('prompts', prompts)
     }
   }
 })
