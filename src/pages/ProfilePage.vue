@@ -6,6 +6,9 @@
       </q-toolbar-title>
     </q-toolbar>
   </q-header>
+  <q-page v-if="authStore.isLoading || userStore.isLoading" class="q-my-xl text-center">
+    <q-spinner color="primary" size="3em" />
+  </q-page>
   <q-page v-if="!userStore.isAuthenticated" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
     <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
@@ -57,9 +60,9 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { LocalStorage, useQuasar } from 'quasar'
 import { useAuthStore, useUserStore } from 'src/stores'
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
@@ -68,6 +71,12 @@ const userStore = useUserStore()
 const tab = ref('profile')
 const user = reactive({ ...userStore.getUser })
 const newPhoto = ref([])
+
+onMounted(() => {
+  if (!userStore.isAuthenticated) {
+    LocalStorage.remove('user')
+  }
+})
 
 function googleSignIn() {
   authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: error }))

@@ -13,16 +13,15 @@
   </q-header>
 
   <q-page class="q-pa-md">
-    <section v-if="currentPrompt">
-      <a :href="`prompt/${currentPrompt.slug}`">
-        <q-img :src="currentPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+    <section v-if="monthPrompt">
+      <a :href="`prompt/${monthPrompt.slug}`">
+        <q-img :src="monthPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
       </a>
 
-      <TheEntries :promptId="currentPrompt.id" />
+      <TheEntries :entries="monthPrompt.entries" />
     </section>
-    <section v-else>
-      <!-- TODO: Add a spinner here -->
-      <h5>Loading...</h5>
+    <section v-else class="q-my-xl text-center">
+      <q-spinner color="primary" size="3em" />
     </section>
   </q-page>
 </template>
@@ -30,14 +29,14 @@
 <script setup>
 import TheEntries from 'src/components/TheEntries.vue'
 import { usePromptStore } from 'src/stores'
-import { ref, watchEffect } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const promptStore = usePromptStore()
 
-const currentPrompt = ref(promptStore.getCurrentPrompt)
+const monthPrompt = ref(promptStore.getMonthPrompt)
 
-watchEffect(async () => {
-  await promptStore.fetchCurrentPrompt()
-  currentPrompt.value = promptStore.getCurrentPrompt
+onMounted(async () => {
+  await promptStore.fetchMonthPrompt()
+  monthPrompt.value = promptStore.getMonthPrompt
 })
 </script>

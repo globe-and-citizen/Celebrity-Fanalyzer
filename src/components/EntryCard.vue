@@ -66,7 +66,7 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="isLoading" />
+    <q-inner-loading color="primary" :showing="entryStore.isLoading" />
   </q-card>
 </template>
 
@@ -84,21 +84,18 @@ const promptStore = usePromptStore()
 
 const entry = reactive({})
 const imageModel = ref([])
-const isLoading = ref(false)
 const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: prompt.title, value: prompt.id }))
 
 watchEffect(() => {
   if (props.id) {
-    entry.categories = props.categories
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
     entry.title = props.title
   } else {
-    entry.categories = null
     entry.description = ''
     entry.image = ''
-    entry.info = { comments: 0, dislikes: 0, likes: 0, shares: 0 }
+    entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     entry.title = ''
   }
 })
@@ -112,8 +109,6 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  isLoading.value = true
-
   entry.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${entry.title}`
     .toLowerCase()
     .replace(/[^0-9a-z]+/g, '-')
@@ -131,7 +126,6 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
-  isLoading.value = false
 }
 </script>
 

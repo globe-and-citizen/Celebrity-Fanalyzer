@@ -32,7 +32,7 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="!prompts && isLoading">
+    <section v-if="!prompts.length && promptStore.isLoading">
       <ArticleSkeleton />
       <ArticleSkeleton />
       <ArticleSkeleton />
@@ -76,7 +76,6 @@
         <q-separator class="full-width q-mt-md" />
       </article>
     </section>
-    <h3 v-else class="text-center text-h5">No Data</h3>
   </q-page>
 </template>
 
@@ -91,7 +90,6 @@ const promptStore = usePromptStore()
 
 const search = ref('')
 const category = ref('Trending')
-const isLoading = ref(false)
 const prompts = ref(promptStore.getPrompts)
 
 const categories = ref([
@@ -108,10 +106,8 @@ const categories = ref([
 ])
 
 onMounted(async () => {
-  isLoading.value = true
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
-  isLoading.value = false
 })
 
 function goToPrompt(slug) {

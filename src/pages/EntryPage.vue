@@ -1,5 +1,5 @@
 <template>
-  <section v-if="isLoading" class="q-my-xl text-center">
+  <section v-if="entryStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page v-else>
@@ -43,14 +43,11 @@ const entryStore = useEntryStore()
 
 const article = ref({})
 const comments = ref([])
-const isLoading = ref(false)
 const showComments = ref(false)
 
 onMounted(async () => {
   if (!entryStore.getEntries?.length) {
-    isLoading.value = true
-    await entryStore.fetchEntries()
-    isLoading.value = false
+    await entryStore.fetchEntries() // TODO: Missing ID here
   }
   article.value = entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.params.id)
 })
