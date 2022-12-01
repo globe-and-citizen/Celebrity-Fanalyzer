@@ -47,7 +47,7 @@ const showComments = ref(false)
 
 onMounted(async () => {
   if (!entryStore.getEntries?.length) {
-    await entryStore.fetchEntries()
+    await entryStore.fetchEntries() // TODO: Missing ID here
   }
   article.value = entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.params.id)
 })
