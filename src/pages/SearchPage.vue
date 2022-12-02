@@ -59,12 +59,8 @@
             {{ prompt.title.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
           </h2>
           <p class="q-my-none text-body2 text-secondary">
-            {{
-              new Date(prompt.created.seconds * 1000 + prompt.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric'
-              })
-            }}
+            {{ prompt.created }}
+            {{ shortMonthDay(prompt.created) }}
             &nbsp;•&nbsp; 9 min read
           </p>
           <div v-if="category === 'Trending'">
@@ -82,6 +78,7 @@
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import { usePromptStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -106,6 +103,7 @@ const categories = ref([
 ])
 
 onMounted(async () => {
+  console.log(shortMonthDay())
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
 })

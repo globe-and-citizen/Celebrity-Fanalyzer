@@ -35,12 +35,7 @@
           {{ entry.title?.length > 40 ? entry.title.substring(0, 40) + '...' : entry.title }}
         </h2>
         <p class="q-my-none text-body2 text-secondary">
-          {{
-            new Date(entry.created.seconds * 1000 + entry.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric'
-            })
-          }}
+          {{ shortMonthDay(entry.created) }}
           &nbsp;•&nbsp; 9 min read
         </p>
       </div>
@@ -56,6 +51,7 @@
 
 <script setup>
 import { useEntryStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 

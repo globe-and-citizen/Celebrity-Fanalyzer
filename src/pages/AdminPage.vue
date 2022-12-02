@@ -77,6 +77,7 @@ import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
@@ -87,11 +88,7 @@ const columns = [
     name: 'created',
     label: 'Created at',
     align: 'left',
-    field: (row) =>
-      new Date(row.created.seconds * 1000 + row.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
-      }),
+    field: (row) => shortMonthDay(row.created),
     format: (val) => `${val}`,
     sortable: true
   },

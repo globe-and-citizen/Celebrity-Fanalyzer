@@ -73,6 +73,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, usePromptStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -109,9 +110,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  entry.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${entry.title}`
-    .toLowerCase()
-    .replace(/[^0-9a-z]+/g, '-')
+  entry.slug = `${shortMonthDay()}-${entry.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (props.id) {
     await entryStore

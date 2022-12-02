@@ -75,6 +75,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -112,9 +113,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  prompt.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${prompt.title}`
-    .toLowerCase()
-    .replace(/[^0-9a-z]+/g, '-')
+  prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (props.id) {
     await promptStore
