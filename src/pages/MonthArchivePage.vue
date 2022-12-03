@@ -1,5 +1,4 @@
 <template>
-
   <q-header class="bg-white" elevated>
     <q-toolbar class="q-px-lg">
       <q-toolbar-title>
@@ -18,9 +17,7 @@
     </q-toolbar>
   </q-header>
   <q-page>
-    <div>The year {{ year }}</div>
-    <div v-if="month!==''">The month {{ month }}</div>
-    <div v-else>Not valide month found</div>
+    <h2>Month Entries</h2>
   </q-page>
 </template>
 
@@ -28,26 +25,13 @@
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 
-const monthList = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
-]
+const monthList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 const router = useRouter()
-const year = ref("")
-const month = ref("")
+const year = ref('')
+const month = ref('')
 
-if(monthList.includes(router.currentRoute.value.params.month)){
+if (monthList.includes(router.currentRoute.value.params.month)) {
   month.value = router.currentRoute.value.params.month
 }
 year.value = router.currentRoute.value.params.year

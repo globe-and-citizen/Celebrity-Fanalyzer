@@ -30,8 +30,12 @@ const routes = [
         component: () => import('pages/EntryPage.vue')
       },
       {
-        path: ':year(\\d{4})/:month?',
-        component: () => import('pages/ArchivePage.vue')
+        path: ':year(\\d{4})',
+        component: () => import('pages/YearArchivePage.vue')
+      },
+      {
+        path: ':year(\\d{4})/:month',
+        component: () => import('pages/MonthArchivePage.vue')
       },
       {
         path: 'admin',
