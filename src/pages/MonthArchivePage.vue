@@ -17,13 +17,14 @@
     </q-toolbar>
   </q-header>
   <q-page class="q-pa-md">
-    <h2 class="q-my-auto text-bold text-h5">{{year}}, {{month}} entries</h2>
+    <h2 class="q-my-auto text-bold text-h5">{{ year }}, {{ month }} entries</h2>
     <q-separator class="q-mb-none q-mt-xs" />
     <section v-if="!entries.length && entryStore.isLoading">
       <ArticleSkeleton v-for="index in [0, 1, 2, 3]" :key="index" />
     </section>
     <section>
-      <PromptItemCard v-for="entry in entries" :key="entry?.id" :item="entry" :link="`/entry/${entry.slug}`"></PromptItemCard>
+      <PromptItemCard v-for="entry in entries" :key="entry?.id" :item="entry"
+                      :link="`/entry/${entry.slug}`"></PromptItemCard>
     </section>
   </q-page>
 </template>
@@ -33,8 +34,9 @@ import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import PromptItemCard from 'src/components/ItemCard.vue'
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 
+const promptStore = usePromptStore()
 const entryStore = useEntryStore()
 const monthList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
@@ -48,8 +50,15 @@ if (monthList.includes(router.currentRoute.value.params.month)) {
 }
 year.value = router.currentRoute.value.params.year
 
+let currentPrompt = promptStore.getPrompts.find((item) => {
+  const created = new Date(item.created.seconds * 1000 + item.created.nanoseconds / 1000000)
+  return created.getMonth() === monthList.indexOf(month.value) && created.getFullYear() === Number(year.value)
+})
+
 onMounted(async () => {
-  await entryStore.fetchEntries()
+  await promptStore.fetchPrompts()
+  await entryStore.fetchEntries(currentPrompt.id)
+
   entries.value = entryStore.getEntries
 })
 </script>
