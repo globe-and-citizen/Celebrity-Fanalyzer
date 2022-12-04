@@ -19,38 +19,26 @@
 
   <q-page class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
-      <q-btn-toggle
-        v-model="category"
-        class="q-my-sm"
-        color="white"
-        no-caps
-        no-wrap
-        :options="categories"
-        rounded
-        text-color="secondary"
-        unelevated
-      />
+      <q-btn-toggle v-model="category" class="q-my-sm" color="white" no-caps no-wrap :options="categories" rounded
+                    text-color="secondary" unelevated />
     </q-scroll-area>
+
+    <h2 class="q-my-auto text-bold text-h5">{{ year }} promptes</h2>
     <q-separator class="q-mb-none q-mt-xs" />
     <section v-if="!prompts.length && promptStore.isLoading">
       <ArticleSkeleton v-for="index in [0, 1, 2, 3]" :key="index" />
     </section>
     <section>
-      <PromptItemCard
-        v-for="prompt in prompts"
-        :key="prompt?.id"
-        :item="prompt"
-        v-show="prompt.categories.includes(category)"
-        :link="`/prompt/${prompt.slug}`"
-      >
-      </PromptItemCard>
+      <ItemCard v-for="prompt in prompts" :key="prompt?.id" :item="prompt"
+                      v-show="prompt.categories.includes(category) || category === 'All'"
+                      :link="`/prompt/${prompt.slug}`"></ItemCard>
     </section>
   </q-page>
 </template>
 
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
-import PromptItemCard from 'src/components/ItemCard.vue'
+import ItemCard from 'src/components/ItemCard.vue'
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { usePromptStore } from 'src/stores'
@@ -60,10 +48,11 @@ const promptStore = usePromptStore()
 const router = useRouter()
 const year = ref('')
 const search = ref('')
-const category = ref('Trending')
+const category = ref('All')
 const prompts = ref(promptStore.getPrompts)
 
 const categories = ref([
+  { label: 'All', value: 'All' },
   { label: 'Trending', value: 'Trending' },
   { label: 'Lifestyle', value: 'Lifestyle' },
   { label: 'Culture', value: 'Culture' },
@@ -76,6 +65,11 @@ const categories = ref([
   { label: 'Education', value: 'Education' }
 ])
 year.value = router.currentRoute.value.params.year
+
+prompts.value = promptStore.getPrompts.filter((item) => {
+  const created = new Date(item.created.seconds * 1000 + item.created.nanoseconds / 1000000)
+  return created.getFullYear() === Number(year.value)
+})
 
 onMounted(async () => {
   await promptStore.fetchPrompts()
