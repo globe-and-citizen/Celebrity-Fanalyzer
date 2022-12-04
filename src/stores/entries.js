@@ -31,6 +31,7 @@ export const useEntryStore = defineStore('entries', {
           this.$patch({ _entries: entries })
         })
         .catch((error) => {
+          this._isLoading = false
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
