@@ -35,6 +35,7 @@ export const usePromptStore = defineStore('prompts', {
 
   actions: {
     async fetchMonthPrompt() {
+      this._isLoading = true
       const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
       const querySnapshot = await getDocs(q)
 
