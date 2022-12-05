@@ -1,4 +1,4 @@
-export const months = [
+export const monthsOfTheYear = [
   { label: 'January', value: 1 },
   { label: 'February', value: 2 },
   { label: 'March', value: 3 },
