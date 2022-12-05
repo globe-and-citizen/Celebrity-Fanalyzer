@@ -59,8 +59,7 @@
             {{ prompt.title.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
           </h2>
           <p class="q-my-none text-body2 text-secondary">
-            {{ shortMonthDay(prompt.created) }} &nbsp;•&nbsp;
-            {{ giveReadingTime(prompt.description) }}min
+            {{ shortMonthDay(prompt.created) }} &nbsp;•&nbsp; {{ giveReadingTime(prompt.description) }}min
           </p>
           <div v-if="category === 'Trending'">
             <q-badge v-for="(item, i) of prompt.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
@@ -102,7 +101,6 @@ const categories = ref([
 ])
 
 onMounted(async () => {
-  console.log(shortMonthDay())
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
 })
@@ -115,15 +113,15 @@ function giveReadingTime(description) {
   let stringArr = description.split(' ')
   let adjustment = 0
   stringArr = stringArr.filter((el) => {
-    //removes anything that's an html tag
     if (el.indexOf('<') == -1) {
       return el
-    } else {
-      adjustment++
     }
+    adjustment++
   })
 
   let wordCount = stringArr.length + adjustment
-  return Math.round(wordCount / 238) //238 words / min accroding to https://psyarxiv.com/xynwg/
+  const averageWordsPerMinute = 238
+
+  return Math.round(wordCount / averageWordsPerMinute)
 }
 </script>
