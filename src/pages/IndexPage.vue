@@ -19,9 +19,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue'
-
-const TheEntries = defineAsyncComponent(() => import('src/components/TheEntries.vue'))
+import TheEntries from 'src/components/TheEntries.vue'
 </script>
 
 <style>
