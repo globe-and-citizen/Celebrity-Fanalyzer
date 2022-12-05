@@ -2,6 +2,9 @@
   <q-card>
     <q-card-section class="row items-center no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
+      <span>&nbsp; for &nbsp;</span>
+      <q-select behavior="menu" borderless dense :options="[2021, 2022, 2023]" v-model="prompt.date.year" />
+      <q-select behavior="menu" borderless dense :options="months" v-model="prompt.date.month" />
       <q-space />
       <q-btn flat round icon="close" v-close-popup />
     </q-card-section>
@@ -75,11 +78,11 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
-import { shortMonthDay } from 'src/utils/date'
+import { months, shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
@@ -91,12 +94,14 @@ const prompt = reactive({})
 watchEffect(() => {
   if (props.id) {
     prompt.categories = props.categories
+    prompt.date = props.date
     prompt.description = props.description
     prompt.id = props.id
     prompt.image = props.image
     prompt.title = props.title
   } else {
     prompt.categories = null
+    prompt.date = { year: new Date().getFullYear(), month: new Date().toLocaleString('en-US', { month: 'long' }) }
     prompt.description = ''
     prompt.image = ''
     prompt.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
