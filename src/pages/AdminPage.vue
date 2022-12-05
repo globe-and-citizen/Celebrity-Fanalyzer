@@ -74,12 +74,10 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { usePromptStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
-import { defineAsyncComponent } from 'vue'
-
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
+import { usePromptStore } from 'src/stores'
+import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
