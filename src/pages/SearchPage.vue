@@ -59,9 +59,8 @@
             {{ prompt.title.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
           </h2>
           <p class="q-my-none text-body2 text-secondary">
-            {{ prompt.created }}
-            {{ shortMonthDay(prompt.created) }}
-            &nbsp;•&nbsp; 9 min read
+            {{ shortMonthDay(prompt.created) }} &nbsp;•&nbsp;
+            {{ giveReadingTime(prompt.description) }}min
           </p>
           <div v-if="category === 'Trending'">
             <q-badge v-for="(item, i) of prompt.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
@@ -110,5 +109,21 @@ onMounted(async () => {
 
 function goToPrompt(slug) {
   router.push(`/prompt/${slug}`)
+}
+
+function giveReadingTime(description) {
+  let stringArr = description.split(' ')
+  let adjustment = 0
+  stringArr = stringArr.filter((el) => {
+    //removes anything that's an html tag
+    if (el.indexOf('<') == -1) {
+      return el
+    } else {
+      adjustment++
+    }
+  })
+
+  let wordCount = stringArr.length + adjustment
+  return Math.round(wordCount / 238) //238 words / min accroding to https://psyarxiv.com/xynwg/
 }
 </script>
