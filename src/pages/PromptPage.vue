@@ -45,10 +45,8 @@ import { useQuasar } from 'quasar'
 import { useCommentStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { defineAsyncComponent } from 'vue'
-
-const TheComments = defineAsyncComponent(() => import('src/components/TheComments.vue'))
-const TheEntries = defineAsyncComponent(() => import('src/components/TheEntries.vue'))
+import TheComments from 'src/components/TheComments.vue'
+import TheEntries from 'src/components/TheEntries.vue'
 
 const $q = useQuasar()
 const article = ref({})
