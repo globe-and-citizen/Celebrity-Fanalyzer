@@ -42,11 +42,11 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
+import TheComments from 'src/components/TheComments.vue'
+import TheEntries from 'src/components/TheEntries.vue'
 import { useCommentStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import TheComments from 'src/components/TheComments.vue'
-import TheEntries from 'src/components/TheEntries.vue'
 
 const $q = useQuasar()
 const article = ref({})
