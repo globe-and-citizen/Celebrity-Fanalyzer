@@ -68,13 +68,14 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="isLoading" />
+    <q-inner-loading color="primary" :showing="promptStore.isLoading" />
   </q-card>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -85,7 +86,6 @@ const promptStore = usePromptStore()
 
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const imageModel = ref([])
-const isLoading = ref(false)
 const prompt = reactive({})
 
 watchEffect(() => {
@@ -99,7 +99,7 @@ watchEffect(() => {
     prompt.categories = null
     prompt.description = ''
     prompt.image = ''
-    prompt.info = { comments: 0, dislikes: 0, likes: 0, shares: 0 }
+    prompt.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
   }
 })
@@ -113,11 +113,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  isLoading.value = true
-
-  prompt.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${prompt.title}`
-    .toLowerCase()
-    .replace(/[^0-9a-z]+/g, '-')
+  prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (props.id) {
     await promptStore
@@ -132,7 +128,6 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
-  isLoading.value = false
 }
 </script>
 

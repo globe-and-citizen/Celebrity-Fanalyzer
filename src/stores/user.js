@@ -5,17 +5,21 @@ import { db } from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    _user: LocalStorage.getItem('user') || {}
+    _user: {},
+    _isLoading: false
   }),
 
   getters: {
-    getUser: (state) => state._user,
-    isAdmin: (state) => state._user.role === 'admin',
-    isAuthenticated: (state) => !!state._user?.uid
+    getUser: (state) => LocalStorage.getItem('user') || state._user,
+    getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
+    isAdmin: (getters) => getters.getUser.role === 'admin',
+    isAuthenticated: (getters) => !!getters.getUser?.uid,
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
     async fetchUserProfile(user) {
+      this._isLoading = true
       await getDoc(doc(db, 'users', user.uid))
         .then((document) =>
           this.$patch({
@@ -25,6 +29,7 @@ export const useUserStore = defineStore('user', {
         .catch((error) => {
           throw error
         })
+        .finally(() => (this._isLoading = false))
 
       if (this.getUser) {
         LocalStorage.set('user', this._user)
@@ -33,6 +38,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async updateProfile(user) {
+      this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), { ...user })
       })
@@ -45,6 +51,7 @@ export const useUserStore = defineStore('user', {
         .catch((error) => {
           throw error
         })
+        .finally(() => (this._isLoading = false))
     }
   }
 })
