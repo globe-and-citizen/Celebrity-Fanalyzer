@@ -78,10 +78,8 @@ import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { defineAsyncComponent } from 'vue'
 
-const PromptCard = defineAsyncComponent(() => import('src/components/PromptCard.vue'))
-const EntryCard = defineAsyncComponent(() => import('src/components/EntryCard.vue'))
-//import EntryCard from 'src/components/EntryCard.vue'
-//import PromptCard from 'src/components/PromptCard.vue'
+import EntryCard from 'src/components/EntryCard.vue'
+import PromptCard from 'src/components/PromptCard.vue'
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
