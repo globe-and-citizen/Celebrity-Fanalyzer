@@ -3,9 +3,28 @@
     <q-card-section class="row items-center no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
       <span>&nbsp; for &nbsp;</span>
-      <!-- TODO: apply closest years dinamically -->
-      <q-select behavior="menu" borderless dense :options="[2021, 2022, 2023]" v-model="prompt.date.year" />
-      <q-select behavior="menu" borderless dense :options="monthsOfTheYear" v-model="prompt.date.month" />
+      <q-input borderless dense readonly style="max-width: 5.5rem" v-model="prompt.date">
+        <template v-slot:append>
+          <q-icon name="event" class="cursor-pointer">
+            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+              <q-date
+                default-view="Months"
+                emit-immediately
+                :key="dataKey"
+                mask="YYYY-MM"
+                minimal
+                v-model="prompt.date"
+                years-in-month-view
+                @update:model-value="onUpdateMonth"
+              >
+                <div class="row items-center justify-end">
+                  <q-btn v-close-popup label="Close" color="primary" flat />
+                </div>
+              </q-date>
+            </q-popup-proxy>
+          </q-icon>
+        </template>
+      </q-input>
       <q-space />
       <q-btn flat round icon="close" v-close-popup />
     </q-card-section>
@@ -65,9 +84,7 @@
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="
-            !prompt.date.year || !prompt.date.month || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image
-          "
+          :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
@@ -79,9 +96,9 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { date, useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
-import { monthsOfTheYear, shortMonthDay } from 'src/utils/date'
+import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -91,6 +108,7 @@ const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
+const dataKey = ref(Date.now())
 const imageModel = ref([])
 const prompt = reactive({})
 
@@ -104,13 +122,17 @@ watchEffect(() => {
     prompt.title = props.title
   } else {
     prompt.categories = null
-    prompt.date = { year: new Date().getFullYear(), month: monthsOfTheYear[new Date().getMonth()] }
+    prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
     prompt.image = ''
     prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
   }
 })
+
+function onUpdateMonth() {
+  dataKey.value = Date.now()
+}
 
 function uploadPhoto() {
   promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
