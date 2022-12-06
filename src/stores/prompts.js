@@ -107,7 +107,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.created = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', `${prompt.date.year}-${prompt.date.month.value}`), prompt)
+      await setDoc(doc(db, 'prompts', prompt.date), prompt)
         .then(() => {
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
           LocalStorage.set('prompts', this._prompts)
