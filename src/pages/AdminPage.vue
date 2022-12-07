@@ -26,7 +26,15 @@
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" :filter="promptFilter" flat :loading="promptStore.isLoading" :rows="prompts" title="Prompts">
+      <q-table
+        :columns="columns"
+        :filter="promptFilter"
+        flat
+        :loading="promptStore.isLoading"
+        :pagination="pagination"
+        :rows="prompts"
+        title="Prompts"
+      >
         <template v-slot:top-right>
           <q-input dense v-model="promptFilter" placeholder="Search">
             <template v-slot:append>
@@ -84,7 +92,7 @@ const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const columns = [
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, åsortable: true },
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
@@ -96,6 +104,12 @@ const entryFilter = ref({})
 const prompts = ref([])
 const prompt = ref({})
 const promptFilter = ref('')
+
+const pagination = {
+  sortBy: 'date',
+  descending: true,
+  rowsPerPage: 10
+}
 
 onMounted(async () => {
   await promptStore.fetchPrompts()
