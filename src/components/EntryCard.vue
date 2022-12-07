@@ -85,7 +85,7 @@ const promptStore = usePromptStore()
 
 const entry = reactive({})
 const imageModel = ref([])
-const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: prompt.title, value: prompt.id }))
+const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.id })).reverse()
 
 watchEffect(() => {
   if (props.id) {
