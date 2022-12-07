@@ -85,7 +85,6 @@ import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore } from 'src/stores'
-import { shortMonthDay } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
@@ -98,18 +97,11 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const entries = ref([])
 const entry = ref({})
-const entryFilter = ref({})
+const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
 const prompts = ref([])
 const prompt = ref({})
 const promptFilter = ref('')
-
-const pagination = {
-  sortBy: 'date',
-  descending: true,
-  rowsPerPage: 10
-}
 
 onMounted(async () => {
   await promptStore.fetchPrompts()
