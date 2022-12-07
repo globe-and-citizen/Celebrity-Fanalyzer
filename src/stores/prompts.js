@@ -29,6 +29,7 @@ export const usePromptStore = defineStore('prompts', {
 
   getters: {
     getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
+    getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts,
     isLoading: (state) => state._isLoading
   },

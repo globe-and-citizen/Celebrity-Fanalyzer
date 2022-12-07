@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, runTransaction, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, runTransaction, setDoc, Timestamp } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
@@ -38,12 +38,14 @@ export const useEntryStore = defineStore('entries', {
 
     async addEntry(entry) {
       const userStore = useUserStore()
+      const promptStore = usePromptStore()
 
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
+      entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await addDoc(collection(db, 'prompts', entry.prompt.value, 'entries'), entry)
+      await setDoc(doc(db, 'entries', new Date().toJSON()), entry)
         .then(() => {
           this.$patch({ _entries: [...this.getEntries, entry] })
           LocalStorage.set('entries', this._entries)
