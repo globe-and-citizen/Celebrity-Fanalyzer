@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, runTransaction, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
@@ -18,23 +18,28 @@ export const useEntryStore = defineStore('entries', {
 
   actions: {
     async fetchEntries(id) {
+      const promptStore = usePromptStore()
+      const promptRef = promptStore.getPromptRef(id)
+
+      const q = query(collection(db, 'entries'), where('prompt', '==', promptRef))
+
       this._isLoading = true
-      await getDocs(collection(db, 'prompts', id, 'entries'))
-        .then(async (querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const querySnapshot = await getDocs(q)
+      try {
+        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const entry of entries) {
-            entry.author = await getDoc(entry.author).then((doc) => doc.data())
-          }
+        for (const entry of entries) {
+          entry.author = await getDoc(entry.author).then((doc) => doc.data())
+        }
 
-          this._entries = []
-          this.$patch({ _entries: entries })
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+        this._entries = []
+        this.$patch({ _entries: entries })
+      } catch (error) {
+        console.error(error)
+        throw new Error(error)
+      }
+
+      this._isLoading = false
     },
 
     async addEntry(entry) {
