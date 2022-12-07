@@ -1,5 +1,4 @@
 import {
-  addDoc,
   arrayRemove,
   arrayUnion,
   collection,
@@ -11,6 +10,7 @@ import {
   orderBy,
   query,
   runTransaction,
+  setDoc,
   Timestamp,
   updateDoc
 } from 'firebase/firestore'
@@ -107,7 +107,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.created = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await addDoc(collection(db, 'prompts'), prompt)
+      await setDoc(doc(db, 'prompts', prompt.date), prompt)
         .then(() => {
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
           LocalStorage.set('prompts', this._prompts)

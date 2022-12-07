@@ -14,7 +14,7 @@
         transition-hide="jump-up"
       >
         <q-list style="min-width: 100px">
-          <q-item clickable @click="prompt.dialog = true">
+          <q-item clickable @click="openPromptDialog()">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
           <q-item clickable @click="entry.dialog = true">
@@ -36,7 +36,7 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
+            <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
             <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
           </q-td>
         </template>
@@ -84,21 +84,8 @@ const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const columns = [
-  {
-    name: 'created',
-    label: 'Created at',
-    align: 'left',
-    field: (row) => shortMonthDay(row.created),
-    format: (val) => `${val}`,
-    sortable: true
-  },
-  {
-    name: 'author',
-    align: 'center',
-    label: 'Author',
-    field: (row) => row.author.displayName,
-    sortable: true
-  },
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, åsortable: true },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
 ]
@@ -114,6 +101,11 @@ onMounted(async () => {
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
 })
+
+function openPromptDialog(props) {
+  props?.id ? (prompt.value = props) : (prompt.value = {})
+  prompt.value.dialog = true
+}
 
 function onDeleteDialog(prompt) {
   deleteDialog.value.show = true
