@@ -31,6 +31,7 @@ export const useEntryStore = defineStore('entries', {
           this.$patch({ _entries: entries })
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -51,6 +52,7 @@ export const useEntryStore = defineStore('entries', {
           LocalStorage.set('entries', this._entries)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -69,6 +71,7 @@ export const useEntryStore = defineStore('entries', {
           LocalStorage.set('entries', this._entries)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -83,6 +86,7 @@ export const useEntryStore = defineStore('entries', {
           LocalStorage.set('entries', this._entries)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
