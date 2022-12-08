@@ -12,7 +12,7 @@ export const useEntryStore = defineStore('entries', {
   }),
 
   getters: {
-    getEntries: (state) => state._entries,
+    getEntries: (state) => LocalStorage.getItem('entries') || state._entries,
     isLoading: (state) => state._isLoading
   },
 
@@ -30,10 +30,12 @@ export const useEntryStore = defineStore('entries', {
 
         for (const entry of entries) {
           entry.author = await getDoc(entry.author).then((doc) => doc.data())
+          entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
         }
 
         this._entries = []
         this.$patch({ _entries: entries })
+        LocalStorage.set('entries', this._entries)
       } catch (error) {
         console.error(error)
         throw new Error(error)
@@ -45,13 +47,15 @@ export const useEntryStore = defineStore('entries', {
     async addEntry(entry) {
       const userStore = useUserStore()
       const promptStore = usePromptStore()
+      const id = `${entry.prompt.value}T${Date.now()}` // 2022-11T1670535123715
 
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+      console.log(id)
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', new Date().toJSON()), entry)
+      await setDoc(doc(db, 'entries', id), entry)
         .then(() => {
           this.$patch({ _entries: [...this.getEntries, entry] })
           LocalStorage.set('entries', this._entries)
@@ -64,12 +68,17 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async editEntry(entry) {
+      const promptStore = usePromptStore()
+
+      entry.updated = Timestamp.fromDate(new Date())
+      entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'prompts', entry.prompt.id, 'entries', entry.id), { ...entry })
+        transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {
-          const index = this.getEntries.findIndex((p) => p.id === entry.id)
+          const index = this.getEntries.findIndex((p) => p.fid === entry.id)
           this.$patch({
             _entries: [...this._entries.slice(0, index), { ...this._entries[index], ...entry }, ...this._entries.slice(index + 1)]
           })
@@ -84,7 +93,7 @@ export const useEntryStore = defineStore('entries', {
 
     async deleteEntry(id) {
       this._isLoading = true
-      await deleteDoc(doc(db, 'prompts', entry.prompt.id, 'entries', id))
+      await deleteDoc(doc(db, 'entries', id))
         .then(() => {
           const index = this._entries.findIndex((entry) => entry.id === id)
           this._entries.splice(index, 1)
