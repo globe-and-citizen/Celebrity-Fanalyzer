@@ -92,6 +92,7 @@ watchEffect(() => {
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
+    entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
     entry.description = ''
