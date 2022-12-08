@@ -17,7 +17,7 @@
           <q-item clickable @click="openPromptDialog()">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
-          <q-item clickable @click="entry.dialog = true">
+          <q-item clickable @click="openEntryDialog()">
             <q-item-section>New Entry</q-item-section>
           </q-item>
         </q-list>
@@ -126,5 +126,10 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+function openEntryDialog(props) {
+  props?.id ? (entry.value = props) : (entry.value = {})
+  entry.value.dialog = true
 }
 </script>
