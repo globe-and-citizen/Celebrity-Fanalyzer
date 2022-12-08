@@ -52,7 +52,6 @@ export const useEntryStore = defineStore('entries', {
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
-      console.log(id)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', id), entry)
