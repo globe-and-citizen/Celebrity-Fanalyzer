@@ -50,7 +50,7 @@
           accept=".jpg, image/*"
           counter
           hide-hint
-          hint="Landscape images are better | Max size is 5MB"
+          hint="Square images are better | Max size is 5MB"
           label="Image"
           :max-total-size="5242880"
           :required="!id"
