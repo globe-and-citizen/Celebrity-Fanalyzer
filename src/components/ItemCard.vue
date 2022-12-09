@@ -5,7 +5,7 @@
         <q-avatar size="2rem">
           <q-img :src="item.author.photoURL" />
         </q-avatar>
-        <p class="q-mb-none q-ml-sm text-body1">
+        <p class="q-mb-none q-ml-sm text-body1" v-if="item.author.displayName">
           {{ item.author.displayName.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
         </p>
       </div>

@@ -43,7 +43,7 @@
         :key="prompt?.id"
         :item="prompt"
         v-show="prompt.categories.includes(category) || category === 'All'"
-        :link="`/prompt/${prompt.slug}`"
+        :link="`/${prompt.id}`"
       ></ItemCard>
     </section>
   </q-page>

@@ -31,7 +31,7 @@
     <section>
       <ItemCard v-for="prompt in prompts" :key="prompt?.id" :item="prompt"
                       v-show="prompt.categories.includes(category) || category === 'All'"
-                      :link="`/prompt/${prompt.slug}`"></ItemCard>
+                      :link="`/prompt/${prompt.id}`"></ItemCard>
     </section>
   </q-page>
 </template>

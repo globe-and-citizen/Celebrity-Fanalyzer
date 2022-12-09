@@ -83,7 +83,7 @@ onMounted(async () => {
 })
 
 function updatePrompt() {
-  prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
+  prompt.value = promptStore.getPrompts.find((prompt) => prompt.id === router.currentRoute.value.params.id)
 }
 
 function like() {

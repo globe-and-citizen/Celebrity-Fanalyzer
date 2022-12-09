@@ -22,7 +22,7 @@ const routes = [
         component: () => import('pages/ProfilePage.vue')
       },
       {
-        path: 'prompt/:id',
+        path: ':id(\\d{4}-\\d{2})/',
         component: () => import('pages/PromptPage.vue')
       },
       {
