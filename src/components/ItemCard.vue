@@ -52,7 +52,6 @@ function giveReadingTime(description) {
   return Math.round(wordCount / averageWordsPerMinute)
 }
 function goToUrl() {
-  router.push(this.props.link)
+  router.push(props.link)
 }
 </script>
-<style scoped></style>

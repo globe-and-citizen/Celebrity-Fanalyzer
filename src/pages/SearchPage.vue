@@ -54,9 +54,7 @@ import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'components/ItemCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const promptStore = usePromptStore()
 
 const search = ref('')
