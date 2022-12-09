@@ -6,11 +6,11 @@
           <q-img :src="item.author.photoURL" />
         </q-avatar>
         <p class="q-mb-none q-ml-sm text-body1">
-          {{ item.author.displayName.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
+          {{ item.author.displayName?.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
         </p>
       </div>
       <h2 class="q-mb-none text-body1 text-bold">
-        {{ item.title.length > 40 ? item.title.substring(0, 40) + '...' : item.title }}
+        {{ item.title?.length > 40 ? item.title.substring(0, 40) + '...' : item.title }}
       </h2>
 
       <p class="q-my-none text-body2 text-secondary">
