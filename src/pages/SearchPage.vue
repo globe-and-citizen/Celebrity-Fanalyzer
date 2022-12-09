@@ -38,17 +38,20 @@
       <ArticleSkeleton />
     </section>
     <section v-if="promptStore.getPrompts.filter((prompt) => prompt.categories.includes(category)).length">
-
-      <ItemCard v-for="prompt in prompts" :key="prompt?.id" :item="prompt"
-                v-show="prompt.categories.includes(category) || category === 'All'"
-                :link="`/prompt/${prompt.slug}`"></ItemCard>
+      <ItemCard
+        v-for="prompt in prompts"
+        :key="prompt?.id"
+        :item="prompt"
+        v-show="prompt.categories.includes(category) || category === 'All'"
+        :link="`/prompt/${prompt.slug}`"
+      ></ItemCard>
     </section>
   </q-page>
 </template>
 
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
-import ItemCard from "components/ItemCard.vue";
+import ItemCard from 'components/ItemCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -77,5 +80,4 @@ onMounted(async () => {
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
 })
-
 </script>
