@@ -3,8 +3,8 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page class="bg-white">
-    <q-img :ratio="21 / 9" :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="cf-parallax q-page-container" />
-    <section class="q-pa-md cf-parallax-mt bg-white">
+    <q-img :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="parallax q-page-container" />
+    <section class="q-pa-md bg-white" style="margin-top: 70%">
       <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
       <p class="text-body1" v-html="prompt.description"></p>
       <div class="q-mb-md">
@@ -116,11 +116,7 @@ function sharePrompt(grid) {
     ]
   }).onOk((action) => {
     if (action.id === 'clipboard') {
-      navigator.clipboard.writeText(currentUrl.value)
-      copied.value = true
-      setInterval(() => {
-        copied.value = false
-      }, 800)
+      navigator.clipboard.writeText(window.location.href)
     } else if (action.id === 'facebook' || action.id === 'linkedin') {
       window.open(action.link + `${window.location.href}`, '_blank')
     } else {
@@ -130,13 +126,10 @@ function sharePrompt(grid) {
 }
 </script>
 
-<style lang="scss">
-.cf-parallax {
+<style scoped lang="scss">
+.parallax {
   position: fixed;
   top: 0;
   z-index: -1;
-}
-.cf-parallax-mt {
-  margin-top: 42.8571%;
 }
 </style>

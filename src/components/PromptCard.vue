@@ -2,6 +2,29 @@
   <q-card>
     <q-card-section class="row items-center no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
+      <span>&nbsp; for &nbsp;</span>
+      <q-input borderless dense readonly style="max-width: 5.5rem" v-model="prompt.date">
+        <template v-slot:append>
+          <q-icon name="event" class="cursor-pointer">
+            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+              <q-date
+                default-view="Months"
+                emit-immediately
+                :key="dataKey"
+                mask="YYYY-MM"
+                minimal
+                v-model="prompt.date"
+                years-in-month-view
+                @update:model-value="onUpdateMonth"
+              >
+                <div class="row items-center justify-end">
+                  <q-btn v-close-popup label="Close" color="primary" flat />
+                </div>
+              </q-date>
+            </q-popup-proxy>
+          </q-icon>
+        </template>
+      </q-input>
       <q-space />
       <q-btn flat round icon="close" v-close-popup />
     </q-card-section>
@@ -27,7 +50,7 @@
           accept=".jpg, image/*"
           counter
           hide-hint
-          hint="Landscape images are better | Max size is 5MB"
+          hint="Square images are better | Max size is 5MB"
           label="Image"
           :max-total-size="5242880"
           :required="!id"
@@ -61,7 +84,7 @@
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="!prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
+          :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
@@ -73,35 +96,43 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { date, useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
+import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
+const dataKey = ref(Date.now())
 const imageModel = ref([])
 const prompt = reactive({})
 
 watchEffect(() => {
   if (props.id) {
     prompt.categories = props.categories
+    prompt.date = props.date
     prompt.description = props.description
     prompt.id = props.id
     prompt.image = props.image
     prompt.title = props.title
   } else {
     prompt.categories = null
+    prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
     prompt.image = ''
-    prompt.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
+    prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
   }
 })
+
+function onUpdateMonth() {
+  dataKey.value = Date.now()
+}
 
 function uploadPhoto() {
   promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
@@ -112,9 +143,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  prompt.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${prompt.title}`
-    .toLowerCase()
-    .replace(/[^0-9a-z]+/g, '-')
+  prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (props.id) {
     await promptStore

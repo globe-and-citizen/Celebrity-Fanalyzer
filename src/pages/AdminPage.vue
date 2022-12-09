@@ -14,10 +14,10 @@
         transition-hide="jump-up"
       >
         <q-list style="min-width: 100px">
-          <q-item clickable @click="prompt.dialog = true">
+          <q-item clickable @click="openPromptDialog()">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
-          <q-item clickable @click="entry.dialog = true">
+          <q-item clickable @click="openEntryDialog()">
             <q-item-section>New Entry</q-item-section>
           </q-item>
         </q-list>
@@ -26,7 +26,15 @@
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" :filter="promptFilter" flat :loading="promptStore.isLoading" :rows="prompts" title="Prompts">
+      <q-table
+        :columns="columns"
+        :filter="promptFilter"
+        flat
+        :loading="promptStore.isLoading"
+        :pagination="pagination"
+        :rows="prompts"
+        title="Prompts"
+      >
         <template v-slot:top-right>
           <q-input dense v-model="promptFilter" placeholder="Search">
             <template v-slot:append>
@@ -36,7 +44,7 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
+            <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
             <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
           </q-td>
         </template>
@@ -83,32 +91,14 @@ const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const columns = [
-  {
-    name: 'created',
-    label: 'Created at',
-    align: 'left',
-    field: (row) =>
-      new Date(row.created.seconds * 1000 + row.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
-      }),
-    format: (val) => `${val}`,
-    sortable: true
-  },
-  {
-    name: 'author',
-    align: 'center',
-    label: 'Author',
-    field: (row) => row.author.displayName,
-    sortable: true
-  },
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const entries = ref([])
 const entry = ref({})
-const entryFilter = ref({})
+const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
 const prompts = ref([])
 const prompt = ref({})
 const promptFilter = ref('')
@@ -117,6 +107,11 @@ onMounted(async () => {
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
 })
+
+function openPromptDialog(props) {
+  props?.id ? (prompt.value = props) : (prompt.value = {})
+  prompt.value.dialog = true
+}
 
 function onDeleteDialog(prompt) {
   deleteDialog.value.show = true
@@ -131,5 +126,10 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+function openEntryDialog(props) {
+  props?.id ? (entry.value = props) : (entry.value = {})
+  entry.value.dialog = true
 }
 </script>
