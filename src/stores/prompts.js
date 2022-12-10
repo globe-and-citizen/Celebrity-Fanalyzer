@@ -41,6 +41,7 @@ export const usePromptStore = defineStore('prompts', {
 
       this._monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
+      this._isLoading = true
       await getDocs(collection(db, 'prompts', this._monthPrompt.id, 'entries'))
         .then(async (querySnapshot) => {
           const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -52,6 +53,7 @@ export const usePromptStore = defineStore('prompts', {
           this._monthPrompt.entries = entries
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -75,6 +77,7 @@ export const usePromptStore = defineStore('prompts', {
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -96,6 +99,7 @@ export const usePromptStore = defineStore('prompts', {
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -114,7 +118,7 @@ export const usePromptStore = defineStore('prompts', {
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
-          console.error('Error:', error)
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -133,6 +137,7 @@ export const usePromptStore = defineStore('prompts', {
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -147,6 +152,20 @@ export const usePromptStore = defineStore('prompts', {
           LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async updateEntryField(promptId, entryRef) {
+      this._isLoading = true
+      await updateDoc(doc(db, 'prompts', promptId), {
+        entries: arrayUnion(entryRef)
+      })
+        .then(() => this.fetchPrompt(promptId))
+        .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -171,6 +190,7 @@ export const usePromptStore = defineStore('prompts', {
       })
         .then(() => this.fetchPrompt(id))
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -184,6 +204,7 @@ export const usePromptStore = defineStore('prompts', {
       })
         .then(() => this.fetchPrompt(id))
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
