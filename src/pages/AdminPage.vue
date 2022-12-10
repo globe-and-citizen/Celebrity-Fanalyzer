@@ -9,7 +9,33 @@
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" flat hide-bottom :loading="isLoading" :rows="prompts" title="Manage Prompts">
+      <q-table
+        title="Manage Prompts"
+        :columns="columns"
+        :rows="prompts"
+        :loading="isLoading"
+        flat
+        hide-bottom
+      >
+        <template v-slot:body-cell-btn="props">
+          <q-tr :props="props">
+            <q-td auto-width>
+              <q-btn
+                size="sm"
+                color="red"
+                round
+                dense
+                @click="props.expand = !props.expand"
+                :icon="props.expand ? 'remove' : 'add'"
+              />
+            </q-td>
+          </q-tr>
+          <q-tr v-show="props.expand" :props="props">
+            <q-td>
+              <div class="text-left">This is expand slot for row above: {{ props.row.name }}.</div>
+            </q-td>
+          </q-tr>
+        </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
@@ -51,6 +77,10 @@ const promptStore = usePromptStore()
 
 const columns = [
   {
+    name: 'btn',
+    field: 'btn'
+  },
+  {
     name: 'created',
     label: 'Created at',
     align: 'left',
@@ -65,8 +95,18 @@ const columns = [
     field: (row) => row.author.displayName,
     sortable: true
   },
-  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
-  { name: 'actions', field: 'actions' }
+  {
+    name: 'title',
+    align: 'left',
+    label: 'Title',
+    field: 'title',
+    sortable: true
+  },
+  {
+    name: 'actions',
+    field: 'actions'
+  },
+
 ]
 const deleteDialog = ref({})
 const isLoading = ref(false)
