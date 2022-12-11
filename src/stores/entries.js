@@ -47,17 +47,21 @@ export const useEntryStore = defineStore('entries', {
     async addEntry(entry) {
       const userStore = useUserStore()
       const promptStore = usePromptStore()
-      const id = `${entry.prompt.value}T${Date.now()}` // 2022-11T1670535123715
+
+      const promptId = entry.prompt.value
+      const entryId = `${promptId}T${Date.now()}` // 2022-11T1670535123715
+      const entryRef = doc(db, 'entries', entryId)
 
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', id), entry)
+      await setDoc(entryRef, entry)
         .then(() => {
           this.$patch({ _entries: [...this.getEntries, entry] })
           LocalStorage.set('entries', this._entries)
+          promptStore.updateEntryField(promptId, entryRef)
         })
         .catch((error) => {
           console.error(error)

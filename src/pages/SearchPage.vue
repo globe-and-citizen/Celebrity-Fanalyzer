@@ -40,18 +40,18 @@
     <section v-if="promptStore.getPrompts.filter((prompt) => prompt.categories.includes(category)).length">
       <ItemCard
         v-for="prompt in prompts"
-        :key="prompt?.id"
         :item="prompt"
+        :key="prompt?.id"
+        :link="`/prompt/${prompt.slug}`"
         v-show="prompt.categories.includes(category) || category === 'All'"
-        :link="`/${prompt.id}`"
-      ></ItemCard>
+      />
     </section>
   </q-page>
 </template>
 
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
-import ItemCard from 'components/ItemCard.vue'
+import ItemCard from 'src/components/ItemCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
