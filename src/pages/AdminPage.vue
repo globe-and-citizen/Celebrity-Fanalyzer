@@ -17,34 +17,31 @@
         flat
         hide-bottom
       >
-        <template v-slot:body-cell-btn="props">
+        <template v-slot:body="props">
           <q-tr :props="props">
             <q-td auto-width>
-              <q-btn
-                size="sm"
-                color="red"
-                round
-                dense
-                @click="props.expand = !props.expand"
-                :icon="props.expand ? 'remove' : 'add'"
-              />
+              <q-btn size="sm" color="red" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />
+            </q-td>
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              {{ col.value }}
+            </q-td>
+            <q-td >
+              <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
+              <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
             </q-td>
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
-            <q-td>
-              <div class="text-left">This is expand slot for row above: {{ props.row.name }}.</div>
+            <q-td colspan="100%">
+              <div class="text-left">This is the test text. After few days there will be entries text.{{ props.row.author.displayName }}</div>
             </q-td>
           </q-tr>
         </template>
-        <template v-slot:body-cell-actions="props">
-          <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
-            <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
-          </q-td>
-        </template>
       </q-table>
     </q-page>
-
     <q-dialog v-model="deleteDialog.show">
       <q-card>
         <q-card-section class="q-pb-none">
@@ -76,10 +73,7 @@ const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const columns = [
-  {
-    name: 'btn',
-    field: 'btn'
-  },
+  {},
   {
     name: 'created',
     label: 'Created at',
@@ -102,11 +96,6 @@ const columns = [
     field: 'title',
     sortable: true
   },
-  {
-    name: 'actions',
-    field: 'actions'
-  },
-
 ]
 const deleteDialog = ref({})
 const isLoading = ref(false)
