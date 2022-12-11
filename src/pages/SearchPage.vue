@@ -42,7 +42,7 @@
         v-for="prompt in prompts"
         :item="prompt"
         :key="prompt?.id"
-        :link="`/prompt/${prompt.slug}`"
+        :link="`/${prompt.id}`"
         v-show="prompt.categories.includes(category) || category === 'All'"
       />
     </section>
