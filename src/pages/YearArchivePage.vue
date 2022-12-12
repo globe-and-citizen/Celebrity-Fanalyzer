@@ -23,7 +23,7 @@
     </section>
     <h6 v-if="!prompts.length && !promptStore.isLoading" class="text-center text-uppercase">No prompts were published in {{ year }}</h6>
     <section>
-      <ItemCard v-for="prompt in prompts" :item="prompt" :key="prompt?.id" :link="`/prompt/${prompt.id}`" />
+      <ItemCard v-for="prompt in prompts" :item="prompt" :key="prompt?.id" :link="`${prompt.year}/${prompt.month}`" />
     </section>
   </q-page>
 </template>
@@ -45,5 +45,10 @@ year.value = router.currentRoute.value.params.year
 
 onMounted(async () => {
   await promptStore.fetchPromptsByYear(year.value).then((data) => (prompts.value = data))
+
+  for (const prompt of prompts.value) {
+    prompt.year = prompt.date.split('-')[0]
+    prompt.month = prompt.date.split('-')[1]
+  }
 })
 </script>
