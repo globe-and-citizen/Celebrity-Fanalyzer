@@ -22,9 +22,12 @@ const routes = [
         component: () => import('pages/ProfilePage.vue')
       },
       {
-        path: 'prompt/:slug',
-        component: () => import('pages/PromptPage.vue'),
-        alias:':id(\\d{4}-\\d{2})/',
+        path: ':slug',
+        component: () => import('pages/PromptPage.vue')
+      },
+      {
+        path: ':year(\\d{4})/:month(\\d{2})',
+        component: () => import('pages/PromptPage.vue')
       },
       {
         path: 'entry/:id',
@@ -33,10 +36,6 @@ const routes = [
       {
         path: ':year(\\d{4})',
         component: () => import('pages/YearArchivePage.vue')
-      },
-      {
-        path: ':year(\\d{4})/:month',
-        component: () => import('pages/MonthArchivePage.vue')
       },
       {
         path: 'admin',
