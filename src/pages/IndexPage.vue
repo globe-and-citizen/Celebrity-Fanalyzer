@@ -14,7 +14,7 @@
 
   <q-page class="q-pa-md">
     <section v-if="monthPrompt">
-      <a :href="`prompt/${monthPrompt.slug}`">
+      <a :href="monthPrompt.slug">
         <q-img :src="monthPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
       </a>
 
