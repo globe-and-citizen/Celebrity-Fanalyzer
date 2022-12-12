@@ -13,20 +13,37 @@
         </q-badge>
       </div>
       <div class="inline-block">
-        <q-btn color="green" :disable="!userStore.isAuthenticated" flat icon="sentiment_satisfied_alt"
-               :label="prompt.info?.likes.length" rounded @click="like()">
+        <q-btn
+          color="green"
+          :disable="!userStore.isAuthenticated"
+          flat
+          icon="sentiment_satisfied_alt"
+          :label="prompt.info?.likes.length"
+          rounded
+          @click="like()"
+        >
           <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
         </q-btn>
-        <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to
-          vote
-        </q-tooltip>
-        <q-btn color="red" :disable="!userStore.isAuthenticated" flat icon="sentiment_very_dissatisfied"
-               :label="prompt.info?.dislikes.length" rounded @click="dislike()">
+        <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
+        <q-btn
+          color="red"
+          :disable="!userStore.isAuthenticated"
+          flat
+          icon="sentiment_very_dissatisfied"
+          :label="prompt.info?.dislikes.length"
+          rounded
+          @click="dislike()"
+        >
           <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
         </q-btn>
       </div>
-      <q-btn flat rounded icon="img:/icons/discord.svg"
-             href="https://discord.com/channels/1034461422962360380/1040994839610806343" target="_blank">
+      <q-btn
+        flat
+        rounded
+        icon="img:/icons/discord.svg"
+        href="https://discord.com/channels/1034461422962360380/1040994839610806343"
+        target="_blank"
+      >
         <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
       </q-btn>
       <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
@@ -60,14 +77,18 @@ onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
     await promptStore.fetchPrompts()
   }
-  updatePrompt()
+
+  await updatePrompt()
+
   await entryStore.fetchEntries(prompt.value.id)
   entries.value = entryStore.getEntries
 })
 
-function updatePrompt() {
-  if (router.currentRoute.value.params.id) {
-    prompt.value = promptStore.getPrompts.find((prompt) => prompt.id === router.currentRoute.value.params.id)
+async function updatePrompt() {
+  if (router.currentRoute.value.params.year) {
+    await promptStore
+      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+      .then((res) => (prompt.value = res))
   } else if (router.currentRoute.value.params.slug) {
     prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
   }
@@ -89,15 +110,15 @@ function sharePrompt(grid) {
       { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
       {
         label: 'Facebook',
-        img:   '/icons/facebook.svg',
-        id:    'facebook',
-        link:  'https://facebook.com/sharer/sharer.php?u='
+        img: '/icons/facebook.svg',
+        id: 'facebook',
+        link: 'https://facebook.com/sharer/sharer.php?u='
       },
       {
         label: 'LinkedIn',
-        img:   '/icons/linkedin.svg',
-        id:    'linkedin',
-        link:  'https://linkedin.com/sharing/share-offsite/?url='
+        img: '/icons/linkedin.svg',
+        id: 'linkedin',
+        link: 'https://linkedin.com/sharing/share-offsite/?url='
       },
       { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
       { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
@@ -105,15 +126,15 @@ function sharePrompt(grid) {
       { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
       {
         label: 'Pinterest',
-        img:   '/icons/pinterest.svg',
-        id:    'pinterest',
-        link:  'https://pinterest.com/pin/create/button/?url='
+        img: '/icons/pinterest.svg',
+        id: 'pinterest',
+        link: 'https://pinterest.com/pin/create/button/?url='
       },
       {
         label: 'Odnoklassniki',
-        img:   '/icons/odnoklassniki.svg',
-        id:    'odnoklassniki',
-        link:  'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
+        img: '/icons/odnoklassniki.svg',
+        id: 'odnoklassniki',
+        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
       }
     ]
   }).onOk((action) => {
