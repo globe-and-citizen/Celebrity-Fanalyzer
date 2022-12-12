@@ -1,10 +1,24 @@
 <template>
   <div>
-    <h1 class="text-h5">Content 2</h1>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad architecto cumque exercitationem labore, nisi pariatur perferendis quaerat
-    quasi, quis quo, repellat soluta! Beatae deleniti itaque minima nulla officiis omnis voluptatem.
+    <div class="col-8" v-if="prompt">
+      <div class="flex items-center">
+        <q-avatar size="2rem">
+          <q-img :src="prompt.author.photoURL" />
+        </q-avatar>
+        <p class="q-mb-none q-ml-sm text-body1">
+          {{ prompt.author.displayName?.length > 20 ? prompt.author.displayName.substring(0, 20) + '...' : prompt.author.displayName
+          }} </p>
+      </div>
+      <h2 class="q-mb-none text-body1 text-bold">
+        {{ prompt.title?.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }} </h2>
+    </div>
+    <q-separator class="full-width q-mt-md" />
+
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+const props = defineProps({
+  prompt: {}
+})
+</script>

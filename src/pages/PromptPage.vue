@@ -64,7 +64,7 @@
         </div>
       </q-tab-panel>
       <q-tab-panel name="content2">
-        <PromptAnthrogram></PromptAnthrogram>
+        <PromptAnthrogram :prompt="prompt"></PromptAnthrogram>
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
