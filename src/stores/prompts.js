@@ -12,7 +12,8 @@ import {
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc
+  updateDoc,
+  where
 } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -76,6 +77,27 @@ export const usePromptStore = defineStore('prompts', {
           else this._prompts[index] = prompt
 
           LocalStorage.set('prompts', this._prompts)
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async fetchPromptsByYear(year) {
+      const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
+
+      this._isLoading = true
+      return await getDocs(q)
+        .then(async (querySnapshot) => {
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const prompt of prompts) {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+          }
+
+          return prompts
         })
         .catch((error) => {
           console.error(error)
