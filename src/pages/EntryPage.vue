@@ -52,7 +52,7 @@ import { useEntryStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const tab  = ref('entry')
+const tab = ref('entry')
 const router = useRouter()
 
 const entryStore = useEntryStore()

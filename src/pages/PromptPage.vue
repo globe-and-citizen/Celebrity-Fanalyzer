@@ -3,66 +3,82 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page class="bg-white">
-    <q-img :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="parallax q-page-container" />
-    <section class="q-pa-md bg-white" style="margin-top: 70%">
-      <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
-      <p class="text-body1" v-html="prompt.description"></p>
-      <div class="q-mb-md">
-        <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
-          {{ category }}
-        </q-badge>
-      </div>
-      <div class="inline-block">
-        <q-btn
-          color="green"
-          :disable="!userStore.isAuthenticated"
-          flat
-          icon="sentiment_satisfied_alt"
-          :label="prompt.info?.likes.length"
-          rounded
-          @click="like()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
-        <q-btn
-          color="red"
-          :disable="!userStore.isAuthenticated"
-          flat
-          icon="sentiment_very_dissatisfied"
-          :label="prompt.info?.dislikes.length"
-          rounded
-          @click="dislike()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-      </div>
-      <q-btn
-        flat
-        rounded
-        icon="img:/icons/discord.svg"
-        href="https://discord.com/channels/1034461422962360380/1040994839610806343"
-        target="_blank"
-      >
-        <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
-      </q-btn>
-      <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
-        <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
-      </q-btn>
-    </section>
-    <q-separator />
-    <q-separator />
-    <TheEntries :entries="entries" />
+    <q-tabs active-color="primary" dense indicator-color="transparent" v-model="tab" class="fixed-bottom bg-white" style="margin-bottom: 60px; z-index: 3; padding: 15px">
+      <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="content1" :ripple="false" />
+      <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="content2" :ripple="false" />
+    </q-tabs>
+    <q-tab-panels animated class="col-grow q-pa-md" swipeable v-model="tab">
+      <q-tab-panel name="content1" class="bg-white">
+        <img :src="prompt?.image" alt="" class="parallax q-page-container" />
+        <div class="img-parallax"></div>
+        <section class="q-pa-md bg-white" style="margin-top: 70%; z-index: 2; position: relative">
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
+          <p class="text-body1" v-html="prompt.description"></p>
+          <div class="q-mb-md">
+            <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
+              {{ category }}
+            </q-badge>
+          </div>
+          <div class="inline-block">
+            <q-btn
+              color="green"
+              :disable="!userStore.isAuthenticated"
+              flat
+              icon="sentiment_satisfied_alt"
+              :label="prompt.info?.likes.length"
+              rounded
+              @click="like()"
+            >
+              <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+            </q-btn>
+            <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
+            <q-btn
+              color="red"
+              :disable="!userStore.isAuthenticated"
+              flat
+              icon="sentiment_very_dissatisfied"
+              :label="prompt.info?.dislikes.length"
+              rounded
+              @click="dislike()"
+            >
+              <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+            </q-btn>
+          </div>
+          <q-btn
+            flat
+            rounded
+            icon="img:/icons/discord.svg"
+            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
+            target="_blank"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+          </q-btn>
+          <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
+            <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
+          </q-btn>
+        </section>
+        <div class="bg-white" style="position: relative; z-index: 2">
+          <q-separator />
+          <q-separator />
+          <TheEntries :entries="entries" />
+        </div>
+      </q-tab-panel>
+      <q-tab-panel name="content2">
+        <PromptAnthrogram></PromptAnthrogram>
+      </q-tab-panel>
+    </q-tab-panels>
   </q-page>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
 import TheEntries from 'src/components/TheEntries.vue'
+import PromptAnthrogram from 'src/components/PromptAnthrogram.vue'
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const tab = ref('content1')
 const $q = useQuasar()
 const router = useRouter()
 
@@ -128,8 +144,12 @@ function sharePrompt(grid) {
 
 <style scoped lang="scss">
 .parallax {
+  object-fit: cover;
+  width: calc(100% - 64px);
   position: fixed;
-  top: 0;
-  z-index: -1;
+  z-index: 1;
+  @media (min-width: 610px) {
+    width: calc(600px - 64px);
+  }
 }
 </style>
