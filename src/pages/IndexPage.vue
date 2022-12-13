@@ -28,9 +28,10 @@
 
 <script setup>
 import TheEntries from 'src/components/TheEntries.vue'
-import { usePromptStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
+const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)
@@ -38,5 +39,10 @@ const monthPrompt = ref(promptStore.getMonthPrompt)
 onMounted(async () => {
   await promptStore.fetchMonthPrompt()
   monthPrompt.value = promptStore.getMonthPrompt
+
+  if (!monthPrompt.value.entries.length) {
+    await entryStore.fetchEntries(monthPrompt.value.date)
+    monthPrompt.value.entries = entryStore.getEntries
+  }
 })
 </script>
