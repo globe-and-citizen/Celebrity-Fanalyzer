@@ -1,26 +1,26 @@
 <template>
   <div>
-    <div class="col-8" v-if="prompt">
+    <div class="col-8" v-if="entry">
       <div class="flex items-center">
         <q-avatar size="2rem">
-          <q-img :src="prompt.author.photoURL" />
+          <q-img :src="entry.author.photoURL" />
         </q-avatar>
         <p class="q-mb-none q-ml-sm text-body1">
-          {{ prompt.author.displayName?.length > 20 ? prompt.author.displayName.substring(0, 20) + '...' : prompt.author.displayName }}
+          {{ entry.author.displayName?.length > 20 ? entry.author.displayName.substring(0, 20) + '...' : entry.author.displayName }}
         </p>
       </div>
       <h2 class="q-mb-none text-body1 text-bold">
-        {{ prompt.title?.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
+        {{ entry.title?.length > 40 ? entry.title.substring(0, 40) + '...' : entry.title }}
       </h2>
     </div>
     <p class="q-pt-md text-center">Likes & Dislikes</p>
-    <LikeDislikeBarChart :likes="prompt.info.likes.length" :dislikes="prompt.info.dislikes.length" class="q-mt-md"/>
+    <LikeDislikeBarChart :likes="entry.info.likes.length" :dislikes="entry.info.dislikes.length" class="q-mt-md"/>
   </div>
 </template>
 
 <script setup>
 import LikeDislikeBarChart from 'src/components/LikeDislikeBarChart.vue'
 const props = defineProps({
-  prompt: {}
+  entry: {}
 })
 </script>
