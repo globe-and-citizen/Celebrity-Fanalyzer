@@ -12,10 +12,10 @@
           {{ category }}
         </q-badge>
       </div>
-      <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.info?.likes">
+      <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.info?.likes.length">
         <q-tooltip>Like</q-tooltip>
       </q-btn>
-      <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes">
+      <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.info?.dislikes.length">
         <q-tooltip>Dislike</q-tooltip>
       </q-btn>
       <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
