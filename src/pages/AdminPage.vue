@@ -27,33 +27,32 @@
   <section class="q-pa-md">
     <q-page padding>
       <q-table
-        title="Manage Prompts"
         :columns="columns"
-        :rows="prompts"
-        :loading="isLoading"
         flat
+        :filter="promptFilter"
         hide-bottom
+        :loading="promptStore.isLoading"
+        :rows="prompts"
+        title="Manage Prompts"
       >
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td auto-width>
               <q-btn size="sm" color="red" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />
             </q-td>
-            <q-td
-              v-for="col in props.cols"
-              :key="col.name"
-              :props="props"
-            >
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.value }}
             </q-td>
-            <q-td >
+            <q-td>
               <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
               <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
             </q-td>
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
-              <div class="text-left">This is the test text. After few days there will be entries text.{{ props.row.author.displayName }}</div>
+              <div class="text-left">
+                This is the test text. After few days there will be entries text.{{ props.row.author.displayName }}
+              </div>
             </q-td>
           </q-tr>
         </template>
@@ -92,42 +91,21 @@ const promptStore = usePromptStore()
 
 const columns = [
   {},
-  {
-    name: 'created',
-    label: 'Created at',
-    align: 'left',
-    field: (row) => row.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    format: (val) => `${val}`,
-    sortable: true
-  },
-  {
-    name: 'author',
-    align: 'center',
-    label: 'Author',
-    field: (row) => row.author.displayName,
-    sortable: true
-  },
-  {
-    name: 'title',
-    align: 'left',
-    label: 'Title',
-    field: 'title',
-    sortable: true
-  },
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
+  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
+  { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
 const entry = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
 const prompts = ref([])
 const prompt = ref({})
-const isLoading = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  isLoading.value = true
   await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
-  isLoading.value = false
 })
 
 function openPromptDialog(props) {
@@ -143,8 +121,8 @@ function onDeleteDialog(prompt) {
 function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
-    .then(() => $q.notify({ message: 'Prompt successfully deleted!' }))
-    .catch(() => $q.notify({ message: 'Prompt deletion failed!' }))
+    .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
+    .catch(() => $q.notify({ message: 'Prompt deletion failed' }))
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
