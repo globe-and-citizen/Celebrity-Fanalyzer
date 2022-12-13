@@ -58,6 +58,15 @@
         </template>
       </q-table>
     </q-page>
+
+    <q-dialog full-width position="bottom" v-model="prompt.dialog">
+      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
+    </q-dialog>
+
+    <q-dialog full-width position="bottom" v-model="entry.dialog">
+      <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+    </q-dialog>
+
     <q-dialog v-model="deleteDialog.show">
       <q-card>
         <q-card-section class="q-pb-none">
