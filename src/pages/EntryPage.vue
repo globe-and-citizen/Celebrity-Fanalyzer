@@ -2,16 +2,15 @@
   <section v-if="entryStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
-  <q-page v-else>
-    <q-tabs active-color="primary" dense indicator-color="transparent" v-model="tab">
+  <q-page v-else class="bg-white">
+    <q-tabs active-color="primary" dense indicator-color="transparent" v-model="tab" class="fixed-bottom fixed-tab bg-white">
       <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
       <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="arthrogram" :ripple="false" />
     </q-tabs>
     <q-tab-panels animated class="col-grow q-pa-md" swipeable v-model="tab">
       <q-tab-panel name="entry" class="bg-white">
-        <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
-        <div class="img-parallax"></div>
-        <section class="q-pa-md">
+        <img :src="article?.image" alt="" class="parallax-image q-page-container" />
+        <section class="q-pa-md bg-white parallax-content">
           <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
           <p class="text-body1" v-html="article.description"></p>
           <div class="q-mb-md">
@@ -32,15 +31,14 @@
             <q-tooltip>Share</q-tooltip>
           </q-btn>
         </section>
-        <div class="bg-white" style="position: relative; z-index: 2">
+        <div class="bg-white q-mb-md" style="position: relative; z-index: 2">
           <q-separator />
           <TheComments :comments="comments" v-show="showComments" />
           <q-separator />
         </div>
       </q-tab-panel>
       <q-tab-panel name="arthrogram">
-        <h1 class="text-h5">Content 2</h1>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        <PromptAnthrogram :prompt="article"></PromptAnthrogram>
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -51,6 +49,7 @@ import TheComments from 'src/components/TheComments.vue'
 import { useEntryStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import PromptAnthrogram from 'src/components/PromptAnthrogram.vue'
 
 const tab = ref('entry')
 const router = useRouter()
@@ -72,3 +71,28 @@ function toggleComments() {
   showComments.value = !showComments.value
 }
 </script>
+
+<style scoped lang="scss">
+.parallax {
+  &-image {
+    object-fit: cover;
+    width: calc(100% - 64px);
+    position: fixed;
+    z-index: 1;
+    @media (min-width: 610px) {
+      width: calc(600px - 64px);
+    }
+  }
+  &-content {
+    margin-top: 100%;
+    z-index: 2;
+    position: relative;
+  }
+}
+
+.fixed-tab {
+  margin-bottom: 60px;
+  z-index: 3;
+  padding: 15px;
+}
+</style>
