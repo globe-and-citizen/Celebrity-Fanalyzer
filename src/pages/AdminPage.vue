@@ -4,7 +4,24 @@
       <q-toolbar-title>
         <b class="text-secondary">Admin Panel</b>
       </q-toolbar-title>
-      <DialogPrompt v-bind="prompt" @hideDialog="prompt = {}" />
+      <q-btn-dropdown
+        auto-close
+        color="primary"
+        dropdown-icon="control_point"
+        flat
+        rounded
+        transition-show="jump-down"
+        transition-hide="jump-up"
+      >
+        <q-list style="min-width: 100px">
+          <q-item clickable @click="openPromptDialog()">
+            <q-item-section>New Prompt</q-item-section>
+          </q-item>
+          <q-item clickable @click="openEntryDialog()">
+            <q-item-section>New Entry</q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
     </q-toolbar>
   </q-header>
   <section class="q-pa-md">
@@ -56,7 +73,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="ondeletePrompt(deleteDialog.prompt.id)" />
+          <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -65,7 +82,8 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import DialogPrompt from 'src/components/PromptDialog.vue'
+import EntryCard from 'src/components/EntryCard.vue'
+import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
@@ -98,9 +116,12 @@ const columns = [
   },
 ]
 const deleteDialog = ref({})
-const isLoading = ref(false)
+const entry = ref({})
+const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
 const prompts = ref([])
 const prompt = ref({})
+const isLoading = ref({})
+const promptFilter = ref('')
 
 onMounted(async () => {
   isLoading.value = true
@@ -109,12 +130,17 @@ onMounted(async () => {
   isLoading.value = false
 })
 
+function openPromptDialog(props) {
+  props?.id ? (prompt.value = props) : (prompt.value = {})
+  prompt.value.dialog = true
+}
+
 function onDeleteDialog(prompt) {
   deleteDialog.value.show = true
   deleteDialog.value.prompt = prompt
 }
 
-function ondeletePrompt(id) {
+function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
     .then(() => $q.notify({ message: 'Prompt successfully deleted!' }))
@@ -122,5 +148,10 @@ function ondeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+function openEntryDialog(props) {
+  props?.id ? (entry.value = props) : (entry.value = {})
+  entry.value.dialog = true
 }
 </script>

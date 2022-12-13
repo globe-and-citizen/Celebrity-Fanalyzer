@@ -22,8 +22,20 @@ const routes = [
         component: () => import('pages/ProfilePage.vue')
       },
       {
-        path: 'prompt/:id',
+        path: ':slug',
         component: () => import('pages/PromptPage.vue')
+      },
+      {
+        path: ':year(\\d{4})/:month(\\d{2})',
+        component: () => import('pages/PromptPage.vue')
+      },
+      {
+        path: 'entry/:id',
+        component: () => import('pages/EntryPage.vue')
+      },
+      {
+        path: ':year(\\d{4})',
+        component: () => import('pages/YearArchivePage.vue')
       },
       {
         path: 'admin',
