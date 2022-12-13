@@ -12,7 +12,8 @@ import {
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc
+  updateDoc,
+  where
 } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -36,6 +37,7 @@ export const usePromptStore = defineStore('prompts', {
 
   actions: {
     async fetchMonthPrompt() {
+      this._isLoading = true
       const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
       const querySnapshot = await getDocs(q)
 
@@ -61,9 +63,9 @@ export const usePromptStore = defineStore('prompts', {
       LocalStorage.set('monthPrompt', this._monthPrompt)
     },
 
-    async fetchPrompt(id) {
+    async fetchPromptById(id) {
       this._isLoading = true
-      await getDoc(doc(db, 'prompts', id))
+      return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
           const prompt = { id: doc.id, ...doc.data() }
           prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
@@ -74,7 +76,28 @@ export const usePromptStore = defineStore('prompts', {
           if (index === -1) this._prompts.push(prompt)
           else this._prompts[index] = prompt
 
-          LocalStorage.set('prompts', this._prompts)
+          return prompt
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async fetchPromptsByYear(year) {
+      const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
+
+      this._isLoading = true
+      return await getDocs(q)
+        .then(async (querySnapshot) => {
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const prompt of prompts) {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+          }
+
+          return prompts
         })
         .catch((error) => {
           console.error(error)
@@ -163,7 +186,7 @@ export const usePromptStore = defineStore('prompts', {
       await updateDoc(doc(db, 'prompts', promptId), {
         entries: arrayUnion(entryRef)
       })
-        .then(() => this.fetchPrompt(promptId))
+        .then(() => this.fetchPromptById(promptId))
         .catch((error) => {
           console.error(error)
           throw new Error(error)
@@ -188,7 +211,7 @@ export const usePromptStore = defineStore('prompts', {
         'info.likes': arrayUnion(useUserStore().getUserRef),
         'info.dislikes': arrayRemove(useUserStore().getUserRef)
       })
-        .then(() => this.fetchPrompt(id))
+        .then(() => this.fetchPromptById(id))
         .catch((error) => {
           console.error(error)
           throw new Error(error)
@@ -202,7 +225,7 @@ export const usePromptStore = defineStore('prompts', {
         'info.dislikes': arrayUnion(useUserStore().getUserRef),
         'info.likes': arrayRemove(useUserStore().getUserRef)
       })
-        .then(() => this.fetchPrompt(id))
+        .then(() => this.fetchPromptById(id))
         .catch((error) => {
           console.error(error)
           throw new Error(error)

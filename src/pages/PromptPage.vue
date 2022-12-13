@@ -77,13 +77,21 @@ onMounted(async () => {
   if (!promptStore.getPrompts?.length) {
     await promptStore.fetchPrompts()
   }
-  updatePrompt()
+
+  await updatePrompt()
+
   await entryStore.fetchEntries(prompt.value.id)
   entries.value = entryStore.getEntries
 })
 
-function updatePrompt() {
-  prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
+async function updatePrompt() {
+  if (router.currentRoute.value.params.year) {
+    await promptStore
+      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+      .then((res) => (prompt.value = res))
+  } else if (router.currentRoute.value.params.slug) {
+    prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
+  }
 }
 
 function like() {
@@ -100,13 +108,28 @@ function sharePrompt(grid) {
     grid,
     actions: [
       { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
-      { label: 'Facebook', img: '/icons/facebook.svg', id: 'facebook', link: 'https://facebook.com/sharer/sharer.php?u=' },
-      { label: 'LinkedIn', img: '/icons/linkedin.svg', id: 'linkedin', link: 'https://linkedin.com/sharing/share-offsite/?url=' },
+      {
+        label: 'Facebook',
+        img: '/icons/facebook.svg',
+        id: 'facebook',
+        link: 'https://facebook.com/sharer/sharer.php?u='
+      },
+      {
+        label: 'LinkedIn',
+        img: '/icons/linkedin.svg',
+        id: 'linkedin',
+        link: 'https://linkedin.com/sharing/share-offsite/?url='
+      },
       { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
       { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
       { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
       { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
-      { label: 'Pinterest', img: '/icons/pinterest.svg', id: 'pinterest', link: 'https://pinterest.com/pin/create/button/?url=' },
+      {
+        label: 'Pinterest',
+        img: '/icons/pinterest.svg',
+        id: 'pinterest',
+        link: 'https://pinterest.com/pin/create/button/?url='
+      },
       {
         label: 'Odnoklassniki',
         img: '/icons/odnoklassniki.svg',
