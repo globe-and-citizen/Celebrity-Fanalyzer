@@ -14,13 +14,12 @@
       </h2>
     </div>
     <q-separator class="full-width q-mt-md" />
-    <BarChart />
+    <LikeDislikeBarChart :likes="50" :dislikes="20"/>
   </div>
 </template>
 
 <script setup>
-import BarChart from 'src/components/BarChart.vue'
-
+import LikeDislikeBarChart from 'src/components/LikeDislikeBarChart.vue'
 const props = defineProps({
   prompt: {}
 })
