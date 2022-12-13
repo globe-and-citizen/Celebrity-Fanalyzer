@@ -2,9 +2,9 @@
   <section v-if="entryStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </section>
-  <q-page v-else>
-    <q-img :ratio="21 / 9" :src="article?.image" spinner-color="primary" spinner-size="82px" />
-    <section class="q-pa-md">
+  <q-page class="bg-white">
+    <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="article?.image" />
+    <section class="q-pa-md" style="margin-top: 100%">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
       <p class="text-body1" v-html="article.description"></p>
       <div class="q-mb-md">
@@ -56,3 +56,11 @@ function toggleComments() {
   showComments.value = !showComments.value
 }
 </script>
+
+<style scoped lang="scss">
+.parallax {
+  position: fixed;
+  top: 0;
+  z-index: -1;
+}
+</style>

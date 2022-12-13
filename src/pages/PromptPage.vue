@@ -3,8 +3,8 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page class="bg-white">
-    <q-img :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="parallax q-page-container" />
-    <section class="q-pa-md bg-white" style="margin-top: 70%">
+    <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
+    <section class="q-pa-md" style="margin-top: 100%">
       <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
       <p class="text-body1" v-html="prompt.description"></p>
       <div class="q-mb-md">
