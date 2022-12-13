@@ -1,5 +1,5 @@
 <template>
-  <Bar id="my-chart-id" :options="chartOptions" :data="chartData" datasetIdKey="Likes" />
+  <Bar :options="chartOptions" :data="chartData" datasetIdKey="Likes" class="shadow-1 q-pa-md" style="border-radius: 5px"/>
 </template>
 
 <script>

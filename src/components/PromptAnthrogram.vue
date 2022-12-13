@@ -13,8 +13,7 @@
         {{ prompt.title?.length > 40 ? prompt.title.substring(0, 40) + '...' : prompt.title }}
       </h2>
     </div>
-    <q-separator class="full-width q-mt-md" />
-    <LikeDislikeBarChart :likes="50" :dislikes="20"/>
+    <LikeDislikeBarChart :likes="prompt.info.likes.length" :dislikes="prompt.info.dislikes.length" class="q-mt-md"/>
   </div>
 </template>
 
