@@ -120,12 +120,10 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  await promptStore.fetchPrompts()
+  await promptStore.fetchPromptsAndEntries()
   prompts.value = promptStore.getPrompts
-  console.log(prompts.value)
 
-  await entryStore.fetchEntries(prompt.value.id)
-  entries.value = entryStore.getEntries
+  console.log(prompts.value)
 })
 
 function openPromptDialog(props) {

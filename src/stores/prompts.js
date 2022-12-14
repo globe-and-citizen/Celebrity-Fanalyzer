@@ -121,6 +121,34 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
+    async fetchPromptsAndEntries() {
+      this._isLoading = true
+      await getDocs(collection(db, 'prompts'))
+        .then(async (querySnapshot) => {
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const prompt of prompts) {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+
+            if (prompt.entries) {
+              for (const index in prompt.entries) {
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+              }
+            }
+          }
+
+          this._prompts = []
+          this.$patch({ _prompts: prompts })
+
+          LocalStorage.set('prompts', this._prompts)
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     async addPrompt(prompt) {
       const userStore = useUserStore()
 
