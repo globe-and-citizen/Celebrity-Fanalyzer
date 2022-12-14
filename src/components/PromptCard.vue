@@ -49,6 +49,8 @@
         <q-file
           accept=".jpg, image/*"
           counter
+          :error="errorImage"
+          error-message="Image must be square"
           hide-hint
           hint="Square images are better | Max size is 5MB"
           label="Image"
@@ -56,7 +58,7 @@
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
-          @update:model-value="uploadPhoto()"
+          @update:model-value="uploadPhoto($event)"
         >
           <template v-slot:append>
             <q-icon name="image" />
@@ -84,7 +86,7 @@
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
+          :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || errorImage || !prompt.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
@@ -109,6 +111,7 @@ const promptStore = usePromptStore()
 
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const dataKey = ref(Date.now())
+const errorImage = ref(false)
 const imageModel = ref([])
 const prompt = reactive({})
 
@@ -134,12 +137,23 @@ function onUpdateMonth() {
   dataKey.value = Date.now()
 }
 
-function uploadPhoto() {
-  promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
+function uploadPhoto(file) {
+  prompt.image = ''
+  errorImage.value = false
+
+  const img = new Image()
+  img.src = URL.createObjectURL(file)
+  img.onload = () => {
+    if (img.naturalWidth === img.naturalHeight) {
+      promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
+    } else {
+      errorImage.value = true
+    }
+  }
 }
 
 function onRejected() {
-  $q.notify({ type: 'negative', message: `Image did not pass validation constraints` })
+  $q.notify({ type: 'negative', message: 'Image did not pass validation constraints' })
 }
 
 async function onSubmit() {
