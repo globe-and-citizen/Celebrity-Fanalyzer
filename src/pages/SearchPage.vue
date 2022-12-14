@@ -37,13 +37,13 @@
       <ArticleSkeleton />
       <ArticleSkeleton />
     </section>
-    <section v-if="promptStore.getPrompts.filter((prompt) => prompt.categories.includes(category)).length">
+    <section v-if="prompts.filter((prompt) => prompt.categories.includes(category)).length">
       <ItemCard
         v-for="prompt in prompts"
         :item="prompt"
         :key="prompt?.id"
-        :link="prompt.slug"
-        v-show="prompt.categories.includes(category) || category === 'All'"
+        :link="prompt?.slug"
+        v-show="prompt?.categories.includes(category) || category === 'All'"
       />
     </section>
   </q-page>

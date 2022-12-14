@@ -23,9 +23,9 @@ import { useUserStore } from 'src/stores'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _prompts: [],
+    _isLoading: false,
     _monthPrompt: null,
-    _isLoading: false
+    _prompts: []
   }),
 
   getters: {
@@ -37,30 +37,23 @@ export const usePromptStore = defineStore('prompts', {
 
   actions: {
     async fetchMonthPrompt() {
-      this._isLoading = true
       const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
       const querySnapshot = await getDocs(q)
 
-      this._monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+      const monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
       this._isLoading = true
-      await getDocs(collection(db, 'prompts', this._monthPrompt.id, 'entries'))
-        .then(async (querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      for (const index in monthPrompt.entries) {
+        monthPrompt.entries[index] = await getDoc(monthPrompt.entries[index]).then((doc) => doc.data())
+      }
 
-          for (const entry of entries) {
-            entry.author = await getDoc(entry.author).then((doc) => doc.data())
-          }
+      for (const entry of monthPrompt.entries) {
+        entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      }
+      this._isLoading = false
 
-          this._monthPrompt.entries = entries
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-
-      LocalStorage.set('monthPrompt', this._monthPrompt)
+      this.$patch({ _monthPrompt: monthPrompt })
+      LocalStorage.set('monthPrompt', monthPrompt)
     },
 
     async fetchPromptById(id) {
