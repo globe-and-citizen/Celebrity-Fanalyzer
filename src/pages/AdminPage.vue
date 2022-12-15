@@ -28,25 +28,45 @@
     <q-page padding>
       <q-table
         :columns="columns"
-        :filter="promptFilter"
         flat
+        :filter="promptFilter"
+        hide-bottom
         :loading="promptStore.isLoading"
         :pagination="pagination"
         :rows="prompts"
-        title="Prompts"
+        title="Manage Prompts"
       >
-        <template v-slot:top-right>
-          <q-input dense v-model="promptFilter" placeholder="Search">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </template>
-        <template v-slot:body-cell-actions="props">
-          <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
-            <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
-          </q-td>
+        <template v-slot:body="props">
+          <q-tr :props="props">
+            <q-td auto-width>
+              <q-btn
+                color="red"
+                dense
+                flat
+                :icon="props.expand ? 'expand_less' : 'expand_more'"
+                round
+                @click="props.expand = !props.expand"
+              />
+            </q-td>
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">
+              {{ col.value }}
+            </q-td>
+            <q-td>
+              <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
+              <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
+            </q-td>
+          </q-tr>
+          <q-tr v-show="props.expand" :props="props">
+            <q-td colspan="100%">
+              <div class="text-left">
+                <div v-if="entryStore.isLoading" class="q-my-xl text-center">
+                  <q-spinner color="primary" size="3em" />
+                </div>
+                <h6 v-else-if="!props.row.entries?.length" class="q-my-sm text-left">NO ENTRIES</h6>
+                <TableEntry v-else :items="props.row.entries" />
+              </div>
+            </q-td>
+          </q-tr>
         </template>
       </q-table>
     </q-page>
@@ -84,13 +104,16 @@
 import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
-import { usePromptStore } from 'src/stores'
+import TableEntry from 'src/components/TableEntry.vue'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
+const entryStore = useEntryStore()
 
 const columns = [
+  {},
   { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
@@ -104,7 +127,7 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  await promptStore.fetchPrompts()
+  await promptStore.fetchPromptsAndEntries()
   prompts.value = promptStore.getPrompts
 })
 
