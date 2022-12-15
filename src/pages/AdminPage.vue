@@ -32,6 +32,7 @@
         :filter="promptFilter"
         hide-bottom
         :loading="promptStore.isLoading"
+        :pagination="pagination"
         :rows="prompts"
         title="Manage Prompts"
       >
