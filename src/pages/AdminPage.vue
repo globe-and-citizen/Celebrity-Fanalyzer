@@ -51,11 +51,11 @@
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
               <div class="text-left">
-                <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="`/entry/${entry.slug}`" />
+                <TableEntry v-for="entry in props.row.entries" :item="entry" :key="entry?.id" :link="`/entry/${entry.slug}`" />
                 <div v-if="entryStore.isLoading" class="q-my-xl text-center">
                   <q-spinner color="primary" size="3em" />
                 </div>
-                <h6 v-else-if="!entries?.length" class="text-left">NO ENTRIES</h6>
+                <h6 v-else-if="!props.row.entries?.length" class="text-left">NO ENTRIES</h6>
               </div>
             </q-td>
           </q-tr>
@@ -99,6 +99,7 @@ import PromptCard from 'src/components/PromptCard.vue'
 import { usePromptStore, useEntryStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import ItemCard from 'src/components/ItemCard.vue'
+import TableEntry from 'src/components/TableEntry.vue'
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
@@ -122,8 +123,6 @@ const promptFilter = ref('')
 onMounted(async () => {
   await promptStore.fetchPromptsAndEntries()
   prompts.value = promptStore.getPrompts
-
-  console.log(prompts.value)
 })
 
 function openPromptDialog(props) {
