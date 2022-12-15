@@ -97,16 +97,14 @@
 import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
-import { usePromptStore, useEntryStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
-import ItemCard from 'src/components/ItemCard.vue'
 import TableEntry from 'src/components/TableEntry.vue'
+import { useEntryStore, usePromptStore } from 'src/stores'
+import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
 const entryStore = useEntryStore()
 
-const entries = ref([])
 const columns = [
   {},
   { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
