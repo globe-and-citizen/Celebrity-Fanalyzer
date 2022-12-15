@@ -133,6 +133,7 @@ export const usePromptStore = defineStore('prompts', {
             if (prompt.entries) {
               for (const index in prompt.entries) {
                 prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
               }
             }
           }
