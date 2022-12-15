@@ -39,7 +39,14 @@
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td auto-width>
-              <q-btn size="sm" color="red" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />
+              <q-btn
+                color="red"
+                dense
+                flat
+                :icon="props.expand ? 'expand_less' : 'expand_more'"
+                round
+                @click="props.expand = !props.expand"
+              />
             </q-td>
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.value }}
@@ -52,11 +59,11 @@
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
               <div class="text-left">
-                <TableEntry v-for="entry in props.row.entries" :item="entry" :key="entry?.id" :link="`/entry/${entry.slug}`" />
                 <div v-if="entryStore.isLoading" class="q-my-xl text-center">
                   <q-spinner color="primary" size="3em" />
                 </div>
-                <h6 v-else-if="!props.row.entries?.length" class="text-left">NO ENTRIES</h6>
+                <h6 v-else-if="!props.row.entries?.length" class="q-my-sm text-left">NO ENTRIES</h6>
+                <TableEntry v-else :items="props.row.entries" />
               </div>
             </q-td>
           </q-tr>
