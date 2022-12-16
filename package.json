@@ -13,8 +13,11 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.15.5",
+    "@vueuse/core": "^9.7.0",
     "chart.js": "^4.0.1",
     "firebase": "^9.14.0",
+    "i": "^0.3.7",
+    "npm": "^9.2.0",
     "pinia": "^2.0.23",
     "quasar": "^2.10.1",
     "vue": "^3.2.45",
