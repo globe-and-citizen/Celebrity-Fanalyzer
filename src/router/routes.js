@@ -22,7 +22,7 @@ const routes = [
         component: () => import('pages/ProfilePage.vue')
       },
       {
-        path: ':slug', //http://localhost:9200/dec-9-who-should-play-the-next-james-bond-and-does-it-matter-
+        path: ':slug',
         component: () => import('pages/PromptPage.vue')
       },
       {
