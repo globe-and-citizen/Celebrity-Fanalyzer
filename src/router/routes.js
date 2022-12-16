@@ -24,10 +24,6 @@ const routes = [
       {
         path: ':slug', //http://localhost:9200/dec-9-who-should-play-the-next-james-bond-and-does-it-matter-
         component: () => import('pages/PromptPage.vue')
-        // beforeEnter: (_to, _from, next) => {
-        //   let condition = 'fail'
-        //   condition != 'fail' ? next('/404') : next()
-        // }
       },
       {
         path: ':year(\\d{4})/:month(\\d{2})',
@@ -53,11 +49,8 @@ const routes = [
     ]
   },
   {
-    path: '/404',
-    component: () => import('pages/404Error.vue')
-  },
-  {
     path: '/:catchAll(.*)*',
+    alias: '/404',
     component: () => import('pages/404Error.vue')
   }
 ]

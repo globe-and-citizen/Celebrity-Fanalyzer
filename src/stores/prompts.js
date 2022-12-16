@@ -60,20 +60,21 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
+          console.log('[doc: ]', doc.data())
           const prompt = { id: doc.id, ...doc.data() }
-          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-          this._prompts = this.getPrompts
-          const index = this._prompts.findIndex((p) => p.id === prompt.id)
-
-          if (index === -1) this._prompts.push(prompt)
-          else this._prompts[index] = prompt
-
-          return prompt
+          if (prompt.author == undefined) {
+            throw new Error('Document not found.')
+          } else {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            this._prompts = this.getPrompts
+            const index = this._prompts.findIndex((p) => p.id === prompt.id)
+            if (index === -1) this._prompts.push(prompt)
+            else this._prompts[index] = prompt
+            return prompt
+          }
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
+        .catch((err) => {
+          throw new Error(err)
         })
         .finally(() => (this._isLoading = false))
     },
