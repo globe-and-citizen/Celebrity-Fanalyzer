@@ -60,7 +60,6 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
-          console.log('[doc: ]', doc.data())
           const prompt = { id: doc.id, ...doc.data() }
           if (prompt.author == undefined) {
             throw new Error('Document not found.')
