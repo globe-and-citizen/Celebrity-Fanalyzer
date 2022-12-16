@@ -92,6 +92,9 @@ async function updatePrompt() {
   } else if (router.currentRoute.value.params.slug) {
     prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
   }
+  if (prompt.value == undefined) {
+    router.push('/404')
+  }
 }
 
 function like() {
