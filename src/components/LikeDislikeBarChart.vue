@@ -1,5 +1,5 @@
 <template>
-  <Bar :options="chartOptions" :data="chartData" datasetIdKey="Likes" class="shadow-1 q-pa-md" style="border-radius: 5px"/>
+  <Bar :options="chartOptions" :data="chartData" datasetIdKey="Likes" class="shadow-1 q-pa-md" style="border-radius: 5px" />
 </template>
 
 <script>
@@ -9,9 +9,9 @@ import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
-  name:       'LikeDislikeBarChart',
+  name: 'LikeDislikeBarChart',
   components: { Bar },
-  props:      {
+  props: {
     likes: {
       type: Number,
       required: true
@@ -43,7 +43,7 @@ export default {
         plugins: {
           legend: {
             display: false
-          },
+          }
         }
       }
     }

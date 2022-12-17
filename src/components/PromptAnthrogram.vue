@@ -14,13 +14,22 @@
       </h2>
     </div>
     <p class="q-pt-md text-center">Likes & Dislikes</p>
-    <LikeDislikeBarChart :likes="prompt.info.likes.length" :dislikes="prompt.info.dislikes.length" class="q-mt-md"/>
+    <LikeDislikeBarChart :likes="prompt.info.likes.length" :dislikes="prompt.info.dislikes.length" class="q-mt-md" />
   </div>
 </template>
 
 <script setup>
+import { useFetch } from '@vueuse/core'
+import sha1 from 'js-sha1'
 import LikeDislikeBarChart from 'src/components/LikeDislikeBarChart.vue'
+
 const props = defineProps({
   prompt: {}
 })
+const date = Date.now().toString().slice(0, 10)
+const str = `?vn=3&s=summary&f=json&pi=2292634&t=${date}&u=demo_userstatcounter`
+const sha = sha1(str)
+let url = `https://api.statcounter.com/stats/?vn=3&s=summary&f=json&pi=2292634&t=${date}&u=demo_user&sha1=${sha}`
+
+const { isFetching, error, data } = useFetch(url, { mode: 'no-cors' }).get().text()
 </script>

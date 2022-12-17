@@ -14,7 +14,7 @@
       </h2>
     </div>
     <p class="q-pt-md text-center">Likes & Dislikes</p>
-    <LikeDislikeBarChart :likes="entry.info.likes.length" :dislikes="entry.info.dislikes.length" class="q-mt-md"/>
+    <LikeDislikeBarChart :likes="entry.info.likes.length" :dislikes="entry.info.dislikes.length" class="q-mt-md" />
   </div>
 </template>
 

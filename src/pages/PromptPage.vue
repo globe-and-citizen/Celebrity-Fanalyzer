@@ -3,8 +3,7 @@
     <q-spinner color="primary" size="3em" />
   </section>
   <q-page class="bg-white">
-    <q-tabs active-color="primary" dense indicator-color="transparent" v-model="tab"
-            class="fixed-bottom fixed-tab bg-white">
+    <q-tabs active-color="primary" dense indicator-color="transparent" v-model="tab" class="fixed-bottom fixed-tab bg-white">
       <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="content1" :ripple="false" />
       <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="content2" :ripple="false" />
     </q-tabs>
