@@ -50,6 +50,7 @@ const routes = [
   },
   {
     path: '/:catchAll(.*)*',
+    alias: '/404',
     component: () => import('pages/404Error.vue')
   }
 ]

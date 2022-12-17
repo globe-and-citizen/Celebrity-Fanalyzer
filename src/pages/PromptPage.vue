@@ -89,9 +89,14 @@ async function updatePrompt() {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
+      .catch((err) => {
+        prompt.value = undefined
+        console.log(err)
+      })
   } else if (router.currentRoute.value.params.slug) {
     prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
   }
+  if (prompt.value == undefined) router.push('/404')
 }
 
 function like() {
