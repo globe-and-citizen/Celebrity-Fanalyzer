@@ -14,8 +14,8 @@ const routes = [
         component: () => import('pages/SearchPage.vue')
       },
       {
-        path: 'notifications',
-        component: () => import('pages/NotificationsPage.vue')
+        path: 'month',
+        component: () => import('app/src/pages/MonthPage.vue')
       },
       {
         path: 'profile',

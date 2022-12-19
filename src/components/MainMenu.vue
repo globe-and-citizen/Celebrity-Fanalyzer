@@ -21,12 +21,12 @@ const userStore = useUserStore()
 const routes = [
   { icon: 'home', path: '/' },
   { icon: 'search', path: '/search' },
-  { icon: 'notifications', path: '/notifications' },
+  { icon: 'description', path: '/month' },
   { icon: 'person', path: '/profile' }
 ]
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 a {
   text-decoration: none;
   transition: all 0.3s;
@@ -38,7 +38,7 @@ a {
     border-top: 2.5px solid #e54757;
 
     & .q-icon {
-      color: #e54757; // TODO: use $primary variable
+      color: #e54757;
       text-decoration: none;
     }
   }
