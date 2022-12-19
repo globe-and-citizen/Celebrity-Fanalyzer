@@ -7,26 +7,37 @@
       <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
     </q-toolbar>
   </q-header>
-  <q-page class="flex column non-selectable">
-    <q-tab-panels animated class="col-grow q-pa-md" swipeable v-model="tab">
-      <q-tab-panel name="content1">
-        <h1 class="text-h5">Content 1</h1>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      </q-tab-panel>
-      <q-tab-panel name="content2">
-        <h1 class="text-h5">Content 2</h1>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      </q-tab-panel>
-    </q-tab-panels>
-    <q-tabs active-color="primary" dense indicator-color="transparent" v-model="tab">
-      <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="content1" :ripple="false" />
-      <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="content2" :ripple="false" />
-    </q-tabs>
+  <q-page class="q-pa-md">
+    <section v-if="monthPrompt">
+      <a :href="monthPrompt.slug">
+        <q-img :src="monthPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+      </a>
+
+      <TheEntries :entries="monthPrompt.entries" />
+    </section>
+    <section v-else class="q-my-xl text-center">
+      <q-spinner color="primary" size="3em" />
+    </section>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import TheEntries from 'src/components/TheEntries.vue'
+import { useEntryStore, usePromptStore } from 'src/stores'
+import { onMounted, ref } from 'vue'
 
-const tab = ref('content1')
+const entryStore = useEntryStore()
+const promptStore = usePromptStore()
+
+const monthPrompt = ref(promptStore.getMonthPrompt)
+
+onMounted(async () => {
+  await promptStore.fetchMonthPrompt()
+  monthPrompt.value = promptStore.getMonthPrompt
+
+  if (!monthPrompt.value.entries.length) {
+    await entryStore.fetchEntries(monthPrompt.value.date)
+    monthPrompt.value.entries = entryStore.getEntries
+  }
+})
 </script>
