@@ -41,6 +41,11 @@ const routes = [
     ]
   },
   {
+    path: '/why',
+    name: 'Why',
+    component:()=> import('pages/WhyPage.vue') // The why page route
+  },
+  {
     path: '/:catchAll(.*)*',
     component: () => import('pages/404Error.vue')
   }

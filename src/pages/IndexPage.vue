@@ -24,6 +24,10 @@
       <q-spinner color="primary" size="3em" />
     </section>
   </q-page>
+    <!---Cant find the <a href="#">Why?</a> as claimed in the issue published but the method for routing is writing below--->
+    
+    <!-- 👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇 -->
+    <!-- <router-link to='/why'>Why?</router-link> -->
 </template>
 
 <script setup>
