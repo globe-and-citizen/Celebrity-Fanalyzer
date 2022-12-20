@@ -72,10 +72,10 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import TheEntries from 'src/components/TheEntries.vue'
-import PieGraph from 'src/components/PieGraph.vue'
 import BarGraph from 'src/components/BarGraph.vue'
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import PieGraph from 'src/components/PieGraph.vue'
+import TheEntries from 'src/components/TheEntries.vue'
+import { useEntryStore, usePromptStore, useStatStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -84,6 +84,7 @@ const router = useRouter()
 
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const statStore = useStatStore()
 const userStore = useUserStore()
 
 const chartData = ref([])
@@ -92,6 +93,8 @@ const prompt = ref({})
 const tab = ref('prompt')
 
 onMounted(async () => {
+  statStore.fetchStats()
+
   if (!promptStore.getPrompts?.length) {
     await promptStore.fetchPrompts()
   }
