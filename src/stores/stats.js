@@ -15,16 +15,17 @@ export const useStatStore = defineStore('stats', {
 
   actions: {
     fetchStats() {
-      const projectId = '12785650'
+      const projectId = import.meta.env.VITE_STATCOUNTER_PROJECTID
+      const username = import.meta.env.VITE_STATCOUNTER_USER
+      const password = import.meta.env.VITE_STATCOUNTER_PASSWORD
       const timestamp = Math.floor(Date.now() / 1000)
-      const SHA1 = sha1(`?vn=3&s=summary&pi=${projectId}&t=${timestamp}&u=arnonrdp4L!Ljtn48^+_Q1ML`)
-      const url = `https://api.statcounter.com/stats?vn=3&s=summary&pi=${projectId}&t=${timestamp}&u=arnonrdp&sha1=${SHA1}`
+      const SHA1 = sha1(`?vn=3&s=summary&pi=${projectId}&t=${timestamp}&u=${username}${password}`)
+      const url = `https://api.statcounter.com/stats?vn=3&s=summary&pi=${projectId}&t=${timestamp}&u=${username}&sha1=${SHA1}`
 
       fetch(url)
         .then((response) => response.json())
         .then((data) => {
           this._stats= data
-          console.info('Success:', data)
         })
         .catch((error) => {
           console.error(error)
