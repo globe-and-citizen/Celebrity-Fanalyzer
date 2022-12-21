@@ -52,7 +52,7 @@
     </section>
     <q-separator />
     <q-separator />
-    <TheEntries :entries="entries" />
+    <TheEntries :entries="prompt.entries" />
   </q-page>
 </template>
 
@@ -74,14 +74,7 @@ const entries = ref([])
 const prompt = ref({})
 
 onMounted(async () => {
-  if (!promptStore.getPrompts?.length) {
-    await promptStore.fetchPrompts()
-  }
-
   await updatePrompt()
-
-  await entryStore.fetchEntries(prompt.value.id)
-  entries.value = entryStore.getEntries
 })
 
 async function updatePrompt() {
@@ -89,14 +82,15 @@ async function updatePrompt() {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
-      .catch((err) => {
-        prompt.value = undefined
-        console.log(err)
-      })
-  } else if (router.currentRoute.value.params.slug) {
-    prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
+      .catch((err) => console.error(err))
   }
-  if (prompt.value == undefined) router.push('/404')
+  if (router.currentRoute.value.params.slug) {
+    await promptStore
+      .fetchPromptBySlug(router.currentRoute.value.params.slug)
+      .then((res) => (prompt.value = res))
+      .catch((err) => console.error(err))
+  }
+  if (!prompt.value) router.push('/404')
 }
 
 function like() {
