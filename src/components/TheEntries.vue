@@ -15,7 +15,7 @@
     </q-scroll-area>
     <h2 class="q-my-auto text-bold text-h5">Entries</h2>
     <q-separator />
-    <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="`/entry/${entry.slug}`" />
+    <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" />
     <div v-if="entryStore.isLoading" class="q-my-xl text-center">
       <q-spinner color="primary" size="3em" />
     </div>
