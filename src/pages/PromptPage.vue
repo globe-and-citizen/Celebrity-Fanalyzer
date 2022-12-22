@@ -70,6 +70,17 @@ const userStore = useUserStore()
 const prompt = ref({})
 
 onMounted(async () => {
+  if (promptStore.getPrompts.length) {
+    promptStore.getPrompts.find((p) => {
+      if (
+        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
+        p.slug === router.currentRoute.value.params.slug
+      ) {
+        prompt.value = p
+      }
+    })
+    return
+  }
   await updatePrompt()
 })
 
