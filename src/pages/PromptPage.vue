@@ -1,12 +1,10 @@
 <template>
-  <section v-if="promptStore.isLoading" class="absolute-center">
-    <q-spinner color="primary" size="3em" />
-  </section>
   <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
-  <q-tab-panels animated class="bg-transparent col-grow" swipeable v-model="tab">
+  <q-spinner v-if="!prompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="bg-white">
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
@@ -21,7 +19,7 @@
           <div class="inline-block">
             <q-btn
               color="green"
-              :disable="!userStore.isAuthenticated"
+              :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
               :label="prompt.info?.likes.length"
@@ -33,7 +31,7 @@
             <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
             <q-btn
               color="red"
-              :disable="!userStore.isAuthenticated"
+              :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
               :label="prompt.info?.dislikes.length"
@@ -45,9 +43,9 @@
           </div>
           <q-btn
             flat
-            rounded
-            icon="img:/icons/discord.svg"
             href="https://discord.com/channels/1034461422962360380/1040994839610806343"
+            icon="img:/icons/discord.svg"
+            rounded
             target="_blank"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
@@ -56,8 +54,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
           </q-btn>
         </section>
-        <q-separator />
-        <q-separator />
+        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt.entries" />
       </q-page>
     </q-tab-panel>
