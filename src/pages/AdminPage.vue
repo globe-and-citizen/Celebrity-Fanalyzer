@@ -34,7 +34,7 @@
         :loading="promptStore.isLoading"
         :pagination="pagination"
         :rows="prompts"
-        title="Manage Prompts"
+        title="Manage Prompts & Entries"
       >
         <template v-slot:body="props">
           <q-tr :props="props">
@@ -121,7 +121,9 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  await promptStore.fetchPromptsAndEntries()
+  if (!promptStore.getPrompts.length) {
+    await promptStore.fetchPromptsAndEntries()
+  }
   prompts.value = promptStore.getPrompts
 })
 
