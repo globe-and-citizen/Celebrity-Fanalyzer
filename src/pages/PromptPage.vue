@@ -89,6 +89,12 @@ const userStore = useUserStore()
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
+function updateChartData(){
+  chartData.value = [
+    { value: prompt.value.info?.likes.length, name: 'Likes' },
+    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+  ]
+}
 
 onMounted(async () => {
   statStore.fetchStats()
@@ -99,20 +105,14 @@ onMounted(async () => {
         p.slug === router.currentRoute.value.params.slug
       ) {
         prompt.value = p
-        chartData.value = [
-          { value: prompt.value.info?.likes.length, name: 'Likes' },
-          { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
-        ]
+        updateChartData()
       }
     })
     return
   }
   await updatePrompt()
   if (prompt.value) {
-    chartData.value = [
-      { value: prompt.value.info?.likes.length, name: 'Likes' },
-      { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
-    ]
+    updateChartData()
   }
 })
 
@@ -129,6 +129,7 @@ async function updatePrompt() {
       .then((res) => (prompt.value = res))
       .catch(() => router.push('/404'))
   }
+  updateChartData()
 }
 
 function like() {

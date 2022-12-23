@@ -72,8 +72,8 @@
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <PieGraph :data="chartData" title="Likes & Dislikes" />
-        <BarGraph :data="chartData" title="Likes & Dislikes" />
+        <PieGraph :data="getChartData()" title="Likes & Dislikes" />
+        <BarGraph :data="getChartData()" title="Likes & Dislikes" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -97,6 +97,12 @@ const monthPrompt = ref(promptStore.getMonthPrompt)
 
 const chartData = ref([])
 const tab = ref('prompt')
+function getChartData(){
+  return [
+    { value: monthPrompt.value.info?.likes.length, name: 'Likes' },
+    { value: monthPrompt.value.info?.dislikes.length, name: 'Disikes' }
+  ]
+}
 onMounted(async () => {
   await promptStore.fetchMonthPrompt()
   monthPrompt.value = promptStore.getMonthPrompt
