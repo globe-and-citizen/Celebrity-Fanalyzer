@@ -58,7 +58,7 @@
         </section>
         <q-separator />
         <q-separator />
-        <TheEntries :entries="entries" />
+        <TheEntries :entries="prompt.entries" />
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
@@ -75,34 +75,45 @@ import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import PieGraph from 'src/components/PieGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useEntryStore, usePromptStore, useStatStore, useUserStore } from 'src/stores'
+import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
 
-const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const statStore = useStatStore()
 const userStore = useUserStore()
 
 const chartData = ref([])
-const entries = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
 
 onMounted(async () => {
   statStore.fetchStats()
-
-  if (!promptStore.getPrompts?.length) {
-    await promptStore.fetchPrompts()
+  if (promptStore.getPrompts.length) {
+    promptStore.getPrompts.find((p) => {
+      if (
+        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
+        p.slug === router.currentRoute.value.params.slug
+      ) {
+        prompt.value = p
+        chartData.value = [
+          { value: prompt.value.info?.likes.length, name: 'Likes' },
+          { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+        ]
+      }
+    })
+    return
   }
-
   await updatePrompt()
-
-  await entryStore.fetchEntries(prompt.value.id)
-  entries.value = entryStore.getEntries
+  if (prompt.value) {
+    chartData.value = [
+      { value: prompt.value.info?.likes.length, name: 'Likes' },
+      { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+    ]
+  }
 })
 
 async function updatePrompt() {
@@ -110,18 +121,14 @@ async function updatePrompt() {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
-      .catch((err) => {
-        prompt.value = undefined
-        console.log(err)
-      })
-  } else if (router.currentRoute.value.params.slug) {
-    prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
-    chartData.value = [
-      { value: prompt.value.info?.likes.length, name: 'Likes' },
-      { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
-    ]
+      .catch(() => router.push('/404'))
   }
-  if (prompt.value == undefined) router.push('/404')
+  if (router.currentRoute.value.params.slug) {
+    await promptStore
+      .fetchPromptBySlug(router.currentRoute.value.params.slug)
+      .then((res) => (prompt.value = res))
+      .catch(() => router.push('/404'))
+  }
 }
 
 function like() {

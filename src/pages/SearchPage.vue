@@ -59,7 +59,7 @@ const promptStore = usePromptStore()
 
 const search = ref('')
 const category = ref('Trending')
-const prompts = ref(promptStore.getPrompts)
+const prompts = ref([])
 
 const categories = ref([
   { label: 'Trending', value: 'Trending' },
@@ -75,7 +75,9 @@ const categories = ref([
 ])
 
 onMounted(async () => {
-  await promptStore.fetchPrompts()
+  if (!promptStore.getPrompts.length) {
+    await promptStore.fetchPromptsAndEntries()
+  }
   prompts.value = promptStore.getPrompts
 })
 </script>

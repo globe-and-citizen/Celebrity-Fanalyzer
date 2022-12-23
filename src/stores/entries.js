@@ -12,14 +12,29 @@ export const useEntryStore = defineStore('entries', {
   }),
 
   getters: {
-    getEntries: (state) => LocalStorage.getItem('entries') || state._entries,
+    getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchEntries(id) {
+    async fetchEntryBySlug(slug) {
+      const q = query(collection(db, 'entries'), where('slug', '==', slug))
+      this._isLoading = true
+      const querySnapshot = await getDocs(q)
+
+      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
+
+      this._isLoading = false
+
+      return entry
+    },
+
+    async fetchEntries(promptId) {
       const promptStore = usePromptStore()
-      const promptRef = promptStore.getPromptRef(id)
+      const promptRef = promptStore.getPromptRef(promptId)
 
       const q = query(collection(db, 'entries'), where('prompt', '==', promptRef))
 
@@ -35,7 +50,6 @@ export const useEntryStore = defineStore('entries', {
 
         this._entries = []
         this.$patch({ _entries: entries })
-        LocalStorage.set('entries', this._entries)
       } catch (error) {
         console.error(error)
         throw new Error(error)
@@ -60,7 +74,6 @@ export const useEntryStore = defineStore('entries', {
       await setDoc(entryRef, entry)
         .then(() => {
           this.$patch({ _entries: [...this.getEntries, entry] })
-          LocalStorage.set('entries', this._entries)
           promptStore.updateEntryField(promptId, entryRef)
         })
         .catch((error) => {
@@ -85,7 +98,6 @@ export const useEntryStore = defineStore('entries', {
           this.$patch({
             _entries: [...this._entries.slice(0, index), { ...this._entries[index], ...entry }, ...this._entries.slice(index + 1)]
           })
-          LocalStorage.set('entries', this._entries)
         })
         .catch((error) => {
           console.error(error)
@@ -100,7 +112,6 @@ export const useEntryStore = defineStore('entries', {
         .then(() => {
           const index = this._entries.findIndex((entry) => entry.id === id)
           this._entries.splice(index, 1)
-          LocalStorage.set('entries', this._entries)
         })
         .catch((error) => {
           console.error(error)
