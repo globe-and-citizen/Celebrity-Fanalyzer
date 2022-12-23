@@ -13,7 +13,8 @@
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
 
-  <q-tab-panels animated class="bg-transparent col-grow" swipeable v-model="tab">
+  <q-spinner v-if="!monthPrompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="q-pa-md">
         <section v-if="monthPrompt">
@@ -28,7 +29,7 @@
           <div class="inline-block">
             <q-btn
               color="green"
-              :disable="!userStore.isAuthenticated"
+              :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
               :label="monthPrompt.info?.likes.length"
@@ -40,7 +41,7 @@
             <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
             <q-btn
               color="red"
-              :disable="!userStore.isAuthenticated"
+              :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
               :label="monthPrompt.info?.dislikes.length"
@@ -81,9 +82,9 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import TheEntries from 'src/components/TheEntries.vue'
 import BarGraph from 'src/components/BarGraph.vue'
 import PieGraph from 'src/components/PieGraph.vue'
+import TheEntries from 'src/components/TheEntries.vue'
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
@@ -180,7 +181,6 @@ function sharePrompt(grid) {
 }
 </script>
 <style scoped lang="scss">
-
 .tab-selector {
   margin-bottom: 4rem;
   z-index: 3;
