@@ -49,16 +49,25 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { ref } from 'vue'
+import { useCommentStore } from 'src/stores'
 
 defineProps({
   comments: { type: Array, required: true }
 })
 
-const myComment = ref('')
+const $q = useQuasar()
+const  myComment =ref('')
+const commentStore = useCommentStore()
 
-function sendComment() {
+async function sendComment() {
   console.log(myComment.value)
   myComment.value = ''
+
+  await commentStore
+      .addComment(myComment.value)
+      .then(() => $q.notify({ message: 'Comment successfully submitted' }))
+      .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
 </script>

@@ -21,6 +21,28 @@ export const useCommentStore = defineStore('comments', {
 
     async addComment(comment) {
       console.log(comment)
+
+      const userStore = useUserStore()
+      const promptStore = usePromptStore()
+
+      const promptId = entry.prompt.value
+      const entryId = `${promptId}T${Date.now()}`
+      const entryRef = doc(db, 'entries', entryId)
+
+      entry.author = userStore.getUserRef
+
+      this._isLoading = true
+      await setDoc(entryRef, entry)
+        .then(() => {
+          this.$patch({ _entries: [...this.getEntries, entry] })
+          LocalStorage.set('entries', this._entries)
+          promptStore.updateEntryField(promptId, entryRef)
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async editComment(prompt) {
