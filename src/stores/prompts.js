@@ -31,7 +31,7 @@ export const usePromptStore = defineStore('prompts', {
   getters: {
     getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
     getPromptRef: () => (id) => doc(db, 'prompts', id),
-    getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts,
+    getPrompts: (state) => state._prompts,
     isLoading: (state) => state._isLoading
   },
 
@@ -67,11 +67,12 @@ export const usePromptStore = defineStore('prompts', {
           const prompt = { id: doc.id, ...doc.data() }
           prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
 
-          this._prompts = this.getPrompts
-          const index = this._prompts.findIndex((p) => p.id === prompt.id)
-
-          if (index === -1) this._prompts.push(prompt)
-          else this._prompts[index] = prompt
+          if (prompt.entries?.length) {
+            for (const index in prompt.entries) {
+              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+            }
+          }
 
           return prompt
         })
@@ -138,8 +139,6 @@ export const usePromptStore = defineStore('prompts', {
 
           this._prompts = []
           this.$patch({ _prompts: prompts })
-
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
           console.error(error)
@@ -165,10 +164,10 @@ export const usePromptStore = defineStore('prompts', {
             }
           }
 
+          prompts.reverse()
+
           this._prompts = []
           this.$patch({ _prompts: prompts })
-
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
           console.error(error)
@@ -187,7 +186,6 @@ export const usePromptStore = defineStore('prompts', {
       await setDoc(doc(db, 'prompts', prompt.date), prompt)
         .then(() => {
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
           console.error(error)
@@ -206,7 +204,6 @@ export const usePromptStore = defineStore('prompts', {
           this.$patch({
             _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
           })
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
           console.error(error)
@@ -221,7 +218,6 @@ export const usePromptStore = defineStore('prompts', {
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
           console.error(error)

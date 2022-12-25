@@ -30,7 +30,7 @@ const routes = [
         component: () => import('pages/PromptPage.vue')
       },
       {
-        path: 'entry/:id',
+        path: ':year(\\d{4})/:month(\\d{2})/:id',
         component: () => import('pages/EntryPage.vue')
       },
       {

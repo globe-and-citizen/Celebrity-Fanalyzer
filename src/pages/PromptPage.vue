@@ -1,8 +1,6 @@
 <template>
-  <section v-if="promptStore.isLoading" class="absolute-center">
-    <q-spinner color="primary" size="3em" />
-  </section>
-  <q-page class="bg-white">
+  <q-spinner v-if="promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-page v-else class="bg-white">
     <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
     <section class="q-pa-md" style="margin-top: 100%">
       <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
@@ -59,21 +57,30 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import { usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
 
-const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const entries = ref([])
 const prompt = ref({})
 
 onMounted(async () => {
+  if (promptStore.getPrompts.length) {
+    promptStore.getPrompts.find((p) => {
+      if (
+        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
+        p.slug === router.currentRoute.value.params.slug
+      ) {
+        prompt.value = p
+      }
+    })
+    return
+  }
   await updatePrompt()
 })
 

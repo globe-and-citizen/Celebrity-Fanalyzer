@@ -34,7 +34,7 @@
         :loading="promptStore.isLoading"
         :pagination="pagination"
         :rows="prompts"
-        title="Manage Prompts"
+        title="Manage Prompts & Entries"
       >
         <template v-slot:body="props">
           <q-tr :props="props">
@@ -48,9 +48,7 @@
                 @click="props.expand = !props.expand"
               />
             </q-td>
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              {{ col.value }}
-            </q-td>
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
             <q-td>
               <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
               <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
@@ -58,13 +56,9 @@
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
-              <div class="text-left">
-                <div v-if="entryStore.isLoading" class="q-my-xl text-center">
-                  <q-spinner color="primary" size="3em" />
-                </div>
-                <h6 v-else-if="!props.row.entries?.length" class="q-my-sm text-left">NO ENTRIES</h6>
-                <TableEntry v-else :items="props.row.entries" />
-              </div>
+              <q-linear-progress v-if="entryStore.isLoading" color="primary" indeterminate />
+              <p v-else-if="!props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
+              <TableEntry v-else :items="props.row.entries" />
             </q-td>
           </q-tr>
         </template>
@@ -127,7 +121,9 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  await promptStore.fetchPromptsAndEntries()
+  if (!promptStore.getPrompts.length) {
+    await promptStore.fetchPromptsAndEntries()
+  }
   prompts.value = promptStore.getPrompts
 })
 

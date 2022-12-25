@@ -1,8 +1,6 @@
 <template>
-  <section v-if="entryStore.isLoading" class="q-my-xl text-center">
-    <q-spinner color="primary" size="3em" />
-  </section>
-  <q-page class="bg-white">
+  <q-spinner v-if="entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-page v-else class="bg-white">
     <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="article?.image" />
     <section class="q-pa-md" style="margin-top: 100%">
       <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
@@ -33,23 +31,33 @@
 
 <script setup>
 import TheComments from 'src/components/TheComments.vue'
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const entryStore = useEntryStore()
+const promptStore = usePromptStore()
 
 const article = ref({})
 const comments = ref([])
 const showComments = ref(false)
 
 onMounted(async () => {
-  if (!entryStore.getEntries?.length) {
-    await entryStore.fetchEntries() // TODO: Missing ID here
+  if (promptStore.getPrompts?.length) {
+    article.value = promptStore.getPrompts
+      .find((prompt) => prompt.date === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+      .entries.find((entry) => entry.slug === router.currentRoute.value.href)
+    return
   }
-  article.value = entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.params.id)
+  if (!entryStore.getEntries?.length) {
+    await entryStore
+      .fetchEntryBySlug(router.currentRoute.value.href)
+      .then((res) => (article.value = res))
+      .catch(() => router.push('/404'))
+    return
+  }
 })
 
 function toggleComments() {
