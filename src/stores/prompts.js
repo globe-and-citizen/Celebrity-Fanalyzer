@@ -20,6 +20,7 @@ import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -214,34 +215,22 @@ export const usePromptStore = defineStore('prompts', {
 
     async deletePrompt(id) {
       this._isLoading = true
-      // 1 Make a local copy of the prompt
-      // 2 Delete the local copy images
-      //"https://firebasestorage.googleapis.com/v0/b/celebrityfanalizer.appspot.com/o/images%2Fprompt-007.jpeg1668543888886?alt=media&token=1ebf5426-80de-46a2-b7fb-3d121eca9877"
-
       const localPrompt = this._prompts.find((prompt) => prompt.id === id)
-      const url= localPrompt.image.replace('https://firebasestorage.googleapis.com/v0/b/celebrityfanalizer.appspot.com/o/images%2F', '')
-      const imageRef = ref(storage, url)
-      console.log("id to delet", id);
-      console.log('Image url', `images/${url}`);
-      deleteObject(imageRef)
-        .then(async () => {
-          console.log('Image deleted successfully')
-          await deleteDoc(doc(db, 'prompts', id))
-            .then(() => {
-              console.log('Prompt deleted successfully')
-              const index = this._prompts.findIndex((prompt) => prompt.id === id)
-              this._prompts.splice(index, 1)
-            })
-            .catch((error) => {
-              console.error(error)
-              throw new Error(error)
-            })
-            .finally(() => (this._isLoading = false))
+      const imageRef = ref(storage, `images/${localPrompt.image.slice(86, 133)}`)
+      // Methode 1
+      const deleteImage = await deleteObject(imageRef)
+      const deletePrompt = await deleteDoc(doc(db, 'prompts', id))
+      Promise.all([deleteImage, deletePrompt])
+        .then(() => {
+          console.log('Prompt and his image deleted successfully')
+          const index = this._prompts.findIndex((prompt) => prompt.id === id)
+          this._prompts.splice(index, 1)
         })
         .catch((error) => {
-          console.error('Error when try to delete image', error)
+          console.error(error)
           throw new Error(error)
         })
+        .finally(() => (this._isLoading = false))
     },
 
     async updateEntryField(promptId, entryRef) {
@@ -258,10 +247,8 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
-
+      const storageRef = ref(storage, `images/prompt-${sha1(file.name + Date.now())}`)
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
       return getDownloadURL(ref(storage, storageRef))
     },
 
