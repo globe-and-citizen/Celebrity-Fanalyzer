@@ -1,63 +1,78 @@
 <template>
-  <q-spinner v-if="promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
-  <q-page v-else class="bg-white">
-    <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
-    <section class="q-pa-md" style="margin-top: 100%">
-      <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
-      <p class="text-body1" v-html="prompt.description"></p>
-      <div class="q-mb-md">
-        <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
-          {{ category }}
-        </q-badge>
-      </div>
-      <div class="inline-block">
-        <q-btn
-          color="green"
-          :disable="!userStore.isAuthenticated"
-          flat
-          icon="sentiment_satisfied_alt"
-          :label="prompt.info?.likes.length"
-          rounded
-          @click="like()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
-        <q-btn
-          color="red"
-          :disable="!userStore.isAuthenticated"
-          flat
-          icon="sentiment_very_dissatisfied"
-          :label="prompt.info?.dislikes.length"
-          rounded
-          @click="dislike()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-      </div>
-      <q-btn
-        flat
-        rounded
-        icon="img:/icons/discord.svg"
-        href="https://discord.com/channels/1034461422962360380/1040994839610806343"
-        target="_blank"
-      >
-        <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
-      </q-btn>
-      <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
-        <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
-      </q-btn>
-    </section>
-    <q-separator />
-    <q-separator />
-    <TheEntries :entries="prompt.entries" />
-  </q-page>
+  <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
+    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+  </q-tabs>
+  <q-spinner v-if="!prompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <q-tab-panel name="prompt" style="padding: 0">
+      <q-page class="bg-white">
+        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
+        <section class="q-pa-md" style="margin-top: 100%">
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
+          <p class="text-body1" v-html="prompt.description"></p>
+          <div class="q-mb-md">
+            <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
+              {{ category }}
+            </q-badge>
+          </div>
+          <div class="inline-block">
+            <q-btn
+              color="green"
+              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              flat
+              icon="sentiment_satisfied_alt"
+              :label="prompt.info?.likes.length"
+              rounded
+              @click="like()"
+            >
+              <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+            </q-btn>
+            <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
+            <q-btn
+              color="red"
+              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              flat
+              icon="sentiment_very_dissatisfied"
+              :label="prompt.info?.dislikes.length"
+              rounded
+              @click="dislike()"
+            >
+              <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+            </q-btn>
+          </div>
+          <q-btn
+            flat
+            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
+            icon="img:/icons/discord.svg"
+            rounded
+            target="_blank"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+          </q-btn>
+          <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
+            <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
+          </q-btn>
+        </section>
+        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
+        <TheEntries :entries="prompt.entries" />
+      </q-page>
+    </q-tab-panel>
+    <q-tab-panel name="stats" class="bg-white">
+      <q-page>
+        <PieGraph :data="chartData" title="Likes & Dislikes" />
+        <BarGraph :data="chartData" title="Likes & Dislikes" />
+      </q-page>
+    </q-tab-panel>
+  </q-tab-panels>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
+import BarGraph from 'src/components/BarGraph.vue'
+import PieGraph from 'src/components/PieGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { usePromptStore, useUserStore } from 'src/stores'
+import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -65,11 +80,21 @@ const $q = useQuasar()
 const router = useRouter()
 
 const promptStore = usePromptStore()
+const statStore = useStatStore()
 const userStore = useUserStore()
 
+const chartData = ref([])
 const prompt = ref({})
+const tab = ref('prompt')
+function updateChartData(){
+  chartData.value = [
+    { value: prompt.value.info?.likes.length, name: 'Likes' },
+    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+  ]
+}
 
 onMounted(async () => {
+  statStore.fetchStats()
   if (promptStore.getPrompts.length) {
     promptStore.getPrompts.find((p) => {
       if (
@@ -77,11 +102,15 @@ onMounted(async () => {
         p.slug === router.currentRoute.value.params.slug
       ) {
         prompt.value = p
+        updateChartData()
       }
     })
     return
   }
   await updatePrompt()
+  if (prompt.value) {
+    updateChartData()
+  }
 })
 
 async function updatePrompt() {
@@ -89,15 +118,15 @@ async function updatePrompt() {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
-      .catch((err) => console.error(err))
+      .catch(() => router.push('/404'))
   }
   if (router.currentRoute.value.params.slug) {
     await promptStore
       .fetchPromptBySlug(router.currentRoute.value.params.slug)
       .then((res) => (prompt.value = res))
-      .catch((err) => console.error(err))
+      .catch(() => router.push('/404'))
   }
-  if (!prompt.value) router.push('/404')
+  updateChartData()
 }
 
 function like() {
@@ -160,5 +189,10 @@ function sharePrompt(grid) {
   position: fixed;
   top: 0;
   z-index: -1;
+}
+
+.tab-selector {
+  margin-bottom: 4rem;
+  z-index: 3;
 }
 </style>

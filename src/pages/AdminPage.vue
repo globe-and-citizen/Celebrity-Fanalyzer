@@ -108,7 +108,7 @@ const entryStore = useEntryStore()
 
 const columns = [
   {},
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
