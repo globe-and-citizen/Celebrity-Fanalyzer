@@ -46,11 +46,9 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       for (const index in monthPrompt.entries) {
         monthPrompt.entries[index] = await getDoc(monthPrompt.entries[index]).then((doc) => doc.data())
+        monthPrompt.entries[index].author = await getDoc(monthPrompt.entries[index].author).then((doc) => doc.data())
       }
 
-      for (const entry of monthPrompt.entries) {
-        entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      }
       this._isLoading = false
 
       this.$patch({ _monthPrompt: monthPrompt })
