@@ -108,7 +108,7 @@ onMounted(async () => {
   await promptStore.fetchMonthPrompt()
   monthPrompt.value = promptStore.getMonthPrompt
 
-  if (!monthPrompt.value.entries.length) {
+  if (!monthPrompt.value.entries?.length) {
     await entryStore.fetchEntries(monthPrompt.value.date)
     monthPrompt.value.entries = entryStore.getEntries
   }
