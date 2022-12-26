@@ -35,7 +35,9 @@ const option = ref({
   series: [
     {
       type: 'bar',
-      data: props.data.map((d) => d.value)
+      data: props.data.map((d) => d.value),
+      colorBy: 'data',
+      color: ['#48982a', '#ea3423', '#f9a61a', '#2e7bb4', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
     }
   ]
 })

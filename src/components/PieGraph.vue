@@ -34,7 +34,9 @@ const option = ref({
     {
       type: 'pie',
       radius: '55%',
-      data: props.data
+      data: props.data,
+      colorBy: 'data',
+      color: ['#48982a', '#ea3423', '#f9a61a', '#2e7bb4', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
     }
   ]
 })
