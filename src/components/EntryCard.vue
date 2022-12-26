@@ -84,13 +84,14 @@ const promptStore = usePromptStore()
 
 const entry = reactive({})
 const imageModel = ref([])
-const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: prompt.title, value: prompt.id }))
+const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.id })).reverse()
 
 watchEffect(() => {
   if (props.id) {
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
+    entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
     entry.description = ''
@@ -109,9 +110,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  entry.slug = `${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${entry.title}`
-    .toLowerCase()
-    .replace(/[^0-9a-z]+/g, '-')
+  entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
 
   if (props.id) {
     await entryStore

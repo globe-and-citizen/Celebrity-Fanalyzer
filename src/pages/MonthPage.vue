@@ -1,18 +1,28 @@
 <template>
+  <q-header class="shadow-1">
+    <q-toolbar class="bg-white q-px-lg">
+      <q-toolbar-title>
+        <b class="text-secondary">This Month</b>
+      </q-toolbar-title>
+      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
+    </q-toolbar>
+  </q-header>
+
   <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!prompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+
+  <q-spinner v-if="!monthPrompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="prompt" style="padding: 0">
-      <q-page class="bg-white">
-        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
-        <section class="q-pa-md" style="margin-top: 100%">
-          <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
-          <p class="text-body1" v-html="prompt.description"></p>
+      <q-page class="q-pa-md">
+        <section v-if="monthPrompt">
+          <q-img :src="monthPrompt.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+          <h1 class="q-my-md text-bold text-h5">{{ monthPrompt.title }}</h1>
+          <p class="text-body1" v-html="monthPrompt.description"></p>
           <div class="q-mb-md">
-            <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
+            <q-badge v-for="(category, index) of monthPrompt.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
             </q-badge>
           </div>
@@ -22,7 +32,7 @@
               :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
-              :label="prompt.info?.likes.length"
+              :label="monthPrompt.info?.likes.length"
               rounded
               @click="like()"
             >
@@ -34,7 +44,7 @@
               :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
-              :label="prompt.info?.dislikes.length"
+              :label="monthPrompt.info?.dislikes.length"
               rounded
               @click="dislike()"
             >
@@ -43,25 +53,28 @@
           </div>
           <q-btn
             flat
-            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
-            icon="img:/icons/discord.svg"
             rounded
+            icon="img:/icons/discord.svg"
+            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
             target="_blank"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
+          <q-btn flat rounded icon="share" :label="monthPrompt.info?.shares" @click="sharePrompt(true)">
             <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
           </q-btn>
+          <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
+          <TheEntries :entries="monthPrompt.entries" />
         </section>
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <TheEntries :entries="prompt.entries" />
+        <section v-else class="q-my-xl text-center">
+          <q-spinner color="primary" size="3em" />
+        </section>
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <PieGraph :data="chartData" title="Likes & Dislikes" />
-        <BarGraph :data="chartData" title="Likes & Dislikes" />
+        <PieGraph :data="getChartData()" title="Likes & Dislikes" />
+        <BarGraph :data="getChartData()" title="Likes & Dislikes" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -72,69 +85,53 @@ import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import PieGraph from 'src/components/PieGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
-const router = useRouter()
 
+const entryStore = useEntryStore()
 const promptStore = usePromptStore()
-const statStore = useStatStore()
 const userStore = useUserStore()
 
+const monthPrompt = ref(promptStore.getMonthPrompt)
+
 const chartData = ref([])
-const prompt = ref({})
 const tab = ref('prompt')
-function updateChartData() {
-  chartData.value = [
-    { value: prompt.value.info?.likes.length, name: 'Likes' },
-    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+function getChartData() {
+  return [
+    { value: monthPrompt.value.info?.likes.length, name: 'Likes' },
+    { value: monthPrompt.value.info?.dislikes.length, name: 'Disikes' }
   ]
 }
-
 onMounted(async () => {
-  statStore.fetchStats()
-  if (promptStore.getPrompts.length) {
-    promptStore.getPrompts.find((p) => {
-      if (
-        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
-        p.slug === router.currentRoute.value.params.slug
-      ) {
-        prompt.value = p
-        updateChartData()
-      }
-    })
-    return
+  await promptStore.fetchMonthPrompt()
+  monthPrompt.value = promptStore.getMonthPrompt
+
+  if (!monthPrompt.value.entries.length) {
+    await entryStore.fetchEntries(monthPrompt.value.date)
+    monthPrompt.value.entries = entryStore.getEntries
   }
-  await updatePrompt()
-  if (prompt.value) {
-    updateChartData()
-  }
+
+  chartData.value = [
+    { value: monthPrompt.value.info?.likes.length, name: 'Likes' },
+    { value: monthPrompt.value.info?.dislikes.length, name: 'Disikes' }
+  ]
 })
 
 async function updatePrompt() {
-  if (router.currentRoute.value.params.year) {
-    await promptStore
-      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-      .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
-  }
-  if (router.currentRoute.value.params.slug) {
-    await promptStore
-      .fetchPromptBySlug(router.currentRoute.value.params.slug)
-      .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
-  }
-  updateChartData()
+  await promptStore
+    .fetchMonthPrompt()
+    .then((res) => (monthPrompt.value = res))
+    .catch((err) => console.error(err))
 }
 
 function like() {
-  promptStore.addLike(prompt.value.id).then(() => updatePrompt())
+  promptStore.addLike(monthPrompt.value.id).then(() => updatePrompt())
 }
 
 function dislike() {
-  promptStore.addDislike(prompt.value.id).then(() => updatePrompt())
+  promptStore.addDislike(monthPrompt.value.id).then(() => updatePrompt())
 }
 
 function sharePrompt(grid) {
@@ -183,14 +180,7 @@ function sharePrompt(grid) {
   })
 }
 </script>
-
 <style scoped lang="scss">
-.parallax {
-  position: fixed;
-  top: 0;
-  z-index: -1;
-}
-
 .tab-selector {
   margin-bottom: 4rem;
   z-index: 3;
