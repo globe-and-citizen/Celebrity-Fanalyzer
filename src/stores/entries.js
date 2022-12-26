@@ -1,7 +1,6 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { usePromptStore, useUserStore } from 'src/stores'
 
@@ -108,10 +107,17 @@ export const useEntryStore = defineStore('entries', {
 
     async deleteEntry(id) {
       this._isLoading = true
-      await deleteDoc(doc(db, 'entries', id))
+
+      const localEntry = this._entries.find((entry) => entry.id === id)
+      const imageRef = ref(storage, `images/${localEntry.image.slice(86, 133)}`)
+      const deleteImage = await deleteObject(imageRef)
+      const deleteEntry = await deleteDoc(doc(db, 'entries', id))
+      Promise.all([deleteImage, deleteEntry])
+        .then()
         .then(() => {
+          console.log('Entry and his image deleted successfully')
           const index = this._entries.findIndex((entry) => entry.id === id)
-          this._entries.splice(index, 1)
+          this._prompts.splice(index, 1)
         })
         .catch((error) => {
           console.error(error)
