@@ -15,11 +15,7 @@ const routes = [
       },
       {
         path: 'month',
-        component: () => import('app/src/pages/MonthPage.vue')
-      },
-      {
-        path: 'profile',
-        component: () => import('pages/ProfilePage.vue')
+        component: () => import('pages/PromptPage.vue')
       },
       {
         path: ':slug',
@@ -36,6 +32,10 @@ const routes = [
       {
         path: ':year(\\d{4})',
         component: () => import('pages/YearArchivePage.vue')
+      },
+      {
+        path: 'profile',
+        component: () => import('pages/ProfilePage.vue')
       },
       {
         path: 'admin',

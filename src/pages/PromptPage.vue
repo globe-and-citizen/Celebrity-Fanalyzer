@@ -95,6 +95,11 @@ function updateChartData() {
 
 onMounted(async () => {
   statStore.fetchStats()
+  if (router.currentRoute.value.href === '/month') {
+    await promptStore.fetchMonthPrompt()
+    prompt.value = promptStore.getMonthPrompt
+  }
+
   if (promptStore.getPrompts.length) {
     promptStore.getPrompts.find((p) => {
       if (
