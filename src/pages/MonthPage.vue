@@ -98,7 +98,7 @@ const monthPrompt = ref(promptStore.getMonthPrompt)
 
 const chartData = ref([])
 const tab = ref('prompt')
-function getChartData(){
+function getChartData() {
   return [
     { value: monthPrompt.value.info?.likes.length, name: 'Likes' },
     { value: monthPrompt.value.info?.dislikes.length, name: 'Disikes' }

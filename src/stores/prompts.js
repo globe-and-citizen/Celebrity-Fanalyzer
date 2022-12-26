@@ -15,11 +15,12 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -214,8 +215,13 @@ export const usePromptStore = defineStore('prompts', {
 
     async deletePrompt(id) {
       this._isLoading = true
-      await deleteDoc(doc(db, 'prompts', id))
+      const localPrompt = this._prompts.find((prompt) => prompt.id === id)
+      const imageRef = ref(storage, `images/${localPrompt.image.slice(86, 133)}`)
+      const deleteImage = await deleteObject(imageRef)
+      const deletePrompt = await deleteDoc(doc(db, 'prompts', id))
+      Promise.all([deleteImage, deletePrompt])
         .then(() => {
+          console.log('Prompt and his image deleted successfully')
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })
@@ -240,10 +246,8 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
-
+      const storageRef = ref(storage, `images/prompt-${sha1(file.name + Date.now())}`)
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
       return getDownloadURL(ref(storage, storageRef))
     },
 
