@@ -15,7 +15,7 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
@@ -214,16 +214,34 @@ export const usePromptStore = defineStore('prompts', {
 
     async deletePrompt(id) {
       this._isLoading = true
-      await deleteDoc(doc(db, 'prompts', id))
-        .then(() => {
-          const index = this._prompts.findIndex((prompt) => prompt.id === id)
-          this._prompts.splice(index, 1)
+      // 1 Make a local copy of the prompt
+      // 2 Delete the local copy images
+      //"https://firebasestorage.googleapis.com/v0/b/celebrityfanalizer.appspot.com/o/images%2Fprompt-007.jpeg1668543888886?alt=media&token=1ebf5426-80de-46a2-b7fb-3d121eca9877"
+
+      const localPrompt = this._prompts.find((prompt) => prompt.id === id)
+      const url= localPrompt.image.replace('https://firebasestorage.googleapis.com/v0/b/celebrityfanalizer.appspot.com/o/images%2F', '')
+      const imageRef = ref(storage, url)
+      console.log("id to delet", id);
+      console.log('Image url', `images/${url}`);
+      deleteObject(imageRef)
+        .then(async () => {
+          console.log('Image deleted successfully')
+          await deleteDoc(doc(db, 'prompts', id))
+            .then(() => {
+              console.log('Prompt deleted successfully')
+              const index = this._prompts.findIndex((prompt) => prompt.id === id)
+              this._prompts.splice(index, 1)
+            })
+            .catch((error) => {
+              console.error(error)
+              throw new Error(error)
+            })
+            .finally(() => (this._isLoading = false))
         })
         .catch((error) => {
-          console.error(error)
+          console.error('Error when try to delete image', error)
           throw new Error(error)
         })
-        .finally(() => (this._isLoading = false))
     },
 
     async updateEntryField(promptId, entryRef) {
