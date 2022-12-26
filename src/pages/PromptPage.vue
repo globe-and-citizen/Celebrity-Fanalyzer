@@ -60,7 +60,6 @@
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <PieGraph :data="chartData" title="Likes & Dislikes" />
         <BarGraph :data="chartData" title="Likes & Dislikes" />
       </q-page>
     </q-tab-panel>
@@ -70,7 +69,6 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
-import PieGraph from 'src/components/PieGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
@@ -86,15 +84,10 @@ const userStore = useUserStore()
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
-function updateChartData() {
-  chartData.value = [
-    { value: prompt.value.info?.likes.length, name: 'Likes' },
-    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
-  ]
-}
 
 onMounted(async () => {
   statStore.fetchStats()
+
   if (router.currentRoute.value.href === '/month') {
     await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
@@ -113,10 +106,18 @@ onMounted(async () => {
     return
   }
   await updatePrompt()
+
   if (prompt.value) {
     updateChartData()
   }
 })
+
+function updateChartData() {
+  chartData.value = [
+    { value: prompt.value.info?.likes.length, name: 'Likes' },
+    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+  ]
+}
 
 async function updatePrompt() {
   if (router.currentRoute.value.params.year) {
