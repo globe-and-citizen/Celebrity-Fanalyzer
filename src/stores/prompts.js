@@ -217,7 +217,6 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       const localPrompt = this._prompts.find((prompt) => prompt.id === id)
       const imageRef = ref(storage, `images/${localPrompt.image.slice(86, 133)}`)
-      // Methode 1
       const deleteImage = await deleteObject(imageRef)
       const deletePrompt = await deleteDoc(doc(db, 'prompts', id))
       Promise.all([deleteImage, deletePrompt])

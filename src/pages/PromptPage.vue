@@ -86,7 +86,7 @@ const userStore = useUserStore()
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
-function updateChartData(){
+function updateChartData() {
   chartData.value = [
     { value: prompt.value.info?.likes.length, name: 'Likes' },
     { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
