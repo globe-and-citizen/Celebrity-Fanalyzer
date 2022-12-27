@@ -105,19 +105,25 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
     },
 
-    async deleteEntry(id) {
-      this._isLoading = true
+    async deleteEntry(entryId) {
+      const promptStore = usePromptStore()
 
-      const localEntry = this._entries.find((entry) => entry.id === id)
-      const imageRef = ref(storage, `images/${localEntry.image.slice(86, 133)}`)
+      const promptId = entryId.split('T')[0]
+      const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
+      const entryImage = entries.find((entry) => entry.id === entryId).image
+
+      const imageRef = ref(storage, `images/${entryImage.split('?alt')[0].split('images%2F')[1]}`)
+
+      this._isLoading = true
       const deleteImage = await deleteObject(imageRef)
-      const deleteEntry = await deleteDoc(doc(db, 'entries', id))
+      const deleteEntry = await deleteDoc(doc(db, 'entries', entryId))
       Promise.all([deleteImage, deleteEntry])
-        .then()
         .then(() => {
           console.log('Entry and his image deleted successfully')
-          const index = this._entries.findIndex((entry) => entry.id === id)
-          this._prompts.splice(index, 1)
+          // TODO: Remove entry from Pinia store
+          // Remove the reference from the prompt document
+          // const index = this._entries.findIndex((entry) => entry.id === entryId)
+          // this._prompts.splice(index, 1)
         })
         .catch((error) => {
           console.error(error)
