@@ -36,11 +36,16 @@ export const usePromptStore = defineStore('prompts', {
       if (state._prompts !== []) return state._prompts.find((prompt) => prompt.id === promptId)
       return null
     },
+    getPromptBySlug:  (state) => (promptSlug) => {
+      if (state._prompts !== []) return state._prompts.find((prompt) => prompt.slug === promptSlug)
+      return null
+    },
     isLoading:      (state) => state._isLoading
   },
 
   actions: {
     async fetchMonthPrompt() {
+      // TODO check if we already have a monthPrompt and if it's updated before all
       this._isLoading = true
       const monthId = `${new Date().getFullYear()}-${new Date().getMonth()}`
 
@@ -61,7 +66,7 @@ export const usePromptStore = defineStore('prompts', {
           await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
         }
       }
-      this._isLoading=false
+      this._isLoading = false
     },
     async fetchPromptById(id) {
       this._isLoading = true
@@ -132,28 +137,33 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async fetchPrompts() {
+      // TODO check if we have data updated before  all
       this._isLoading = true
-      await getDocs(collection(db, 'prompts'))
-        .then(async (querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), isEntriesFetched: false }))
+      if (this._isLoaded === false) {
+        await getDocs(collection(db, 'prompts'))
+          .then(async (querySnapshot) => {
+            const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), isEntriesFetched: false }))
 
-          for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-          }
+            for (const prompt of prompts) {
+              prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            }
 
-          prompts.reverse()
+            prompts.reverse()
 
-          this._prompts = []
-          this.$patch({ _prompts: prompts })
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => {
-          this._isLoading = false
-          this._isLoaded = true
-        })
+            this._prompts = []
+            this.$patch({ _prompts: prompts })
+          })
+          .catch((error) => {
+            console.error(error)
+            throw new Error(error)
+          })
+          .finally(() => {
+            this._isLoading = false
+            this._isLoaded = true
+          })
+      } else {
+        this._isLoading = false
+      }
     },
 
     async fetchPromptEntry(promptId) {
