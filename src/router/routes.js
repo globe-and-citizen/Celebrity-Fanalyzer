@@ -38,6 +38,10 @@ const routes = [
         component: () => import('pages/ProfilePage.vue')
       },
       {
+        path: 'test',
+        component: () => import('pages/TestPage.vue')
+      },
+      {
         path: 'admin',
         component: () => import('pages/AdminPage.vue'),
         beforeEnter: (_to, _from, next) => {

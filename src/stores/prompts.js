@@ -24,9 +24,9 @@ import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _isLoading: false,
+    _isLoading:   false,
     _monthPrompt: null,
-    _prompts: []
+    _prompts:     []
   }),
 
   getters: {
@@ -38,21 +38,19 @@ export const usePromptStore = defineStore('prompts', {
 
   actions: {
     async fetchMonthPrompt() {
-      const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
-      const querySnapshot = await getDocs(q)
+      this._isLoading = true
+      const query = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
+      const querySnapshot = await getDocs(query)
 
       const monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-      this._isLoading = true
       for (const index in monthPrompt.entries) {
         monthPrompt.entries[index] = await getDoc(monthPrompt.entries[index]).then((doc) => doc.data())
         monthPrompt.entries[index].author = await getDoc(monthPrompt.entries[index].author).then((doc) => doc.data())
       }
-
-      this._isLoading = false
-
       this.$patch({ _monthPrompt: monthPrompt })
       LocalStorage.set('monthPrompt', monthPrompt)
+      this._isLoading = false
       return monthPrompt
     },
 
@@ -128,7 +126,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), entryFetched: false }))
 
           for (const prompt of prompts) {
             prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
@@ -255,7 +253,7 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       await updateDoc(doc(db, 'prompts', id), {
-        'info.likes': arrayUnion(useUserStore().getUserRef),
+        'info.likes':    arrayUnion(useUserStore().getUserRef),
         'info.dislikes': arrayRemove(useUserStore().getUserRef)
       })
         .then(() => this.fetchPromptById(id))
@@ -270,7 +268,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await updateDoc(doc(db, 'prompts', id), {
         'info.dislikes': arrayUnion(useUserStore().getUserRef),
-        'info.likes': arrayRemove(useUserStore().getUserRef)
+        'info.likes':    arrayRemove(useUserStore().getUserRef)
       })
         .then(() => this.fetchPromptById(id))
         .catch((error) => {
