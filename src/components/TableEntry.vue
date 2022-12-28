@@ -55,7 +55,6 @@ function onDeleteDialog(entry) {
 }
 
 function onDeleteEntry(id) {
-  console.log('delete entry', id)
   entryStore.deleteEntry(id)
   deleteDialog.value.show = false
 }
