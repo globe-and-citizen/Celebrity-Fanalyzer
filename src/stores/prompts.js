@@ -6,8 +6,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  limit,
-  orderBy,
   query,
   runTransaction,
   setDoc,
@@ -26,34 +24,45 @@ export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading:   false,
     _monthPrompt: null,
+    _isLoaded:    false,
     _prompts:     []
   }),
 
   getters: {
     getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
-    getPromptRef: () => (id) => doc(db, 'prompts', id),
-    getPrompts: (state) => state._prompts,
-    isLoading: (state) => state._isLoading
+    getPromptRef:   () => (id) => doc(db, 'prompts', id),
+    getPrompts:     (state) => state._prompts,
+    getPromptById:  (state) => (promptId) => {
+      if (state._prompts !== []) return state._prompts.find((prompt) => prompt.id === promptId)
+      return null
+    },
+    isLoading:      (state) => state._isLoading
   },
 
   actions: {
     async fetchMonthPrompt() {
       this._isLoading = true
-      const query = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
-      const querySnapshot = await getDocs(query)
+      const monthId = `${new Date().getFullYear()}-${new Date().getMonth()}`
 
-      const monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      for (const index in monthPrompt.entries) {
-        monthPrompt.entries[index] = await getDoc(monthPrompt.entries[index]).then((doc) => doc.data())
-        monthPrompt.entries[index].author = await getDoc(monthPrompt.entries[index].author).then((doc) => doc.data())
+      // TODO improve the use of the local storage
+      // TODO Check the local storage before fetchMonthPrompt
+      // TODO try to fetch prompt by id if we still don't have data after fetchPrompt
+      if (this._isLoaded === false) {
+        await this.fetchPrompts().then(() => this.fetchMonthPrompt())
       }
-      this.$patch({ _monthPrompt: monthPrompt })
-      LocalStorage.set('monthPrompt', monthPrompt)
-      this._isLoading = false
-      return monthPrompt
-    },
+      if (this._isLoaded === true && this._prompts !== []) {
+        // set the current month Prompt
+        this._monthPrompt = this._prompts.find((prompt) => {
+          return prompt.id === monthId
+        })
 
+        // Load Current Month Entries
+        if (this._monthPrompt && !this._monthPrompt.isEntriesFetched) {
+          await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
+        }
+      }
+      this._isLoading=false
+    },
     async fetchPromptById(id) {
       this._isLoading = true
       return await getDoc(doc(db, 'prompts', id))
@@ -126,7 +135,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), entryFetched: false }))
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), isEntriesFetched: false }))
 
           for (const prompt of prompts) {
             prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
@@ -141,7 +150,31 @@ export const usePromptStore = defineStore('prompts', {
           console.error(error)
           throw new Error(error)
         })
-        .finally(() => (this._isLoading = false))
+        .finally(() => {
+          this._isLoading = false
+          this._isLoaded = true
+        })
+    },
+
+    async fetchPromptEntry(promptId) {
+      this._isLoading = true
+      let currentPrompt = this.getPromptById(promptId)
+
+      // TODO: improve by saving entries in the entry store
+      if (currentPrompt.entries) {
+        for (const index in currentPrompt.entries) {
+          currentPrompt.entries[index] = await getDoc(currentPrompt.entries[index]).then((doc) => doc.data())
+          currentPrompt.entries[index].author = await getDoc(currentPrompt.entries[index].author).then((doc) => doc.data())
+        }
+
+        // Confirm that this Prompt Entry is fetched
+        currentPrompt.isEntriesFetched = true
+
+        // Update the current Prompt in the prompt list
+        const promptIndex = this._prompts.findIndex((prompt) => prompt.id === promptId)
+        this._prompts[promptIndex] = currentPrompt
+      }
+      this._isLoading = false
     },
 
     async fetchPromptsAndEntries() {
@@ -217,7 +250,6 @@ export const usePromptStore = defineStore('prompts', {
       const deletePrompt = await deleteDoc(doc(db, 'prompts', id))
       Promise.all([deleteImage, deletePrompt])
         .then(() => {
-          console.log('Prompt and his image deleted successfully')
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })
