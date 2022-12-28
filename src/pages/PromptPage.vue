@@ -89,26 +89,37 @@ onMounted(async () => {
   statStore.fetchStats()
 
   if (router.currentRoute.value.href === '/month') {
-    await promptStore.fetchMonthPrompt()
-    prompt.value = promptStore.getMonthPrompt
-  }
-
-  if (promptStore.getPrompts.length) {
-    promptStore.getPrompts.find((p) => {
-      if (
-        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
-        p.slug === router.currentRoute.value.params.slug
-      ) {
-        prompt.value = p
-        updateChartData()
-      }
-    })
-    return
-  }
-  await updatePrompt()
-
-  if (prompt.value) {
-    updateChartData()
+    await promptStore
+      .fetchMonthPrompt()
+      .then(() => {
+        prompt.value = promptStore.getMonthPrompt
+      })
+      .finally(() => {
+        if (prompt.value) {
+          updateChartData()
+        } else {
+          router.push('/404')
+        }
+      })
+  } else {
+    await promptStore
+      .fetchPrompts()
+      .then(() => {
+        if (router.currentRoute.value.params.year) {
+          prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+        }
+        if (router.currentRoute.value.params.slug) {
+          prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
+        }
+      })
+      .finally(() => {
+        if (prompt.value) {
+          promptStore.fetchPromptEntry(prompt.value.id)
+          updateChartData()
+        } else {
+          router.push('/404')
+        }
+      })
   }
 })
 
@@ -119,28 +130,18 @@ function updateChartData() {
   ]
 }
 
-async function updatePrompt() {
-  if (router.currentRoute.value.params.year) {
-    await promptStore
-      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-      .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
-  }
-  if (router.currentRoute.value.params.slug) {
-    await promptStore
-      .fetchPromptBySlug(router.currentRoute.value.params.slug)
-      .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
-  }
-  updateChartData()
-}
-
 function like() {
-  promptStore.addLike(prompt.value.id).then(() => updatePrompt())
+  const id = prompt.value.id
+  promptStore.addLike(id).then(() => {
+    prompt.value = promptStore.getPromptById(id)
+  })
 }
 
 function dislike() {
-  promptStore.addDislike(prompt.value.id).then(() => updatePrompt())
+  const id = prompt.value.id
+  promptStore.addDislike(id).then(() => {
+    prompt.value = promptStore.getPromptById(id)
+  })
 }
 
 function sharePrompt(grid) {

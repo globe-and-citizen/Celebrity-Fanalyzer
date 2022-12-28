@@ -22,25 +22,25 @@ import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _isLoading:   false,
+    _isLoading: false,
     _monthPrompt: null,
-    _isLoaded:    false,
-    _prompts:     []
+    _isLoaded: false,
+    _prompts: []
   }),
 
   getters: {
     getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
-    getPromptRef:   () => (id) => doc(db, 'prompts', id),
-    getPrompts:     (state) => state._prompts,
-    getPromptById:  (state) => (promptId) => {
+    getPromptRef: () => (id) => doc(db, 'prompts', id),
+    getPrompts: (state) => state._prompts,
+    getPromptById: (state) => (promptId) => {
       if (state._prompts !== []) return state._prompts.find((prompt) => prompt.id === promptId)
-      return null
+      return {}
     },
-    getPromptBySlug:  (state) => (promptSlug) => {
+    getPromptBySlug: (state) => (promptSlug) => {
       if (state._prompts !== []) return state._prompts.find((prompt) => prompt.slug === promptSlug)
-      return null
+      return {}
     },
-    isLoading:      (state) => state._isLoading
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
@@ -76,15 +76,23 @@ export const usePromptStore = defineStore('prompts', {
             throw new Error('Document not found.')
           }
           const prompt = { id: doc.id, ...doc.data() }
-          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-          if (prompt.entries?.length) {
-            for (const index in prompt.entries) {
-              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+          const localPrompt = this.getPromptById(prompt.id)
+          if (!localPrompt) {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            if (prompt.entries?.length) {
+              for (const index in prompt.entries) {
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+              }
             }
+            const index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
+            this._prompts[index] = prompt
+          } else {
+            const newPrompt = { ...prompt, ...{ entries: localPrompt.entries, author: localPrompt.author } }
+            const index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
+            this._prompts[index] = newPrompt
           }
-
+          // await this.fetchPromptEntry(id)
           return prompt
         })
         .catch((err) => {
@@ -92,27 +100,7 @@ export const usePromptStore = defineStore('prompts', {
         })
         .finally(() => (this._isLoading = false))
     },
-
-    async fetchPromptBySlug(slug) {
-      const q = query(collection(db, 'prompts'), where('slug', '==', slug))
-      this._isLoading = true
-      const querySnapshot = await getDocs(q)
-
-      const prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-      if (prompt.entries?.length) {
-        for (const index in prompt.entries) {
-          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-        }
-      }
-      this._isLoading = false
-
-      return prompt
-    },
-
+    
     async fetchPromptsByYear(year) {
       const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
 
@@ -171,7 +159,7 @@ export const usePromptStore = defineStore('prompts', {
       let currentPrompt = this.getPromptById(promptId)
 
       // TODO: improve by saving entries in the entry store
-      if (currentPrompt.entries) {
+      if (currentPrompt.entries && currentPrompt.isEntriesFetched === false) {
         for (const index in currentPrompt.entries) {
           currentPrompt.entries[index] = await getDoc(currentPrompt.entries[index]).then((doc) => doc.data())
           currentPrompt.entries[index].author = await getDoc(currentPrompt.entries[index].author).then((doc) => doc.data())
@@ -290,12 +278,9 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async addLike(id) {
-      this._prompts = []
-      this.$patch({ _prompts: this.getPrompts })
-
       this._isLoading = true
       await updateDoc(doc(db, 'prompts', id), {
-        'info.likes':    arrayUnion(useUserStore().getUserRef),
+        'info.likes': arrayUnion(useUserStore().getUserRef),
         'info.dislikes': arrayRemove(useUserStore().getUserRef)
       })
         .then(() => this.fetchPromptById(id))
@@ -310,7 +295,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await updateDoc(doc(db, 'prompts', id), {
         'info.dislikes': arrayUnion(useUserStore().getUserRef),
-        'info.likes':    arrayRemove(useUserStore().getUserRef)
+        'info.likes': arrayRemove(useUserStore().getUserRef)
       })
         .then(() => this.fetchPromptById(id))
         .catch((error) => {
