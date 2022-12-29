@@ -22,17 +22,17 @@ import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _isLoading:   false,
+    _isLoading: false,
     _monthPrompt: null,
-    _isLoaded:    false,
-    _prompts:     []
+    _isLoaded: false,
+    _prompts: []
   }),
 
   getters: {
-    getMonthPrompt:  (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
-    getPromptRef:    () => (id) => doc(db, 'prompts', id),
-    getPrompts:      (state) => state._prompts,
-    getPromptById:   (state) => (promptId) => {
+    getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
+    getPromptRef: () => (id) => doc(db, 'prompts', id),
+    getPrompts: (state) => state._prompts,
+    getPromptById: (state) => (promptId) => {
       if (state._prompts !== []) return state._prompts.find((prompt) => prompt.id === promptId)
       return {}
     },
@@ -40,7 +40,7 @@ export const usePromptStore = defineStore('prompts', {
       if (state._prompts !== []) return state._prompts.find((prompt) => prompt.slug === promptSlug)
       return {}
     },
-    isLoading:       (state) => state._isLoading
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
@@ -301,8 +301,6 @@ export const usePromptStore = defineStore('prompts', {
 
       // First load prompt stored in the store
       const prompt = this.getPromptById(id)
-
-
       if (prompt.likes) {
         let userLike = prompt.likes.find((like) => like.user === useUserStore().getUser.uid)
         if (userLike && !userLike.status) {
@@ -310,21 +308,21 @@ export const usePromptStore = defineStore('prompts', {
             likes: arrayRemove({ ...userLike })
           }).then(async () => {
             await updateDoc(doc(db, 'prompts', id), {
-              likes: arrayUnion({ ...userLike, status: true, updatedAd: Date.now() } )
+              likes: arrayUnion({ ...userLike, status: true, updatedAd: Date.now() })
             }).then(async () => {
               await this.fetchPromptById(id)
             })
           })
-        }else if (!userLike){
-          await createAndSaveLike.call(this);
+        } else if (!userLike) {
+          await createAndSaveLike.call(this)
         }
-        if(userLike && userLike.status===true){
-          console.info("user already likes it so no update");
+        if (userLike && userLike.status === true) {
+          console.info('user already likes it so no update')
         }
-      }else{
-        await createAndSaveLike.call(this);
+      } else {
+        await createAndSaveLike.call(this)
       }
-      this._isLoading=false
+      this._isLoading = false
     },
 
     async addDislike(id) {
@@ -344,13 +342,12 @@ export const usePromptStore = defineStore('prompts', {
         })
       }
 
-
       // First load prompt stored in the store
       const prompt = this.getPromptById(id)
 
       if (prompt.likes) {
         let userLike = prompt.likes.find((like) => like.user === useUserStore().getUser.uid)
-        if (userLike && userLike.status===true) {
+        if (userLike && userLike.status === true) {
           await updateDoc(doc(db, 'prompts', id), {
             likes: arrayRemove({ ...userLike })
           }).then(async () => {
@@ -360,14 +357,14 @@ export const usePromptStore = defineStore('prompts', {
               await this.fetchPromptById(id)
             })
           })
-        }else if (!userLike){
-          await createAndSaveDislike.call(this);
+        } else if (!userLike) {
+          await createAndSaveDislike.call(this)
         }
-        if(userLike && userLike.status===false){
-          console.info("user already Dislike it so no update");
+        if (userLike && userLike.status === false) {
+          console.info('user already Dislike it so no update')
         }
-      }else{
-        await createAndSaveDislike.call(this);
+      } else {
+        await createAndSaveDislike.call(this)
       }
       this._isLoading = false
     }
