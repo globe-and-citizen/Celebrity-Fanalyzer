@@ -22,7 +22,7 @@
               :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
-              :label="prompt.info?.likes.length"
+              :label="promptLikesCount"
               rounded
               @click="like()"
             >
@@ -34,7 +34,7 @@
               :disable="!userStore.isAuthenticated || promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
-              :label="prompt.info?.dislikes.length"
+              :label="promptDislikesCount"
               rounded
               @click="dislike()"
             >
@@ -71,7 +71,7 @@ import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
@@ -84,7 +84,12 @@ const userStore = useUserStore()
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
-
+const promptLikesCount= computed(()=>{
+  return prompt.value.likes ? prompt.value.likes.filter(like=>like.status===true).length : 0
+})
+const promptDislikesCount= computed(()=>{
+  return prompt.value.likes ? prompt.value.likes.filter(like=>like.status===false).length : 0
+})
 onMounted(async () => {
   statStore.fetchStats()
 
