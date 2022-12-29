@@ -58,7 +58,7 @@
         <p>
           Every month a winner is chosen, paid, and then we do it again! The first and second week of the month are for writing. The third
           and fourth week are for voting. What's the point of all this? Read more here:
-          <span class="text-primary text-bold" @click="whyModal = !whyModal">Why?</span>
+          <span class="text-primary text-bold cursor-pointer" @click="whyModal = !whyModal">Why?</span>
         </p>
       </article>
 
@@ -71,7 +71,8 @@
             <q-expansion-item expand-separator icon="stars" label="Build Celebrity Fanalyzer" caption="2022/23">
               <q-card>
                 <q-card-section>
-                  Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month.
+                  Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are
+                  particularly interested in how to tweek the competition parameters for winning.
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -79,9 +80,9 @@
             <q-expansion-item expand-separator icon="language" label="Make it a DAPP" caption="2023">
               <q-card>
                 <q-card-section>
-                  Celebrity Fanalyzer is one of many projects exploring how blockchain technology can be used. Our goal is to connect
-                  Celebrity Fanalyzer to Ethereum thereby making it a DAPP (a Distributed APPlication). Anyone with a crypto wallet (we
-                  suggest Metamask) should be able to participate.
+                  Celebrity Fanalyzer is one of many projects exploring how blockchain technology can be used. Our goal is to make Celebrity
+                  Fanalyzer a DAPP (a Distributed APPlication) by connecting it to Ethereum. Anyone with a crypto wallet (we suggest
+                  Metamask) should be able to participate in our competitions.
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -89,8 +90,8 @@
             <q-expansion-item expand-separator icon="code" label="Build Layer 8" caption="2023/24">
               <q-card>
                 <q-card-section>
-                  Anyone who visits Celebrity Fanalyzer should benefit from uncompromised anonymity without needing to sign up or configure
-                  their own VPN.
+                  Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
+                  development in late 2023 that we call “Layer 8.”
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -98,11 +99,11 @@
             <q-expansion-item icon="assessment" label="Connect C.F. to Layer 8" caption="2024">
               <q-card>
                 <q-card-section>
-                  How do you determine the definition of "better" when opinions are subjective? The simplest way is to implement a
-                  centralized the process but this of course, means only a single perspective is represented. To avoid this, a decentralize
-                  model of "better" is necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast
-                  amounts of anonymous data to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer
-                  is to-be-determined.
+                  How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
+                  centralized the process but this, of course, means only a single perspective is represented. A decentralize model of
+                  "better" is necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast amounts of
+                  anonymous data to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer is
+                  to-be-determined.
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -110,8 +111,8 @@
             <q-expansion-item icon="rocket_launch" label="Launch Globe & Citizen" caption="2025">
               <q-card>
                 <q-card-section>
-                  Deep fakes, fake media, toxic hate speech, and a consolidated media industry: this is the reality of the internet we
-                  today. How to decentralize control of the media we consume but still provide a quality service on par with a centralized
+                  Deep fakes, fake media, toxic hate speech, and a consolidated media industry: this is the reality of the internet today.
+                  How to decentralize control of the media we consume but still provide a quality online service on par with a centralized
                   one? Once Layer 8 is established, the AI ranking algorithm is open sourced, and Celebrity Fanalyzer is a successful DAPP,
                   it’s finally time to launch Globe & Citizen — our answer to this question. Reach out to us if you’re interested in getting
                   involved.
@@ -132,7 +133,7 @@
             opinion, suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you
             want to get involved shaping the future of the application, reach out to us. You can learn more about what we are doing by
             checking out the Road Map below or reading:
-            <span class="text-primary text-bold" @click="whyModal = !whyModal">Why?</span>
+            <span class="text-primary text-bold cursor-pointer" @click="whyModal = !whyModal">Why?</span>
           </p>
           <q-btn flat rounded icon="img:/icons/discord.svg" href="https://discord.gg/z4P3UrhhSH" size="xl" target="_blank">
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
@@ -161,13 +162,13 @@
               <span class="text-italic">anthroscope</span>
               , like any scope (e.g., telescope, microscope, oscilloscope, etc.), is designed to give its users the capacity to view
               something with new perspective. In the case of this application, the specimen under investigation is society and that new
-              perspective is on the variety of opinions held within it. The prefix “anthro” being borrowed from the Greek word “anthropo”
-              meaning human.
+              perspective is the distribution and variety of opinions held within it. The prefix “anthro” being borrowed from the Greek word
+              “anthropo” meaning human.
             </p>
             <p>
               To function as intended, Celebrity Fanalyzer will use modern statistics, artificial intelligence, and big data to produce
-              visuals reflecting the opinion scape reflecting any particular topic. The team collectively refers to these visuals as
-              anthrograms. Anthrograms should, if done properly, make obvious the inherent biases of any
+              visuals reflecting the opinion scape of any particular topic. The team collectively refers to these visuals as anthrograms.
+              Anthrograms should, if done properly, make obvious the inherent biases of any
               <span class="text-bold">one</span>
               opinion and, from this new perspective, a user should be able to infer their own truth.
             </p>
@@ -175,8 +176,7 @@
               Celebrity Fanalyzer cannot produce anthrograms in its current form. To do this, a technological solution which scrubs user
               data of all identifiers, is necessary. In fact, Celebrity Fanalyzer is one of few applications THAT DOES NOT WANT YOUR
               PERSONAL DATA. Ultimately, our goal is to launch the application behind a custom built anonymizing reverse proxy we call
-              “Layer 8” and that is scheduled for development in late 2023. Once launched, this specialized server will scrub all personally
-              identifying information from incoming traffic.
+              “Layer 8.” Once launched, this specialized server will scrub all personally identifying information from incoming traffic.
             </p>
             <p>
               Following the launch and debugging of Layer 8, Celebrity Fanalyzer is to be recast as general news website entitled “Globe &
