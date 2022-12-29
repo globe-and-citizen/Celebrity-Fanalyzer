@@ -287,7 +287,6 @@ export const usePromptStore = defineStore('prompts', {
 
       // Export reused peace of code that create and save a prompt like
       async function createAndSaveLike() {
-        this._isLoading=true
         await updateDoc(doc(db, 'prompts', id), {
           likes: arrayUnion({
             user: useUserStore().getUser.uid,
@@ -310,9 +309,8 @@ export const usePromptStore = defineStore('prompts', {
           await updateDoc(doc(db, 'prompts', id), {
             likes: arrayRemove({ ...userLike })
           }).then(async () => {
-            userLike = { ...userLike, status: true, updatedAd: Date.now() }
             await updateDoc(doc(db, 'prompts', id), {
-              likes: arrayUnion({ ...userLike })
+              likes: arrayUnion({ ...userLike, status: true, updatedAd: Date.now() } )
             }).then(async () => {
               await this.fetchPromptById(id)
             })
@@ -320,7 +318,7 @@ export const usePromptStore = defineStore('prompts', {
         }else if (!userLike){
           await createAndSaveLike.call(this);
         }
-        if(userLike && userLike.status){
+        if(userLike && userLike.status===true){
           console.info("user already likes it so no update");
         }
       }else{
@@ -331,16 +329,47 @@ export const usePromptStore = defineStore('prompts', {
 
     async addDislike(id) {
       this._isLoading = true
-      await updateDoc(doc(db, 'prompts', id), {
-        'info.dislikes': arrayUnion(useUserStore().getUserRef),
-        'info.likes':    arrayRemove(useUserStore().getUserRef)
-      })
-        .then(() => this.fetchPromptById(id))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
+
+      // Export reused peace of code that create and save a prompt Dislike
+      async function createAndSaveDislike() {
+        await updateDoc(doc(db, 'prompts', id), {
+          likes: arrayUnion({
+            user: useUserStore().getUser.uid,
+            status: false,
+            createdAt: Date.now(),
+            updatedAd: Date.now()
+          })
+        }).then(async () => {
+          await this.fetchPromptById(id)
         })
-        .finally(() => (this._isLoading = false))
+      }
+
+
+      // First load prompt stored in the store
+      const prompt = this.getPromptById(id)
+
+      if (prompt.likes) {
+        let userLike = prompt.likes.find((like) => like.user === useUserStore().getUser.uid)
+        if (userLike && userLike.status===true) {
+          await updateDoc(doc(db, 'prompts', id), {
+            likes: arrayRemove({ ...userLike })
+          }).then(async () => {
+            await updateDoc(doc(db, 'prompts', id), {
+              likes: arrayUnion({ ...userLike, status: false, updatedAd: Date.now() })
+            }).then(async () => {
+              await this.fetchPromptById(id)
+            })
+          })
+        }else if (!userLike){
+          await createAndSaveDislike.call(this);
+        }
+        if(userLike && userLike.status===false){
+          console.info("user already Dislike it so no update");
+        }
+      }else{
+        await createAndSaveDislike.call(this);
+      }
+      this._isLoading = false
     }
   }
 })
