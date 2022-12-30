@@ -148,7 +148,12 @@ function onDeletePrompt(id) {
 }
 
 function openEntryDialog(props) {
-  entry.value = props?.id ? props : {}
+  if (props?.id) {
+    entry.value = props
+    entry.value.prompt = prompts.value.find((prompt) => prompt.id === props.prompt.id)
+  } else {
+    entry.value = {}
+  }
   entry.value.dialog = true
 }
 </script>
