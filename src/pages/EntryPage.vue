@@ -19,9 +19,7 @@
       <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
         <q-tooltip>Comments</q-tooltip>
       </q-btn>
-      <q-btn flat rounded icon="share" :label="article.info?.shares">
-        <q-tooltip>Share</q-tooltip>
-      </q-btn>
+      <ShareComponent :count="0"></ShareComponent>
     </section>
     <q-separator />
     <TheComments :comments="comments" v-show="showComments" />
@@ -31,6 +29,7 @@
 
 <script setup>
 import TheComments from 'src/components/TheComments.vue'
+import ShareComponent from 'src/components/ShareComponent.vue'
 import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
