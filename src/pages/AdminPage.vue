@@ -50,15 +50,15 @@
             </q-td>
             <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
             <q-td>
-              <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
+              <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
               <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
             </q-td>
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
-            <q-td colspan="100%">
+            <q-td colspan="100%" style="padding: 0 !important">
               <q-linear-progress v-if="entryStore.isLoading" color="primary" indeterminate />
               <p v-else-if="!props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-              <TableEntry v-else :items="props.row.entries" />
+              <TableEntry v-else :rows="props.row.entries" @edit-entry="openEntryDialog" />
             </q-td>
           </q-tr>
         </template>
@@ -80,7 +80,7 @@
         </q-card-section>
         <q-card-section>
           <span class="q-ml-sm">
-            Are you sure you want to delete the prompt
+            Are you sure you want to delete the prompt:
             <b>{{ deleteDialog.prompt.title }}</b>
             ?
           </span>
@@ -128,7 +128,7 @@ onMounted(async () => {
 })
 
 function openPromptDialog(props) {
-  props?.id ? (prompt.value = props) : (prompt.value = {})
+  prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
 }
 
@@ -148,7 +148,7 @@ function onDeletePrompt(id) {
 }
 
 function openEntryDialog(props) {
-  props?.id ? (entry.value = props) : (entry.value = {})
+  entry.value = props?.id ? props : {}
   entry.value.dialog = true
 }
 </script>

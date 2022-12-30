@@ -1,4 +1,17 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  arrayRemove,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where
+} from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -105,19 +118,25 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
     },
 
-    async deleteEntry(id) {
-      this._isLoading = true
+    async deleteEntry(entryId) {
+      const promptStore = usePromptStore()
 
-      const localEntry = this._entries.find((entry) => entry.id === id)
-      const imageRef = ref(storage, `images/${localEntry.image.slice(86, 133)}`)
+      const promptId = entryId.split('T')[0]
+      const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
+      const entryRef = doc(db, 'entries', entryId)
+      const entryImage = entries.find((entry) => entry.id === entryId).image
+      const imageRef = ref(storage, `images/${entryImage.split('?alt')[0].split('images%2F')[1]}`)
+
+      this._isLoading = true
       const deleteImage = await deleteObject(imageRef)
-      const deleteEntry = await deleteDoc(doc(db, 'entries', id))
-      Promise.all([deleteImage, deleteEntry])
-        .then()
+      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
+      const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
+
+      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef])
         .then(() => {
-          console.log('Entry and his image deleted successfully')
-          const index = this._entries.findIndex((entry) => entry.id === id)
-          this._prompts.splice(index, 1)
+          const prompt = promptStore._prompts.find((prompt) => prompt.id === promptId)
+          prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)
+          promptStore.$patch({ _prompts: [...promptStore._prompts] })
         })
         .catch((error) => {
           console.error(error)
