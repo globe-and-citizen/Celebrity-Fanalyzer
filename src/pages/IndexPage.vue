@@ -100,10 +100,9 @@
               <q-card>
                 <q-card-section>
                   How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
-                  centralized the process but this, of course, means only a single perspective is represented. A decentralize model of
-                  "better" is necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast amounts of
-                  anonymous data to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer is
-                  to-be-determined.
+                  centralized process but this, of course, means only a single perspective is represented. A decentralize model of "better"
+                  is necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast amounts of anonymous
+                  data to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer is to-be-determined.
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -112,8 +111,9 @@
               <q-card>
                 <q-card-section>
                   Deep fakes, fake media, toxic hate speech, and a consolidated media industry: this is the reality of the internet today.
-                  How to decentralize control of the media we consume but still provide a quality online service on par with a centralized
-                  one? Once Layer 8 is established, the AI ranking algorithm is open sourced, and Celebrity Fanalyzer is a successful DAPP,
+                  How to decentralize control of the media we consume but still provide a quality online service on par with a
+                  <a href="https://moxie.org/2022/01/07/web3-first-impressions.html">centralized one</a>
+                  ? Once Layer 8 is established, the AI ranking algorithm is open sourced, and Celebrity Fanalyzer is a successful DAPP,
                   it’s finally time to launch Globe & Citizen — our answer to this question. Reach out to us if you’re interested in getting
                   involved.
                 </q-card-section>
@@ -155,7 +155,7 @@
             <p>
               Celebrity Fanalyzer is the first iteration of a multi year endeavor to produce an
               <span class="text-italic">anthroscope.</span>
-              “And”, you will certainly be asking, “what is an anthroscope?”
+              “And what”, you will certainly be asking, “is an anthroscope?”
             </p>
             <p>
               An
@@ -179,11 +179,11 @@
               “Layer 8.” Once launched, this specialized server will scrub all personally identifying information from incoming traffic.
             </p>
             <p>
-              Following the launch and debugging of Layer 8, Celebrity Fanalyzer is to be recast as general news website entitled “Globe &
+              Following the launch and debugging of Layer 8, Celebrity Fanalyzer is to be recast as a general news website entitled “Globe &
               Citizen.” Though following approximately the same mechanics as its simple forebearer, Globe & Citizen is to be an anthroscope
               in the fullest sense: by coming preconfigured to receive only anonymized user data, it will immediately produce anthrograms
               that users will hopefully find both insightful and beautiful. Globe & Citizen, unlike Celebrity Fanalyzer, will deal with
-              topics such as climate change, inflation, COVID vaccines, and much more because, for obvious reasons, the Internet needs and
+              topics such as climate change, inflation, COVID vaccines, and much more because, for obvious reasons, the Internet needs an
               anthroscope.
             </p>
             <p>This is “why.”</p>
