@@ -243,9 +243,12 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${sha1(file.name + Date.now())}`)
+    async uploadImage(file, promptId) {
+      const storageRef = ref(storage, `images/prompt-${promptId}`)
+
+      this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
+
       return getDownloadURL(ref(storage, storageRef))
     },
 

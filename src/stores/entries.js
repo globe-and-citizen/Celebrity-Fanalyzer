@@ -75,8 +75,7 @@ export const useEntryStore = defineStore('entries', {
       const promptStore = usePromptStore()
 
       const promptId = entry.prompt.value
-      const entryId = `${promptId}T${Date.now()}` // 2022-11T1670535123715
-      const entryRef = doc(db, 'entries', entryId)
+      const entryRef = doc(db, 'entries', entry.date)
 
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
@@ -145,10 +144,10 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
     },
 
-    async uploadImage(file) {
-      this._isLoading = true
-      const storageRef = ref(storage, `images/entry-${file.name + Date.now()}`)
+    async uploadImage(file, entryId) {
+      const storageRef = ref(storage, `images/entry-${entryId}`)
 
+      this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))

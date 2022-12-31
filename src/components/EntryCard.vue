@@ -23,26 +23,12 @@
             />
           </template>
         </q-field>
-        <q-file
-          accept=".jpg, image/*"
-          counter
-          hide-hint
-          hint="Landscape images are better | Max size is 5MB"
-          label="Image"
-          :max-total-size="5242880"
-          :required="!id"
-          v-model="imageModel"
-          @rejected="onRejected()"
-          @update:model-value="uploadPhoto()"
-        >
-          <template v-slot:append>
-            <q-icon name="image" />
-          </template>
-        </q-file>
+        {{ entry.image }}
         <q-select
           behavior="menu"
           counter
-          hide-hint
+          :disable="Boolean(entry.image)"
+          :hint="entry.image ? 'Image is attached to this prompt' : ''"
           label="Prompt"
           :options="promptOptions"
           use-chips
@@ -55,6 +41,22 @@
             </q-item>
           </template>
         </q-select>
+        <q-file
+          accept=".jpg, image/*"
+          counter
+          :disable="!entry.prompt"
+          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 5MB'"
+          label="Image"
+          :max-total-size="5242880"
+          :required="!id"
+          v-model="imageModel"
+          @rejected="onRejected()"
+          @update:model-value="uploadPhoto()"
+        >
+          <template v-slot:append>
+            <q-icon name="image" />
+          </template>
+        </q-file>
         <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" />
         <q-btn
           class="full-width q-mt-xl"
@@ -94,6 +96,7 @@ watchEffect(() => {
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
+    entry.date = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
     entry.description = ''
     entry.image = ''
     entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
@@ -102,7 +105,7 @@ watchEffect(() => {
 })
 
 function uploadPhoto() {
-  entryStore.uploadImage(imageModel.value).then((url) => (entry.image = url))
+  entryStore.uploadImage(imageModel.value, entry.date).then((url) => (entry.image = url))
 }
 
 function onRejected() {

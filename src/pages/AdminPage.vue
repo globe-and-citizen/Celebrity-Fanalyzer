@@ -127,6 +127,10 @@ onMounted(async () => {
   prompts.value = promptStore.getPrompts
 })
 
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+})
+
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
