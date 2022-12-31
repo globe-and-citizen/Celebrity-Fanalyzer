@@ -20,7 +20,6 @@ import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -184,6 +183,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.date), prompt)
         .then(() => {
+          prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
         .catch((error) => {
@@ -212,12 +212,20 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async deletePrompt(id) {
+      const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
+
       this._isLoading = true
-      const localPrompt = this._prompts.find((prompt) => prompt.id === id)
-      const imageRef = ref(storage, `images/${localPrompt.image.slice(86, 133)}`)
-      const deleteImage = await deleteObject(imageRef)
-      const deletePrompt = await deleteDoc(doc(db, 'prompts', id))
-      Promise.all([deleteImage, deletePrompt])
+      const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+      const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
+
+      if (relatedEntries.length) {
+        for (const entry of relatedEntries) {
+          await deleteDoc(doc(db, 'entries', entry.id))
+          await deleteObject(ref(storage, `images/entry-${entry.id}`))
+        }
+      }
+
+      Promise.all([deleteImage, deletePromptDoc])
         .then(() => {
           console.log('Prompt and his image deleted successfully')
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
@@ -235,7 +243,9 @@ export const usePromptStore = defineStore('prompts', {
       await updateDoc(doc(db, 'prompts', promptId), {
         entries: arrayUnion(entryRef)
       })
-        .then(() => this.fetchPromptById(promptId))
+        .then(() => {
+          // this.fetchPromptById(promptId)
+        })
         .catch((error) => {
           console.error(error)
           throw new Error(error)
