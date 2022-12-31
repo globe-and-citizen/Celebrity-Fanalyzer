@@ -80,7 +80,7 @@
             </q-item>
           </template>
         </q-select>
-        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" />
+        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" />
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
@@ -136,7 +136,9 @@ function onUpdateMonth() {
 
 function uploadPhoto() {
   prompt.image = ''
-  promptStore.uploadImage(imageModel.value, prompt.date).then((url) => (prompt.image = url))
+  const reader = new FileReader()
+  reader.readAsDataURL(imageModel.value)
+  reader.onload = () => (prompt.image = reader.result)
 }
 
 function onRejected() {
@@ -150,6 +152,8 @@ async function onSubmit() {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
+
+  promptStore.uploadImage(imageModel.value, prompt.date)
 
   if (props.id) {
     await promptStore
