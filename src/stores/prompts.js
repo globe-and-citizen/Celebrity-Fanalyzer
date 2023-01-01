@@ -287,13 +287,12 @@ export const usePromptStore = defineStore('prompts', {
 
       // Export reused peace of code that create and save a prompt like
       async function createAndSaveLike() {
-        await updateDoc(doc(db, 'prompts', id), {
-          likes: arrayUnion({
-            user: useUserStore().getUser.uid,
-            status: true,
-            createdAt: Date.now(),
-            updatedAd: Date.now()
-          })
+        // const likeRef= doc(db, 'prompts', id, 'opinions')
+        await setDoc(doc(db, 'prompts', id, 'opinions'), {
+          user: useUserStore().getBrowserId,
+          status: true,
+          createdAt: Date.now(),
+          updatedAd: Date.now()
         }).then(async () => {
           await this.fetchPromptById(id)
         })

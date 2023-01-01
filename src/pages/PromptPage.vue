@@ -19,7 +19,7 @@
           <div class="inline-block">
             <q-btn
               color="green"
-              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              :disable="promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
               :label="promptLikesCount"
@@ -28,10 +28,9 @@
             >
               <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
             </q-btn>
-            <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
             <q-btn
               color="red"
-              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              :disable=" promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
               :label="promptDislikesCount"
@@ -60,7 +59,7 @@
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <BarGraph :data="chartData" title="Likes & Dislikes" />
+<!--        <BarGraph :data="chartData" title="Likes & Dislikes" />-->
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
