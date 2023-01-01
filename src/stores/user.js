@@ -2,11 +2,13 @@ import { doc, getDoc, runTransaction } from '@firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
+import sha1 from 'sha1'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     _user: {},
-    _isLoading: false
+    _isLoading: false,
+    _browserId: ''
   }),
 
   getters: {
@@ -14,9 +16,9 @@ export const useUserStore = defineStore('user', {
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
     isAuthenticated: (getters) => !!getters.getUser?.uid,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    getBrowserId: (state) => state._browserId
   },
-
   actions: {
     async fetchUserProfile(user) {
       this._isLoading = true
@@ -34,6 +36,24 @@ export const useUserStore = defineStore('user', {
       if (this.getUser) {
         LocalStorage.set('user', this._user)
         this.router.go(0)
+      }
+    },
+    /**
+     * Create and store a unique Browser id in the storage and in the store
+     * @returns {Promise<void>}
+     */
+    async loadBrowserId() {
+      if (this.user.id && this._browserId !== this.user.id) {
+        this._browserId = this.user.id
+        LocalStorage.set('browserId', this._browserId)
+      } else if (!this.user.id) {
+        const storageBrowserId = LocalStorage.getItem('browserId')
+        if (storageBrowserId) {
+          this._browserId = storageBrowserId
+        } else {
+          this._browserId = sha1(Math.random(), Date.now())
+          LocalStorage.set('browserId', this._browserId)
+        }
       }
     },
 
