@@ -7,23 +7,6 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
-        <q-input counter hide-hint label="Title" maxlength="80" required v-model="entry.title" />
-        <q-field counter label="Description" maxlength="400" v-model="entry.description">
-          <template v-slot:control>
-            <q-editor
-              flat
-              class="q-mt-md"
-              min-height="5rem"
-              :toolbar="[
-                ['bold', 'italic', 'strike', 'underline'],
-                ['quote', 'unordered', 'ordered'],
-                ['undo', 'redo']
-              ]"
-              v-model="entry.description"
-            />
-          </template>
-        </q-field>
-        {{ entry.image }}
         <q-select
           behavior="menu"
           counter
@@ -41,6 +24,22 @@
             </q-item>
           </template>
         </q-select>
+        <q-input counter hide-hint label="Title" maxlength="80" required v-model="entry.title" />
+        <q-field counter label="Description" maxlength="400" v-model="entry.description">
+          <template v-slot:control>
+            <q-editor
+              flat
+              class="q-mt-md"
+              min-height="5rem"
+              :toolbar="[
+                ['bold', 'italic', 'strike', 'underline'],
+                ['quote', 'unordered', 'ordered'],
+                ['undo', 'redo']
+              ]"
+              v-model="entry.description"
+            />
+          </template>
+        </q-field>
         <q-file
           accept=".jpg, image/*"
           counter
@@ -86,7 +85,7 @@ const promptStore = usePromptStore()
 
 const entry = reactive({})
 const imageModel = ref([])
-const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.id })).reverse()
+const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse()
 
 watchEffect(() => {
   if (props.id) {

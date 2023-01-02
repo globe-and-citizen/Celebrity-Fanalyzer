@@ -19,12 +19,16 @@ import { usePromptStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
     _isLoading: false
   }),
 
   getters: {
-    getEntries: (state) => state._entries,
+    getEntriesFromPrompt: () => (promptId) => {
+      const promptStore = usePromptStore()
+      const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
+
+      return prompt.entries
+    },
     isLoading: (state) => state._isLoading
   },
 
@@ -59,9 +63,6 @@ export const useEntryStore = defineStore('entries', {
           entry.author = await getDoc(entry.author).then((doc) => doc.data())
           entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
         }
-
-        this._entries = []
-        this.$patch({ _entries: entries })
       } catch (error) {
         console.error(error)
         throw new Error(error)
@@ -84,7 +85,7 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await setDoc(entryRef, entry)
         .then(() => {
-          this.$patch({ _entries: [...this.getEntries, entry] })
+          // TODO: Once a entry is added, update the prompt's entry array
           promptStore.updateEntryField(promptId, entryRef)
         })
         .catch((error) => {
@@ -104,12 +105,7 @@ export const useEntryStore = defineStore('entries', {
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
-        .then(() => {
-          const index = this.getEntries.findIndex((p) => p.fid === entry.id)
-          this.$patch({
-            _entries: [...this._entries.slice(0, index), { ...this._entries[index], ...entry }, ...this._entries.slice(index + 1)]
-          })
-        })
+        .then(() => {})
         .catch((error) => {
           console.error(error)
           throw new Error(error)
