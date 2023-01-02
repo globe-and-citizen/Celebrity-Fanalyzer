@@ -1,5 +1,6 @@
 import {
   arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -77,22 +78,34 @@ export const useEntryStore = defineStore('entries', {
 
       const promptId = entry.prompt.value
       const entryRef = doc(db, 'entries', entry.date)
+      const entryState = { ...entry }
+
+      entryState.author = userStore.getUser
+
+      const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
+      promptStore.$patch({
+        _prompts: [
+          ...promptStore._prompts.slice(0, index),
+          { ...promptStore._prompts[index], entries: [...promptStore._prompts[index].entries, entryState] },
+          ...promptStore._prompts.slice(index + 1)
+        ]
+      })
 
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await setDoc(entryRef, entry)
-        .then(() => {
-          // TODO: Once a entry is added, update the prompt's entry array
-          promptStore.updateEntryField(promptId, entryRef)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      await setDoc(entryRef, entry).catch((error) => {
+        console.error(error)
+        throw new Error(error)
+      })
+
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => {
+        console.error(error)
+        throw new Error(error)
+      })
+      this._isLoading = false
     },
 
     async editEntry(entry) {
@@ -113,25 +126,31 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
     },
 
-    async deleteEntry(entryId) {
+    async deleteEntry(entryDate) {
       const promptStore = usePromptStore()
 
-      const promptId = entryId.split('T')[0]
+      const promptId = entryDate.split('T')[0]
       const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
-      const entryRef = doc(db, 'entries', entryId)
-      const entryImage = entries.find((entry) => entry.id === entryId).image
+      const entryRef = doc(db, 'entries', entryDate)
+      const entryImage = entries.find((entry) => entry.date === entryDate).image
       const imageRef = ref(storage, `images/${entryImage.split('?alt')[0].split('images%2F')[1]}`)
 
       this._isLoading = true
       const deleteImage = await deleteObject(imageRef)
-      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
+      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryDate))
       const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
 
       Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef])
         .then(() => {
-          const prompt = promptStore._prompts.find((prompt) => prompt.id === promptId)
-          prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)
-          promptStore.$patch({ _prompts: [...promptStore._prompts] })
+          const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
+          prompt.entries = prompt.entries.filter((entry) => entry.date !== entryDate)
+          promptStore.$patch({
+            _prompts: [
+              ...promptStore._prompts.slice(0, promptStore._prompts.indexOf(prompt)),
+              prompt,
+              ...promptStore._prompts.slice(promptStore._prompts.indexOf(prompt) + 1)
+            ]
+          })
         })
         .catch((error) => {
           console.error(error)
