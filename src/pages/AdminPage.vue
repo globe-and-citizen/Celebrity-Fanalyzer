@@ -31,7 +31,7 @@
         flat
         :filter="promptFilter"
         hide-bottom
-        :loading="promptStore.isLoading"
+        :loading="promptStore.isLoading || entryStore.isLoading"
         :pagination="pagination"
         :rows="prompts"
         title="Manage Prompts & Entries"
@@ -56,8 +56,7 @@
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%" style="padding: 0 !important">
-              <q-linear-progress v-if="entryStore.isLoading" color="primary" indeterminate />
-              <p v-else-if="!props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
+              <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
               <TableEntry v-else :rows="props.row.entries" @edit-entry="openEntryDialog" />
             </q-td>
           </q-tr>
