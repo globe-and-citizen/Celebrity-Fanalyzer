@@ -57,7 +57,7 @@
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%" style="padding: 0 !important">
               <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-              <TableEntry v-else :rows="props.row.entries" @edit-entry="openEntryDialog" />
+              <TableEntry v-else :rows="props.row.entries" @editEntry="openEntryDialog" />
             </q-td>
           </q-tr>
         </template>
