@@ -7,6 +7,23 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
+        <q-select
+          behavior="menu"
+          counter
+          :disable="Boolean(entry.image)"
+          :hint="entry.image ? 'Image is attached to this prompt' : ''"
+          label="Prompt"
+          :options="promptOptions"
+          use-chips
+          :rules="[(val) => val || 'Please select the related prompt']"
+          v-model="entry.prompt"
+        >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey">No results</q-item-section>
+            </q-item>
+          </template>
+        </q-select>
         <q-input counter hide-hint label="Title" maxlength="80" required v-model="entry.title" />
         <q-field counter label="Description" maxlength="400" v-model="entry.description">
           <template v-slot:control>
@@ -26,8 +43,8 @@
         <q-file
           accept=".jpg, image/*"
           counter
-          hide-hint
-          hint="Landscape images are better | Max size is 5MB"
+          :disable="!entry.prompt"
+          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 5MB'"
           label="Image"
           :max-total-size="5242880"
           :required="!id"
@@ -39,23 +56,7 @@
             <q-icon name="image" />
           </template>
         </q-file>
-        <q-select
-          behavior="menu"
-          counter
-          hide-hint
-          label="Prompt"
-          :options="promptOptions"
-          use-chips
-          :rules="[(val) => val || 'Please select the related prompt']"
-          v-model="entry.prompt"
-        >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-grey">No results</q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" />
+        <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" />
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
@@ -84,7 +85,7 @@ const promptStore = usePromptStore()
 
 const entry = reactive({})
 const imageModel = ref([])
-const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.id })).reverse()
+const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse()
 
 watchEffect(() => {
   if (props.id) {
@@ -94,6 +95,7 @@ watchEffect(() => {
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
+    entry.date = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
     entry.description = ''
     entry.image = ''
     entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
@@ -102,7 +104,7 @@ watchEffect(() => {
 })
 
 function uploadPhoto() {
-  entryStore.uploadImage(imageModel.value).then((url) => (entry.image = url))
+  entryStore.uploadImage(imageModel.value, entry.date).then((url) => (entry.image = url))
 }
 
 function onRejected() {

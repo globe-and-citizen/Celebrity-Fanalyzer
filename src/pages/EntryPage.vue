@@ -48,14 +48,11 @@ onMounted(async () => {
     article.value = promptStore.getPrompts
       .find((prompt) => prompt.date === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .entries.find((entry) => entry.slug === router.currentRoute.value.href)
-    return
-  }
-  if (!entryStore.getEntries?.length) {
+  } else {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
       .then((res) => (article.value = res))
       .catch(() => router.push('/404'))
-    return
   }
 })
 

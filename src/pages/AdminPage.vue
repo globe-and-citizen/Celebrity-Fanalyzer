@@ -31,7 +31,7 @@
         flat
         :filter="promptFilter"
         hide-bottom
-        :loading="promptStore.isLoading"
+        :loading="promptStore.isLoading || entryStore.isLoading"
         :pagination="pagination"
         :rows="prompts"
         title="Manage Prompts & Entries"
@@ -56,8 +56,7 @@
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%" style="padding: 0 !important">
-              <q-linear-progress v-if="entryStore.isLoading" color="primary" indeterminate />
-              <p v-else-if="!props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
+              <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
               <TableEntry v-else :rows="props.row.entries" @edit-entry="openEntryDialog" />
             </q-td>
           </q-tr>
@@ -127,6 +126,10 @@ onMounted(async () => {
   prompts.value = promptStore.getPrompts
 })
 
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+})
+
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
@@ -148,7 +151,12 @@ function onDeletePrompt(id) {
 }
 
 function openEntryDialog(props) {
-  entry.value = props?.id ? props : {}
+  if (props?.id) {
+    entry.value = props
+    entry.value.prompt = prompts.value.find((prompt) => prompt.id === props.prompt.id)
+  } else {
+    entry.value = {}
+  }
   entry.value.dialog = true
 }
 </script>
