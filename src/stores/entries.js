@@ -77,10 +77,11 @@ export const useEntryStore = defineStore('entries', {
       const promptStore = usePromptStore()
 
       const promptId = entry.prompt.value
-      const entryRef = doc(db, 'entries', entry.date)
+      const entryRef = doc(db, 'entries', entry.id)
       const entryState = { ...entry }
 
       entryState.author = userStore.getUser
+      entryState.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
       promptStore.$patch({
@@ -132,7 +133,7 @@ export const useEntryStore = defineStore('entries', {
       const promptId = entryDate.split('T')[0]
       const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
       const entryRef = doc(db, 'entries', entryDate)
-      const entryImage = entries.find((entry) => entry.date === entryDate).image
+      const entryImage = entries.find((entry) => entry.id === entryDate).image
       const imageRef = ref(storage, `images/${entryImage.split('?alt')[0].split('images%2F')[1]}`)
 
       this._isLoading = true
@@ -143,7 +144,7 @@ export const useEntryStore = defineStore('entries', {
       Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef])
         .then(() => {
           const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
-          prompt.entries = prompt.entries.filter((entry) => entry.date !== entryDate)
+          prompt.entries = prompt.entries.filter((entry) => entry.id !== entryDate)
           promptStore.$patch({
             _prompts: [
               ...promptStore._prompts.slice(0, promptStore._prompts.indexOf(prompt)),

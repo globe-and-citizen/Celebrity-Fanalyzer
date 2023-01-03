@@ -95,8 +95,8 @@ watchEffect(() => {
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
-    entry.date = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
     entry.description = ''
+    entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
     entry.image = ''
     entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     entry.title = ''
@@ -104,7 +104,7 @@ watchEffect(() => {
 })
 
 function uploadPhoto() {
-  entryStore.uploadImage(imageModel.value, entry.date).then((url) => (entry.image = url))
+  entryStore.uploadImage(imageModel.value, entry.id).then((url) => (entry.image = url))
 }
 
 function onRejected() {
