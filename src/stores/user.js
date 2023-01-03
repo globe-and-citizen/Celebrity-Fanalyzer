@@ -12,6 +12,7 @@ export const useUserStore = defineStore('user', {
   }),
 
   getters: {
+    // TODO: fix this, get shoul only return the valu in the store, if we need to use the storage, we should use it to update the store
     getUser: (state) => LocalStorage.getItem('user') || state._user,
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
@@ -43,10 +44,11 @@ export const useUserStore = defineStore('user', {
      * @returns {Promise<void>}
      */
     async loadBrowserId() {
-      if (this.user.id && this._browserId !== this.user.id) {
-        this._browserId = this.user.id
+      if (this.getUser && this.getUser.id && this._browserId !== this.getUser.id) {
+        this._browserId = this.getUser.id
         LocalStorage.set('browserId', this._browserId)
-      } else if (!this.user.id) {
+      } else if (!this.getUser || !this.getUser.id) {
+        // Create the new browser id or use the localStorage browserId
         const storageBrowserId = LocalStorage.getItem('browserId')
         if (storageBrowserId) {
           this._browserId = storageBrowserId
