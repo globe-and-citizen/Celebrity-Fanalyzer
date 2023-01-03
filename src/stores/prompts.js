@@ -181,7 +181,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.created = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.date), prompt)
+      await setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
           prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })

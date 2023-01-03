@@ -124,6 +124,7 @@ watchEffect(() => {
     prompt.categories = null
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
+    prompt.id = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.image = ''
     prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
