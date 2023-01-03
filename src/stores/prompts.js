@@ -238,21 +238,6 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async updateEntryField(promptId, entryRef) {
-      this._isLoading = true
-      await updateDoc(doc(db, 'prompts', promptId), {
-        entries: arrayUnion(entryRef)
-      })
-        .then(() => {
-          // this.fetchPromptById(promptId)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
     async uploadImage(file, promptId) {
       const storageRef = ref(storage, `images/prompt-${promptId}`)
 

@@ -56,7 +56,7 @@
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
-          @update:model-value="uploadPhoto($event)"
+          @update:model-value="uploadPhoto()"
         >
           <template v-slot:append>
             <q-icon name="image" />
