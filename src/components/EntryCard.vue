@@ -104,7 +104,10 @@ watchEffect(() => {
 })
 
 function uploadPhoto() {
-  entryStore.uploadImage(imageModel.value, entry.id).then((url) => (entry.image = url))
+  entry.image = ''
+  const reader = new FileReader()
+  reader.readAsDataURL(imageModel.value)
+  reader.onload = () => (entry.image = reader.result)
 }
 
 function onRejected() {
@@ -113,6 +116,8 @@ function onRejected() {
 
 async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+
+  entryStore.uploadImage(imageModel.value, entry.id)
 
   if (props.id) {
     await entryStore
