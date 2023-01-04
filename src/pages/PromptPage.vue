@@ -65,60 +65,43 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
+import { usePromptStore, useStatStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const $q = useQuasar()
 const router = useRouter()
 
 const promptStore = usePromptStore()
 const statStore = useStatStore()
-const userStore = useUserStore()
 
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
 onMounted(async () => {
   statStore.fetchStats()
-
   if (router.currentRoute.value.href === '/month') {
-    await promptStore
-      .fetchMonthPrompt()
-      .then(() => {
-        prompt.value = promptStore.getMonthPrompt
-      })
-      .finally(() => {
-        if (prompt.value) {
-          updateChartData()
-        } else {
-          router.push('/404')
-        }
-      })
+    await promptStore.fetchMonthPrompt()
+    prompt.value = promptStore.getMonthPrompt
   } else {
-    await promptStore
-      .fetchPrompts()
-      .then(() => {
-        if (router.currentRoute.value.params.year) {
-          prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-        }
-        if (router.currentRoute.value.params.slug) {
-          prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
-        }
-      })
-      .finally(() => {
-        if (prompt.value) {
-          promptStore.fetchPromptEntry(prompt.value.id)
-          updateChartData()
-        } else {
-          router.push('/404')
-        }
-      })
+    await promptStore.fetchPrompts()
+    if (router.currentRoute.value.params.year) {
+      prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+    } else if (router.currentRoute.value.params.slug) {
+      prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
+    }
+    if (prompt.value) {
+      await promptStore.fetchPromptEntry(prompt.value.id)
+    }
   }
+  if (prompt.value) {
+    updateChartData()
+  } else {
+    await router.push('/404')
+  }
+
   // Call of refresh promptOpinion to have likes and dislikes count
   await promptStore.refreshPromptOpinion(prompt.value.id)
   prompt.value = promptStore.getPromptById(prompt.value.id)
@@ -145,51 +128,6 @@ function dislike() {
   })
 }
 
-function sharePrompt(grid) {
-  $q.bottomSheet({
-    message: 'Share with Social Media',
-    grid,
-    actions: [
-      { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
-      {
-        label: 'Facebook',
-        img: '/icons/facebook.svg',
-        id: 'facebook',
-        link: 'https://facebook.com/sharer/sharer.php?u='
-      },
-      {
-        label: 'LinkedIn',
-        img: '/icons/linkedin.svg',
-        id: 'linkedin',
-        link: 'https://linkedin.com/sharing/share-offsite/?url='
-      },
-      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
-      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
-      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
-      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
-      {
-        label: 'Pinterest',
-        img: '/icons/pinterest.svg',
-        id: 'pinterest',
-        link: 'https://pinterest.com/pin/create/button/?url='
-      },
-      {
-        label: 'Odnoklassniki',
-        img: '/icons/odnoklassniki.svg',
-        id: 'odnoklassniki',
-        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
-      }
-    ]
-  }).onOk((action) => {
-    if (action.id === 'clipboard') {
-      navigator.clipboard.writeText(window.location.href)
-    } else if (action.id === 'facebook' || action.id === 'linkedin') {
-      window.open(action.link + `${window.location.href}`, '_blank')
-    } else {
-      window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
-    }
-  })
-}
 </script>
 
 <style scoped lang="scss">
