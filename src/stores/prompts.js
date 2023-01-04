@@ -1,5 +1,4 @@
 import {
-  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -10,7 +9,6 @@ import {
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc,
   where
 } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
@@ -19,8 +17,6 @@ import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 import 'firebase/firestore'
-
-import sha1 from 'sha1'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -196,7 +192,7 @@ export const usePromptStore = defineStore('prompts', {
 
             if (prompt.entries) {
               for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => ({ id: doc.id, ...doc.data() }))
                 prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
               }
             }
@@ -221,8 +217,9 @@ export const usePromptStore = defineStore('prompts', {
       prompt.created = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.date), prompt)
+      await setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
+          prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
         .catch((error) => {
@@ -251,12 +248,20 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async deletePrompt(id) {
+      const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
+
       this._isLoading = true
-      const localPrompt = this._prompts.find((prompt) => prompt.id === id)
-      const imageRef = ref(storage, `images/${localPrompt.image.slice(86, 133)}`)
-      const deleteImage = await deleteObject(imageRef)
-      const deletePrompt = await deleteDoc(doc(db, 'prompts', id))
-      Promise.all([deleteImage, deletePrompt])
+      const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+      const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
+
+      if (relatedEntries.length) {
+        for (const entry of relatedEntries) {
+          await deleteDoc(doc(db, 'entries', entry.id))
+          await deleteObject(ref(storage, `images/entry-${entry.id}`))
+        }
+      }
+
+      Promise.all([deleteImage, deletePromptDoc])
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
@@ -268,22 +273,12 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async updateEntryField(promptId, entryRef) {
-      this._isLoading = true
-      await updateDoc(doc(db, 'prompts', promptId), {
-        entries: arrayUnion(entryRef)
-      })
-        .then(() => this.fetchPromptById(promptId))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-    },
+    async uploadImage(file, promptId) {
+      const storageRef = ref(storage, `images/prompt-${promptId}`)
 
-    async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${sha1(file.name + Date.now())}`)
+      this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
+
       return getDownloadURL(ref(storage, storageRef))
     },
 

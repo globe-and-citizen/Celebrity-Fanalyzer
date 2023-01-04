@@ -49,16 +49,14 @@
         <q-file
           accept=".jpg, image/*"
           counter
-          :error="errorImage"
-          error-message="Image must be square"
           hide-hint
-          hint="Square images are better | Max size is 5MB"
+          hint="Max size is 5MB"
           label="Image"
           :max-total-size="5242880"
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
-          @update:model-value="uploadPhoto($event)"
+          @update:model-value="uploadPhoto()"
         >
           <template v-slot:append>
             <q-icon name="image" />
@@ -82,11 +80,11 @@
             </q-item>
           </template>
         </q-select>
-        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" />
+        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" />
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
-          :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || errorImage || !prompt.image"
+          :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
           type="submit"
@@ -111,7 +109,6 @@ const promptStore = usePromptStore()
 
 const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const dataKey = ref(Date.now())
-const errorImage = ref(false)
 const imageModel = ref([])
 const prompt = reactive({})
 
@@ -127,6 +124,7 @@ watchEffect(() => {
     prompt.categories = null
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
+    prompt.id = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.image = ''
     prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
@@ -137,19 +135,11 @@ function onUpdateMonth() {
   dataKey.value = Date.now()
 }
 
-function uploadPhoto(file) {
+function uploadPhoto() {
   prompt.image = ''
-  errorImage.value = false
-
-  const img = new Image()
-  img.src = URL.createObjectURL(file)
-  img.onload = () => {
-    if (img.naturalWidth === img.naturalHeight) {
-      promptStore.uploadImage(imageModel.value).then((url) => (prompt.image = url))
-    } else {
-      errorImage.value = true
-    }
-  }
+  const reader = new FileReader()
+  reader.readAsDataURL(imageModel.value)
+  reader.onload = () => (prompt.image = reader.result)
 }
 
 function onRejected() {
@@ -158,6 +148,13 @@ function onRejected() {
 
 async function onSubmit() {
   prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
+
+  if (promptStore.getPrompts.find((p) => p.date === prompt.date)) {
+    $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
+    return
+  }
+
+  promptStore.uploadImage(imageModel.value, prompt.date)
 
   if (props.id) {
     await promptStore

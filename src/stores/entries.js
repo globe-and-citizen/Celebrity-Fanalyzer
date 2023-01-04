@@ -1,4 +1,18 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  arrayRemove,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where
+} from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -6,12 +20,16 @@ import { usePromptStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
     _isLoading: false
   }),
 
   getters: {
-    getEntries: (state) => state._entries,
+    getEntriesFromPrompt: () => (promptId) => {
+      const promptStore = usePromptStore()
+      const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
+
+      return prompt.entries
+    },
     isLoading: (state) => state._isLoading
   },
 
@@ -46,9 +64,6 @@ export const useEntryStore = defineStore('entries', {
           entry.author = await getDoc(entry.author).then((doc) => doc.data())
           entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
         }
-
-        this._entries = []
-        this.$patch({ _entries: entries })
       } catch (error) {
         console.error(error)
         throw new Error(error)
@@ -62,24 +77,36 @@ export const useEntryStore = defineStore('entries', {
       const promptStore = usePromptStore()
 
       const promptId = entry.prompt.value
-      const entryId = `${promptId}T${Date.now()}` // 2022-11T1670535123715
-      const entryRef = doc(db, 'entries', entryId)
+      const entryRef = doc(db, 'entries', entry.id)
+      const entryState = { ...entry }
+
+      entryState.author = userStore.getUser
+      entryState.prompt = promptStore.getPromptRef(entry.prompt.value)
+
+      const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
+      promptStore.$patch({
+        _prompts: [
+          ...promptStore._prompts.slice(0, index),
+          { ...promptStore._prompts[index], entries: [...promptStore._prompts[index].entries, entryState] },
+          ...promptStore._prompts.slice(index + 1)
+        ]
+      })
 
       entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await setDoc(entryRef, entry)
-        .then(() => {
-          this.$patch({ _entries: [...this.getEntries, entry] })
-          promptStore.updateEntryField(promptId, entryRef)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      await setDoc(entryRef, entry).catch((error) => {
+        console.error(error)
+        throw new Error(error)
+      })
+
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => {
+        console.error(error)
+        throw new Error(error)
+      })
+      this._isLoading = false
     },
 
     async editEntry(entry) {
@@ -92,10 +119,38 @@ export const useEntryStore = defineStore('entries', {
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
+        .then(() => {})
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async deleteEntry(entryDate) {
+      const promptStore = usePromptStore()
+
+      const promptId = entryDate.split('T')[0]
+      const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
+      const entryRef = doc(db, 'entries', entryDate)
+      const entryImage = entries.find((entry) => entry.id === entryDate).image
+      const imageRef = ref(storage, `images/${entryImage.split('?alt')[0].split('images%2F')[1]}`)
+
+      this._isLoading = true
+      const deleteImage = await deleteObject(imageRef)
+      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryDate))
+      const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
+
+      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef])
         .then(() => {
-          const index = this.getEntries.findIndex((p) => p.fid === entry.id)
-          this.$patch({
-            _entries: [...this._entries.slice(0, index), { ...this._entries[index], ...entry }, ...this._entries.slice(index + 1)]
+          const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
+          prompt.entries = prompt.entries.filter((entry) => entry.id !== entryDate)
+          promptStore.$patch({
+            _prompts: [
+              ...promptStore._prompts.slice(0, promptStore._prompts.indexOf(prompt)),
+              prompt,
+              ...promptStore._prompts.slice(promptStore._prompts.indexOf(prompt) + 1)
+            ]
           })
         })
         .catch((error) => {
@@ -105,31 +160,10 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
     },
 
-    async deleteEntry(id) {
+    async uploadImage(file, entryId) {
+      const storageRef = ref(storage, `images/entry-${entryId}`)
+
       this._isLoading = true
-
-      const localEntry = this._entries.find((entry) => entry.id === id)
-      const imageRef = ref(storage, `images/${localEntry.image.slice(86, 133)}`)
-      const deleteImage = await deleteObject(imageRef)
-      const deleteEntry = await deleteDoc(doc(db, 'entries', id))
-      Promise.all([deleteImage, deleteEntry])
-        .then()
-        .then(() => {
-          console.log('Entry and his image deleted successfully')
-          const index = this._entries.findIndex((entry) => entry.id === id)
-          this._prompts.splice(index, 1)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
-    async uploadImage(file) {
-      this._isLoading = true
-      const storageRef = ref(storage, `images/entry-${file.name + Date.now()}`)
-
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))

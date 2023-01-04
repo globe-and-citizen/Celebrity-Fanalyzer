@@ -49,9 +49,8 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
-            <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
-          </q-btn>
+
+          <ShareComponent :count="0"></ShareComponent>
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt.entries" />
@@ -69,6 +68,7 @@
 import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
+import ShareComponent from 'src/components/ShareComponent.vue'
 import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
