@@ -1,14 +1,13 @@
 <template>
   <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false"/>
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false"/>
+    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!prompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em"/>
+  <q-spinner v-if="!prompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="bg-white">
-        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px"
-               :src="prompt?.image"/>
+        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
           <p class="text-body1" v-html="prompt.description"></p>
@@ -54,25 +53,25 @@
             <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
           </q-btn>
         </section>
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate/>
-        <TheEntries :entries="prompt.entries"/>
+        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
+        <TheEntries :entries="prompt.entries" />
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <BarGraph :data="chartData" title="Likes & Dislikes"/>
+        <BarGraph :data="chartData" title="Likes & Dislikes" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
 </template>
 
 <script setup>
-import {useQuasar} from 'quasar'
+import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import {usePromptStore, useStatStore, useUserStore} from 'src/stores'
-import {onMounted, ref} from 'vue'
-import {useRouter} from 'vue-router'
+import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -123,13 +122,12 @@ onMounted(async () => {
   // Call of refresh promptOpinion to have likes and dislikes count
   await promptStore.refreshPromptOpinion(prompt.value.id)
   prompt.value = promptStore.getPromptById(prompt.value.id)
-
 })
 
 function updateChartData() {
   chartData.value = [
-    {value: prompt.value.likesCount, name: 'Likes'},
-    {value: prompt.value.dislikesCount, name: 'Dislikes'}
+    { value: prompt.value.likesCount, name: 'Likes' },
+    { value: prompt.value.dislikesCount, name: 'Dislikes' }
   ]
 }
 
@@ -152,7 +150,7 @@ function sharePrompt(grid) {
     message: 'Share with Social Media',
     grid,
     actions: [
-      {label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard'},
+      { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
       {
         label: 'Facebook',
         img: '/icons/facebook.svg',
@@ -165,10 +163,10 @@ function sharePrompt(grid) {
         id: 'linkedin',
         link: 'https://linkedin.com/sharing/share-offsite/?url='
       },
-      {label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text='},
-      {label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url='},
-      {label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text='},
-      {label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url='},
+      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
+      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
+      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
+      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
       {
         label: 'Pinterest',
         img: '/icons/pinterest.svg',
