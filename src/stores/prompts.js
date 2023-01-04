@@ -107,7 +107,6 @@ export const usePromptStore = defineStore('prompts', {
         })
         .finally(async () => {
           this._isLoading = false
-          await this.refreshPromptOpinion(promptId)
         })
     },
 
@@ -183,7 +182,6 @@ export const usePromptStore = defineStore('prompts', {
         this._prompts[promptIndex] = currentPrompt
       }
 
-      await this.refreshPromptOpinion(promptId)
       this._isLoading = false
     },
 
@@ -309,7 +307,8 @@ export const usePromptStore = defineStore('prompts', {
           updatedAd: Date.now()
         })
       }
-      await this.fetchPromptById(promptId)
+
+      await this.refreshPromptOpinion(promptId)
       this._isLoading = false
     },
 
@@ -333,9 +332,14 @@ export const usePromptStore = defineStore('prompts', {
           updatedAd: Date.now()
         })
       }
-      await this.fetchPromptById(promptId)
+      await this.refreshPromptOpinion(promptId)
       this._isLoading = false
     },
+    /**
+     *
+     * @param promptId
+     * @returns {Promise<void>}
+     */
     async refreshPromptOpinion(promptId) {
       this._isLoading = true
       const likeQuery_ = query(collection(db, 'prompts', promptId, 'opinions'), where('liked', '==', true))
@@ -352,12 +356,11 @@ export const usePromptStore = defineStore('prompts', {
       })
 
       let statePrompt = this.getPromptById(promptId)
-      console.log('valeur de index', index, 'valeur de state prompt', statePrompt)
       if (index >= 0 && statePrompt !== {}) {
-        console.log('we are her')
         this._prompts[index] = { ...statePrompt, likesCount, dislikesCount }
       }
-      console.log('after', this.getPromptById(promptId))
+
+      this._isLoading = false
     }
   }
 })
