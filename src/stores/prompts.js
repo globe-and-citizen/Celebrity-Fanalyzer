@@ -179,6 +179,7 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = userStore.getUserRef
       prompt.created = Timestamp.fromDate(new Date())
+      prompt.id = prompt.date
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt)
@@ -227,7 +228,6 @@ export const usePromptStore = defineStore('prompts', {
 
       Promise.all([deleteImage, deletePromptDoc])
         .then(() => {
-          console.log('Prompt and his image deleted successfully')
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })

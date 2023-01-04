@@ -3,7 +3,7 @@
     <q-card-section class="row items-center no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
       <span>&nbsp; for &nbsp;</span>
-      <q-input borderless dense readonly style="max-width: 5.5rem" v-model="prompt.date">
+      <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date">
         <template v-slot:append>
           <q-icon name="event" class="cursor-pointer">
             <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -124,7 +124,6 @@ watchEffect(() => {
     prompt.categories = null
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
-    prompt.id = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.image = ''
     prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
@@ -149,7 +148,7 @@ function onRejected() {
 async function onSubmit() {
   prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
-  if (promptStore.getPrompts.find((p) => p.date === prompt.date)) {
+  if (!props.id && promptStore.getPrompts.find((p) => p.date === prompt.date)) {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
