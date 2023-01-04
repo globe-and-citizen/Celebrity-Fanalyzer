@@ -73,8 +73,8 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(entry) {
-      const userStore = useUserStore()
       const promptStore = usePromptStore()
+      const userStore = useUserStore()
 
       const promptId = entry.prompt.value
       const entryRef = doc(db, 'entries', entry.id)
@@ -84,6 +84,7 @@ export const useEntryStore = defineStore('entries', {
 
       const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
       const prompt = promptStore.getPrompts[index]
+      prompt.entries ??= []
       prompt.entries.push({ ...entry, author: userStore.getUser })
       promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
 
@@ -104,15 +105,23 @@ export const useEntryStore = defineStore('entries', {
 
     async editEntry(entry) {
       const promptStore = usePromptStore()
+      const userStore = useUserStore()
 
-      entry.updated = Timestamp.fromDate(new Date())
+      const promptId = entry.prompt.value
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+      entry.updated = Timestamp.fromDate(new Date())
+
+      // TODO: Fix duplicate entry in promptStore.$patch
+      const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
+      const index = prompt.entries.findIndex((entry) => entry.id === entry.id)
+      prompt.entries[index] = { ...entry, author: userStore.getUser }
+
+      promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
-        .then(() => {})
         .catch((error) => {
           console.error(error)
           throw new Error(error)
