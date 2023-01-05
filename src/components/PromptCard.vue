@@ -153,7 +153,9 @@ async function onSubmit() {
     return
   }
 
-  promptStore.uploadImage(imageModel.value, prompt.date)
+  if (Object.keys(imageModel.value).length) {
+    promptStore.uploadImage(imageModel.value, prompt.date)
+  }
 
   if (props.id) {
     await promptStore
