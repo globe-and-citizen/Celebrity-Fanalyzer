@@ -168,7 +168,12 @@ export const useEntryStore = defineStore('entries', {
       const storageRef = ref(storage, `images/entry-${entryId}`)
 
       this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
+      await uploadBytes(storageRef, file)
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     }
