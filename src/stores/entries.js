@@ -111,12 +111,14 @@ export const useEntryStore = defineStore('entries', {
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.updated = Timestamp.fromDate(new Date())
 
-      // TODO: Fix duplicate entry in promptStore.$patch
-      const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
-      const index = prompt.entries.findIndex((entry) => entry.id === entry.id)
-      prompt.entries[index] = { ...entry, author: userStore.getUser }
+      const prompts = promptStore.getPrompts
+      const promptIndex = prompts.findIndex((prompt) => prompt.id === promptId)
+      const prompt = prompts[promptIndex]
+      const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
 
-      promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
+      prompt.entries[entryIndex] = { ...entry, author: userStore.getUser }
+      prompts[promptIndex] = prompt
+      promptStore.$patch({ _prompts: prompts })
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
