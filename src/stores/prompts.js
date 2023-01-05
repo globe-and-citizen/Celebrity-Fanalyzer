@@ -284,12 +284,8 @@ export const usePromptStore = defineStore('prompts', {
 
     async addLike(promptId) {
       this._isLoading = true
-      let browserId
-      await useUserStore()
-        .loadBrowserId()
-        .then(() => {
-          browserId = useUserStore().getBrowserId
-        })
+      await useUserStore().loadBrowserId()
+      const browserId = useUserStore().getBrowserId
       const userOpinionRef = doc(db, 'prompts', promptId, 'opinions', browserId)
       // First load prompt stored in the store
       let userOpinion = await getDoc(userOpinionRef).then((doc) => doc.data())
