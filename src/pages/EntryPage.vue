@@ -24,7 +24,7 @@
       </q-btn>
     </section>
     <q-separator />
-    <TheComments :comments="comments" v-show="showComments" />
+    <TheComments :comments="comments" :entry="article" v-show="showComments" />
     <q-separator />
   </q-page>
 </template>
@@ -39,6 +39,7 @@ const router = useRouter()
 
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const entry = ref({})
 
 const article = ref({})
 const comments = ref([])
