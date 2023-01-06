@@ -44,7 +44,7 @@ export const useUserStore = defineStore('user', {
      * @returns {Promise<void>}
      */
     async loadBrowserId() {
-      if (this.getUser && this.getUser.id && this._browserId !== this.getUser.id) {
+      if (this.isAuthenticated && this._browserId !== this.getUser.id) {
         this._browserId = this.getUser.id
         LocalStorage.set('browserId', this._browserId)
       } else if (!this.getUser || !this.getUser.id) {
