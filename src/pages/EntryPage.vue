@@ -1,6 +1,12 @@
-<template>
-<!--  <q-spinner v-if="!article && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />-->
-  <q-page class="bg-white">
+<template> <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
+  <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
+  <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+</q-tabs>
+  <q-spinner v-if="!article && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
+
+  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <q-tab-panel name="entry" style="padding: 0">
+      <q-page  class="bg-white">
     <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px"
            :src="article?.image" />
     <section class="q-pa-md" style="margin-top: 100%">
@@ -28,9 +34,17 @@
     <TheComments :comments="comments" v-show="showComments" />
     <q-separator />
   </q-page>
+    </q-tab-panel>
+    <q-tab-panel name="stats" class="bg-white">
+      <q-page>
+        <BarGraph :data="chartData" title="Likes & Dislikes" />
+      </q-page>
+    </q-tab-panel>
+  </q-tab-panels>
 </template>
 
 <script setup>
+import BarGraph from 'src/components/BarGraph.vue'
 import TheComments from "src/components/TheComments.vue";
 import ShareComponent from "src/components/ShareComponent.vue";
 import { useEntryStore, usePromptStore } from "src/stores";
@@ -44,25 +58,13 @@ const router = useRouter();
 const entryStore = useEntryStore();
 const promptStore = usePromptStore();
 
+const chartData = ref([])
+const tab = ref('entry')
 const article = ref({});
 const comments = ref([]);
 const showComments = ref(false);
 
 onMounted(async () => {
-  // if (promptStore.getPrompts?.length) {
-  //   console.log("Firest");
-  //   article.value = promptStore.getPrompts
-  //     .find((prompt) => prompt.date === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-  //     .entries.find((entry) => entry.slug === router.currentRoute.value.href)
-  // } else {
-  //   console.log("here");
-  //   await entryStore
-  //     .fetchEntryBySlug(router.currentRoute.value.href)
-  //     .then((res) => (article.value = res))
-  //     .catch(() => router.push('/404'))
-  // }
-  //We can :
-  // Fetch prompt,
   const promptDate = `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`;
   await promptStore.fetchPromptById(promptDate);
   const prompt = promptStore.getPromptById(promptDate);
@@ -75,13 +77,22 @@ onMounted(async () => {
   }
   article.value = prompt.entries.find((entry) => entry.slug === entrySlug);
 
-  if (!article.value) {
-    await router.push("/404");
+  if (article.value) {
+    updateChartData()
+  } else {
+    await router.push('/404')
   }
+
 
   await reloadLikesDislikesCount();
 });
 
+function updateChartData() {
+  chartData.value = [
+    { value: article.value.likesCount, name: 'Likes' },
+    { value: article.value.dislikesCount, name: 'Dislikes' }
+  ]
+}
 async function like() {
   const id = article.value.id;
   await entryStore.addLike(id).then(async () => {
@@ -124,5 +135,9 @@ function toggleComments() {
   position: fixed;
   top: 0;
   z-index: -1;
+}
+.tab-selector {
+  margin-bottom: 4rem;
+  z-index: 3;
 }
 </style>
