@@ -117,7 +117,9 @@ function onRejected() {
 async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
 
-  entryStore.uploadImage(imageModel.value, entry.id)
+  if (Object.keys(imageModel.value).length) {
+    entryStore.uploadImage(imageModel.value, entry.id)
+  }
 
   if (props.id) {
     await entryStore

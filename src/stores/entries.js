@@ -73,28 +73,22 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(entry) {
-      const userStore = useUserStore()
       const promptStore = usePromptStore()
+      const userStore = useUserStore()
 
       const promptId = entry.prompt.value
       const entryRef = doc(db, 'entries', entry.id)
-      const entryState = { ...entry }
 
-      entryState.author = userStore.getUser
-      entryState.prompt = promptStore.getPromptRef(entry.prompt.value)
-
-      const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
-      promptStore.$patch({
-        _prompts: [
-          ...promptStore._prompts.slice(0, index),
-          { ...promptStore._prompts[index], entries: [...promptStore._prompts[index].entries, entryState] },
-          ...promptStore._prompts.slice(index + 1)
-        ]
-      })
-
-      entry.author = userStore.getUserRef
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+
+      const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
+      const prompt = promptStore.getPrompts[index]
+      prompt.entries ??= []
+      prompt.entries.push({ ...entry, author: userStore.getUser })
+      promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
+
+      entry.author = userStore.getUserRef
 
       this._isLoading = true
       await setDoc(entryRef, entry).catch((error) => {
@@ -111,15 +105,25 @@ export const useEntryStore = defineStore('entries', {
 
     async editEntry(entry) {
       const promptStore = usePromptStore()
+      const userStore = useUserStore()
 
-      entry.updated = Timestamp.fromDate(new Date())
+      const promptId = entry.prompt.value
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+      entry.updated = Timestamp.fromDate(new Date())
+
+      const prompts = promptStore.getPrompts
+      const promptIndex = prompts.findIndex((prompt) => prompt.id === promptId)
+      const prompt = prompts[promptIndex]
+      const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
+
+      prompt.entries[entryIndex] = { ...entry, author: userStore.getUser }
+      prompts[promptIndex] = prompt
+      promptStore.$patch({ _prompts: prompts })
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
-        .then(() => {})
         .catch((error) => {
           console.error(error)
           throw new Error(error)
@@ -164,7 +168,12 @@ export const useEntryStore = defineStore('entries', {
       const storageRef = ref(storage, `images/entry-${entryId}`)
 
       this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
+      await uploadBytes(storageRef, file)
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     }

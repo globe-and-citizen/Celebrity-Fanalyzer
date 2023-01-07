@@ -215,6 +215,7 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = userStore.getUserRef
       prompt.created = Timestamp.fromDate(new Date())
+      prompt.id = prompt.date
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt)
