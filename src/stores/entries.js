@@ -20,7 +20,8 @@ import { usePromptStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _isLoading: false
+    _isLoading: false,
+    _entries: []
   }),
 
   getters: {
@@ -47,6 +48,9 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = false
 
       return entry
+    },
+    async addEntryToStore(entries){
+
     },
 
     async fetchEntries(promptId) {
@@ -176,6 +180,53 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
-    }
+    },
+
+    async addLike(entryId){
+      this._isLoading= true
+      await useUserStore().loadBrowserId()
+      let browserId = useUserStore().getBrowserId
+      if(!entryId || !browserId){
+        throw new Error('Entry or Browser id should be defined')
+      }
+      const entryOpinionRef = doc(db, 'entries', entryId, 'opinions', browserId)
+
+      // First load prompt stored in the store
+      let entryOpinion = await getDoc(entryOpinionRef).then((doc) => doc.data())
+      if (entryOpinion && !entryOpinion.liked) {
+        await setDoc(entryOpinionRef, { ...entryOpinion, liked: true, updatedAd: Date.now() })
+      } else if (!entryOpinion) {
+        await setDoc(entryOpinionRef, {
+          liked: true,
+          createdAt: Date.now(),
+          updatedAd: Date.now()
+        })
+      }
+
+      this._isLoading=false
+    },
+    async addDislike(entryId){
+      this._isLoading= true
+      await useUserStore().loadBrowserId()
+      let browserId = useUserStore().getBrowserId
+      if(!entryId || !browserId){
+        throw new Error('Entry or Browser id should be defined')
+      }
+      const entryOpinionRef = doc(db, 'entries', entryId, 'opinions', browserId)
+
+      // First load prompt stored in the store
+      let entryOpinion = await getDoc(entryOpinionRef).then((doc) => doc.data())
+      if (entryOpinion && entryOpinion.liked) {
+        await setDoc(entryOpinionRef, { ...entryOpinion, liked: false, updatedAd: Date.now() })
+      } else if (!entryOpinion) {
+        await setDoc(entryOpinionRef, {
+          liked: true,
+          createdAt: Date.now(),
+          updatedAd: Date.now()
+        })
+      }
+
+      this._isLoading=false
+    },
   }
 })

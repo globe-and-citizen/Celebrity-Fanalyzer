@@ -88,7 +88,10 @@ export const usePromptStore = defineStore('prompts', {
                 prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
               }
             }
-            const index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
+            let index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
+            if(index<0){
+              index= 0
+            }
             this._prompts[index] = prompt
           } else {
             const newPrompt = { ...prompt, ...{ entries: localPrompt.entries, author: localPrompt.author } }
