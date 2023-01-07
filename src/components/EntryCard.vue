@@ -135,10 +135,3 @@ async function onSubmit() {
   emit('submitted')
 }
 </script>
-
-<style scoped>
-.q-img {
-  max-height: 20rem;
-  object-fit: cover;
-}
-</style>
