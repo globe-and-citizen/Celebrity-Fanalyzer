@@ -101,7 +101,7 @@ import { usePromptStore } from 'src/stores'
 import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
-const emit = defineEmits(['hideDialog'])
+const emit = defineEmits(['hideDialog', 'submitted'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
@@ -169,6 +169,7 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
+  emit('submitted')
 }
 </script>
 

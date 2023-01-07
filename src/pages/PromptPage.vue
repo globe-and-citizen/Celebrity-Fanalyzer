@@ -127,7 +127,6 @@ function dislike() {
     prompt.value = promptStore.getPromptById(id)
   })
 }
-
 </script>
 
 <style scoped lang="scss">
