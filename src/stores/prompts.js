@@ -45,7 +45,11 @@ export const usePromptStore = defineStore('prompts', {
     async fetchMonthPrompt() {
       // TODO check if we already have a monthPrompt and if it's updated before all
       this._isLoading = true
-      const monthId = `${new Date().getFullYear()}-${new Date().getMonth()}`
+      let month= new Date().getMonth()
+      if (month<9){
+        month = `0${month+1}`
+      }
+      const monthId = `${new Date().getFullYear()}-${month}`
 
       // TODO improve the use of the local storage
       // TODO Check the local storage before fetchMonthPrompt
@@ -56,14 +60,17 @@ export const usePromptStore = defineStore('prompts', {
       if (this._isLoaded === true && this._prompts !== []) {
         // set the current month Prompt
         this._monthPrompt = this._prompts.find((prompt) => {
+          console.log(prompt.id, monthId);
           return prompt.id === monthId
         })
 
         // Load Current Month Entries
         if (this._monthPrompt && !this._monthPrompt.isEntriesFetched) {
-          await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
+          // await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
         }
       }
+
+      console.log(this._monthPrompt.id, monthId);
       this._isLoading = false
     },
     /**
