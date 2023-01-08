@@ -15,7 +15,7 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
@@ -45,11 +45,9 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       for (const index in monthPrompt.entries) {
         monthPrompt.entries[index] = await getDoc(monthPrompt.entries[index]).then((doc) => doc.data())
+        monthPrompt.entries[index].author = await getDoc(monthPrompt.entries[index].author).then((doc) => doc.data())
       }
 
-      for (const entry of monthPrompt.entries) {
-        entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      }
       this._isLoading = false
 
       this.$patch({ _monthPrompt: monthPrompt })
@@ -158,7 +156,7 @@ export const usePromptStore = defineStore('prompts', {
 
             if (prompt.entries) {
               for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => ({ id: doc.id, ...doc.data() }))
                 prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
               }
             }
@@ -181,10 +179,12 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = userStore.getUserRef
       prompt.created = Timestamp.fromDate(new Date())
+      prompt.id = prompt.date
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.date), prompt)
+      await setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
+          prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
         .catch((error) => {
@@ -213,8 +213,20 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async deletePrompt(id) {
+      const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
+
       this._isLoading = true
-      await deleteDoc(doc(db, 'prompts', id))
+      const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+      const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
+
+      if (relatedEntries.length) {
+        for (const entry of relatedEntries) {
+          await deleteDoc(doc(db, 'entries', entry.id))
+          await deleteObject(ref(storage, `images/entry-${entry.id}`))
+        }
+      }
+
+      Promise.all([deleteImage, deletePromptDoc])
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
@@ -226,22 +238,10 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async updateEntryField(promptId, entryRef) {
+    async uploadImage(file, promptId) {
+      const storageRef = ref(storage, `images/prompt-${promptId}`)
+
       this._isLoading = true
-      await updateDoc(doc(db, 'prompts', promptId), {
-        entries: arrayUnion(entryRef)
-      })
-        .then(() => this.fetchPromptById(promptId))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
-    async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
-
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))

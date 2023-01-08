@@ -31,7 +31,7 @@
         flat
         :filter="promptFilter"
         hide-bottom
-        :loading="promptStore.isLoading"
+        :loading="promptStore.isLoading || entryStore.isLoading"
         :pagination="pagination"
         :rows="prompts"
         title="Manage Prompts & Entries"
@@ -50,15 +50,14 @@
             </q-td>
             <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
             <q-td>
-              <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
+              <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
               <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
             </q-td>
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
-            <q-td colspan="100%">
-              <q-linear-progress v-if="entryStore.isLoading" color="primary" indeterminate />
-              <p v-else-if="!props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-              <TableEntry v-else :items="props.row.entries" />
+            <q-td colspan="100%" style="padding: 0 !important">
+              <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
+              <TableEntry v-else :rows="props.row.entries" @editEntry="openEntryDialog" />
             </q-td>
           </q-tr>
         </template>
@@ -80,7 +79,7 @@
         </q-card-section>
         <q-card-section>
           <span class="q-ml-sm">
-            Are you sure you want to delete the prompt
+            Are you sure you want to delete the prompt:
             <b>{{ deleteDialog.prompt.title }}</b>
             ?
           </span>
@@ -108,7 +107,7 @@ const entryStore = useEntryStore()
 
 const columns = [
   {},
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true, sortable: true },
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
@@ -127,8 +126,12 @@ onMounted(async () => {
   prompts.value = promptStore.getPrompts
 })
 
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+})
+
 function openPromptDialog(props) {
-  props?.id ? (prompt.value = props) : (prompt.value = {})
+  prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
 }
 
@@ -148,7 +151,12 @@ function onDeletePrompt(id) {
 }
 
 function openEntryDialog(props) {
-  props?.id ? (entry.value = props) : (entry.value = {})
+  if (props?.id) {
+    entry.value = props
+    entry.value.prompt = prompts.value.find((prompt) => prompt.id === props.prompt.id)
+  } else {
+    entry.value = {}
+  }
   entry.value.dialog = true
 }
 </script>
