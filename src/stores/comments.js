@@ -18,6 +18,7 @@ import {
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
+import { useEntryStore } from 'src/stores'
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
@@ -29,7 +30,7 @@ export const useCommentStore = defineStore('comments', {
   }),
 
   getters: {
-    getComments: (state) => LocalStorage.getItem('comments') || state._comments,
+    getComments: (state) => state._comments,
     isLoading: (state) => state._isLoading,
 
     getEntries: (state) => state._entries,
@@ -37,28 +38,19 @@ export const useCommentStore = defineStore('comments', {
   },
 
   actions: {
-    async fetchComments(id) {
+    async fetchComments(slug) {
+      const q = query(collection(db, 'entries'), where('slug', '==', slug))
       this._isLoading = true
-      return await getDoc(doc(db, 'entries', id))
-        .then(async (doc) => {
-          if (doc.data === undefined) {
-            throw new Error('Data not found.')
-          }
-          const entry = { id: doc.id, ...doc.data() }
-          entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      const querySnapshot = await getDocs(q)
 
-          if (entry.comments?.length) {
-            for (const index in entry.comments) {
-              entry.comments[index] = await getDoc(entry.comments[index]).then((doc) => doc.data())
-              entry.comments[index].author = await getDoc(entry.comments[index].author).then((doc) => doc.data())
-            }
-          }
-          return entry
-        })
-        .catch((err) => {
-          throw new Error(err)
-        })
-        .finally(() => (this._isLoading = false))
+      const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      // entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      // entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
+
+      this._isLoading = false
+
+      return entries.comments
     },
 
     async addComment(comment, entry) {
@@ -66,15 +58,8 @@ export const useCommentStore = defineStore('comments', {
       const entryRef = doc(db, 'entries', entry.id)
       this._isLoading = true
       await updateDoc(doc(db, 'entries', entry.id), {
-        comments: arrayUnion(entryRef)
+        comments: arrayUnion({text: comment})
       })
-      console.log("updatedoc")
-        .then(() => this.fetchComments(entry.id, comment))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
     },
 
     async editComment(entry) {

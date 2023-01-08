@@ -2,12 +2,12 @@
   <section class="q-pa-md">
     <div v-for="comment of comments" class="flex items-center" :key="comment.id">
       <q-avatar size="2.6rem">
-        <q-img :src="comment.author.photoURL" />
+        <!-- <q-img :src="comment.author.photoURL" /> -->
       </q-avatar>
       <p class="column q-mb-none q-ml-sm">
-        <span class="text-body1">{{ comment.author.displayName }}</span>
+        <!-- <span class="text-body1">{{ comment.author.displayName }}</span> -->
         <span class="text-body2 text-secondary">
-          {{ comment.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
+          <!-- {{ comment.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} -->
         </span>
       </p>
       <q-space />

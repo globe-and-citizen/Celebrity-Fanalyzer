@@ -30,7 +30,7 @@
 <script setup>
 import TheComments from 'src/components/TheComments.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useCommentStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -38,6 +38,7 @@ const router = useRouter()
 
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const commentStore = useCommentStore()
 const entry = ref({})
 
 const article = ref({})
@@ -55,6 +56,11 @@ onMounted(async () => {
       .then((res) => (article.value = res))
       .catch(() => router.push('/404'))
   }
+
+  await commentStore
+    .fetchComments(router.currentRoute.value.href)
+    .then((res) => (comments.value = res))
+    console.log(comments.value)
 })
 
 function toggleComments() {

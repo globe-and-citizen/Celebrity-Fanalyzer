@@ -30,7 +30,8 @@ export const useEntryStore = defineStore('entries', {
 
       return prompt.entries
     },
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    getEntries: (state) => state._entries,
   },
 
   actions: {
