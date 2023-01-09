@@ -3,7 +3,7 @@
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!prompt && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="bg-white">
@@ -89,7 +89,7 @@ onMounted(async () => {
   statStore.fetchStats()
 
   if (router.currentRoute.value.href === '/month') {
-    await promptStore.fetchMonthPrompt()
+    if (!promptStore.getMonthPrompt) await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
   }
 
