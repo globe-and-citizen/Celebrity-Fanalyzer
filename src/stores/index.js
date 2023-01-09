@@ -1,9 +1,10 @@
 import { createPinia } from 'pinia'
 import { store } from 'quasar/wrappers'
 import { useAuthStore } from './auth'
-import { useEntryStore } from './entries'
 import { useCommentStore } from './comments'
+import { useEntryStore } from './entries'
 import { usePromptStore } from './prompts'
+import { useStatStore } from './stats'
 import { useUserStore } from './user'
 /*
  * If not building with SSR mode, you can
@@ -23,4 +24,4 @@ export default store((/* { ssrContext } */) => {
   return pinia
 })
 
-export { useAuthStore, useCommentStore, useEntryStore, usePromptStore, useUserStore }
+export { useAuthStore, useCommentStore, useEntryStore, usePromptStore, useStatStore, useUserStore }
