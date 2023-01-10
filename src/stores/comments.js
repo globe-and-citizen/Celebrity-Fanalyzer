@@ -43,6 +43,9 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', comment.id), comment)
+        .then(() => {
+          this.$patch({ _comments: [...this._comments, comment] })
+        })
         .catch((err) => {
           console.log(err)
           throw new Error(err)
