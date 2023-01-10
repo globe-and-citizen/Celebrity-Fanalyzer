@@ -54,12 +54,12 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async addComment(comment, entry) {
+      // comment.id = 123
       console.log(comment, entry)
-      const entryRef = doc(db, 'entries', entry.id)
+      const commentRef = doc(db, 'entries', entry.id, 'comments', comment.id)
       this._isLoading = true
-      await updateDoc(doc(db, 'entries', entry.id), {
-        comments: arrayUnion({text: comment})
-      })
+      await setDoc(commentRef, comment)
+      this._isLoading = false
     },
 
     async editComment(entry) {

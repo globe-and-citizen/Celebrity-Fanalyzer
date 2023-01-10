@@ -38,7 +38,7 @@
       rounded
       standout
       style="margin-bottom: 4rem"
-      v-model="myComment"
+      v-model="myComment.text"
       @keyup.enter="sendComment()"
     >
       <template v-slot:append>
@@ -59,14 +59,14 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
-const  myComment =ref('')
+const  myComment = reactive({id: 123, text: ''})
 const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const entry = reactive({})
 
 async function sendComment() {
   await commentStore
-      .addComment(myComment.value, props.entry)
+      .addComment(myComment, props.entry)
       .then(() => $q.notify({ message: 'Comment successfully submitted' }))
       .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
