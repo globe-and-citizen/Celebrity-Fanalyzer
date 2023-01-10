@@ -27,9 +27,7 @@ export const usePromptStore = defineStore('prompts', {
   }),
 
   getters: {
-    getMonthPrompt: (state) => {
-      return state._monthPrompt ? state._monthPrompt : {}
-    },
+    getMonthPrompt: (state) => state._monthPrompt,
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
     getPromptById: (state) => (promptId) => {
