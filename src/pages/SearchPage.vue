@@ -75,9 +75,7 @@ const categories = ref([
 ])
 
 onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPromptsAndEntries()
-  }
+  await promptStore.fetchPrompts()
   prompts.value = promptStore.getPrompts
 })
 </script>
