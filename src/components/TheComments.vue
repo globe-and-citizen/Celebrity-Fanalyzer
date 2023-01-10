@@ -50,8 +50,8 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { ref, reactive } from 'vue'
-import { useCommentStore, useEntryStore } from 'src/stores'
+import { useCommentStore } from 'src/stores'
+import { reactive } from 'vue'
 
 const props = defineProps({
   comments: { type: Array, required: true },
@@ -59,15 +59,13 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
-const  myComment = reactive({id: 123, text: ''})
+const myComment = reactive({ text: '' })
 const commentStore = useCommentStore()
-const entryStore = useEntryStore()
-const entry = reactive({})
 
 async function sendComment() {
   await commentStore
-      .addComment(myComment, props.entry)
-      .then(() => $q.notify({ message: 'Comment successfully submitted' }))
-      .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .addComment(myComment, props.entry)
+    .then(() => $q.notify({ message: 'Comment successfully submitted' }))
+    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
 </script>

@@ -39,7 +39,6 @@ const router = useRouter()
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const commentStore = useCommentStore()
-const entry = ref({})
 
 const article = ref({})
 const comments = ref([])

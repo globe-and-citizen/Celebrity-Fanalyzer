@@ -1,40 +1,19 @@
-import {
-  arrayRemove,
-  arrayUnion,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  runTransaction,
-  setDoc,
-  Timestamp,
-  updateDoc,
-  where
-} from 'firebase/firestore'
+import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
-import { useEntryStore } from 'src/stores'
+import { useUserStore } from 'src/stores'
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: [],
-    _isLoading: false,
-
     _entries: [],
-    _isLoading: false,
+    _isLoading: false
   }),
 
   getters: {
     getComments: (state) => state._comments,
-    isLoading: (state) => state._isLoading,
-
     getEntries: (state) => state._entries,
-    isLoading: (state) => state._isLoading,
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
