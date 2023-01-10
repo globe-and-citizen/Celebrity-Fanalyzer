@@ -56,10 +56,12 @@ onMounted(async () => {
       .catch(() => router.push('/404'))
   }
 
-  await commentStore
-    .fetchComments(router.currentRoute.value.href)
-    .then((res) => (comments.value = res))
-    console.log(comments.value)
+  await commentStore.fetchComments(router.currentRoute.value.href).then((res) => (comments.value = res))
+  console.log(comments.value)
+})
+
+commentStore.$subscribe((_mutation, state) => {
+  comments.value = state._comments
 })
 
 function toggleComments() {
