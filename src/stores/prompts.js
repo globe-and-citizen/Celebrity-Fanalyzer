@@ -90,6 +90,7 @@ export const usePromptStore = defineStore('prompts', {
         LocalStorage.set('monthPrompt', this._monthPrompt)
       } else {
         this._monthPrompt = localMonthPrompt
+        this._prompts.push(localMonthPrompt)
       }
       this._isLoading = false
     },
