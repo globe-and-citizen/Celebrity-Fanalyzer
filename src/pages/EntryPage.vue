@@ -91,7 +91,6 @@ async function reloadLikesDislikesCount() {
 
 function dislike() {
   const id = article.value.id
-  console.log(id)
   entryStore
     .addDislike(id)
     .then(async () => {
