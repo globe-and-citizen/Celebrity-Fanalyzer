@@ -16,10 +16,9 @@ describe('sum method', () => {
 
 describe('prompt store', () => {
   it('should fetch all the prompts', async () => {
-    // const wrapper = mount(StoreComponent)
+    // TODO: Check if import works with dotenv
     const store = usePromptStore()
     console.log(store)
-
-    expect(store.getPrompts).toBeUndefined()
+    expect(store.getPrompts).not.toBeUndefined()
   })
 })
