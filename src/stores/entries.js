@@ -218,7 +218,7 @@ export const useEntryStore = defineStore('entries', {
         await setDoc(entryOpinionRef, { ...entryOpinion, liked: false, updatedAd: Date.now() })
       } else if (!entryOpinion) {
         await setDoc(entryOpinionRef, {
-          liked: true,
+          liked: false,
           createdAt: Date.now(),
           updatedAd: Date.now()
         })
