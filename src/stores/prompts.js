@@ -27,7 +27,9 @@ export const usePromptStore = defineStore('prompts', {
   }),
 
   getters: {
-    getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
+    getMonthPrompt: (state) => {
+      return state._monthPrompt ? state._monthPrompt : {}
+    },
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
     getPromptById: (state) => (promptId) => {
@@ -42,35 +44,53 @@ export const usePromptStore = defineStore('prompts', {
   },
 
   actions: {
+    /**
+     * Fetch the current month prompt and set the value in the store :
+     * Checking if we have a data in the store.
+     * Check if we have data in the local storage.
+     * Fetch the data form firebase if 1-2 is false.
+     * @returns {Promise<void>}
+     */
     async fetchMonthPrompt() {
-      // TODO check if we already have a monthPrompt and if it's updated before all
       this._isLoading = true
-      let month= new Date().getMonth()
-      if (month<9){
-        month = `0${month+1}`
+      // Setup mont id
+      let month = new Date().getMonth()
+      if (month < 9) {
+        month = `0${month + 1}`
       }
       const monthId = `${new Date().getFullYear()}-${month}`
 
-      // TODO improve the use of the local storage
-      // TODO Check the local storage before fetchMonthPrompt
-      // TODO try to fetch prompt by id if we still don't have data after fetchPrompt
-      if (this._isLoaded === false) {
-        await this.fetchPrompts().then(() => this.fetchMonthPrompt())
-      }
-      if (this._isLoaded === true && this._prompts !== []) {
-        // set the current month Prompt
-        this._monthPrompt = this._prompts.find((prompt) => {
-          console.log(prompt.id, monthId);
-          return prompt.id === monthId
-        })
-
-        // Load Current Month Entries
-        if (this._monthPrompt && !this._monthPrompt.isEntriesFetched) {
-          // await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
+      // 1- Check the local storage
+      const localMonthPrompt = LocalStorage.getItem('monthPrompt')
+      if (!localMonthPrompt || localMonthPrompt.id !== monthId) {
+        // 2- Check in the store prompt array
+        if (this._isLoaded === false) {
+          await this.fetchPrompts().then(() => this.fetchMonthPrompt())
         }
-      }
+        let currentMonth = this._prompts.find((prompt) => prompt.id === monthId)
 
-      console.log(this._monthPrompt.id, monthId);
+        //if we do not have any prompt we fetch it by id (usefully if we have pagination in the future)
+        if (!currentMonth) {
+          await this.fetchPromptById(monthId)
+          currentMonth = this._prompts.find((prompt) => prompt.id === monthId)
+
+          // exit if we still do not have any prompt for the month
+          if (!currentMonth) {
+            return
+          }
+        }
+        this._monthPrompt = currentMonth
+
+        // Load Current Month Prompt Entries
+        if (!this._monthPrompt.isEntriesFetched) {
+          await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
+        }
+
+        // Set the local storage
+        LocalStorage.set('monthPrompt', this._monthPrompt)
+      } else {
+        this._monthPrompt = localMonthPrompt
+      }
       this._isLoading = false
     },
     /**
@@ -96,8 +116,8 @@ export const usePromptStore = defineStore('prompts', {
               }
             }
             let index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
-            if(index<0){
-              index= 0
+            if (index < 0) {
+              index = 0
             }
             this._prompts[index] = prompt
           } else {
@@ -172,22 +192,28 @@ export const usePromptStore = defineStore('prompts', {
     async fetchPromptEntry(promptId) {
       this._isLoading = true
       let currentPrompt = this.getPromptById(promptId)
+      if (!currentPrompt) {
+        await this.fetchPromptById(promptId)
+        let currentPrompt = this.getPromptById(promptId)
+        if (!currentPrompt) {
+          return
+        }
+      }
 
-      // TODO: improve by saving entries in the entry store
+      // Fetch the entries if they are not already fetched.
       if (currentPrompt.entries && currentPrompt.isEntriesFetched === false) {
         for (const index in currentPrompt.entries) {
           currentPrompt.entries[index] = await getDoc(currentPrompt.entries[index]).then((doc) => doc.data())
           currentPrompt.entries[index].author = await getDoc(currentPrompt.entries[index].author).then((doc) => doc.data())
         }
-
-        // Confirm that this Prompt Entry is fetched
-        currentPrompt.isEntriesFetched = true
-
-        // Update the current Prompt in the prompt list
-        const promptIndex = this._prompts.findIndex((prompt) => prompt.id === promptId)
-        this._prompts[promptIndex] = currentPrompt
       }
 
+      // Confirm that this Prompt Entry is fetched
+      currentPrompt.isEntriesFetched = true
+
+      // Update the current Prompt in the prompt list
+      const promptIndex = this._prompts.findIndex((prompt) => prompt.id === promptId)
+      this._prompts[promptIndex] = currentPrompt
       this._isLoading = false
     },
 
