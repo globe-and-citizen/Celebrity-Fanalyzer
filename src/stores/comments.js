@@ -54,12 +54,21 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async addComment(comment, entry) {
-      // comment.id = 123
-      console.log(comment, entry)
-      const commentRef = doc(db, 'entries', entry.id, 'comments', comment.id)
+      const userStore = useUserStore()
+
+      comment.author = userStore.getUserRef
+      comment.id = new Date().toJSON()
+
+      console.log('entry.id', entry.id)
+      console.log({ comment })
+
       this._isLoading = true
-      await setDoc(commentRef, comment)
-      this._isLoading = false
+      await setDoc(doc(db, 'entries', entry.id, 'comments', comment.id), comment)
+        .catch((err) => {
+          console.log(err)
+          throw new Error(err)
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async editComment(entry) {
