@@ -49,9 +49,7 @@ export const useEntryStore = defineStore('entries', {
 
       return entry
     },
-    async addEntryToStore(entries){
-
-    },
+    async addEntryToStore(entries) {},
 
     async fetchEntries(promptId) {
       const promptStore = usePromptStore()
@@ -182,11 +180,11 @@ export const useEntryStore = defineStore('entries', {
       return getDownloadURL(ref(storage, storageRef))
     },
 
-    async addLike(entryId){
-      this._isLoading= true
+    async addLike(entryId) {
+      this._isLoading = true
       await useUserStore().loadBrowserId()
       let browserId = useUserStore().getBrowserId
-      if(!entryId || !browserId){
+      if (!entryId || !browserId) {
         throw new Error('Entry or Browser id should be defined')
       }
       const entryOpinionRef = doc(db, 'entries', entryId, 'opinions', browserId)
@@ -203,13 +201,13 @@ export const useEntryStore = defineStore('entries', {
         })
       }
 
-      this._isLoading=false
+      this._isLoading = false
     },
-    async addDislike(entryId){
-      this._isLoading= true
+    async addDislike(entryId) {
+      this._isLoading = true
       await useUserStore().loadBrowserId()
       let browserId = useUserStore().getBrowserId
-      if(!entryId || !browserId){
+      if (!entryId || !browserId) {
         throw new Error('Entry or Browser id should be defined')
       }
       const entryOpinionRef = doc(db, 'entries', entryId, 'opinions', browserId)
@@ -226,7 +224,7 @@ export const useEntryStore = defineStore('entries', {
         })
       }
 
-      this._isLoading=false
-    },
+      this._isLoading = false
+    }
   }
 })
