@@ -20,8 +20,8 @@ export const useCommentStore = defineStore('comments', {
     async fetchComments(slug) {
       const q = query(collection(db, 'entries'), where('slug', '==', slug))
       this._isLoading = true
-      const querySnapshot = await getDocs(q)
 
+      const querySnapshot = await getDocs(q)
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
       entry.author = await getDoc(entry.author).then((doc) => doc.data())
@@ -29,8 +29,12 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = false
 
-      return entry.comments
-      console.log(entry.comments)
+       const c = query(collection(db, "entries", entry.id, "comments"))
+       const snap = await getDocs(c)
+       const comment = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+       return comment
+
     },
 
     async addComment(comment, entry) {
@@ -58,8 +62,20 @@ export const useCommentStore = defineStore('comments', {
       console.log(entry)
     },
 
-    async deleteComment(id) {
+    async deleteComment(id, entry) {
       console.log(id)
+      this._isLoading = true
+      const deleteComment = await deleteDoc(doc(db, "comments", id));
+      console.log(deleteComment)
+        Promise.all([deleteComment])
+        .then(() => {
+          this.$patch({ _comments: [...this._comments, comment] })
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
     }
   }
 })

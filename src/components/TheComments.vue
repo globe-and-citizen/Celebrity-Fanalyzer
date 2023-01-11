@@ -18,7 +18,7 @@
               <q-item-label>Edit</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click.prevent="">
+          <q-item clickable v-close-popup @click="deleteComment(comment.id)">
             <q-item-section>
               <q-item-label>Delete</q-item-label>
             </q-item-section>
@@ -66,6 +66,13 @@ async function sendComment() {
   await commentStore
     .addComment(myComment, props.entry)
     .then(() => $q.notify({ message: 'Comment successfully submitted' }))
+    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+}
+
+async function deleteComment(commentId) {
+  await commentStore
+    .deleteComment(commentId, props.entry)
+    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
 </script>
