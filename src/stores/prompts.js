@@ -62,9 +62,6 @@ export const usePromptStore = defineStore('prompts', {
       const localMonthPrompt = LocalStorage.getItem('monthPrompt')
       if (!localMonthPrompt || localMonthPrompt.id !== monthId) {
         // 2- Check in the store prompt array
-        if (this._isLoaded === false) {
-          await this.fetchPrompts().then(() => this.fetchMonthPrompt())
-        }
         let currentMonth = this._prompts.find((prompt) => prompt.id === monthId)
 
         //if we do not have any prompt we fetch it by id (usefully if we have pagination in the future)
@@ -156,36 +153,6 @@ export const usePromptStore = defineStore('prompts', {
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
-    },
-
-    async fetchPrompts() {
-      // TODO check if we have data updated before  all
-      this._isLoading = true
-      if (this._isLoaded === false) {
-        await getDocs(collection(db, 'prompts'))
-          .then(async (querySnapshot) => {
-            const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), isEntriesFetched: false }))
-
-            for (const prompt of prompts) {
-              prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-            }
-
-            prompts.reverse()
-
-            this._prompts = []
-            this.$patch({ _prompts: prompts })
-          })
-          .catch((error) => {
-            console.error(error)
-            throw new Error(error)
-          })
-          .finally(() => {
-            this._isLoading = false
-            this._isLoaded = true
-          })
-      } else {
-        this._isLoading = false
-      }
     },
 
     async fetchPromptEntry(promptId) {
