@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -22,14 +22,15 @@ export const useCommentStore = defineStore('comments', {
       this._isLoading = true
       const querySnapshot = await getDocs(q)
 
-      const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-      // entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      // entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
+      entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
 
       this._isLoading = false
 
-      return entries.comments
+      return entry.comments
+      console.log(entry.comments)
     },
 
     async addComment(comment, entry) {
