@@ -19,22 +19,21 @@
           <div class="inline-block">
             <q-btn
               color="green"
-              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              :disable="promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
-              :label="prompt.info?.likes.length"
+              :label="prompt.likesCount"
               rounded
               @click="like()"
             >
               <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
             </q-btn>
-            <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
             <q-btn
               color="red"
-              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              :disable="promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
-              :label="prompt.info?.dislikes.length"
+              :label="prompt.dislikesCount"
               rounded
               @click="dislike()"
             >
@@ -66,126 +65,66 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
+import { usePromptStore, useStatStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const $q = useQuasar()
 const router = useRouter()
 
 const promptStore = usePromptStore()
 const statStore = useStatStore()
-const userStore = useUserStore()
 
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
-
 onMounted(async () => {
   statStore.fetchStats()
-
   if (router.currentRoute.value.href === '/month') {
-    if (!promptStore.getMonthPrompt) await promptStore.fetchMonthPrompt()
+    await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
+  } else {
+    await promptStore.fetchPrompts()
+    if (router.currentRoute.value.params.year) {
+      prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+    } else if (router.currentRoute.value.params.slug) {
+      prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
+    }
+    if (prompt.value) {
+      await promptStore.fetchPromptEntry(prompt.value.id)
+    }
   }
-
-  if (promptStore.getPrompts.length) {
-    promptStore.getPrompts.find((p) => {
-      if (
-        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
-        p.slug === router.currentRoute.value.params.slug
-      ) {
-        prompt.value = p
-        updateChartData()
-      }
-    })
-    return
-  }
-  await updatePrompt()
-
   if (prompt.value) {
     updateChartData()
+  } else {
+    await router.push('/404')
   }
+
+  // Call of refresh promptOpinion to have likes and dislikes count
+  await promptStore.refreshPromptOpinion(prompt.value.id)
+  prompt.value = promptStore.getPromptById(prompt.value.id)
 })
 
 function updateChartData() {
   chartData.value = [
-    { value: prompt.value.info?.likes.length, name: 'Likes' },
-    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
+    { value: prompt.value.likesCount, name: 'Likes' },
+    { value: prompt.value.dislikesCount, name: 'Dislikes' }
   ]
 }
 
-async function updatePrompt() {
-  if (router.currentRoute.value.params.year) {
-    await promptStore
-      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-      .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
-  }
-  if (router.currentRoute.value.params.slug) {
-    await promptStore
-      .fetchPromptBySlug(router.currentRoute.value.params.slug)
-      .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
-  }
-  updateChartData()
-}
-
 function like() {
-  promptStore.addLike(prompt.value.id).then(() => updatePrompt())
+  const id = prompt.value.id
+  promptStore.addLike(id).then(() => {
+    prompt.value = promptStore.getPromptById(id)
+  })
 }
 
 function dislike() {
-  promptStore.addDislike(prompt.value.id).then(() => updatePrompt())
-}
-
-function sharePrompt(grid) {
-  $q.bottomSheet({
-    message: 'Share with Social Media',
-    grid,
-    actions: [
-      { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
-      {
-        label: 'Facebook',
-        img: '/icons/facebook.svg',
-        id: 'facebook',
-        link: 'https://facebook.com/sharer/sharer.php?u='
-      },
-      {
-        label: 'LinkedIn',
-        img: '/icons/linkedin.svg',
-        id: 'linkedin',
-        link: 'https://linkedin.com/sharing/share-offsite/?url='
-      },
-      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
-      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
-      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
-      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
-      {
-        label: 'Pinterest',
-        img: '/icons/pinterest.svg',
-        id: 'pinterest',
-        link: 'https://pinterest.com/pin/create/button/?url='
-      },
-      {
-        label: 'Odnoklassniki',
-        img: '/icons/odnoklassniki.svg',
-        id: 'odnoklassniki',
-        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
-      }
-    ]
-  }).onOk((action) => {
-    if (action.id === 'clipboard') {
-      navigator.clipboard.writeText(window.location.href)
-    } else if (action.id === 'facebook' || action.id === 'linkedin') {
-      window.open(action.link + `${window.location.href}`, '_blank')
-    } else {
-      window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
-    }
+  const id = prompt.value.id
+  promptStore.addDislike(id).then(() => {
+    prompt.value = promptStore.getPromptById(id)
   })
 }
 </script>
