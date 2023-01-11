@@ -80,21 +80,18 @@ const statStore = useStatStore()
 const chartData = ref([])
 const prompt = ref({})
 const tab = ref('prompt')
+
 onMounted(async () => {
   statStore.fetchStats()
   if (router.currentRoute.value.href === '/month') {
     await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
-  } else {
-    await promptStore.fetchPrompts()
-    if (router.currentRoute.value.params.year) {
-      prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-    } else if (router.currentRoute.value.params.slug) {
-      prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
-    }
-    if (prompt.value) {
-      await promptStore.fetchPromptEntry(prompt.value.id)
-    }
+  }
+  if (router.currentRoute.value.params.year) {
+    prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+  }
+  if (router.currentRoute.value.params.slug) {
+    prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
   }
   if (prompt.value) {
     updateChartData()
