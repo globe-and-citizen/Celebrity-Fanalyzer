@@ -17,7 +17,6 @@ import {
 } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 
@@ -29,7 +28,7 @@ export const usePromptStore = defineStore('prompts', {
   }),
 
   getters: {
-    getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
+    getMonthPrompt: (state) => state._monthPrompt,
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
     isLoading: (state) => state._isLoading
@@ -51,7 +50,6 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = false
 
       this.$patch({ _monthPrompt: monthPrompt })
-      LocalStorage.set('monthPrompt', monthPrompt)
       return monthPrompt
     },
 
