@@ -12,3 +12,7 @@ export function shortMonthDayTime(timestamp) {
     .split(', ')
     .join(' - ') // Dec 10 - 14:18
 }
+
+export function yearMonth() {
+  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
+}
