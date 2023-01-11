@@ -65,11 +65,11 @@
     </q-page>
 
     <q-dialog full-width position="bottom" v-model="prompt.dialog">
-      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" @submitted="loadPromptWithEntry()" />
+      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
     </q-dialog>
 
     <q-dialog full-width position="bottom" v-model="entry.dialog">
-      <EntryCard v-bind="entry" @hideDialog="entry = {}" @submitted="loadPromptWithEntry()" />
+      <EntryCard v-bind="entry" @hideDialog="entry = {}" />
     </q-dialog>
 
     <q-dialog v-model="deleteDialog.show">
@@ -120,14 +120,15 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  await loadPromptWithEntry()
+  if (!promptStore.getPrompts.length) {
+    await promptStore.fetchPromptsAndEntries()
+  }
+  prompts.value = promptStore.getPrompts
 })
 
-async function loadPromptWithEntry() {
-  await promptStore.fetchPromptsAndEntries().then(() => {
-    prompts.value = promptStore.getPrompts
-  })
-}
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+})
 
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}

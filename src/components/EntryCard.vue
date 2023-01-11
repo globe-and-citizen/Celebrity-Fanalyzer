@@ -76,7 +76,7 @@ import { useQuasar } from 'quasar'
 import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
-const emit = defineEmits(['hideDialog', 'submitted'])
+const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'info', 'prompt', 'slug', 'title'])
 
 const $q = useQuasar()
@@ -134,6 +134,5 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
-  emit('submitted')
 }
 </script>
