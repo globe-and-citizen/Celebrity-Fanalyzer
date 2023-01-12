@@ -16,7 +16,7 @@ import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import { yearMonth } from 'src/utils/date'
+import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -49,10 +49,11 @@ export const usePromptStore = defineStore('prompts', {
      * @returns {Promise<void>}
      */
     async fetchMonthPrompt() {
-      const monthId = yearMonth()
+      const currentMonthId = currentYearMonth()
+      const previousMonthId = previousYearMonth()
 
       this._isLoading = true
-      const docSnap = await getDoc(doc(db, 'prompts', monthId))
+      const docSnap = await getDoc(doc(db, 'prompts', currentMonthId))
 
       if (docSnap.exists()) {
         const prompt = docSnap.data()
@@ -64,16 +65,26 @@ export const usePromptStore = defineStore('prompts', {
             prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
           }
         }
-
-        console.log({ prompt })
         this._monthPrompt = prompt
       } else {
-        // doc.data() will be undefined in this case
-        this._monthPrompt = {}
-        // TODO: fetch the previous month
-        console.log('No such document!')
-      }
+        await getDoc(doc(db, 'prompts', previousMonthId))
+          .then(async (doc) => {
+            const prompt = { id: doc.id, ...doc.data() }
 
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            if (prompt.entries?.length) {
+              for (const index in prompt.entries) {
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+              }
+            }
+            this._monthPrompt = prompt
+          })
+          .catch((err) => {
+            console.error(err)
+            throw new Error('Document not found.')
+          })
+      }
       this._isLoading = false
     },
     /**
