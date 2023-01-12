@@ -14,7 +14,7 @@
       </h2>
 
       <p v-if="item.description" class="q-my-none text-body2 text-secondary">
-        {{ monthYear(item.date) }} &nbsp;•&nbsp; {{ giveReadingTime(item.description) }}min
+        {{ item.date ? monthYear(item.date) : monthDay(item.id) }} &nbsp;•&nbsp; {{ giveReadingTime(item.description) }}min
       </p>
       <div v-if="item.categories">
         <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
@@ -27,8 +27,8 @@
 </template>
 
 <script setup>
+import { monthDay, monthYear } from 'src/utils/date'
 import { useRouter } from 'vue-router'
-import { monthYear } from 'src/utils/date'
 
 const router = useRouter()
 const props = defineProps({
@@ -51,6 +51,7 @@ function giveReadingTime(description) {
 
   return Math.round(wordCount / averageWordsPerMinute)
 }
+
 function goToUrl() {
   router.push(props.link)
 }

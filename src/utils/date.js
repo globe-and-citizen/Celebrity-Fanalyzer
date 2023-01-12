@@ -1,7 +1,13 @@
 export function monthYear(date) {
   const [year, month] = date.split('-')
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
-  return `${monthName} ${year}`
+  return `${monthName} ${year}` // Dec 2022
+}
+
+export function monthDay(date) {
+  const seconds = date.split('T')[1]
+  const dateObj = new Date(seconds * 1000)
+  return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Dec 10
 }
 
 export function shortMonthDayTime(timestamp) {
