@@ -22,7 +22,7 @@
               :disable="promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
-              :label="prompt?.likesCount"
+              :label="countLikes"
               rounded
               @click="like()"
             >
@@ -33,7 +33,7 @@
               :disable="promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
-              :label="prompt?.dislikesCount"
+              :label="countDislikes"
               rounded
               @click="dislike()"
             >
@@ -66,18 +66,21 @@
 
 <script setup>
 import BarGraph from 'src/components/BarGraph.vue'
-import TheEntries from 'src/components/TheEntries.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-import { usePromptStore, useStatStore } from 'src/stores'
+import TheEntries from 'src/components/TheEntries.vue'
+import { useLikeStore, usePromptStore, useStatStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const statStore = useStatStore()
 
 const chartData = ref([])
+const countLikes = ref(0)
+const countDislikes = ref(0)
 const prompt = ref({})
 const tab = ref('prompt')
 
@@ -101,9 +104,14 @@ onMounted(async () => {
       .catch(() => (prompt.value = null))
   }
   if (!prompt.value) {
-    await router.push('/404')
+    router.push('/404')
     return
   }
+
+  await likeStore.countPromptLikes(prompt.value.id).then((res) => {
+    countLikes.value = res.likes
+    countDislikes.value = res.dislikes
+  })
 
   chartData.value = [
     { value: prompt.value.likesCount, name: 'Likes' },
@@ -115,14 +123,17 @@ onMounted(async () => {
   // prompt.value = promptStore.getPromptById(prompt.value.id)
 })
 
+likeStore.$subscribe((_mutation, state) => {
+  countLikes.value = state._likes
+  countDislikes.value = state._dislikes
+})
+
 function like() {
-  const id = prompt.value.id
-  promptStore.addLike(id).then(() => {
-    prompt.value = promptStore.getPromptById(id)
-  })
+  likeStore.likePrompt(prompt.value.id)
 }
 
 function dislike() {
+  // TODO: complete dislike function
   const id = prompt.value.id
   promptStore.addDislike(id).then(() => {
     prompt.value = promptStore.getPromptById(id)
