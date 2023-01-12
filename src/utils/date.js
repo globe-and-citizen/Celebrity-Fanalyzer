@@ -13,6 +13,13 @@ export function shortMonthDayTime(timestamp) {
     .join(' - ') // Dec 10 - 14:18
 }
 
-export function yearMonth() {
+export function currentYearMonth() {
   return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
+}
+
+export function previousYearMonth() {
+  const date = new Date()
+  date.setMonth(date.getMonth() - 1)
+
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
 }
