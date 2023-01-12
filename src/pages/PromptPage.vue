@@ -3,16 +3,16 @@
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="prompt === {} && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="bg-white">
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
-          <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
-          <p class="text-body1" v-html="prompt.description"></p>
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
+          <p class="text-body1" v-html="prompt?.description"></p>
           <div class="q-mb-md">
-            <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
+            <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
             </q-badge>
           </div>
@@ -22,7 +22,7 @@
               :disable="promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
-              :label="prompt.likesCount"
+              :label="prompt?.likesCount"
               rounded
               @click="like()"
             >
@@ -33,7 +33,7 @@
               :disable="promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
-              :label="prompt.dislikesCount"
+              :label="prompt?.dislikesCount"
               rounded
               @click="dislike()"
             >
@@ -53,7 +53,7 @@
           <ShareComponent :count="0"></ShareComponent>
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <TheEntries :entries="prompt.entries" />
+        <TheEntries :entries="prompt?.entries" />
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
@@ -82,34 +82,38 @@ const prompt = ref({})
 const tab = ref('prompt')
 
 onMounted(async () => {
-  statStore.fetchStats()
+  // statStore.fetchStats() // uncomment when stats are ready
+  // TODO: Check the local prompts here, if they exist then use them inside the 'ifs' instead of fetching again
   if (router.currentRoute.value.href === '/month') {
     await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
   }
   if (router.currentRoute.value.params.year) {
-    prompt.value = promptStore.getPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+    await promptStore
+      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+      .then((res) => (prompt.value = res))
+      .catch(() => (prompt.value = null))
   }
   if (router.currentRoute.value.params.slug) {
-    prompt.value = promptStore.getPromptBySlug(router.currentRoute.value.params.slug)
+    await promptStore
+      .fetchPromptBySlug(router.currentRoute.value.params.slug)
+      .then((res) => (prompt.value = res))
+      .catch(() => (prompt.value = null))
   }
-  if (prompt.value) {
-    updateChartData()
-  } else {
+  if (!prompt.value) {
     await router.push('/404')
+    return
   }
 
-  // Call of refresh promptOpinion to have likes and dislikes count
-  await promptStore.refreshPromptOpinion(prompt.value.id)
-  prompt.value = promptStore.getPromptById(prompt.value.id)
-})
-
-function updateChartData() {
   chartData.value = [
     { value: prompt.value.likesCount, name: 'Likes' },
     { value: prompt.value.dislikesCount, name: 'Dislikes' }
   ]
-}
+
+  // Call of refresh promptOpinion to have likes and dislikes count
+  // await promptStore.refreshPromptOpinion(prompt.value.id)
+  // prompt.value = promptStore.getPromptById(prompt.value.id)
+})
 
 function like() {
   const id = prompt.value.id

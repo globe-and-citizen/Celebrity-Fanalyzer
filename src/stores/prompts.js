@@ -92,42 +92,49 @@ export const usePromptStore = defineStore('prompts', {
      * @param promptId
      * @returns {Promise<void>}
      */
-    async fetchPromptById(promptId) {
+    async fetchPromptById(id) {
       this._isLoading = true
-      await getDoc(doc(db, 'prompts', promptId))
+      return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
           if (doc.data === undefined) {
             throw new Error('Document not found.')
           }
           const prompt = { id: doc.id, ...doc.data() }
-          const localPrompt = this.getPromptById(prompt.id)
-          if (!localPrompt) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-            if (prompt.entries?.length) {
-              for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-              }
+          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+
+          if (prompt.entries?.length) {
+            for (const index in prompt.entries) {
+              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
             }
-            let index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
-            if (index < 0) {
-              index = 0
-            }
-            this._prompts[index] = prompt
-          } else {
-            const newPrompt = { ...prompt, ...{ entries: localPrompt.entries, author: localPrompt.author } }
-            const index = this._prompts.findIndex((_prompt) => _prompt.id === prompt.id)
-            this._prompts[index] = newPrompt
           }
-          // await this.fetchPromptEntry(id)
+
           return prompt
         })
         .catch((err) => {
           throw new Error(err)
         })
-        .finally(async () => {
-          this._isLoading = false
-        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async fetchPromptBySlug(slug) {
+      const q = query(collection(db, 'prompts'), where('slug', '==', slug))
+      this._isLoading = true
+      const querySnapshot = await getDocs(q)
+
+      const prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+
+      if (prompt.entries?.length) {
+        for (const index in prompt.entries) {
+          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+        }
+      }
+      this._isLoading = false
+
+      return prompt
     },
 
     async fetchPromptsByYear(year) {
