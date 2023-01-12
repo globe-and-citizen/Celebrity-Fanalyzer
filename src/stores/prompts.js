@@ -1,10 +1,11 @@
+import 'firebase/firestore'
 import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
-  getCountFromServer,
   query,
   runTransaction,
   setDoc,
@@ -13,16 +14,14 @@ import {
 } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import 'firebase/firestore'
+import { yearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
     _monthPrompt: null,
-    _isLoaded: false,
     _prompts: []
   }),
 
@@ -50,46 +49,31 @@ export const usePromptStore = defineStore('prompts', {
      * @returns {Promise<void>}
      */
     async fetchMonthPrompt() {
+      const monthId = yearMonth()
+
       this._isLoading = true
-      // Setup mont id
-      let month = new Date().getMonth()
-      if (month < 9) {
-        month = `0${month + 1}`
-      }
-      const monthId = `${new Date().getFullYear()}-${month}`
+      const docSnap = await getDoc(doc(db, 'prompts', monthId))
 
-      // 1- Check the local storage
-      const localMonthPrompt = LocalStorage.getItem('monthPrompt')
-      if (!localMonthPrompt || localMonthPrompt.id !== monthId) {
-        // 2- Check in the store prompt array
-        if (this._isLoaded === false) {
-          await this.fetchPrompts().then(() => this.fetchMonthPrompt())
-        }
-        let currentMonth = this._prompts.find((prompt) => prompt.id === monthId)
+      if (docSnap.exists()) {
+        const prompt = docSnap.data()
 
-        //if we do not have any prompt we fetch it by id (usefully if we have pagination in the future)
-        if (!currentMonth) {
-          await this.fetchPromptById(monthId)
-          currentMonth = this._prompts.find((prompt) => prompt.id === monthId)
-
-          // exit if we still do not have any prompt for the month
-          if (!currentMonth) {
-            return
+        prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+        if (prompt.entries?.length) {
+          for (const index in prompt.entries) {
+            prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+            prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
           }
         }
-        this._monthPrompt = currentMonth
 
-        // Load Current Month Prompt Entries
-        if (!this._monthPrompt.isEntriesFetched) {
-          await this.fetchPromptEntry(this._monthPrompt.id).then(() => this.fetchMonthPrompt())
-        }
-
-        // Set the local storage
-        LocalStorage.set('monthPrompt', this._monthPrompt)
+        console.log({ prompt })
+        this._monthPrompt = prompt
       } else {
-        this._monthPrompt = localMonthPrompt
-        this._prompts.push(localMonthPrompt)
+        // doc.data() will be undefined in this case
+        this._monthPrompt = {}
+        // TODO: fetch the previous month
+        console.log('No such document!')
       }
+
       this._isLoading = false
     },
     /**
@@ -156,36 +140,6 @@ export const usePromptStore = defineStore('prompts', {
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
-    },
-
-    async fetchPrompts() {
-      // TODO check if we have data updated before  all
-      this._isLoading = true
-      if (this._isLoaded === false) {
-        await getDocs(collection(db, 'prompts'))
-          .then(async (querySnapshot) => {
-            const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), isEntriesFetched: false }))
-
-            for (const prompt of prompts) {
-              prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-            }
-
-            prompts.reverse()
-
-            this._prompts = []
-            this.$patch({ _prompts: prompts })
-          })
-          .catch((error) => {
-            console.error(error)
-            throw new Error(error)
-          })
-          .finally(() => {
-            this._isLoading = false
-            this._isLoaded = true
-          })
-      } else {
-        this._isLoading = false
-      }
     },
 
     async fetchPromptEntry(promptId) {

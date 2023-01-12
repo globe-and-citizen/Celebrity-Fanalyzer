@@ -98,10 +98,9 @@
 <script setup>
 import { date, useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
-import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
-const emit = defineEmits(['hideDialog', 'submitted'])
+const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'info', 'slug', 'title'])
 
 const $q = useQuasar()
@@ -146,7 +145,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
+  prompt.slug = prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (!props.id && promptStore.getPrompts.find((p) => p.date === prompt.date)) {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
@@ -170,6 +169,5 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
-  emit('submitted')
 }
 </script>
