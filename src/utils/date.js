@@ -1,7 +1,7 @@
-export function shortMonthDay(timestamp) {
-  const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
-
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Nov 2
+export function monthYear(date) {
+  const [year, month] = date.split('-')
+  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
+  return `${monthName} ${year}`
 }
 
 export function shortMonthDayTime(timestamp) {
