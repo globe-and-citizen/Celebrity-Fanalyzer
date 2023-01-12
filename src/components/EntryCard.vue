@@ -77,7 +77,7 @@ import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'created', 'description', 'id', 'image', 'info', 'prompt', 'slug', 'title'])
+const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -98,7 +98,6 @@ watchEffect(() => {
     entry.description = ''
     entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
     entry.image = ''
-    entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     entry.title = ''
   }
 })

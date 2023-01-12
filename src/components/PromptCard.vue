@@ -101,7 +101,7 @@ import { usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
@@ -124,7 +124,6 @@ watchEffect(() => {
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
     prompt.image = ''
-    prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
   }
 })
