@@ -3,6 +3,7 @@ import { store } from 'quasar/wrappers'
 import { useAuthStore } from './auth'
 import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
+import { useLikeStore } from './likes'
 import { usePromptStore } from './prompts'
 import { useStatStore } from './stats'
 import { useUserStore } from './user'
@@ -24,4 +25,4 @@ export default store((/* { ssrContext } */) => {
   return pinia
 })
 
-export { useAuthStore, useCommentStore, useEntryStore, usePromptStore, useStatStore, useUserStore }
+export { useAuthStore, useCommentStore, useEntryStore, useLikeStore, usePromptStore, useStatStore, useUserStore }
