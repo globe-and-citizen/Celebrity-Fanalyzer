@@ -93,8 +93,46 @@ export const useLikeStore = defineStore('likes', {
       }
     },
 
-    async likeEntry(entryId) {},
+    async likeEntry(entryId) {
+      const userStore = useUserStore()
+      await userStore.loadBrowserId()
 
-    async dislikeEntry(entryId) {}
+      await setDoc(doc(db, 'entries', entryId, 'likes', userStore.getBrowserId), {
+        author: userStore.getUserRef,
+        createdAt: Date.now()
+      })
+      this._likes++
+
+      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', userStore.getBrowserId)
+      const dislikesSnap = await getDoc(dislikesRef)
+
+      if (dislikesSnap.exists()) {
+        await deleteDoc(dislikesRef)
+        this._dislikes--
+      }
+
+      this.countEntryLikes(entryId)
+    },
+
+    async dislikeEntry(entryId) {
+      const userStore = useUserStore()
+      await userStore.loadBrowserId()
+
+      await setDoc(doc(db, 'entries', entryId, 'dislikes', userStore.getBrowserId), {
+        author: userStore.getUserRef,
+        createdAt: Date.now()
+      })
+      this._dislikes++
+
+      const likesRef = doc(db, 'entries', entryId, 'likes', userStore.getBrowserId)
+      const likesSnap = await getDoc(likesRef)
+
+      if (likesSnap.exists()) {
+        await deleteDoc(likesRef)
+        this._likes--
+      }
+
+      this.countEntryLikes(entryId)
+    }
   }
 })

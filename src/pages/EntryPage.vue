@@ -87,6 +87,19 @@ onMounted(async () => {
   ]
 })
 
+likeStore.$subscribe((_mutation, state) => {
+  countLikes.value = state._likes
+  countDislikes.value = state._dislikes
+})
+
+function like() {
+  likeStore.likeEntry(article.value.id)
+}
+
+function dislike() {
+  likeStore.dislikeEntry(article.value.id)
+}
+
 function toggleComments() {
   showComments.value = !showComments.value
 }
