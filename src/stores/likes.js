@@ -77,7 +77,21 @@ export const useLikeStore = defineStore('likes', {
       this.countPromptLikes(promptId)
     },
 
-    async countEntryLikes(entryId) {},
+    async countEntryLikes(entryId) {
+      const likesCollection = collection(db, 'entries', entryId, 'likes')
+      const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
+
+      const snapshot = await getCountFromServer(likesCollection)
+      const dislikesSnapshot = await getCountFromServer(dislikesCollection)
+
+      this._likes = snapshot.data().count
+      this._dislikes = dislikesSnapshot.data().count
+
+      return {
+        likes: this._likes,
+        dislikes: this._dislikes
+      }
+    },
 
     async likeEntry(entryId) {},
 

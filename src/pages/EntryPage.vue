@@ -17,10 +17,10 @@
               {{ category }}
             </q-badge>
           </div>
-          <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="article.likesCount" @click="like()">
+          <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="countLikes" @click="like()">
             <q-tooltip>Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="article.dislikesCount" @click="dislike()">
+          <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
           <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
@@ -55,11 +55,13 @@ const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 
-const chartData = ref([])
-const tab = ref('entry')
 const article = ref({})
+const chartData = ref([])
 const comments = ref([])
+const countLikes = ref(0)
+const countDislikes = ref(0)
 const showComments = ref(false)
+const tab = ref('entry')
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
@@ -73,6 +75,16 @@ onMounted(async () => {
     router.push('/404')
     return
   }
+
+  await likeStore.countEntryLikes(article.value.id).then((res) => {
+    countLikes.value = res.likes
+    countDislikes.value = res.dislikes
+  })
+
+  chartData.value = [
+    { value: countLikes, name: 'Likes' },
+    { value: countDislikes, name: 'Dislikes' }
+  ]
 })
 
 function toggleComments() {
