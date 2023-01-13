@@ -77,14 +77,10 @@ export const useLikeStore = defineStore('likes', {
       this.countPromptLikes(promptId)
     },
 
-    async removeLikePrompt(promptId) {},
-
     async countEntryLikes(entryId) {},
 
     async likeEntry(entryId) {},
 
-    async dislikeEntry(entryId) {},
-
-    async removeLikeEntry(entryId) {}
+    async dislikeEntry(entryId) {}
   }
 })
