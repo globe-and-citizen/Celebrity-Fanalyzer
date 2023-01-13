@@ -1,4 +1,4 @@
-import { collection, doc, getCountFromServer, setDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDoc, setDoc } from "firebase/firestore";
 import { defineStore } from 'pinia'
 import { db } from '../firebase'
 import { useUserStore } from './user'
@@ -36,15 +36,19 @@ export const useLikeStore = defineStore('likes', {
       await userStore.loadBrowserId()
 
       const docSnap = doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
-
       await setDoc(docSnap, {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
 
-      this._likes++
+      // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
+      const dislikesSnap= doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
+      const dislikesDoc = await getDoc(dislikesSnap)
 
-      // TODO: check if the same browserId exists in dislikes collection. If true, remove from there
+      if(dislikesDoc.exists()){
+        await deleteDoc(dislikesSnap)
+      }
+      this._likes++
     },
 
     async dislikePrompt(promptId) {},
