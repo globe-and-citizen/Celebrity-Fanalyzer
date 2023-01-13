@@ -3,17 +3,17 @@
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!article && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
 
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
-        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="article?.image" />
+        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
-          <h1 class="q-mt-none text-bold text-h5">{{ article.title }}</h1>
-          <p class="text-body1" v-html="article.description"></p>
+          <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
+          <p class="text-body1" v-html="entry.description"></p>
           <div class="q-mb-md">
-            <q-badge v-for="(category, index) of article.categories" class="q-mx-xs" :key="index" rounded>
+            <q-badge v-for="(category, index) of entry.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
             </q-badge>
           </div>
@@ -23,7 +23,7 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="article.info?.comments" @click="toggleComments()">
+          <q-btn flat rounded icon="chat_bubble_outline" :label="entry.info?.comments" @click="toggleComments()">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :count="0"></ShareComponent>
@@ -55,11 +55,11 @@ const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 
-const article = ref({})
 const chartData = ref([])
 const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
+const entry = ref({})
 const showComments = ref(false)
 const tab = ref('entry')
 
@@ -67,16 +67,16 @@ onMounted(async () => {
   if (router.currentRoute.value.params.id) {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
-      .then((res) => (article.value = res))
-      .catch(() => (article.value = null))
+      .then((res) => (entry.value = res))
+      .catch(() => (entry.value = null))
   }
 
-  if (!article.value) {
+  if (!entry.value) {
     router.push('/404')
     return
   }
 
-  await likeStore.countEntryLikes(article.value.id).then((res) => {
+  await likeStore.countEntryLikes(entry.value.id).then((res) => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
@@ -93,11 +93,11 @@ likeStore.$subscribe((_mutation, state) => {
 })
 
 function like() {
-  likeStore.likeEntry(article.value.id)
+  likeStore.likeEntry(entry.value.id)
 }
 
 function dislike() {
-  likeStore.dislikeEntry(article.value.id)
+  likeStore.dislikeEntry(entry.value.id)
 }
 
 function toggleComments() {
