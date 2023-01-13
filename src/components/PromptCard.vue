@@ -76,14 +76,10 @@
           use-chips
           :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
           v-model="prompt.categories"
-        >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-grey">No results</q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" />
+        />
+        <div class="text-center">
+          <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+        </div>
         <q-btn
           class="full-width q-mt-xl"
           color="primary"

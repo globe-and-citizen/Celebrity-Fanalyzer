@@ -56,7 +56,9 @@
             <q-icon name="image" />
           </template>
         </q-file>
-        <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" />
+        <div class="text-center">
+          <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+        </div>
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
