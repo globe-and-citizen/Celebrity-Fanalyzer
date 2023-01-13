@@ -114,8 +114,8 @@ onMounted(async () => {
   })
 
   chartData.value = [
-    { value: prompt.value.likesCount, name: 'Likes' },
-    { value: prompt.value.dislikesCount, name: 'Dislikes' }
+    { value: countLikes, name: 'Likes' },
+    { value: countDislikes, name: 'Dislikes' }
   ]
 })
 
