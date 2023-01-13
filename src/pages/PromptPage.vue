@@ -117,10 +117,6 @@ onMounted(async () => {
     { value: prompt.value.likesCount, name: 'Likes' },
     { value: prompt.value.dislikesCount, name: 'Dislikes' }
   ]
-
-  // Call of refresh promptOpinion to have likes and dislikes count
-  // await promptStore.refreshPromptOpinion(prompt.value.id)
-  // prompt.value = promptStore.getPromptById(prompt.value.id)
 })
 
 likeStore.$subscribe((_mutation, state) => {
@@ -133,11 +129,7 @@ function like() {
 }
 
 function dislike() {
-  // TODO: complete dislike function
-  const id = prompt.value.id
-  promptStore.addDislike(id).then(() => {
-    prompt.value = promptStore.getPromptById(id)
-  })
+  likeStore.dislikePrompt(prompt.value.id)
 }
 </script>
 
