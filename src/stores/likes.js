@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getCountFromServer, getDoc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { db } from '../firebase'
-import { useUserStore } from './user'
+import { db } from 'src/firebase'
+import { useUserStore } from 'src/stores'
 
 export const useLikeStore = defineStore('likes', {
   state: () => ({
