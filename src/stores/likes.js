@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDoc, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getCountFromServer, getDoc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from '../firebase'
 import { useUserStore } from './user'
@@ -24,53 +24,57 @@ export const useLikeStore = defineStore('likes', {
       const snapshot = await getCountFromServer(likesCollection)
       const dislikesSnapshot = await getCountFromServer(dislikesCollection)
 
+      this._likes = snapshot.data().count
+      this._dislikes = dislikesSnapshot.data().count
+
       return {
-        likes: snapshot.data().count,
-        dislikes: dislikesSnapshot.data().count
+        likes: this._likes,
+        dislikes: this._dislikes
       }
     },
 
     async likePrompt(promptId) {
       const userStore = useUserStore()
-
       await userStore.loadBrowserId()
 
-      const docSnap = doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
-      await setDoc(docSnap, {
+      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
+      this._likes++
 
       // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
-      const dislikesSnap= doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
-      const dislikesDoc = await getDoc(dislikesSnap)
+      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
+      const dislikesSnap = await getDoc(dislikesRef)
 
-      if(dislikesDoc.exists()){
-        await deleteDoc(dislikesSnap)
+      if (dislikesSnap.exists()) {
+        await deleteDoc(dislikesRef)
+        this._dislikes--
       }
-      this._likes++
+
+      this.countPromptLikes(promptId)
     },
 
     async dislikePrompt(promptId) {
-
       const userStore = useUserStore()
-
       await userStore.loadBrowserId()
 
-      const docSnap = doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
-      await setDoc(docSnap, {
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
+      this._dislikes++
 
       // Check if the same browserId exists in likes collection. If true, remove the current like from there
-      const likesSnap= doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
-      const likesDoc = await getDoc(likesSnap)
+      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
+      const likesSnap = await getDoc(likesRef)
 
-      if(likesDoc.exists()){
-        await deleteDoc(likesSnap)
+      if (likesSnap.exists()) {
+        await deleteDoc(likesRef)
+        this._likes--
       }
-      this._dislikes++
+
+      this.countPromptLikes(promptId)
     },
 
     async removeLikePrompt(promptId) {},
