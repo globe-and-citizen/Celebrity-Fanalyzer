@@ -20,8 +20,7 @@ import { usePromptStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _isLoading: false,
-    _entries: []
+    _isLoading: false
   }),
 
   getters: {
@@ -36,9 +35,8 @@ export const useEntryStore = defineStore('entries', {
 
   actions: {
     async fetchEntryBySlug(slug) {
-      const q = query(collection(db, 'entries'), where('slug', '==', slug))
       this._isLoading = true
-      const querySnapshot = await getDocs(q)
+      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
 
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
@@ -49,16 +47,13 @@ export const useEntryStore = defineStore('entries', {
 
       return entry
     },
-    async addEntryToStore(entries) {},
 
     async fetchEntries(promptId) {
       const promptStore = usePromptStore()
       const promptRef = promptStore.getPromptRef(promptId)
 
-      const q = query(collection(db, 'entries'), where('prompt', '==', promptRef))
-
       this._isLoading = true
-      const querySnapshot = await getDocs(q)
+      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('prompt', '==', promptRef)))
       try {
         const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 

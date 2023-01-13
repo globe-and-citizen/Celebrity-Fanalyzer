@@ -43,17 +43,16 @@
 
 <script setup>
 import BarGraph from 'src/components/BarGraph.vue'
-import TheComments from 'src/components/TheComments.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import TheComments from 'src/components/TheComments.vue'
+import { useEntryStore, useLikeStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { collection, getCountFromServer, query, where } from 'firebase/firestore'
-import { db } from 'src/firebase'
 
 const router = useRouter()
 
 const entryStore = useEntryStore()
+const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 
 const chartData = ref([])
@@ -63,68 +62,18 @@ const comments = ref([])
 const showComments = ref(false)
 
 onMounted(async () => {
-  const promptDate = `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`
-  await promptStore.fetchPromptById(promptDate)
-  const prompt = promptStore.getPromptById(promptDate)
-  await promptStore.fetchPromptEntry(prompt.id)
-  // Fetch his entries
-  // And use his entries.
-  const entrySlug = router.currentRoute.value.href
-  if (!prompt) {
-    await router.push('/404')
-  }
-  article.value = prompt.entries.find((entry) => entry.slug === entrySlug)
-
-  if (article.value) {
-    updateChartData()
-  } else {
-    await router.push('/404')
+  if (router.currentRoute.value.params.id) {
+    await entryStore
+      .fetchEntryBySlug(router.currentRoute.value.href)
+      .then((res) => (article.value = res))
+      .catch(() => (article.value = null))
   }
 
-  await reloadLikesDislikesCount()
+  if (!article.value) {
+    router.push('/404')
+    return
+  }
 })
-
-function updateChartData() {
-  chartData.value = [
-    { value: article.value.likesCount, name: 'Likes' },
-    { value: article.value.dislikesCount, name: 'Dislikes' }
-  ]
-}
-async function like() {
-  const id = article.value.id
-  await entryStore
-    .addLike(id)
-    .then(async () => {
-      await reloadLikesDislikesCount()
-    })
-    .catch((error) => {
-      console.error('Error on like', error)
-    })
-}
-
-async function reloadLikesDislikesCount() {
-  const likeQuery_ = query(collection(db, 'entries', article.value.id, 'opinions'), where('liked', '==', true))
-  const dislikeQuery_ = query(collection(db, 'entries', article.value.id, 'opinions'), where('liked', '==', false))
-
-  const likeSnapshot = await getCountFromServer(likeQuery_)
-  const dislikeSnapshot = await getCountFromServer(dislikeQuery_)
-
-  const likesCount = likeSnapshot.data().count
-  const dislikesCount = dislikeSnapshot.data().count
-  article.value = { ...article.value, likesCount, dislikesCount }
-}
-
-function dislike() {
-  const id = article.value.id
-  entryStore
-    .addDislike(id)
-    .then(async () => {
-      await reloadLikesDislikesCount()
-    })
-    .catch((error) => {
-      console.error('Error on like', error)
-    })
-}
 
 function toggleComments() {
   showComments.value = !showComments.value
