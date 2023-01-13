@@ -65,10 +65,13 @@
         <q-select
           behavior="menu"
           counter
+          hide-dropdown-icon
           hide-hint
+          hint="Click Enter ↵ to add a new category"
+          input-debounce="0"
           label="Categories"
           multiple
-          :options="categoryOptions"
+          new-value-mode="add-unique"
           use-input
           use-chips
           :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
@@ -106,7 +109,6 @@ const props = defineProps(['author', 'categories', 'created', 'date', 'descripti
 const $q = useQuasar()
 const promptStore = usePromptStore()
 
-const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const dataKey = ref(Date.now())
 const imageModel = ref([])
 const prompt = reactive({})
