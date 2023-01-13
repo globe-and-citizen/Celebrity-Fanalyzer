@@ -51,7 +51,27 @@ export const useLikeStore = defineStore('likes', {
       this._likes++
     },
 
-    async dislikePrompt(promptId) {},
+    async dislikePrompt(promptId) {
+
+      const userStore = useUserStore()
+
+      await userStore.loadBrowserId()
+
+      const docSnap = doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
+      await setDoc(docSnap, {
+        author: userStore.getUserRef,
+        createdAt: Date.now()
+      })
+
+      // Check if the same browserId exists in likes collection. If true, remove the current like from there
+      const likesSnap= doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
+      const likesDoc = await getDoc(likesSnap)
+
+      if(likesDoc.exists()){
+        await deleteDoc(likesSnap)
+      }
+      this._dislikes++
+    },
 
     async removeLikePrompt(promptId) {},
 
