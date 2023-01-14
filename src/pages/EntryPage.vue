@@ -44,12 +44,8 @@
 <script setup>
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-<<<<<<< HEAD
-import { useEntryStore, usePromptStore, useCommentStore } from 'src/stores'
-=======
 import TheComments from 'src/components/TheComments.vue'
-import { useEntryStore, useLikeStore, usePromptStore } from 'src/stores'
->>>>>>> develop
+import { useEntryStore, useLikeStore, usePromptStore, useCommentStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -76,18 +72,10 @@ onMounted(async () => {
       .catch(() => (entry.value = null))
   }
 
-<<<<<<< HEAD
-  await commentStore.fetchComments(router.currentRoute.value.href).then((res) => (comments.value = res))
-  console.log(comments.value)
-})
-
-commentStore.$subscribe((_mutation, state) => {
-  comments.value = state._comments
-=======
-  if (!entry.value) {
-    router.push('/404')
-    return
-  }
+  await commentStore
+    .fetchComments(router.currentRoute.value.href)
+    .then((res) => (comments.value = res))
+    console.log(comments.value)
 
   await likeStore.countEntryLikes(entry.value.id).then((res) => {
     countLikes.value = res.likes
@@ -98,7 +86,14 @@ commentStore.$subscribe((_mutation, state) => {
     { value: countLikes, name: 'Likes' },
     { value: countDislikes, name: 'Dislikes' }
   ]
->>>>>>> develop
+})
+
+commentStore.$subscribe((_mutation, state) => {
+  comments.value = state._comments
+  if (!entry.value) {
+    router.push('/404')
+    return
+  }
 })
 
 likeStore.$subscribe((_mutation, state) => {
