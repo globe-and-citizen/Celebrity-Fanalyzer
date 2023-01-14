@@ -59,7 +59,7 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
-const myComment = reactive({ })
+const myComment = reactive({})
 const commentStore = useCommentStore()
 
 async function sendComment() {
