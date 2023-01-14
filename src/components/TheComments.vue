@@ -1,16 +1,19 @@
 <template>
   <section class="q-pa-md">
-    <div v-for="comment of comments" class="flex items-center" :key="comment.id">
+    <div v-for="comment of comments" class="flex items-center q-mb-md" :key="comment.id">
       <q-avatar size="2.6rem">
-        <!-- <q-img :src="comment.author.photoURL" /> -->
+        <q-img :src="comment.author.photoURL" />
       </q-avatar>
       <p class="column q-mb-none q-ml-sm">
-        <!-- <span class="text-body1">{{ comment.author.displayName }}</span> -->
+        <span class="text-body1">{{ comment.author.displayName }}</span>
         <span class="text-body2 text-secondary">
-          <!-- {{ comment.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} -->
+          {{ comment.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
         </span>
       </p>
       <q-space />
+      <div class="q-my-sm">
+        {{ comment.text }}
+      </div>
       <q-btn-dropdown color="secondary" dense dropdown-icon="more_vert" flat rounded>
         <q-list>
           <q-item clickable v-close-popup @click.prevent="">
@@ -25,9 +28,6 @@
           </q-item>
         </q-list>
       </q-btn-dropdown>
-      <div class="q-my-sm">
-        {{ comment.text }}
-      </div>
     </div>
     <q-separator />
     <q-input
@@ -59,7 +59,7 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
-const myComment = reactive({ text: '' })
+const myComment = reactive({ })
 const commentStore = useCommentStore()
 
 async function sendComment() {

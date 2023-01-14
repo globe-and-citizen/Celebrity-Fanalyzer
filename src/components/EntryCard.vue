@@ -79,11 +79,7 @@ import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-<<<<<<< HEAD
 const props = defineProps(['id', 'description', 'author', 'created', 'image', 'info', 'prompt', 'slug', 'title'])
-=======
-const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
->>>>>>> develop
 
 const $q = useQuasar()
 const entryStore = useEntryStore()

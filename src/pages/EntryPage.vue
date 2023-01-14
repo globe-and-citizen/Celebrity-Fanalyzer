@@ -2,6 +2,7 @@
   <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
 
@@ -29,13 +30,18 @@
           <ShareComponent :count="0"></ShareComponent>
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <TheComments :comments="comments" v-show="showComments" />
+
         <q-separator />
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
         <BarGraph :data="chartData" title="Likes & Dislikes" />
+      </q-page>
+    </q-tab-panel>
+    <q-tab-panel name="comments" class="bg-white">
+      <q-page>
+        <TheComments :comments="comments" :entry="entry" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -75,7 +81,7 @@ onMounted(async () => {
   await commentStore
     .fetchComments(router.currentRoute.value.href)
     .then((res) => (comments.value = res))
-    console.log(comments.value)
+    console.log("Fetching Comments", comments.value)
 
   await likeStore.countEntryLikes(entry.value.id).then((res) => {
     countLikes.value = res.likes
@@ -88,13 +94,14 @@ onMounted(async () => {
   ]
 })
 
-commentStore.$subscribe((_mutation, state) => {
-  comments.value = state._comments
-  if (!entry.value) {
-    router.push('/404')
-    return
-  }
-})
+// commentStore.$subscribe((_mutation, state) => {
+//   comments.value = state._comments
+//   console.log('Subscribe', comments.value)
+//   if (!entry.value) {
+//     router.push('/404')
+//     return
+//   }
+// })
 
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes

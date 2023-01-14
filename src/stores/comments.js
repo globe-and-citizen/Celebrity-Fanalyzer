@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, setDoc, where, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -29,11 +29,14 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = false
 
-       const c = query(collection(db, "entries", entry.id, "comments"))
-       const snap = await getDocs(c)
-       const comment = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const c = query(collection(db, "entries", entry.id, "comments"))
+      const snap = await getDocs(c)
+      const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      for (const comment of comments) {
+        comment.author = await getDoc(comment.author).then((doc) => doc.data())
+      }
 
-       return comment
+      return comments
 
     },
 
@@ -42,8 +45,9 @@ export const useCommentStore = defineStore('comments', {
 
       comment.author = userStore.getUserRef
       comment.id = new Date().toJSON()
+      comment.created = Timestamp.fromDate(new Date())
 
-      console.log('entry.id', entry.id)
+      console.log( comment.author )
       console.log({ comment })
 
       this._isLoading = true
