@@ -24,7 +24,7 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="entry.info?.comments" @click="toggleComments()">
+          <q-btn flat rounded icon="chat_bubble_outline" :label="comments.length" @click="toggleComments()">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :count="0"></ShareComponent>
@@ -67,7 +67,6 @@ const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const entry = ref({})
-const showComments = ref(false)
 const tab = ref('entry')
 
 onMounted(async () => {
@@ -78,15 +77,18 @@ onMounted(async () => {
       .catch(() => (entry.value = null))
   }
 
-  await commentStore
-    .fetchComments(router.currentRoute.value.href)
-    .then((res) => (comments.value = res))
-    console.log("Fetching Comments", comments.value)
+  await commentStore.fetchComments(router.currentRoute.value.href)
+  comments.value = commentStore.getComments
 
   await likeStore.countEntryLikes(entry.value.id).then((res) => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
+
+  if (!entry.value) {
+    router.push('/404')
+    return
+  }
 
   chartData.value = [
     { value: countLikes, name: 'Likes' },
@@ -94,14 +96,9 @@ onMounted(async () => {
   ]
 })
 
-// commentStore.$subscribe((_mutation, state) => {
-//   comments.value = state._comments
-//   console.log('Subscribe', comments.value)
-//   if (!entry.value) {
-//     router.push('/404')
-//     return
-//   }
-// })
+commentStore.$subscribe((_mutation, state) => {
+  comments.value = state._comments
+})
 
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes
@@ -117,7 +114,7 @@ function dislike() {
 }
 
 function toggleComments() {
-  showComments.value = !showComments.value
+  tab.value = 'comments'
 }
 </script>
 
