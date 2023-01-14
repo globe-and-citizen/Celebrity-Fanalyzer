@@ -9,32 +9,31 @@
       <q-page class="bg-white">
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
-          <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
-          <p class="text-body1" v-html="prompt.description"></p>
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
+          <p class="text-body1" v-html="prompt?.description"></p>
           <div class="q-mb-md">
-            <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
+            <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
             </q-badge>
           </div>
           <div class="inline-block">
             <q-btn
               color="green"
-              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              :disable="promptStore.isLoading"
               flat
               icon="sentiment_satisfied_alt"
-              :label="prompt.info?.likes.length"
+              :label="countLikes"
               rounded
               @click="like()"
             >
               <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
             </q-btn>
-            <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
             <q-btn
               color="red"
-              :disable="!userStore.isAuthenticated || promptStore.isLoading"
+              :disable="promptStore.isLoading"
               flat
               icon="sentiment_very_dissatisfied"
-              :label="prompt.info?.dislikes.length"
+              :label="countDislikes"
               rounded
               @click="dislike()"
             >
@@ -54,7 +53,7 @@
           <ShareComponent :count="0"></ShareComponent>
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <TheEntries :entries="prompt.entries" />
+        <TheEntries :entries="prompt?.entries" />
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
@@ -66,127 +65,71 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
 import BarGraph from 'src/components/BarGraph.vue'
-import TheEntries from 'src/components/TheEntries.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
-import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
+import TheEntries from 'src/components/TheEntries.vue'
+import { useLikeStore, usePromptStore, useStatStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const $q = useQuasar()
 const router = useRouter()
 
+const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const statStore = useStatStore()
-const userStore = useUserStore()
 
 const chartData = ref([])
+const countLikes = ref(0)
+const countDislikes = ref(0)
 const prompt = ref({})
 const tab = ref('prompt')
 
 onMounted(async () => {
-  statStore.fetchStats()
-
+  // statStore.fetchStats() // uncomment when stats are ready
+  // TODO: Check the local prompts here, if they exist then use them inside the 'ifs' instead of fetching again
   if (router.currentRoute.value.href === '/month') {
-    if (!promptStore.getMonthPrompt) await promptStore.fetchMonthPrompt()
+    await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
   }
-
-  if (promptStore.getPrompts.length) {
-    promptStore.getPrompts.find((p) => {
-      if (
-        p.id === `${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}` ||
-        p.slug === router.currentRoute.value.params.slug
-      ) {
-        prompt.value = p
-        updateChartData()
-      }
-    })
-    return
-  }
-  await updatePrompt()
-
-  if (prompt.value) {
-    updateChartData()
-  }
-})
-
-function updateChartData() {
-  chartData.value = [
-    { value: prompt.value.info?.likes.length, name: 'Likes' },
-    { value: prompt.value.info?.dislikes.length, name: 'Disikes' }
-  ]
-}
-
-async function updatePrompt() {
   if (router.currentRoute.value.params.year) {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
+      .catch(() => (prompt.value = null))
   }
   if (router.currentRoute.value.params.slug) {
     await promptStore
       .fetchPromptBySlug(router.currentRoute.value.params.slug)
       .then((res) => (prompt.value = res))
-      .catch(() => router.push('/404'))
+      .catch(() => (prompt.value = null))
   }
-  updateChartData()
-}
+  if (!prompt.value) {
+    router.push('/404')
+    return
+  }
+
+  await likeStore.countPromptLikes(prompt.value.id).then((res) => {
+    countLikes.value = res.likes
+    countDislikes.value = res.dislikes
+  })
+
+  chartData.value = [
+    { value: countLikes, name: 'Likes' },
+    { value: countDislikes, name: 'Dislikes' }
+  ]
+})
+
+likeStore.$subscribe((_mutation, state) => {
+  countLikes.value = state._likes
+  countDislikes.value = state._dislikes
+})
 
 function like() {
-  promptStore.addLike(prompt.value.id).then(() => updatePrompt())
+  likeStore.likePrompt(prompt.value.id)
 }
 
 function dislike() {
-  promptStore.addDislike(prompt.value.id).then(() => updatePrompt())
-}
-
-function sharePrompt(grid) {
-  $q.bottomSheet({
-    message: 'Share with Social Media',
-    grid,
-    actions: [
-      { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
-      {
-        label: 'Facebook',
-        img: '/icons/facebook.svg',
-        id: 'facebook',
-        link: 'https://facebook.com/sharer/sharer.php?u='
-      },
-      {
-        label: 'LinkedIn',
-        img: '/icons/linkedin.svg',
-        id: 'linkedin',
-        link: 'https://linkedin.com/sharing/share-offsite/?url='
-      },
-      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
-      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
-      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
-      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
-      {
-        label: 'Pinterest',
-        img: '/icons/pinterest.svg',
-        id: 'pinterest',
-        link: 'https://pinterest.com/pin/create/button/?url='
-      },
-      {
-        label: 'Odnoklassniki',
-        img: '/icons/odnoklassniki.svg',
-        id: 'odnoklassniki',
-        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
-      }
-    ]
-  }).onOk((action) => {
-    if (action.id === 'clipboard') {
-      navigator.clipboard.writeText(window.location.href)
-    } else if (action.id === 'facebook' || action.id === 'linkedin') {
-      window.open(action.link + `${window.location.href}`, '_blank')
-    } else {
-      window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
-    }
-  })
+  likeStore.dislikePrompt(prompt.value.id)
 }
 </script>
 

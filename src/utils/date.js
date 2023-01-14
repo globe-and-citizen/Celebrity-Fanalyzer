@@ -1,7 +1,13 @@
-export function shortMonthDay(timestamp) {
-  const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
+export function monthYear(date) {
+  const [year, month] = date.split('-')
+  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
+  return `${monthName} ${year}` // Dec 2022
+}
 
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Nov 2
+export function monthDay(date) {
+  const seconds = date.split('T')[1]
+  const dateObj = new Date(seconds * 1000)
+  return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Dec 10
 }
 
 export function shortMonthDayTime(timestamp) {
@@ -11,4 +17,15 @@ export function shortMonthDayTime(timestamp) {
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false })
     .split(', ')
     .join(' - ') // Dec 10 - 14:18
+}
+
+export function currentYearMonth() {
+  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
+}
+
+export function previousYearMonth() {
+  const date = new Date()
+  date.setMonth(date.getMonth() - 1)
+
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
 }

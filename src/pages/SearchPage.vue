@@ -76,6 +76,7 @@ const categories = ref([
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
+    // TODO: we will need Entries here to be used in the search
     await promptStore.fetchPromptsAndEntries()
   }
   prompts.value = promptStore.getPrompts

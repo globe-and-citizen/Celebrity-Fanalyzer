@@ -10,7 +10,7 @@ import { useQuasar } from 'quasar'
 const $q = useQuasar()
 
 const props = defineProps({
-  count: Number,
+  count: Number
 })
 
 function sharePrompt(grid) {

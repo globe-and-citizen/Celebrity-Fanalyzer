@@ -56,7 +56,9 @@
             <q-icon name="image" />
           </template>
         </q-file>
-        <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" />
+        <div class="text-center">
+          <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+        </div>
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
@@ -77,7 +79,11 @@ import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
+<<<<<<< HEAD
 const props = defineProps(['id', 'description', 'author', 'created', 'image', 'info', 'prompt', 'slug', 'title'])
+=======
+const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
+>>>>>>> develop
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -98,7 +104,6 @@ watchEffect(() => {
     entry.description = ''
     entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
     entry.image = ''
-    entry.info = { comments: 0, dislikes: [], likes: [], shares: 0 }
     entry.title = ''
   }
 })
@@ -136,10 +141,3 @@ async function onSubmit() {
   emit('hideDialog')
 }
 </script>
-
-<style scoped>
-.q-img {
-  max-height: 20rem;
-  object-fit: cover;
-}
-</style>

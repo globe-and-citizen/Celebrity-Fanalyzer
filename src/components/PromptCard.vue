@@ -65,22 +65,21 @@
         <q-select
           behavior="menu"
           counter
+          hide-dropdown-icon
           hide-hint
+          hint="Click Enter ↵ to add a new category"
+          input-debounce="0"
           label="Categories"
           multiple
-          :options="categoryOptions"
+          new-value-mode="add-unique"
           use-input
           use-chips
           :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
           v-model="prompt.categories"
-        >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-grey">No results</q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" />
+        />
+        <div class="text-center">
+          <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+        </div>
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
@@ -98,16 +97,14 @@
 <script setup>
 import { date, useQuasar } from 'quasar'
 import { usePromptStore } from 'src/stores'
-import { shortMonthDay } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'info', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
 
-const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const dataKey = ref(Date.now())
 const imageModel = ref([])
 const prompt = reactive({})
@@ -125,7 +122,6 @@ watchEffect(() => {
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''
     prompt.image = ''
-    prompt.info = { dislikes: [], likes: [], shares: 0 }
     prompt.title = ''
   }
 })
@@ -146,7 +142,7 @@ function onRejected() {
 }
 
 async function onSubmit() {
-  prompt.slug = `${shortMonthDay()}-${prompt.title}`.toLowerCase().replace(/[^0-9a-z]+/g, '-')
+  prompt.slug = prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (!props.id && promptStore.getPrompts.find((p) => p.date === prompt.date)) {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
@@ -172,10 +168,3 @@ async function onSubmit() {
   emit('hideDialog')
 }
 </script>
-
-<style scoped>
-.q-img {
-  max-height: 20rem;
-  object-fit: cover;
-}
-</style>

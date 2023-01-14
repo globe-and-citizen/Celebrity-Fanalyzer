@@ -1,24 +1,22 @@
+import 'firebase/firestore'
 import {
-  arrayRemove,
-  arrayUnion,
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
-  limit,
-  orderBy,
   query,
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc,
   where
 } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -31,28 +29,69 @@ export const usePromptStore = defineStore('prompts', {
     getMonthPrompt: (state) => state._monthPrompt,
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
+    getPromptById: (state) => (promptId) => {
+      if (state._prompts !== []) return state._prompts.find((prompt) => prompt.id === promptId)
+      return {}
+    },
+    getPromptBySlug: (state) => (promptSlug) => {
+      if (state._prompts !== []) return state._prompts.find((prompt) => prompt.slug === promptSlug)
+      return {}
+    },
     isLoading: (state) => state._isLoading
   },
 
   actions: {
+    /**
+     * Fetch the current month prompt and set the value in the store :
+     * Checking if we have a data in the store.
+     * Check if we have data in the local storage.
+     * Fetch the data form firebase if 1-2 is false.
+     * @returns {Promise<void>}
+     */
     async fetchMonthPrompt() {
-      const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
-      const querySnapshot = await getDocs(q)
-
-      const monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+      const currentMonthId = currentYearMonth()
+      const previousMonthId = previousYearMonth()
 
       this._isLoading = true
-      for (const index in monthPrompt.entries) {
-        monthPrompt.entries[index] = await getDoc(monthPrompt.entries[index]).then((doc) => doc.data())
-        monthPrompt.entries[index].author = await getDoc(monthPrompt.entries[index].author).then((doc) => doc.data())
+      const docSnap = await getDoc(doc(db, 'prompts', currentMonthId))
+
+      if (docSnap.exists()) {
+        const prompt = docSnap.data()
+
+        prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+        if (prompt.entries?.length) {
+          for (const index in prompt.entries) {
+            prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+            prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+          }
+        }
+        this._monthPrompt = prompt
+      } else {
+        await getDoc(doc(db, 'prompts', previousMonthId))
+          .then(async (doc) => {
+            const prompt = { id: doc.id, ...doc.data() }
+
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            if (prompt.entries?.length) {
+              for (const index in prompt.entries) {
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+              }
+            }
+            this._monthPrompt = prompt
+          })
+          .catch((err) => {
+            console.error(err)
+            throw new Error('Document not found.')
+          })
       }
-
       this._isLoading = false
-
-      this.$patch({ _monthPrompt: monthPrompt })
-      return monthPrompt
     },
-
+    /**
+     * Fetch prompt By id if it's not exist or reload it if it's exist
+     * @param promptId
+     * @returns {Promise<void>}
+     */
     async fetchPromptById(id) {
       this._isLoading = true
       return await getDoc(doc(db, 'prompts', id))
@@ -121,26 +160,32 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchPrompts() {
+    async fetchPromptEntry(promptId) {
       this._isLoading = true
-      await getDocs(collection(db, 'prompts'))
-        .then(async (querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      let currentPrompt = this.getPromptById(promptId)
+      if (!currentPrompt) {
+        await this.fetchPromptById(promptId)
+        let currentPrompt = this.getPromptById(promptId)
+        if (!currentPrompt) {
+          return
+        }
+      }
 
-          for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-          }
+      // Fetch the entries if they are not already fetched.
+      if (currentPrompt.entries && currentPrompt.isEntriesFetched === false) {
+        for (const index in currentPrompt.entries) {
+          currentPrompt.entries[index] = await getDoc(currentPrompt.entries[index]).then((doc) => doc.data())
+          currentPrompt.entries[index].author = await getDoc(currentPrompt.entries[index].author).then((doc) => doc.data())
+        }
+      }
 
-          prompts.reverse()
+      // Confirm that this Prompt Entry is fetched
+      currentPrompt.isEntriesFetched = true
 
-          this._prompts = []
-          this.$patch({ _prompts: prompts })
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      // Update the current Prompt in the prompt list
+      const promptIndex = this._prompts.findIndex((prompt) => prompt.id === promptId)
+      this._prompts[promptIndex] = currentPrompt
+      this._isLoading = false
     },
 
     async fetchPromptsAndEntries() {
@@ -245,35 +290,76 @@ export const usePromptStore = defineStore('prompts', {
       return getDownloadURL(ref(storage, storageRef))
     },
 
-    async addLike(id) {
-      this._prompts = []
-      this.$patch({ _prompts: this.getPrompts })
-
+    async addLike(promptId) {
       this._isLoading = true
-      await updateDoc(doc(db, 'prompts', id), {
-        'info.likes': arrayUnion(useUserStore().getUserRef),
-        'info.dislikes': arrayRemove(useUserStore().getUserRef)
-      })
-        .then(() => this.fetchPromptById(id))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
+      await useUserStore().loadBrowserId()
+      const browserId = useUserStore().getBrowserId
+      const userOpinionRef = doc(db, 'prompts', promptId, 'opinions', browserId)
+      // First load prompt stored in the store
+      let userOpinion = await getDoc(userOpinionRef).then((doc) => doc.data())
+      if (userOpinion && !userOpinion.liked) {
+        await setDoc(userOpinionRef, { ...userOpinion, liked: true, updatedAd: Date.now() })
+      } else if (!userOpinion) {
+        await setDoc(userOpinionRef, {
+          liked: true,
+          createdAt: Date.now(),
+          updatedAd: Date.now()
         })
-        .finally(() => (this._isLoading = false))
+      }
+
+      await this.refreshPromptOpinion(promptId)
+      this._isLoading = false
     },
 
-    async addDislike(id) {
+    async addDislike(promptId) {
       this._isLoading = true
-      await updateDoc(doc(db, 'prompts', id), {
-        'info.dislikes': arrayUnion(useUserStore().getUserRef),
-        'info.likes': arrayRemove(useUserStore().getUserRef)
-      })
-        .then(() => this.fetchPromptById(id))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
+      let browserId
+      await useUserStore()
+        .loadBrowserId()
+        .then(() => {
+          browserId = useUserStore().getBrowserId
         })
-        .finally(() => (this._isLoading = false))
+      const userOpinionRef = doc(db, 'prompts', promptId, 'opinions', browserId)
+      // First load prompt stored in the store
+      let userOpinion = await getDoc(userOpinionRef).then((doc) => doc.data())
+      if (userOpinion && userOpinion.liked) {
+        await setDoc(userOpinionRef, { ...userOpinion, liked: false, updatedAd: Date.now() })
+      } else if (!userOpinion) {
+        await setDoc(userOpinionRef, {
+          liked: true,
+          createdAt: Date.now(),
+          updatedAd: Date.now()
+        })
+      }
+      await this.refreshPromptOpinion(promptId)
+      this._isLoading = false
+    },
+    /**
+     *
+     * @param promptId
+     * @returns {Promise<void>}
+     */
+    async refreshPromptOpinion(promptId) {
+      this._isLoading = true
+      const likeQuery_ = query(collection(db, 'prompts', promptId, 'opinions'), where('liked', '==', true))
+      const dislikeQuery_ = query(collection(db, 'prompts', promptId, 'opinions'), where('liked', '==', false))
+
+      const likeSnapshot = await getCountFromServer(likeQuery_)
+      const dislikeSnapshot = await getCountFromServer(dislikeQuery_)
+
+      const likesCount = likeSnapshot.data().count
+      const dislikesCount = dislikeSnapshot.data().count
+
+      const index = this._prompts.findIndex((prompt) => {
+        return prompt.id === promptId
+      })
+
+      let statePrompt = this.getPromptById(promptId)
+      if (index >= 0 && statePrompt !== {}) {
+        this._prompts[index] = { ...statePrompt, likesCount, dislikesCount }
+      }
+
+      this._isLoading = false
     }
   }
 })
