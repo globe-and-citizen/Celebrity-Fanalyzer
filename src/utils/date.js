@@ -29,3 +29,31 @@ export function previousYearMonth() {
 
   return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
 }
+
+export function getDay(intDate) {
+  const date = new Date()
+  date.setTime(intDate)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDay()).getTime()
+}
+export function getNextDay(intDate) {
+  const date = new Date()
+  date.setTime(intDate)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1).getTime()
+}
+
+export function calendarDay(startDate, endDate) {
+  // let currentDate= startDate
+  let calendar = []
+  for (let currentDate = getDay(startDate); currentDate <= endDate ; currentDate += 86400000) {
+    calendar.push(currentDate)
+  }
+  return calendar
+}
+export function calendarWeek(startDate, endDate) {
+  // let currentDate= startDate
+  let calendar = []
+  for (let currentDate = getDay(startDate); currentDate <= endDate ; currentDate += 86400000*7) {
+    calendar.push(currentDate)
+  }
+  return calendar
+}

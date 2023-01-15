@@ -58,7 +58,8 @@
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <BarGraph :data="chartData" title="Likes & Dislikes" />
+        <q-spinner v-if="chartDataIsLoading" class="absolute-center" color="primary" size="3em" />
+        <BarGraph v-else :data="chartData" title="Likes & Dislikes" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -68,7 +69,7 @@
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useLikeStore, usePromptStore, useStatStore } from 'src/stores'
+import { useLikeStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -76,9 +77,9 @@ const router = useRouter()
 
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
-const statStore = useStatStore()
 
 const chartData = ref([])
+const chartDataIsLoading = ref([false])
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const prompt = ref({})
@@ -112,11 +113,15 @@ onMounted(async () => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
-
-  chartData.value = [
-    { value: prompt.value.likesCount, name: 'Likes' },
-    { value: prompt.value.dislikesCount, name: 'Dislikes' }
-  ]
+  chartDataIsLoading.value=true
+  await likeStore.fetchPromptStat(prompt.value.id, prompt.value.created,  new Date(2023, 0).getTime()).then(()=>{
+    const currentPromtpStats= likeStore._promptStat.find((data)=>data.promptId===prompt.value.id)
+    if(currentPromtpStats){
+      chartData.value= currentPromtpStats.stats
+    }
+  }).finally(()=>{
+    chartDataIsLoading.value=false
+  })
 })
 
 likeStore.$subscribe((_mutation, state) => {
