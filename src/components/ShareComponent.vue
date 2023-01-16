@@ -1,5 +1,5 @@
 <template>
-  <q-btn flat rounded icon="share" :label="label" @click="share()">
+  <q-btn flat rounded icon="share" :label="label" @click="onShare()">
     <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
   </q-btn>
 </template>
@@ -9,9 +9,10 @@ import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
 
+const emit = defineEmits(['share'])
 defineProps(['label'])
 
-function share() {
+function onShare() {
   $q.bottomSheet({
     message: 'Share with Social Media',
     grid: true,
@@ -39,6 +40,8 @@ function share() {
     } else {
       window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
     }
+
+    emit('share', action.id)
   })
 }
 </script>
