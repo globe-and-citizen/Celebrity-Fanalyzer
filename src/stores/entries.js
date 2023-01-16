@@ -24,12 +24,6 @@ export const useEntryStore = defineStore('entries', {
   }),
 
   getters: {
-    getEntriesFromPrompt: () => (promptId) => {
-      const promptStore = usePromptStore()
-      const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
-
-      return prompt.entries
-    },
     isLoading: (state) => state._isLoading
   },
 
@@ -46,27 +40,6 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = false
 
       return entry
-    },
-
-    async fetchEntries(promptId) {
-      const promptStore = usePromptStore()
-      const promptRef = promptStore.getPromptRef(promptId)
-
-      this._isLoading = true
-      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('prompt', '==', promptRef)))
-      try {
-        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-        for (const entry of entries) {
-          entry.author = await getDoc(entry.author).then((doc) => doc.data())
-          entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
-        }
-      } catch (error) {
-        console.error(error)
-        throw new Error(error)
-      }
-
-      this._isLoading = false
     },
 
     async addEntry(entry) {
@@ -173,53 +146,6 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
-    },
-
-    async addLike(entryId) {
-      this._isLoading = true
-      await useUserStore().loadBrowserId()
-      let browserId = useUserStore().getBrowserId
-      if (!entryId || !browserId) {
-        throw new Error('Entry or Browser id should be defined')
-      }
-      const entryOpinionRef = doc(db, 'entries', entryId, 'opinions', browserId)
-
-      // First load prompt stored in the store
-      let entryOpinion = await getDoc(entryOpinionRef).then((doc) => doc.data())
-      if (entryOpinion && !entryOpinion.liked) {
-        await setDoc(entryOpinionRef, { ...entryOpinion, liked: true, updatedAd: Date.now() })
-      } else if (!entryOpinion) {
-        await setDoc(entryOpinionRef, {
-          liked: true,
-          createdAt: Date.now(),
-          updatedAd: Date.now()
-        })
-      }
-
-      this._isLoading = false
-    },
-    async addDislike(entryId) {
-      this._isLoading = true
-      await useUserStore().loadBrowserId()
-      let browserId = useUserStore().getBrowserId
-      if (!entryId || !browserId) {
-        throw new Error('Entry or Browser id should be defined')
-      }
-      const entryOpinionRef = doc(db, 'entries', entryId, 'opinions', browserId)
-
-      // First load prompt stored in the store
-      let entryOpinion = await getDoc(entryOpinionRef).then((doc) => doc.data())
-      if (entryOpinion && entryOpinion.liked) {
-        await setDoc(entryOpinionRef, { ...entryOpinion, liked: false, updatedAd: Date.now() })
-      } else if (!entryOpinion) {
-        await setDoc(entryOpinionRef, {
-          liked: false,
-          createdAt: Date.now(),
-          updatedAd: Date.now()
-        })
-      }
-
-      this._isLoading = false
     }
   }
 })
