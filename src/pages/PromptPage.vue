@@ -49,8 +49,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
-
-          <ShareComponent :count="0"></ShareComponent>
+          <ShareComponent :label="0" />
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />

@@ -26,7 +26,7 @@
           <q-btn flat rounded icon="chat_bubble_outline" :label="entry.info?.comments" @click="toggleComments()">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :count="0"></ShareComponent>
+          <ShareComponent :label="0" />
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheComments :comments="comments" v-show="showComments" />
