@@ -84,7 +84,7 @@ onMounted(async () => {
   })
 
   await shareStore.countEntryShares(entry.value.id)
-  countShares.value = shareStore.getEntryShares
+  countShares.value = shareStore.getShares
 
   chartData.value = [
     { value: countLikes, name: 'Likes' },
@@ -98,7 +98,7 @@ likeStore.$subscribe((_mutation, state) => {
 })
 
 shareStore.$subscribe((_mutation, state) => {
-  countShares.value = state._entryShares
+  countShares.value = state._shares
 })
 
 function like() {

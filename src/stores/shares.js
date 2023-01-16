@@ -5,13 +5,11 @@ import { useUserStore } from './user'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
-    _promptShares: 0,
-    _entryShares: 0
+    _shares: 0
   }),
 
   getters: {
-    getPromptShares: (state) => state._promptShares,
-    getEntryShares: (state) => state._entryShares
+    getShares: (state) => state._shares
   },
 
   actions: {
@@ -20,7 +18,7 @@ export const useShareStore = defineStore('shares', {
 
       const snapshot = await getCountFromServer(sharesCollection)
 
-      this._promptShares = snapshot.data().count
+      this._shares = snapshot.data().count
     },
 
     async sharePrompt(promptId, socialNetwork) {
@@ -43,7 +41,7 @@ export const useShareStore = defineStore('shares', {
 
       const snapshot = await getCountFromServer(sharesCollection)
 
-      this._entryShares = snapshot.data().count
+      this._shares = snapshot.data().count
     },
 
     async shareEntry(entryId, socialNetwork) {
