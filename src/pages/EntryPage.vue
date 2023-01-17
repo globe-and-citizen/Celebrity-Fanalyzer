@@ -26,7 +26,7 @@
           <q-btn flat rounded icon="chat_bubble_outline" :label="entry.info?.comments" @click="toggleComments()">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :count="0"></ShareComponent>
+          <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheComments :comments="comments" v-show="showComments" />
@@ -45,7 +45,7 @@
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
-import { useEntryStore, useLikeStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -54,11 +54,13 @@ const router = useRouter()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
+const shareStore = useShareStore()
 
 const chartData = ref([])
 const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
+const countShares = ref(0)
 const entry = ref({})
 const showComments = ref(false)
 const tab = ref('entry')
@@ -81,6 +83,9 @@ onMounted(async () => {
     countDislikes.value = res.dislikes
   })
 
+  await shareStore.countEntryShares(entry.value.id)
+  countShares.value = shareStore.getShares
+
   chartData.value = [
     { value: countLikes, name: 'Likes' },
     { value: countDislikes, name: 'Dislikes' }
@@ -92,12 +97,20 @@ likeStore.$subscribe((_mutation, state) => {
   countDislikes.value = state._dislikes
 })
 
+shareStore.$subscribe((_mutation, state) => {
+  countShares.value = state._shares
+})
+
 function like() {
   likeStore.likeEntry(entry.value.id)
 }
 
 function dislike() {
   likeStore.dislikeEntry(entry.value.id)
+}
+
+function onShare(socialNetwork) {
+  shareStore.shareEntry(entry.value.id, socialNetwork)
 }
 
 function toggleComments() {
