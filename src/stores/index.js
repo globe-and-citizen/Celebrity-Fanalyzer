@@ -5,6 +5,7 @@ import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
 import { useLikeStore } from './likes'
 import { usePromptStore } from './prompts'
+import { useShareStore } from './shares'
 import { useStatStore } from './stats'
 import { useUserStore } from './user'
 /*
@@ -25,4 +26,4 @@ export default store((/* { ssrContext } */) => {
   return pinia
 })
 
-export { useAuthStore, useCommentStore, useEntryStore, useLikeStore, usePromptStore, useStatStore, useUserStore }
+export { useAuthStore, useCommentStore, useEntryStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore }
