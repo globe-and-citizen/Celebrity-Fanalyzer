@@ -84,7 +84,7 @@ export const useLikeStore = defineStore('likes', {
         stats.push({ date, likes, dislikes })
       }
       const index = this._promptStat.findIndex((data)=>data.promptId===promptId)
-      if(index>0){
+      if(index>=0){
         this._promptStat[index]= {promptId, stats}
       }else {
         this._promptStat.push({promptId, stats, format})
