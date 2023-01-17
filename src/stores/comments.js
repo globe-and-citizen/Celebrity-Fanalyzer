@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, where, Timestamp } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, setDoc, where, Timestamp, deleteDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -22,9 +22,6 @@ export const useCommentStore = defineStore('comments', {
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-      entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
-
       const c = query(collection(db, 'entries', entry.id, 'comments'))
       const snap = await getDocs(c)
       const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -40,7 +37,11 @@ export const useCommentStore = defineStore('comments', {
     async addComment(comment, entry) {
       const userStore = useUserStore()
 
-      comment.author = userStore.getUserRef
+      if(userStore.getUserRef === undefined){
+        comment.author = userStore.getBrowserId
+      } else {
+        comment.author = userStore.getUserRef
+      }
       comment.id = new Date().toJSON()
       comment.created = Timestamp.fromDate(new Date())
 
@@ -59,14 +60,10 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(id, entry) {
-      console.log(id)
+      const userStore = useUserStore()
       this._isLoading = true
-      const deleteComment = await deleteDoc(doc(db, 'comments', id))
-      console.log(deleteComment)
-      Promise.all([deleteComment])
-        .then(() => {
-          this.$patch({ _comments: [...this._comments, comment] })
-        })
+      await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
+        .then(() => this.$patch({ _comments: [...this._comments] }))
         .catch((error) => {
           console.error(error)
           throw new Error(error)
