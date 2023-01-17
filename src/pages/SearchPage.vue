@@ -8,7 +8,15 @@
     </q-toolbar>
     <q-toolbar>
       <q-toolbar-title>
-        <q-input class="q-pb-lg q-px-lg" dense label="Search" rounded standout v-model="search">
+        <q-input
+          class="q-pb-lg q-px-lg text-black"
+          dense
+          label="Search"
+          rounded
+          standout="bg-secondary text-white"
+          v-model="search"
+          @update:model-value="searchPrompt"
+        >
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -66,7 +74,6 @@ const prompts = ref([])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
-    // TODO: we will need Entries here to be used in the search
     await promptStore.fetchPromptsAndEntries()
   }
   prompts.value = promptStore.getPrompts
@@ -78,4 +85,10 @@ onMounted(async () => {
   }))
   categories.value.unshift({ label: 'All', value: 'All' })
 })
+
+function searchPrompt() {
+  prompts.value = promptStore.getPrompts.filter((prompt) => {
+    return prompt.title.toLowerCase().includes(search.value.toLowerCase())
+  })
+}
 </script>
