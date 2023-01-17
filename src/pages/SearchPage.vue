@@ -37,15 +37,17 @@
       <ArticleSkeleton />
       <ArticleSkeleton />
     </section>
-    <section v-if="prompts.filter((prompt) => prompt.categories.includes(category)).length">
-      <ItemCard
-        v-for="prompt in prompts"
-        :item="prompt"
-        :key="prompt?.id"
-        :link="prompt?.slug"
-        v-show="prompt?.categories.includes(category) || category === 'All'"
-      />
-    </section>
+    <q-tab-panels animated swipeable v-model="category">
+      <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
+        <ItemCard
+          v-for="prompt in prompts"
+          :item="prompt"
+          :key="prompt?.id"
+          :link="prompt?.slug"
+          v-show="prompt?.categories.includes(categ.value) || category === 'All'"
+        />
+      </q-tab-panel>
+    </q-tab-panels>
   </q-page>
 </template>
 
@@ -61,19 +63,6 @@ const search = ref('')
 const category = ref('All')
 const categories = ref([])
 const prompts = ref([])
-
-const categories = ref([
-  { label: 'Trending', value: 'Trending' },
-  { label: 'Lifestyle', value: 'Lifestyle' },
-  { label: 'Culture', value: 'Culture' },
-  { label: 'Sports', value: 'Sports' },
-  { label: 'Politics', value: 'Politics' },
-  { label: 'Business', value: 'Business' },
-  { label: 'Technology', value: 'Technology' },
-  { label: 'Science', value: 'Science' },
-  { label: 'Health', value: 'Health' },
-  { label: 'Education', value: 'Education' }
-])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
