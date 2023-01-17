@@ -58,7 +58,8 @@ import { onMounted, ref } from 'vue'
 const promptStore = usePromptStore()
 
 const search = ref('')
-const category = ref('Trending')
+const category = ref('All')
+const categories = ref([])
 const prompts = ref([])
 
 const categories = ref([
@@ -80,5 +81,12 @@ onMounted(async () => {
     await promptStore.fetchPromptsAndEntries()
   }
   prompts.value = promptStore.getPrompts
+
+  const categoriesArr = prompts.value.flatMap((prompt) => prompt.categories)
+  categories.value = [...new Set(categoriesArr)].map((category) => ({
+    label: category,
+    value: category
+  }))
+  categories.value.unshift({ label: 'All', value: 'All' })
 })
 </script>
