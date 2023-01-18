@@ -8,7 +8,15 @@
     </q-toolbar>
     <q-toolbar>
       <q-toolbar-title>
-        <q-input class="q-pb-lg q-px-lg" dense label="Search" rounded standout v-model="search">
+        <q-input
+          class="q-pb-lg q-px-lg text-black"
+          dense
+          label="Search"
+          rounded
+          standout="bg-secondary text-white"
+          v-model="search"
+          @update:model-value="searchPrompt"
+        >
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -37,15 +45,17 @@
       <ArticleSkeleton />
       <ArticleSkeleton />
     </section>
-    <section v-if="prompts.filter((prompt) => prompt.categories.includes(category)).length">
-      <ItemCard
-        v-for="prompt in prompts"
-        :item="prompt"
-        :key="prompt?.id"
-        :link="prompt?.slug"
-        v-show="prompt?.categories.includes(category) || category === 'All'"
-      />
-    </section>
+    <q-tab-panels animated swipeable v-model="category">
+      <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
+        <ItemCard
+          v-for="prompt in prompts"
+          :item="prompt"
+          :key="prompt?.id"
+          :link="prompt?.slug"
+          v-show="prompt?.categories.includes(categ.value) || category === 'All'"
+        />
+      </q-tab-panel>
+    </q-tab-panels>
   </q-page>
 </template>
 
@@ -58,27 +68,27 @@ import { onMounted, ref } from 'vue'
 const promptStore = usePromptStore()
 
 const search = ref('')
-const category = ref('Trending')
+const category = ref('All')
+const categories = ref([])
 const prompts = ref([])
-
-const categories = ref([
-  { label: 'Trending', value: 'Trending' },
-  { label: 'Lifestyle', value: 'Lifestyle' },
-  { label: 'Culture', value: 'Culture' },
-  { label: 'Sports', value: 'Sports' },
-  { label: 'Politics', value: 'Politics' },
-  { label: 'Business', value: 'Business' },
-  { label: 'Technology', value: 'Technology' },
-  { label: 'Science', value: 'Science' },
-  { label: 'Health', value: 'Health' },
-  { label: 'Education', value: 'Education' }
-])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
-    // TODO: we will need Entries here to be used in the search
     await promptStore.fetchPromptsAndEntries()
   }
   prompts.value = promptStore.getPrompts
+
+  const categoriesArr = prompts.value.flatMap((prompt) => prompt.categories)
+  categories.value = [...new Set(categoriesArr)].map((category) => ({
+    label: category,
+    value: category
+  }))
+  categories.value.unshift({ label: 'All', value: 'All' })
 })
+
+function searchPrompt() {
+  prompts.value = promptStore.getPrompts.filter((prompt) => {
+    return prompt.title.toLowerCase().includes(search.value.toLowerCase())
+  })
+}
 </script>
