@@ -33,9 +33,10 @@
       <q-separator />
     </div>
     <q-input
-      class="bg-white fixed-bottom q-px-sm  q-page-container"
+      class="bg-white fixed-bottom q-px-sm q-page-container"
       color="white"
       dense
+      :disable="!userStore.isAuthenticated"
       label="Comment"
       rounded
       standout="bg-secondary text-white"
@@ -52,7 +53,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useCommentStore } from 'src/stores'
+import { useCommentStore, useUserStore } from 'src/stores'
 import { reactive } from 'vue'
 
 const props = defineProps({
@@ -62,15 +63,16 @@ const props = defineProps({
 
 const $q = useQuasar()
 const myComment = reactive({})
+const userStore = useUserStore()
 const commentStore = useCommentStore()
 
 async function sendComment() {
   await commentStore
-  .addComment(myComment, props.entry)
-  .then(() => $q.notify({ message: 'Comment successfully submitted' }))
-  .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .addComment(myComment, props.entry)
+    .then(() => $q.notify({ message: 'Comment successfully submitted' }))
+    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
   this.myComment.text = ''
-  window.scrollTo(0, document.body.scrollHeight);
+  window.scrollTo(0, document.body.scrollHeight)
 }
 
 async function deleteComment(commentId) {
