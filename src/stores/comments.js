@@ -1,5 +1,6 @@
 import { collection, doc, getDoc, getDocs, query, setDoc, where, Timestamp, deleteDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
+import { comment } from 'postcss'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 
@@ -60,15 +61,20 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(id, entry) {
-      const userStore = useUserStore()
       this._isLoading = true
-      await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
-        .then(() => this.$patch({ _comments: [...this._comments] }))
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      const comment = this.getComments.find((comment) => comment.id === id)
+      const index = this._comments.findIndex((comment) => comment.id === id)
+      if(index !== -1) {
+        await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
+          .then(() => {
+            this._comments.splice(index, 1)
+          })
+          .catch((error) => {
+            console.error(error)
+            throw new Error(error)
+          })
+          .finally(() => (this._isLoading = false))
+      }
     }
   }
 })

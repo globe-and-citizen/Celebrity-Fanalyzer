@@ -44,7 +44,7 @@
       @keyup.enter="sendComment()"
     >
       <template v-slot:append>
-        <q-icon name="send" @click="sendComment()" />
+        <q-icon class="cursor-pointer" name="send" @click="sendComment()" />
       </template>
     </q-input>
   </section>
@@ -70,6 +70,7 @@ async function sendComment() {
   .then(() => $q.notify({ message: 'Comment successfully submitted' }))
   .catch(() => $q.notify({ message: 'Comment submission failed!' }))
   this.myComment.text = ''
+  window.scrollTo(0, document.body.scrollHeight);
 }
 
 async function deleteComment(commentId) {
