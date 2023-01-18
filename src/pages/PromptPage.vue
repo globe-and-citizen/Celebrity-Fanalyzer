@@ -59,7 +59,16 @@
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
         <q-spinner v-if="chartDataIsLoading" class="absolute-center" color="primary" size="3em" />
-        <BarGraph v-else :data="chartData" title="Likes & Dislikes" />
+        <section v-else>
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
+
+          <q-tabs v-model="type" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify" narrow-indicator>
+            <q-tab name="day" label="Days" />
+            <q-tab name="week" label="Week" />
+            <q-tab name="all" label="All" />
+          </q-tabs>
+          <BarGraph :data="chartData" title="Likes & Dislikes" />
+        </section>
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -74,11 +83,12 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const type = ref('day')
 
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 
-const chartData = ref([])
+const chartData = ref({})
 const chartDataIsLoading = ref([false])
 const countLikes = ref(0)
 const countDislikes = ref(0)
@@ -113,15 +123,18 @@ onMounted(async () => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
-  chartDataIsLoading.value=true
-  await likeStore.fetchPromptStat(prompt.value.id, prompt.value.created,  new Date(2023, 0).getTime()).then(()=>{
-    const currentPromtpStats= likeStore._promptStat.find((data)=>data.promptId===prompt.value.id)
-    if(currentPromtpStats){
-      chartData.value= currentPromtpStats.stats
-    }
-  }).finally(()=>{
-    chartDataIsLoading.value=false
-  })
+  chartDataIsLoading.value = true
+  await likeStore
+    .fetchPromptStat(prompt.value.id, prompt.value.created, new Date(2023, 0).getTime())
+    .then(() => {
+      const currentPromtpStats = likeStore._promptStat.find((data) => data.promptId === prompt.value.id)
+      if (currentPromtpStats) {
+        chartData.value = { ...currentPromtpStats, type: type }
+      }
+    })
+    .finally(() => {
+      chartDataIsLoading.value = false
+    })
 })
 
 likeStore.$subscribe((_mutation, state) => {

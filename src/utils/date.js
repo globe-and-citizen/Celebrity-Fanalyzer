@@ -44,7 +44,7 @@ export function getNextDay(intDate) {
 export function calendarDay(startDate, endDate) {
   // let currentDate= startDate
   let calendar = []
-  for (let currentDate = getDay(startDate); currentDate <= endDate ; currentDate += 86400000) {
+  for (let currentDate = getDay(startDate); currentDate <= endDate; currentDate += 86400000) {
     calendar.push(currentDate)
   }
   return calendar
@@ -52,7 +52,7 @@ export function calendarDay(startDate, endDate) {
 export function calendarWeek(startDate, endDate) {
   // let currentDate= startDate
   let calendar = []
-  for (let currentDate = getDay(startDate); currentDate <= endDate ; currentDate += 86400000*7) {
+  for (let currentDate = getDay(startDate); currentDate <= endDate; currentDate += 86400000 * 7) {
     calendar.push(currentDate)
   }
   return calendar

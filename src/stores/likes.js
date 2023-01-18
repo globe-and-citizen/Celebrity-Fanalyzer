@@ -2,7 +2,7 @@ import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, setDoc, 
 import { defineStore } from 'pinia'
 import { db } from '../firebase'
 import { useUserStore } from './user'
-import { calendarDay, calendarWeek } from "src/utils/date";
+import { calendarDay, calendarWeek } from 'src/utils/date'
 
 export const useLikeStore = defineStore('likes', {
   state: () => ({
@@ -41,53 +41,68 @@ export const useLikeStore = defineStore('likes', {
      * @param createdAt
      * @param startAt Start Date
      * @param endAd  End Date
-     * @param format  type of data : day, week, month
      * @returns {Promise<void>}
      */
-    async fetchPromptStat(promptId, createdAt, startAt, endAd = Date.now(), format = 'date') {
+    async fetchPromptStat(promptId, createdAt, startAt, endAd = Date.now()) {
       if (startAt < createdAt) {
         startAt = createdAt
       }
-      let calendar
-      switch (format){
-        case 'date' :
-           calendar = calendarDay(startAt, endAd)
-          break;
-        case 'week' :
-           calendar = calendarWeek(startAt, endAd)
-          break;
-        case 'month' :
-          break;
-        default:
-          calendar = calendarDay(startAt, endAd)
-      }
-      const stats = []
-      for(let i=0; i<calendar.length; i++){
-        const date= calendar[i]
+      const _calendarDay = calendarDay(startAt, endAd)
+      const _calendarWeek = calendarWeek(startAt, endAd)
+
+      const dayStats = []
+      const weekStats = []
+      const allStats = []
+      for (let i = 0; i < _calendarDay.length; i++) {
+        const date = _calendarDay[i]
         let nextDate
-        if(i+1<calendar.length){
-          nextDate= calendar[i+1]
-        }else {
-          nextDate = new Date()
+        if (i + 1 < _calendarDay.length) {
+          nextDate = _calendarDay[i + 1]
+        } else {
+          nextDate =  new Date().getTime()
         }
         const likesCollection = collection(db, 'prompts', promptId, 'likes')
         const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
 
-        const likesQuery_ = query(likesCollection, where('createdAt', '>=', date), where('createdAt', '<=', nextDate))
+        const likesQuery_ = query(likesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
         const likeSnapshot = await getCountFromServer(likesQuery_)
 
-        const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date), where('createdAt', '<=', nextDate))
+        const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
         const dislikesSnapshot = await getCountFromServer(dislikesQuery_)
 
         const likes = likeSnapshot.data().count
         const dislikes = dislikesSnapshot.data().count
-        stats.push({ date, likes, dislikes })
+        dayStats.push({ date, likes, dislikes })
       }
-      const index = this._promptStat.findIndex((data)=>data.promptId===promptId)
-      if(index>=0){
-        this._promptStat[index]= {promptId, stats}
-      }else {
-        this._promptStat.push({promptId, stats, format})
+      for (let i = 0; i < _calendarWeek.length; i++) {
+        const date = _calendarWeek[i]
+        let nextDate
+        if (i + 1 < _calendarWeek.length) {
+          nextDate = _calendarWeek[i + 1]
+        } else {
+          nextDate =  new Date().getTime()
+        }
+        const likesCollection = collection(db, 'prompts', promptId, 'likes')
+        const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
+
+        const likesQuery_ = query(likesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
+        const likeSnapshot = await getCountFromServer(likesQuery_)
+
+        const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
+        const dislikesSnapshot = await getCountFromServer(dislikesQuery_)
+
+        const likes = likeSnapshot.data().count
+        const dislikes = dislikesSnapshot.data().count
+        weekStats.push({ date, likes, dislikes })
+      }
+      allStats.push({date: new Date().getTime(), likes: this._likes, dislikes: this._dislikes})
+
+
+      const index = this._promptStat.findIndex((data) => data.promptId === promptId)
+      if (index >= 0) {
+        this._promptStat[index] = { promptId, dayStats, weekStats, allStats }
+      } else {
+        this._promptStat.push({ promptId, dayStats, weekStats, allStats })
       }
     },
 

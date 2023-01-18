@@ -7,71 +7,96 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { ref } from 'vue'
+import { onBeforeMount, onBeforeUpdate, ref } from "vue";
 import VChart from 'vue-echarts'
 
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
 
 const props = defineProps({
-  data: { type: Array, required: true },
+  data: { type: Object, required: true },
   title: { type: String, required: false }
 })
 
-const dislikes = props.data.map((d) => {
-  console.log()
-  return d.dislikes
-})
-const likes = props.data.map((d) => {
-  return d.likes
-})
+let dislikes = []
+let likes = []
+let periode = []
+let stats = []
 
-const option = ref({
-  title: {
-    text: props.title,
-    left: 'center'
-  },
-  tooltip: {
-    trigger: 'item'
-  },
-  xAxis: {
-    type: 'category',
-    // data: props.data.map((d) => d.name)
-    data: props.data.map((d, index) => {
-      const date = new Date()
-      let end = new Date()
-      date.setTime(d.date)
-      if(index+1<props.data.length){
-        end.setTime(props.data[index+1].date)
-      }
-      if((end-date)<=86400000){
-        return date.getDate()
-      }
-      return `${date.getDate()}-${end.getDate()}`
-    })
-    // TODO: use data from props
-    // https://echarts.apache.org/examples/en/editor.html?c=bar-negative
-  },
-  yAxis: {
-    type: 'value'
-  },
-  series: [
-    {
-      name: 'Likes',
-      type: 'bar',
-      stack: 'Total',
-      // data: [320, 302, 341, 374, 390, 450, 420],
-      data: likes,
-      color: '#48982a'
-    },
-    {
-      name: 'Dislikes',
-      type: 'bar',
-      stack: 'Total',
-      // data: [-120, -132, -101, -134, -190, -230, -210],
-      data: dislikes.map((value) => value * -1),
-      color: '#ea3423'
+const option = ref({})
+
+function loadData(){
+  if (props.data.type === 'day') {
+    // eslint-disable-next-line vue/no-setup-props-destructure
+    stats = props.data.dayStats
+  } else if (props.data.type === 'week') {
+    // eslint-disable-next-line vue/no-setup-props-destructure
+    stats = props.data.weekStats
+  }else {
+    stats = props.data.allStats
+  }
+  dislikes = stats.map((d) => {
+    return d.dislikes
+  })
+  likes = stats.map((d) => {
+    return d.likes
+  })
+  periode = stats.map((d, index) => {
+    const date = new Date()
+    let end = new Date()
+    date.setTime(d.date)
+    if (index + 1 < stats.length) {
+      end.setTime(stats[index + 1].date)
     }
-  ]
+    if (end - date <= 86400000) {
+      return date.getDate()
+    }
+    return `${date.getDate()}-${end.getDate()}`
+  })
+  if (props.data.type === 'all'){
+     periode= ["All"]
+  }
+
+  option.value = {
+    title: {
+      text: props.title,
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    xAxis: {
+      type: 'category',
+      // data: props.data.map((d) => d.name)
+      data: periode
+      // TODO: use data from props
+      // https://echarts.apache.org/examples/en/editor.html?c=bar-negative
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: 'Likes',
+        type: 'bar',
+        stack: 'Total',
+        data: likes,
+        color: '#48982a'
+      },
+      {
+        name: 'Dislikes',
+        type: 'bar',
+        stack: 'Total',
+        data: dislikes.map((value) => value * -1),
+        color: '#ea3423'
+      }
+    ]
+  }
+}
+onBeforeUpdate(()=>{
+  loadData()
+})
+onBeforeMount(() => {
+  loadData()
 })
 </script>
 
