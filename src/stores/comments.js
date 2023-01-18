@@ -62,17 +62,16 @@ export const useCommentStore = defineStore('comments', {
     async deleteComment(id, entry) {
       const userStore = useUserStore()
       await userStore.loadBrowserId()
+      const comment = this.getComments.find((comment) => comment.id === id)
 
       const guyWhoIsDeleting = !userStore.isAuthenticated ? userStore.getBrowserId : userStore.getUserRef
 
-      console.log(guyWhoIsDeleting)
-      console.log(id)
+      const guy = await getDoc(guyWhoIsDeleting).then((doc) => doc.data())
 
-      const comment = this.getComments.find((comment) => comment.id === id)
       const index = this._comments.findIndex((comment) => comment.id === id)
       // TODO: Check if the user is the author of the comment (check author id with user id)
       this._isLoading = true
-      if (index !== -1) {
+      if (index !== -1 && guy.uid === comment.author.uid) {
         await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
           .then(() => {
             this._comments.splice(index, 1)
@@ -82,6 +81,10 @@ export const useCommentStore = defineStore('comments', {
             throw new Error(error)
           })
           .finally(() => (this._isLoading = false))
+      } else {
+        console.log('User is not authorize!');
+        $q.notify({ message: 'Comment submission failed!' })
+        return 0;
       }
     }
   }
