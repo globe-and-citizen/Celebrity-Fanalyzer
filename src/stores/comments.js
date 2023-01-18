@@ -37,14 +37,13 @@ export const useCommentStore = defineStore('comments', {
 
     async addComment(comment, entry) {
       const userStore = useUserStore()
+      await userStore.loadBrowserId()
 
-      if(userStore.getUserRef === undefined){
-        comment.author = userStore.getBrowserId
-      } else {
-        comment.author = userStore.getUserRef
-      }
-      comment.id = new Date().toJSON()
+      comment.author = !userStore.isAuthenticated ? userStore.getBrowserId : userStore.getUserRef
+      comment.id = comment.author.id + Date.now()
       comment.created = Timestamp.fromDate(new Date())
+
+      console.log(comment)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', comment.id), comment)
@@ -61,10 +60,19 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(id, entry) {
-      this._isLoading = true
+      const userStore = useUserStore()
+      await userStore.loadBrowserId()
+
+      const guyWhoIsDeleting = !userStore.isAuthenticated ? userStore.getBrowserId : userStore.getUserRef
+
+      console.log(guyWhoIsDeleting)
+      console.log(id)
+
       const comment = this.getComments.find((comment) => comment.id === id)
       const index = this._comments.findIndex((comment) => comment.id === id)
-      if(index !== -1) {
+      // TODO: Check if the user is the author of the comment (check author id with user id)
+      this._isLoading = true
+      if (index !== -1) {
         await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
           .then(() => {
             this._comments.splice(index, 1)
