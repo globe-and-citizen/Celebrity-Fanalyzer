@@ -8,6 +8,13 @@
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
+        <q-header>
+          <q-toolbar class="bg-white q-px-lg shadow-1">
+            <q-toolbar-title>
+              <b class="text-secondary">Entry Page</b>
+            </q-toolbar-title>
+          </q-toolbar>
+        </q-header>
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
@@ -34,6 +41,13 @@
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
+      <q-header>
+        <q-toolbar class="bg-white q-px-lg shadow-1">
+          <q-toolbar-title>
+            <b class="text-secondary">Stats Page</b>
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
       <q-page>
         <BarGraph :data="chartData" title="Likes & Dislikes" />
       </q-page>
@@ -48,6 +62,7 @@ import TheComments from 'src/components/TheComments.vue'
 import { useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { shortMonthDayTime } from '../utils/date'
 
 const router = useRouter()
 
@@ -121,7 +136,7 @@ function toggleComments() {
 <style scoped lang="scss">
 .parallax {
   position: fixed;
-  top: 0;
+  top: 65px;
   z-index: -1;
 }
 .tab-selector {
