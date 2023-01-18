@@ -23,9 +23,9 @@ export const useShareStore = defineStore('shares', {
 
     async sharePrompt(promptId, socialNetwork) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      const docId = `${userStore.getBrowserId}-${socialNetwork}`
+      const docId = `${userStore.getUserIp}-${socialNetwork}`
 
       await setDoc(doc(db, 'prompts', promptId, 'shares', docId), {
         author: userStore.getUserRef,
@@ -46,9 +46,9 @@ export const useShareStore = defineStore('shares', {
 
     async shareEntry(entryId, socialNetwork) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      const docId = `${userStore.getBrowserId}-${socialNetwork}`
+      const docId = `${userStore.getUserIp}-${socialNetwork}`
 
       await setDoc(doc(db, 'entries', entryId, 'shares', docId), {
         author: userStore.getUserRef,
