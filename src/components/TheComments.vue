@@ -38,7 +38,7 @@
       dense
       label="Comment"
       rounded
-      standout
+      standout="bg-secondary text-white"
       style="margin-bottom: 6.7rem"
       v-model="myComment.text"
       @keyup.enter="sendComment()"
