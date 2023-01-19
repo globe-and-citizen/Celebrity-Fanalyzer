@@ -114,10 +114,10 @@ export const useEntryStore = defineStore('entries', {
 
       this._isLoading = true
       const deleteImage = await deleteObject(imageRef)
-      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
-      const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
       const deleteLikes = await likeStore.deleteAllEntryLikes(entryId)
       const deleteShares = await shareStore.deleteAllEntryShares(entryId)
+      const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
+      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
 
       Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteLikes, deleteShares])
         .then(() => {

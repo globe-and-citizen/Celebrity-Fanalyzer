@@ -149,9 +149,6 @@ export const useLikeStore = defineStore('likes', {
       dislikesSnapshot.forEach(async (doc) => {
         await deleteDoc(doc.ref)
       })
-
-      this._likes = 0
-      this._dislikes = 0
     },
 
     async deleteAllEntryLikes(entryId) {
