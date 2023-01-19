@@ -7,6 +7,7 @@ import sha1 from 'sha1'
 export const useUserStore = defineStore('user', {
   state: () => ({
     _user: {},
+    _userIp: '',
     _isLoading: false,
     _browserId: ''
   }),
@@ -14,6 +15,7 @@ export const useUserStore = defineStore('user', {
   getters: {
     // TODO: fix this, get shoul only return the valu in the store, if we need to use the storage, we should use it to update the store
     getUser: (state) => LocalStorage.getItem('user') || state._user,
+    getUserIp: (state) => state._userIp,
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
     isAuthenticated: (getters) => !!getters.getUser?.uid,
@@ -39,6 +41,24 @@ export const useUserStore = defineStore('user', {
         this.router.go(0)
       }
     },
+
+    /**
+     * Fetch the user ip from Cloudflare
+     * @SaveState <string> IPV6
+     */
+    async fetchUserIp() {
+      await fetch('https://www.cloudflare.com/cdn-cgi/trace')
+        .then((res) => res.text())
+        .then((text) => {
+          text.split('\n').forEach((line) => {
+            const [key, value] = line.split('=')
+            if (key === 'ip') {
+              this._userIp = value
+            }
+          })
+        })
+    },
+
     /**
      * Create and store a unique Browser id in the storage and in the store
      * @returns {Promise<void>}

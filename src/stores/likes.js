@@ -35,16 +35,16 @@ export const useLikeStore = defineStore('likes', {
 
     async likePrompt(promptId) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId), {
+      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getUserIp), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
       this._likes++
 
       // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
-      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
+      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
@@ -57,16 +57,16 @@ export const useLikeStore = defineStore('likes', {
 
     async dislikePrompt(promptId) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId), {
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
       this._dislikes++
 
       // Check if the same browserId exists in likes collection. If true, remove the current like from there
-      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
+      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getUserIp)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
@@ -95,15 +95,15 @@ export const useLikeStore = defineStore('likes', {
 
     async likeEntry(entryId) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'entries', entryId, 'likes', userStore.getBrowserId), {
+      await setDoc(doc(db, 'entries', entryId, 'likes', userStore.getUserIp), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
       this._likes++
 
-      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', userStore.getBrowserId)
+      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
@@ -116,15 +116,15 @@ export const useLikeStore = defineStore('likes', {
 
     async dislikeEntry(entryId) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'entries', entryId, 'dislikes', userStore.getBrowserId), {
+      await setDoc(doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
       this._dislikes++
 
-      const likesRef = doc(db, 'entries', entryId, 'likes', userStore.getBrowserId)
+      const likesRef = doc(db, 'entries', entryId, 'likes', userStore.getUserIp)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
