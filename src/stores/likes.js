@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, setDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -41,7 +41,7 @@ export const useLikeStore = defineStore('likes', {
 
       await setDoc(doc(db, 'prompts', promptId, 'likes', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Date.now()
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._likes++
 
@@ -65,7 +65,7 @@ export const useLikeStore = defineStore('likes', {
 
       await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Date.now()
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._dislikes++
 
@@ -105,7 +105,7 @@ export const useLikeStore = defineStore('likes', {
 
       await setDoc(doc(db, 'entries', entryId, 'likes', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Date.now()
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._likes++
 
@@ -128,7 +128,7 @@ export const useLikeStore = defineStore('likes', {
 
       await setDoc(doc(db, 'entries', entryId, 'dislikes', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Date.now()
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._dislikes++
 
