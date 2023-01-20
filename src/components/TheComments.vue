@@ -1,5 +1,8 @@
 <template>
   <section class="q-pa-md" style="margin-bottom: 4rem">
+    <div class="text-center text-h5 text-bold q-mb-md">
+      Comments
+    </div>
     <div v-for="comment of comments" class="q-mb-md" :key="comment.id">
       <div class="flex items-center">
         <q-avatar size="2rem">
