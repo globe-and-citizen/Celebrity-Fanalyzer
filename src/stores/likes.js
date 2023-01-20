@@ -37,8 +37,10 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getUserIp), {
-        author: userStore.getUserRef,
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'prompts', promptId, 'likes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Date.now()
       })
       this._likes++
@@ -59,8 +61,10 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp), {
-        author: userStore.getUserRef,
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Date.now()
       })
       this._dislikes++
@@ -97,8 +101,10 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'entries', entryId, 'likes', userStore.getUserIp), {
-        author: userStore.getUserRef,
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'entries', entryId, 'likes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Date.now()
       })
       this._likes++
@@ -118,8 +124,10 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp), {
-        author: userStore.getUserRef,
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'entries', entryId, 'dislikes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Date.now()
       })
       this._dislikes++

@@ -25,10 +25,10 @@ export const useShareStore = defineStore('shares', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      const docId = `${userStore.getUserIp}-${socialNetwork}`
+      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp)
 
       await setDoc(doc(db, 'prompts', promptId, 'shares', docId), {
-        author: userStore.getUserRef,
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Date.now(),
         sharedOn: socialNetwork
       })
@@ -48,10 +48,10 @@ export const useShareStore = defineStore('shares', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      const docId = `${userStore.getUserIp}-${socialNetwork}`
+      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp)
 
       await setDoc(doc(db, 'entries', entryId, 'shares', docId), {
-        author: userStore.getUserRef,
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Date.now(),
         sharedOn: socialNetwork
       })
