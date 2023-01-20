@@ -29,20 +29,36 @@
       <q-btn flat round icon="close" v-close-popup />
     </q-card-section>
     <q-card-section class="q-pt-none">
-      <q-form @submit.prevent="onSubmit()">
+      <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
         <q-input counter hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
         <q-field counter label="Description" maxlength="400" v-model="prompt.description">
           <template v-slot:control>
             <q-editor
-              flat
               class="q-mt-md"
+              dense
+              flat
               min-height="5rem"
+              ref="editorRef"
               :toolbar="[
-                ['bold', 'italic', 'strike', 'underline'],
-                ['quote', 'unordered', 'ordered'],
+                [
+                  {
+                    icon: $q.iconSet.editor.align,
+                    options: ['left', 'center', 'right', 'justify']
+                  },
+                  {
+                    icon: $q.iconSet.editor.fontSize,
+                    list: 'no-icons',
+                    options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
+                  },
+                  {
+                    icon: $q.iconSet.editor.formatting,
+                    options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
+                  }
+                ],
                 ['undo', 'redo']
               ]"
               v-model="prompt.description"
+              @paste="onPaste($event)"
             />
           </template>
         </q-field>
@@ -106,6 +122,7 @@ const $q = useQuasar()
 const promptStore = usePromptStore()
 
 const dataKey = ref(Date.now())
+const editorRef = ref(null)
 const imageModel = ref([])
 const prompt = reactive({})
 
@@ -139,6 +156,27 @@ function uploadPhoto() {
 
 function onRejected() {
   $q.notify({ type: 'negative', message: 'Image did not pass validation constraints' })
+}
+
+function onPaste(evt) {
+  // Let inputs do their thing, so we don't break pasting of links.
+  if (evt.target.nodeName === 'INPUT') return
+  let text, onPasteStripFormattingIEPaste
+  evt.preventDefault()
+  evt.stopPropagation()
+  if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
+    text = evt.originalEvent.clipboardData.getData('text/plain')
+    editorRef.value.runCmd('insertText', text)
+  } else if (evt.clipboardData && evt.clipboardData.getData) {
+    text = evt.clipboardData.getData('text/plain')
+    editorRef.value.runCmd('insertText', text)
+  } else if (window.clipboardData && window.clipboardData.getData) {
+    if (!onPasteStripFormattingIEPaste) {
+      onPasteStripFormattingIEPaste = true
+      editorRef.value.runCmd('ms-pasteTextOnly', text)
+    }
+    onPasteStripFormattingIEPaste = false
+  }
 }
 
 async function onSubmit() {
