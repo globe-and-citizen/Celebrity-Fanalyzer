@@ -81,7 +81,6 @@
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          {{ type }}
           <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
         </section>
       </q-page>
@@ -98,7 +97,6 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const type = ref('day')
 
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
@@ -110,6 +108,7 @@ const countDislikes = ref(0)
 const countShares = ref(0)
 const prompt = ref({})
 const tab = ref('prompt')
+const type = ref('day')
 
 onMounted(async () => {
   // TODO: Check the local prompts here, if they exist then use them inside the 'ifs' instead of fetching again
@@ -143,7 +142,7 @@ onMounted(async () => {
   })
   chartDataIsLoading.value = true
   await likeStore
-    .fetchPromptStat(prompt.value.id, prompt.value.created, new Date(2023, 0).getTime())
+    .fetchPromptStat(prompt.value.id, prompt.value.created.seconds)
     .then(() => {
       const currentPromtpStats = likeStore._promptStat.find((data) => data.promptId === prompt.value.id)
       if (currentPromtpStats) {

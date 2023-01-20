@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, setDoc, where } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, setDoc, Timestamp, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from '../firebase'
 import { useUserStore } from './user'
@@ -9,7 +9,8 @@ export const useLikeStore = defineStore('likes', {
     _isLoading: false,
     _likes: 0,
     _dislikes: 0,
-    _promptStat: []
+    _promptStat: [],
+    _entriesStat: []
   }),
 
   getters: {
@@ -38,17 +39,13 @@ export const useLikeStore = defineStore('likes', {
     /**
      *
      * @param promptId
-     * @param createdAt
      * @param startAt Start Date
-     * @param endAd  End Date
+     * @param endAt  End Date
      * @returns {Promise<void>}
      */
-    async fetchPromptStat(promptId, createdAt, startAt, endAd = Date.now()) {
-      if (startAt < createdAt) {
-        startAt = createdAt
-      }
-      const _calendarDay = calendarDay(startAt, endAd)
-      const _calendarWeek = calendarWeek(startAt, endAd)
+    async fetchPromptStat(promptId, startAt, endAt = Timestamp.fromDate(new Date()).seconds) {
+      const _calendarDay = calendarDay(startAt, endAt)
+      const _calendarWeek = calendarWeek(startAt, endAt)
 
       const fetchCalendarData = async (calendar) => {
         const stats = []
@@ -85,6 +82,57 @@ export const useLikeStore = defineStore('likes', {
         this._promptStat[index] = { promptId, dayStats, weekStats, allStats }
       } else {
         this._promptStat.push({ promptId, dayStats, weekStats, allStats })
+      }
+    },
+
+    /**
+     *
+     * @param entryId
+     * @param startAt Start Date
+     * @param endAt  End Date
+     * @returns {Promise<void>}
+     */
+    async fetchEntryStat(entryId, startAt, endAt = Timestamp.fromDate(new Date()).seconds) {
+      console.log('dates', { startAt, endAt })
+      const _calendarDay = calendarDay(startAt, endAt)
+      const _calendarWeek = calendarWeek(startAt, endAt)
+      console.log('calendar', { _calendarDay, _calendarWeek })
+
+      const fetchCalendarData = async (calendar) => {
+        const stats = []
+        for (let i = 0; i < calendar.length; i++) {
+          const date = calendar[i]
+          let nextDate
+          if (i + 1 < calendar.length) {
+            nextDate = calendar[i + 1]
+          } else {
+            nextDate = new Date().getTime()
+          }
+          const likesCollection = collection(db, 'entries', entryId, 'likes')
+          const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
+
+          const likesQuery_ = query(likesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
+          const likeSnapshot = await getCountFromServer(likesQuery_)
+
+          const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
+          const dislikesSnapshot = await getCountFromServer(dislikesQuery_)
+
+          const likes = likeSnapshot.data().count
+          const dislikes = dislikesSnapshot.data().count
+          stats.push({ date, likes, dislikes })
+        }
+        return stats
+      }
+
+      const allStats = [{ date: new Date().getTime(), likes: this._likes, dislikes: this._dislikes }]
+      const weekStats = await fetchCalendarData(_calendarWeek)
+      const dayStats = await fetchCalendarData(_calendarDay)
+
+      const index = this._entriesStat.findIndex((data) => data.promptId === entryId)
+      if (index >= 0) {
+        this._entriesStat[index] = { entryId, dayStats, weekStats, allStats }
+      } else {
+        this._entriesStat.push({ entryId, dayStats, weekStats, allStats })
       }
     },
 

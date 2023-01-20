@@ -49,7 +49,32 @@
         </q-toolbar>
       </q-header>
       <q-page>
-        <BarGraph :data="chartData" title="Likes & Dislikes" />
+        <q-spinner v-if="chartDataIsLoading" class="absolute-center" color="primary" size="3em" />
+        <section v-else>
+          <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
+
+          <div class="flex items-center q-mb-xl">
+            <q-avatar size="6rem">
+              <img :src="entry.author.photoURL" alt="" />
+            </q-avatar>
+            <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
+          </div>
+
+          <q-tabs
+            v-model="type"
+            dense
+            class="text-grey q-mb-xl"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="day" label="Days" />
+            <q-tab name="week" label="Week" />
+            <q-tab name="all" label="All" />
+          </q-tabs>
+          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+        </section>
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -62,7 +87,6 @@ import TheComments from 'src/components/TheComments.vue'
 import { useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { shortMonthDayTime } from '../utils/date'
 
 const router = useRouter()
 
@@ -71,14 +95,16 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
-const chartData = ref([])
+const chartData = ref({})
 const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const countShares = ref(0)
 const entry = ref({})
 const showComments = ref(false)
+const chartDataIsLoading = ref([false])
 const tab = ref('entry')
+const type = ref('day')
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
@@ -101,10 +127,20 @@ onMounted(async () => {
   await shareStore.countEntryShares(entry.value.id)
   countShares.value = shareStore.getShares
 
-  chartData.value = [
-    { value: countLikes, name: 'Likes' },
-    { value: countDislikes, name: 'Dislikes' }
-  ]
+  chartDataIsLoading.value = true
+  await likeStore
+    .fetchEntryStat(entry.value.id, entry.value.created.seconds)
+    .then(() => {
+      const entryStats = likeStore._entriesStat.find((data) => data.entryId === entry.value.id)
+      console.log('entry id', entry.value)
+      if (entryStats) {
+        console.log(entryStats)
+        chartData.value = { ...entryStats, type: 'day' }
+      }
+    })
+    .finally(() => {
+      chartDataIsLoading.value = false
+    })
 })
 
 likeStore.$subscribe((_mutation, state) => {
