@@ -9,13 +9,16 @@
       <q-page class="bg-white">
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
+          <div class="flex justify-between">
+            <p v-if="prompt.date" class="text-body2">{{ monthYear(prompt.date) }}</p>
+            <div>
+              <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
+                {{ category }}
+              </q-badge>
+            </div>
+          </div>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
           <p class="text-body1" v-html="prompt?.description"></p>
-          <div class="q-mb-md">
-            <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
-              {{ category }}
-            </q-badge>
-          </div>
           <div class="inline-block">
             <q-btn
               color="green"
@@ -68,6 +71,7 @@ import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
