@@ -16,7 +16,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { usePromptStore, useUserStore } from 'src/stores'
+import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -110,7 +110,9 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async deleteEntry(entryId) {
+      const likeStore = useLikeStore()
       const promptStore = usePromptStore()
+      const shareStore = useShareStore()
 
       const promptId = entryId.split('T')[0]
       const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
@@ -120,10 +122,12 @@ export const useEntryStore = defineStore('entries', {
 
       this._isLoading = true
       const deleteImage = await deleteObject(imageRef)
-      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
+      const deleteLikes = await likeStore.deleteAllEntryLikes(entryId)
+      const deleteShares = await shareStore.deleteAllEntryShares(entryId)
       const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
+      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
 
-      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef])
+      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteLikes, deleteShares])
         .then(() => {
           const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
           prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)
