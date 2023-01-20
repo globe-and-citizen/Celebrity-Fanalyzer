@@ -7,7 +7,7 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { onBeforeMount, onBeforeUpdate, ref } from "vue";
+import { onBeforeMount, onBeforeUpdate, ref } from 'vue'
 import VChart from 'vue-echarts'
 
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
@@ -24,14 +24,14 @@ let stats = []
 
 const option = ref({})
 
-function loadData(){
+function loadData() {
   if (props.data.type === 'day') {
     // eslint-disable-next-line vue/no-setup-props-destructure
     stats = props.data.dayStats
   } else if (props.data.type === 'week') {
     // eslint-disable-next-line vue/no-setup-props-destructure
     stats = props.data.weekStats
-  }else {
+  } else {
     stats = props.data.allStats
   }
   dislikes = stats.map((d) => {
@@ -52,8 +52,8 @@ function loadData(){
     }
     return `${date.getDate()}-${end.getDate()}`
   })
-  if (props.data.type === 'all'){
-     periode= ["All"]
+  if (props.data.type === 'all') {
+    periode = ['All']
   }
 
   option.value = {
@@ -92,7 +92,7 @@ function loadData(){
     ]
   }
 }
-onBeforeUpdate(()=>{
+onBeforeUpdate(() => {
   loadData()
 })
 onBeforeMount(() => {

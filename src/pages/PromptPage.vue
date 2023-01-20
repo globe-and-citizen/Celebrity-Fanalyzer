@@ -60,14 +60,30 @@
       <q-page>
         <q-spinner v-if="chartDataIsLoading" class="absolute-center" color="primary" size="3em" />
         <section v-else>
-          <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
+          <h1 class="q-mt-none text-bold text-h4">{{ prompt?.title }}</h1>
 
-          <q-tabs v-model="type" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify" narrow-indicator>
+          <div class="flex items-center q-mb-xl">
+            <q-avatar size="6rem">
+              <img :src="prompt.author.photoURL" alt="" />
+            </q-avatar>
+            <p class="q-mb-none q-ml-md text-h5">{{ prompt.author.displayName }}</p>
+          </div>
+
+          <q-tabs
+            v-model="type"
+            dense
+            class="text-grey q-mb-xl"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
             <q-tab name="day" label="Days" />
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="chartData" title="Likes & Dislikes" />
+          {{ type }}
+          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
         </section>
       </q-page>
     </q-tab-panel>

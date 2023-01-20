@@ -59,7 +59,7 @@ export const useLikeStore = defineStore('likes', {
         if (i + 1 < _calendarDay.length) {
           nextDate = _calendarDay[i + 1]
         } else {
-          nextDate =  new Date().getTime()
+          nextDate = new Date().getTime()
         }
         const likesCollection = collection(db, 'prompts', promptId, 'likes')
         const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
@@ -80,7 +80,7 @@ export const useLikeStore = defineStore('likes', {
         if (i + 1 < _calendarWeek.length) {
           nextDate = _calendarWeek[i + 1]
         } else {
-          nextDate =  new Date().getTime()
+          nextDate = new Date().getTime()
         }
         const likesCollection = collection(db, 'prompts', promptId, 'likes')
         const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
@@ -95,8 +95,7 @@ export const useLikeStore = defineStore('likes', {
         const dislikes = dislikesSnapshot.data().count
         weekStats.push({ date, likes, dislikes })
       }
-      allStats.push({date: new Date().getTime(), likes: this._likes, dislikes: this._dislikes})
-
+      allStats.push({ date: new Date().getTime(), likes: this._likes, dislikes: this._dislikes })
 
       const index = this._promptStat.findIndex((data) => data.promptId === promptId)
       if (index >= 0) {
