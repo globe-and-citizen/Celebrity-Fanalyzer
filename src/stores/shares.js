@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from './user'
@@ -29,7 +29,7 @@ export const useShareStore = defineStore('shares', {
 
       await setDoc(doc(db, 'prompts', promptId, 'shares', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Date.now(),
+        createdAt: Timestamp.fromDate(new Date()),
         sharedOn: socialNetwork
       })
 
@@ -52,7 +52,7 @@ export const useShareStore = defineStore('shares', {
 
       await setDoc(doc(db, 'entries', entryId, 'shares', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Date.now(),
+        createdAt: Timestamp.fromDate(new Date()),
         sharedOn: socialNetwork
       })
 
