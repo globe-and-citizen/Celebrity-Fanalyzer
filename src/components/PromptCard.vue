@@ -65,22 +65,21 @@
         <q-select
           behavior="menu"
           counter
+          hide-dropdown-icon
           hide-hint
+          hint="Click Enter ↵ to add a new category"
+          input-debounce="0"
           label="Categories"
           multiple
-          :options="categoryOptions"
+          new-value-mode="add-unique"
           use-input
           use-chips
           :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
           v-model="prompt.categories"
-        >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-grey">No results</q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" />
+        />
+        <div class="text-center">
+          <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+        </div>
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
@@ -106,7 +105,6 @@ const props = defineProps(['author', 'categories', 'created', 'date', 'descripti
 const $q = useQuasar()
 const promptStore = usePromptStore()
 
-const categoryOptions = ref(['Trending', 'Lifestyle', 'Culture', 'Sports', 'Politics', 'Technology', 'Science', 'Health', 'Education'])
 const dataKey = ref(Date.now())
 const imageModel = ref([])
 const prompt = reactive({})

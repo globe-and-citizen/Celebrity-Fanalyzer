@@ -49,8 +49,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
-
-          <ShareComponent :count="0"></ShareComponent>
+          <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />
@@ -94,7 +93,7 @@
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useLikeStore, usePromptStore } from 'src/stores'
+import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -103,17 +102,20 @@ const type = ref('day')
 
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
-
+const shareStore = useShareStore()
 const chartData = ref({})
 const chartDataIsLoading = ref([false])
 const countLikes = ref(0)
 const countDislikes = ref(0)
+const countShares = ref(0)
 const prompt = ref({})
 const tab = ref('prompt')
 
 onMounted(async () => {
-  // statStore.fetchStats() // uncomment when stats are ready
   // TODO: Check the local prompts here, if they exist then use them inside the 'ifs' instead of fetching again
+  // if (promptStore.getPrompts.length === 0) {
+  //   prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
+  // }
   if (router.currentRoute.value.href === '/month') {
     await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt
@@ -158,12 +160,20 @@ likeStore.$subscribe((_mutation, state) => {
   countDislikes.value = state._dislikes
 })
 
+shareStore.$subscribe((_mutation, state) => {
+  countShares.value = state._shares
+})
+
 function like() {
   likeStore.likePrompt(prompt.value.id)
 }
 
 function dislike() {
   likeStore.dislikePrompt(prompt.value.id)
+}
+
+function onShare(socialNetwork) {
+  shareStore.sharePrompt(prompt.value.id, socialNetwork)
 }
 </script>
 

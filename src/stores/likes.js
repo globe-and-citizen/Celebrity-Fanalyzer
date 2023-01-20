@@ -107,16 +107,16 @@ export const useLikeStore = defineStore('likes', {
 
     async likePrompt(promptId) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId), {
+      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getUserIp), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
       this._likes++
 
       // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
-      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId)
+      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
@@ -129,16 +129,16 @@ export const useLikeStore = defineStore('likes', {
 
     async dislikePrompt(promptId) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getBrowserId), {
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp), {
         author: userStore.getUserRef,
         createdAt: Date.now()
       })
       this._dislikes++
 
       // Check if the same browserId exists in likes collection. If true, remove the current like from there
-      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getBrowserId)
+      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getUserIp)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
@@ -149,14 +149,94 @@ export const useLikeStore = defineStore('likes', {
       this.countPromptLikes(promptId)
     },
 
-    async removeLikePrompt(promptId) {},
+    async countEntryLikes(entryId) {
+      const likesCollection = collection(db, 'entries', entryId, 'likes')
+      const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
 
-    async countEntryLikes(entryId) {},
+      const snapshot = await getCountFromServer(likesCollection)
+      const dislikesSnapshot = await getCountFromServer(dislikesCollection)
 
-    async likeEntry(entryId) {},
+      this._likes = snapshot.data().count
+      this._dislikes = dislikesSnapshot.data().count
 
-    async dislikeEntry(entryId) {},
+      return {
+        likes: this._likes,
+        dislikes: this._dislikes
+      }
+    },
 
-    async removeLikeEntry(entryId) {}
+    async likeEntry(entryId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      await setDoc(doc(db, 'entries', entryId, 'likes', userStore.getUserIp), {
+        author: userStore.getUserRef,
+        createdAt: Date.now()
+      })
+      this._likes++
+
+      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp)
+      const dislikesSnap = await getDoc(dislikesRef)
+
+      if (dislikesSnap.exists()) {
+        await deleteDoc(dislikesRef)
+        this._dislikes--
+      }
+
+      this.countEntryLikes(entryId)
+    },
+
+    async dislikeEntry(entryId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      await setDoc(doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp), {
+        author: userStore.getUserRef,
+        createdAt: Date.now()
+      })
+      this._dislikes++
+
+      const likesRef = doc(db, 'entries', entryId, 'likes', userStore.getUserIp)
+      const likesSnap = await getDoc(likesRef)
+
+      if (likesSnap.exists()) {
+        await deleteDoc(likesRef)
+        this._likes--
+      }
+
+      this.countEntryLikes(entryId)
+    },
+
+    async deleteAllPromptLikes(promptId) {
+      const likesCollection = collection(db, 'prompts', promptId, 'likes')
+      const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
+
+      const likesSnapshot = await getDocs(likesCollection)
+      const dislikesSnapshot = await getDocs(dislikesCollection)
+
+      likesSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+
+      dislikesSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+    },
+
+    async deleteAllEntryLikes(entryId) {
+      const likesCollection = collection(db, 'entries', entryId, 'likes')
+      const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
+
+      const likesSnapshot = await getDocs(likesCollection)
+      const dislikesSnapshot = await getDocs(dislikesCollection)
+
+      likesSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+
+      dislikesSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+    }
   }
 })
