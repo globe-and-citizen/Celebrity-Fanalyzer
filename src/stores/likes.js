@@ -130,7 +130,9 @@ export const useLikeStore = defineStore('likes', {
 
       const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
       const weekStats = await fetchCalendarData(_calendarWeek)
+      // const weekStats = []
       const dayStats = await fetchCalendarData(_calendarDay)
+      // const dayStats =[]
 
       const index = this._entriesStat.findIndex((data) => data.entryId === entryId)
       if (index >= 0) {
