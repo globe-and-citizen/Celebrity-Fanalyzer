@@ -1,7 +1,7 @@
 <template>
   <q-tabs active-color="primary" class="tab-selector fixed-bottom bg-white" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
@@ -54,6 +54,13 @@
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="comments" class="bg-white">
+      <q-header>
+        <q-toolbar class="bg-white q-px-lg shadow-1">
+          <q-toolbar-title>
+            <b class="text-secondary">Comments</b>
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
       <q-page>
         <TheComments :comments="comments" :entry="entry" />
       </q-page>

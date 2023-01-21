@@ -1,6 +1,5 @@
 <template>
   <section class="q-pa-md" style="margin-bottom: 4rem">
-    <div class="text-center text-h5 text-bold q-mb-md">Comments</div>
     <div v-for="comment of comments" class="q-mb-md" :key="comment.id">
       <div class="flex items-center">
         <q-avatar size="2rem">
@@ -25,7 +24,12 @@
                 <q-item-label>Edit</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item clickable v-close-popup @click="deleteComment(comment.id)">
+            <q-item
+              :disable="!userStore.isAuthenticated || userStore.getUserRef.id !== comment.author.uid"
+              clickable
+              v-close-popup
+              @click="deleteComment(comment.id)"
+            >
               <q-item-section>
                 <q-item-label>Delete</q-item-label>
               </q-item-section>
@@ -72,7 +76,11 @@
       @keyup.enter="sendComment()"
     >
       <template v-slot:append>
-        <q-icon class="cursor-pointer" name="send" @click="sendComment()" />
+        <q-icon
+          class="cursor-pointer"
+          name="send"
+          @click="sendComment()"
+        />
       </template>
     </q-input>
   </section>
@@ -94,12 +102,16 @@ const userStore = useUserStore()
 const commentStore = useCommentStore()
 
 async function sendComment() {
-  await commentStore
-    .addComment(myComment, props.entry)
-    .then(() => $q.notify({ message: 'Comment successfully submitted' }))
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
-  this.myComment.text = ''
-  window.scrollTo(0, document.body.scrollHeight)
+  if(myComment.text !== undefined) {
+    await commentStore
+      .addComment(myComment, props.entry)
+      .then(() => $q.notify({ message: 'Comment successfully submitted' }))
+      .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    this.myComment.text = ''
+    window.scrollTo(0, document.body.scrollHeight)
+  } else {
+    $q.notify({ message: "Fill the input!" })
+  }
 }
 
 async function deleteComment(commentId) {
