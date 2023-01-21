@@ -52,11 +52,11 @@ function loadData() {
       if(props.data.type=== 'week'){
         let newDate= date
         newDate.setDate(date.getDate()+7)
-        return `${stats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth()}`
+        return `${stats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth()+1}`
       }
-      return `${date.getDate()}/${date.getMonth()}`
+      return `${date.getDate()}/${date.getMonth()+1}`
     }
-    return `${date.getDate()}-${end.getDate()}/${end.getMonth()}`
+    return `${date.getDate()}-${end.getDate()}/${end.getMonth()+1}`
   })
   if (props.data.type === 'all') {
     periode = ['All']

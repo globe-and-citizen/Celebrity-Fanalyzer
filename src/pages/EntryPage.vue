@@ -129,7 +129,7 @@ onMounted(async () => {
 
   chartDataIsLoading.value = true
   await likeStore
-    .fetchEntryStat(entry.value.id, entry.value.created.seconds)
+    .fetchEntryStat(entry.value.id, entry.value.created)
     .then(() => {
       const entryStats = likeStore._entriesStat.find((data) => data.entryId === entry.value.id)
       console.log('entry id', entry.value)
