@@ -41,16 +41,22 @@ function loadData() {
     return d.likes
   })
   periode = stats.map((d, index) => {
-    const date = new Date()
-    let end = new Date()
-    date.setTime(d.date)
+    let end
+    const date = d.date.toDate()
     if (index + 1 < stats.length) {
-      end.setTime(stats[index + 1].date)
-    }
+      end = stats[index + 1].date.toDate()
+    }else (
+      end = stats[index].date.toDate()
+    )
     if (end - date <= 86400000) {
-      return date.getDate()
+      if(props.data.type=== 'week'){
+        let newDate= date
+        newDate.setDate(date.getDate()+7)
+        return `${stats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth()}`
+      }
+      return `${date.getDate()}/${date.getMonth()}`
     }
-    return `${date.getDate()}-${end.getDate()}`
+    return `${date.getDate()}-${end.getDate()}/${end.getMonth()}`
   })
   if (props.data.type === 'all') {
     periode = ['All']

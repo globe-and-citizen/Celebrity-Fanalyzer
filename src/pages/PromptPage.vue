@@ -142,7 +142,7 @@ onMounted(async () => {
   })
   chartDataIsLoading.value = true
   await likeStore
-    .fetchPromptStat(prompt.value.id, prompt.value.created.seconds)
+    .fetchPromptStat(prompt.value.id, prompt.value.created)
     .then(() => {
       const currentPromtpStats = likeStore._promptStat.find((data) => data.promptId === prompt.value.id)
       if (currentPromtpStats) {

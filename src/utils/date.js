@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export function monthYear(date) {
   const [year, month] = date.split('-')
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
@@ -41,10 +43,20 @@ export function getNextDay(intDate) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1).getTime()
 }
 
+export function startEndDay(timeStamp){
+  return {
+    start : new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400), 0),
+    end : new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400, 0),
+  }
+}
+
+export function nextWeekDate(timeStamp){
+  return new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400*7, 0)
+}
+
 export function calendarDay(startDate, endDate) {
-  // let currentDate= startDate
   let calendar = []
-  for (let currentDate = getDay(startDate); currentDate <= endDate; currentDate += 86400000) {
+  for (let currentDate = startEndDay(startDate).start; currentDate.seconds < endDate.seconds - 86400; currentDate =  startEndDay(currentDate).end){
     calendar.push(currentDate)
   }
   return calendar
@@ -52,7 +64,7 @@ export function calendarDay(startDate, endDate) {
 export function calendarWeek(startDate, endDate) {
   // let currentDate= startDate
   let calendar = []
-  for (let currentDate = getDay(startDate); currentDate <= endDate; currentDate += 86400000 * 7) {
+  for (let currentDate = startEndDay(startDate).start; currentDate.seconds <= endDate.seconds - 86400*7; currentDate = nextWeekDate(currentDate)) {
     calendar.push(currentDate)
   }
   return calendar

@@ -40,10 +40,13 @@ export const useLikeStore = defineStore('likes', {
      *
      * @param promptId
      * @param startAt Start Date
-     * @param endAt  End Date
      * @returns {Promise<void>}
      */
-    async fetchPromptStat(promptId, startAt, endAt = Timestamp.fromDate(new Date()).seconds) {
+    async fetchPromptStat(promptId, startAt) {
+      let  endAt = Timestamp.now()
+      if((endAt-startAt)>2678400){
+        endAt = new Timestamp(startAt.seconds+ 2678400,0)
+      }
       const _calendarDay = calendarDay(startAt, endAt)
       const _calendarWeek = calendarWeek(startAt, endAt)
 
@@ -55,15 +58,14 @@ export const useLikeStore = defineStore('likes', {
           if (i + 1 < calendar.length) {
             nextDate = calendar[i + 1]
           } else {
-            nextDate = new Date().getTime()
+            nextDate =  Timestamp.fromDate(new Date())
           }
           const likesCollection = collection(db, 'prompts', promptId, 'likes')
           const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
-
-          const likesQuery_ = query(likesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
+          const likesQuery_ = query(likesCollection, where('createdAt', '>=', date.toDate().getTime()), where('createdAt', '<', nextDate.toDate().getTime()))
           const likeSnapshot = await getCountFromServer(likesQuery_)
 
-          const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date), where('createdAt', '<', nextDate))
+          const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date.toDate().getTime()), where('createdAt', '<', nextDate.toDate().getTime()))
           const dislikesSnapshot = await getCountFromServer(dislikesQuery_)
 
           const likes = likeSnapshot.data().count
@@ -73,7 +75,7 @@ export const useLikeStore = defineStore('likes', {
         return stats
       }
 
-      const allStats = [{ date: new Date().getTime(), likes: this._likes, dislikes: this._dislikes }]
+      const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
       const weekStats = await fetchCalendarData(_calendarWeek)
       const dayStats = await fetchCalendarData(_calendarDay)
 
@@ -89,14 +91,17 @@ export const useLikeStore = defineStore('likes', {
      *
      * @param entryId
      * @param startAt Start Date
-     * @param endAt  End Date
      * @returns {Promise<void>}
      */
-    async fetchEntryStat(entryId, startAt, endAt = Timestamp.fromDate(new Date()).seconds) {
-      console.log('dates', { startAt, endAt })
+    async fetchEntryStat(entryId, startAt) {
+
+      let  endAt = Timestamp.now()
+      if((endAt-startAt)>2678400){
+        endAt = new Timestamp(startAt.seconds+ 2678400,0)
+      }
+
       const _calendarDay = calendarDay(startAt, endAt)
       const _calendarWeek = calendarWeek(startAt, endAt)
-      console.log('calendar', { _calendarDay, _calendarWeek })
 
       const fetchCalendarData = async (calendar) => {
         const stats = []
@@ -124,11 +129,11 @@ export const useLikeStore = defineStore('likes', {
         return stats
       }
 
-      const allStats = [{ date: new Date().getTime(), likes: this._likes, dislikes: this._dislikes }]
+      const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
       const weekStats = await fetchCalendarData(_calendarWeek)
       const dayStats = await fetchCalendarData(_calendarDay)
 
-      const index = this._entriesStat.findIndex((data) => data.promptId === entryId)
+      const index = this._entriesStat.findIndex((data) => data.entryId === entryId)
       if (index >= 0) {
         this._entriesStat[index] = { entryId, dayStats, weekStats, allStats }
       } else {
