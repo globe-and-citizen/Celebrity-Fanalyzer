@@ -1,8 +1,6 @@
 <template>
   <section class="q-pa-md" style="margin-bottom: 4rem">
-    <div class="text-center text-h5 text-bold q-mb-md">
-      Comments
-    </div>
+    <div class="text-center text-h5 text-bold q-mb-md">Comments</div>
     <div v-for="comment of comments" class="q-mb-md" :key="comment.id">
       <div class="flex items-center">
         <q-avatar size="2rem">
@@ -17,7 +15,12 @@
         <q-space />
         <q-btn-dropdown color="secondary" dense dropdown-icon="more_vert" flat rounded>
           <q-list>
-            <q-item :disable="!userStore.isAuthenticated" clickable v-close-popup @click="comment.editShow = !comment.editShow">
+            <q-item
+              :disable="!userStore.isAuthenticated || userStore.getUserRef.id !== comment.author.uid"
+              clickable
+              v-close-popup
+              @click="comment.editShow = !comment.editShow"
+            >
               <q-item-section>
                 <q-item-label>Edit</q-item-label>
               </q-item-section>
@@ -30,7 +33,7 @@
           </q-list>
         </q-btn-dropdown>
       </div>
-      <div v-show="!comment.editShow" class="q-my-sm text-body2" >
+      <div v-show="!comment.editShow" class="q-my-sm text-body2">
         {{ comment.text }}
       </div>
       <q-input
@@ -44,10 +47,14 @@
         rounded
         standout="bg-secondary text-white"
         v-model="comment.text"
-        @keyup.enter="editComment(comment.text, comment.id), comment.editShow = !comment.editShow"
+        @keyup.enter="editComment(comment.text, comment.id), (comment.editShow = !comment.editShow)"
       >
         <template v-slot:append>
-          <q-icon class="cursor-pointer" name="send" @click="editComment(comment.text, comment.id), comment.editShow = !comment.editShow" />
+          <q-icon
+            class="cursor-pointer"
+            name="send"
+            @click="editComment(comment.text, comment.id), (comment.editShow = !comment.editShow)"
+          />
         </template>
       </q-input>
       <q-separator />
