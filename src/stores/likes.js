@@ -76,8 +76,10 @@ export const useLikeStore = defineStore('likes', {
       }
 
       const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
+      console.log(_calendarWeek);
       const weekStats = await fetchCalendarData(_calendarWeek)
       const dayStats = await fetchCalendarData(_calendarDay)
+      // const dayStats = []
 
       const index = this._promptStat.findIndex((data) => data.promptId === promptId)
       if (index >= 0) {

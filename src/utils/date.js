@@ -50,10 +50,7 @@ export function startEndDay(timeStamp){
   }
 }
 
-export function nextWeekDate(timeStamp, limit){
-  if((timeStamp.seconds  - (timeStamp.seconds % 86400) + 86400*7)<Timestamp.fromDate(new Date()).seconds){
-    return Timestamp.fromDate(new Date())
-  }
+export function nextWeekDate(timeStamp){
   return new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400*7, 0)
 }
 
@@ -67,7 +64,7 @@ export function calendarDay(startDate, endDate) {
 export function calendarWeek(startDate, endDate) {
   let calendar = []
   const dayStart=  startEndDay(startDate).start
-  for (let currentDate = dayStart; currentDate.seconds <= startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate,endDate)) {
+  for (let currentDate = dayStart; currentDate.seconds <= startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate)) {
     calendar.push(currentDate)
   }
   return calendar

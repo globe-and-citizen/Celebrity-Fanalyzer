@@ -132,9 +132,7 @@ onMounted(async () => {
     .fetchEntryStat(entry.value.id, entry.value.created)
     .then(() => {
       const entryStats = likeStore._entriesStat.find((data) => data.entryId === entry.value.id)
-      console.log('entry id', entry.value)
       if (entryStats) {
-        console.log(entryStats)
         chartData.value = { ...entryStats, type: 'day' }
       }
     })
