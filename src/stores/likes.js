@@ -132,9 +132,7 @@ export const useLikeStore = defineStore('likes', {
 
       const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
       const weekStats = await fetchCalendarData(_calendarWeek)
-      // const weekStats = []
       const dayStats = await fetchCalendarData(_calendarDay)
-      // const dayStats =[]
 
       const index = this._entriesStat.findIndex((data) => data.entryId === entryId)
       if (index >= 0) {
@@ -148,9 +146,11 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'likes', userStore.getUserIp), {
-        author: userStore.getUserRef,
-        createdAt: Date.now()
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'prompts', promptId, 'likes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._likes++
 
@@ -170,9 +170,11 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp), {
-        author: userStore.getUserRef,
-        createdAt: Date.now()
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._dislikes++
 
@@ -208,9 +210,11 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'entries', entryId, 'likes', userStore.getUserIp), {
-        author: userStore.getUserRef,
-        createdAt: Date.now()
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'entries', entryId, 'likes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._likes++
 
@@ -229,9 +233,11 @@ export const useLikeStore = defineStore('likes', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      await setDoc(doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp), {
-        author: userStore.getUserRef,
-        createdAt: Date.now()
+      const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+
+      await setDoc(doc(db, 'entries', entryId, 'dislikes', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+        createdAt: Timestamp.fromDate(new Date())
       })
       this._dislikes++
 
