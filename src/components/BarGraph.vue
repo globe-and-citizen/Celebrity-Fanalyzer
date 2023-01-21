@@ -45,18 +45,16 @@ function loadData() {
     const date = d.date.toDate()
     if (index + 1 < stats.length) {
       end = stats[index + 1].date.toDate()
-    }else (
-      end = stats[index].date.toDate()
-    )
+    } else end = stats[index].date.toDate()
     if (end - date <= 86400000) {
-      if(props.data.type=== 'week'){
-        let newDate= date
-        newDate.setDate(date.getDate()+7)
-        return `${stats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth()+1}`
+      if (props.data.type === 'week') {
+        let newDate = date
+        newDate.setDate(date.getDate() + 7)
+        return `${stats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth() + 1}`
       }
-      return `${date.getDate()}/${date.getMonth()+1}`
+      return `${date.getDate()}/${date.getMonth() + 1}`
     }
-    return `${date.getDate()}-${end.getDate()}/${end.getMonth()+1}`
+    return `${date.getDate()}-${end.getDate()}/${end.getMonth() + 1}`
   })
   if (props.data.type === 'all') {
     periode = ['All']

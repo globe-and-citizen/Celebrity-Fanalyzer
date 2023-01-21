@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from 'firebase/firestore'
 
 export function monthYear(date) {
   const [year, month] = date.split('-')
@@ -43,27 +43,31 @@ export function getNextDay(intDate) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1).getTime()
 }
 
-export function startEndDay(timeStamp){
+export function startEndDay(timeStamp) {
   return {
-    start : new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400), 0),
-    end : new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400, 0),
+    start: new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400), 0),
+    end: new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400, 0)
   }
 }
 
-export function nextWeekDate(timeStamp){
-  return new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400*7, 0)
+export function nextWeekDate(timeStamp) {
+  return new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400 * 7, 0)
 }
 
 export function calendarDay(startDate, endDate) {
   let calendar = []
-  for (let currentDate = startEndDay(startDate).start; currentDate.seconds < endDate.seconds - 86400; currentDate =  startEndDay(currentDate).end){
+  for (
+    let currentDate = startEndDay(startDate).start;
+    currentDate.seconds < endDate.seconds - 86400;
+    currentDate = startEndDay(currentDate).end
+  ) {
     calendar.push(currentDate)
   }
   return calendar
 }
 export function calendarWeek(startDate, endDate) {
   let calendar = []
-  const dayStart=  startEndDay(startDate).start
+  const dayStart = startEndDay(startDate).start
   for (let currentDate = dayStart; currentDate.seconds <= startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate)) {
     calendar.push(currentDate)
   }

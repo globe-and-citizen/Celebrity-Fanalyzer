@@ -43,9 +43,9 @@ export const useLikeStore = defineStore('likes', {
      * @returns {Promise<void>}
      */
     async fetchPromptStat(promptId, startAt) {
-      let  endAt = Timestamp.now()
-      if((endAt-startAt)>2678400){
-        endAt = new Timestamp(startAt.seconds+ 2678400,0)
+      let endAt = Timestamp.now()
+      if (endAt - startAt > 2678400) {
+        endAt = new Timestamp(startAt.seconds + 2678400, 0)
       }
       const _calendarDay = calendarDay(startAt, endAt)
       const _calendarWeek = calendarWeek(startAt, endAt)
@@ -58,14 +58,22 @@ export const useLikeStore = defineStore('likes', {
           if (i + 1 < calendar.length) {
             nextDate = calendar[i + 1]
           } else {
-            nextDate =  Timestamp.fromDate(new Date())
+            nextDate = Timestamp.fromDate(new Date())
           }
           const likesCollection = collection(db, 'prompts', promptId, 'likes')
           const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
-          const likesQuery_ = query(likesCollection, where('createdAt', '>=', date.toDate().getTime()), where('createdAt', '<', nextDate.toDate().getTime()))
+          const likesQuery_ = query(
+            likesCollection,
+            where('createdAt', '>=', date.toDate().getTime()),
+            where('createdAt', '<', nextDate.toDate().getTime())
+          )
           const likeSnapshot = await getCountFromServer(likesQuery_)
 
-          const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date.toDate().getTime()), where('createdAt', '<', nextDate.toDate().getTime()))
+          const dislikesQuery_ = query(
+            dislikesCollection,
+            where('createdAt', '>=', date.toDate().getTime()),
+            where('createdAt', '<', nextDate.toDate().getTime())
+          )
           const dislikesSnapshot = await getCountFromServer(dislikesQuery_)
 
           const likes = likeSnapshot.data().count
@@ -76,7 +84,7 @@ export const useLikeStore = defineStore('likes', {
       }
 
       const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
-      console.log(_calendarWeek);
+      console.log(_calendarWeek)
       const weekStats = await fetchCalendarData(_calendarWeek)
       const dayStats = await fetchCalendarData(_calendarDay)
       // const dayStats = []
@@ -96,9 +104,9 @@ export const useLikeStore = defineStore('likes', {
      * @returns {Promise<void>}
      */
     async fetchEntryStat(entryId, startAt) {
-      let  endAt = Timestamp.now()
-      if((endAt-startAt)>2678400){
-        endAt = new Timestamp(startAt.seconds+ 2678400,0)
+      let endAt = Timestamp.now()
+      if (endAt - startAt > 2678400) {
+        endAt = new Timestamp(startAt.seconds + 2678400, 0)
       }
 
       const _calendarDay = calendarDay(startAt, endAt)
@@ -112,15 +120,23 @@ export const useLikeStore = defineStore('likes', {
           if (i + 1 < calendar.length) {
             nextDate = calendar[i + 1]
           } else {
-            nextDate =  Timestamp.fromDate(new Date())
+            nextDate = Timestamp.fromDate(new Date())
           }
           const likesCollection = collection(db, 'entries', entryId, 'likes')
           const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
 
-          const likesQuery_ = query(likesCollection, where('createdAt', '>=', date.toDate().getTime()), where('createdAt', '<', nextDate.toDate().getTime()))
+          const likesQuery_ = query(
+            likesCollection,
+            where('createdAt', '>=', date.toDate().getTime()),
+            where('createdAt', '<', nextDate.toDate().getTime())
+          )
           const likeSnapshot = await getCountFromServer(likesQuery_)
 
-          const dislikesQuery_ = query(dislikesCollection, where('createdAt', '>=', date.toDate().getTime()), where('createdAt', '<', nextDate.toDate().getTime()))
+          const dislikesQuery_ = query(
+            dislikesCollection,
+            where('createdAt', '>=', date.toDate().getTime()),
+            where('createdAt', '<', nextDate.toDate().getTime())
+          )
           const dislikesSnapshot = await getCountFromServer(dislikesQuery_)
 
           const likes = likeSnapshot.data().count
