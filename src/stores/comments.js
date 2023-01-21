@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, where, Timestamp, deleteDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, setDoc, runTransaction, where, Timestamp, deleteDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { comment } from 'postcss'
 import { db } from 'src/firebase'
@@ -39,11 +39,10 @@ export const useCommentStore = defineStore('comments', {
       const userStore = useUserStore()
       await userStore.loadBrowserId()
 
-      comment.author = !userStore.isAuthenticated ? userStore.getBrowserId : userStore.getUserRef
+      comment.author = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
       comment.id = comment.author.id + Date.now()
       comment.created = Timestamp.fromDate(new Date())
-
-      console.log(comment)
+      comment.showEdit = false
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', comment.id), comment)
@@ -55,16 +54,41 @@ export const useCommentStore = defineStore('comments', {
         .finally(() => (this._isLoading = false))
     },
 
-    async editComment(entry) {
-      console.log(entry)
+    async editComment(editedComment, commentId, entry) {
+      const userStore = useUserStore()
+      const comment = this.getComments.find((comment) => comment.id === commentId)
+
+      const guyWhoIsEditing = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
+      const guy = await getDoc(guyWhoIsEditing).then((doc) => doc.data())
+
+      this._isLoading = true
+      if(guy.uid === comment.author.uid) {
+        await runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'entries', entry.id, 'comments', comment.id), { text: editedComment })
+        })
+          .then(() => {
+            const index = this.getComments.findIndex((comment) => comment.id === commentId)
+            this.$patch({
+              _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
+            })
+          })
+          .catch((error) => {
+            console.error(error)
+            throw new Error(error)
+          })
+          .finally(() => (this._isLoading = false))
+      } else {
+        $q.notify({ message: 'Comment submission failed!' })
+        return 0;
+      }
     },
 
     async deleteComment(id, entry) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
       const comment = this.getComments.find((comment) => comment.id === id)
 
-      const guyWhoIsDeleting = !userStore.isAuthenticated ? userStore.getBrowserId : userStore.getUserRef
+      const guyWhoIsDeleting = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
 
       const guy = await getDoc(guyWhoIsDeleting).then((doc) => doc.data())
 

@@ -17,7 +17,7 @@
         <q-space />
         <q-btn-dropdown color="secondary" dense dropdown-icon="more_vert" flat rounded>
           <q-list>
-            <q-item clickable v-close-popup @click.prevent="">
+            <q-item :disable="!userStore.isAuthenticated" clickable v-close-popup @click="comment.editShow = !comment.editShow">
               <q-item-section>
                 <q-item-label>Edit</q-item-label>
               </q-item-section>
@@ -30,9 +30,26 @@
           </q-list>
         </q-btn-dropdown>
       </div>
-      <div class="q-my-sm text-body2">
+      <div v-show="!comment.editShow" class="q-my-sm text-body2" >
         {{ comment.text }}
       </div>
+      <q-input
+        autogrow
+        :id="comment.id"
+        v-if="comment.editShow"
+        class="bg-white q-px-sm q-page-container min-h-full"
+        color="white"
+        dense
+        label="Comment"
+        rounded
+        standout="bg-secondary text-white"
+        v-model="comment.text"
+        @keyup.enter="editComment(comment.text, comment.id), comment.editShow = !comment.editShow"
+      >
+        <template v-slot:append>
+          <q-icon class="cursor-pointer" name="send" @click="editComment(comment.text, comment.id), comment.editShow = !comment.editShow" />
+        </template>
+      </q-input>
       <q-separator />
     </div>
     <q-input
@@ -57,7 +74,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useCommentStore, useUserStore } from 'src/stores'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 const props = defineProps({
   comments: { type: Array, required: true },
@@ -82,6 +99,13 @@ async function deleteComment(commentId) {
   await commentStore
     .deleteComment(commentId, props.entry)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
+    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+}
+
+async function editComment(editedComment, id) {
+  await commentStore
+    .editComment(editedComment, id, props.entry)
+    .then(() => $q.notify({ message: 'Comment successfully edited!' }))
     .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
 </script>
