@@ -13,7 +13,6 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
-    getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
@@ -62,7 +61,7 @@ export const useCommentStore = defineStore('comments', {
       const guy = await getDoc(guyWhoIsEditing).then((doc) => doc.data())
 
       this._isLoading = true
-      if(guy.uid === comment.author.uid) {
+      if (guy.uid === comment.author.uid) {
         await runTransaction(db, async (transaction) => {
           transaction.update(doc(db, 'entries', entry.id, 'comments', comment.id), { text: editedComment })
         })
@@ -79,7 +78,7 @@ export const useCommentStore = defineStore('comments', {
           .finally(() => (this._isLoading = false))
       } else {
         $q.notify({ message: 'Comment submission failed!' })
-        return 0;
+        return 0
       }
     },
 
@@ -106,9 +105,9 @@ export const useCommentStore = defineStore('comments', {
           })
           .finally(() => (this._isLoading = false))
       } else {
-        console.log('User is not authorize!');
+        console.log('User is not authorize!')
         $q.notify({ message: 'Comment submission failed!' })
-        return 0;
+        return 0
       }
     }
   }

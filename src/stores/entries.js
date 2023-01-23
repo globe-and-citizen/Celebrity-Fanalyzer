@@ -24,14 +24,6 @@ export const useEntryStore = defineStore('entries', {
   }),
 
   getters: {
-    getEntriesFromPrompt: () => (promptId) => {
-      const promptStore = usePromptStore()
-      const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
-
-      return prompt.entries
-    },
-    isLoading: (state) => state._isLoading,
-    getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
