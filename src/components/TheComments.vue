@@ -1,12 +1,13 @@
 <template>
-  <section class="q-pa-md" style="margin-bottom: 4rem">
+  <section v-if="comments" class="q-pa-md" style="margin-bottom: 4rem">
     <div v-for="comment of comments" class="q-mb-md" :key="comment.id">
       <div class="flex items-center">
-        <q-avatar size="2rem">
+        <q-icon v-if="comment.isAnonymous" name="person" size="2rem" />
+        <q-avatar v-else size="2rem">
           <q-img :src="comment.author.photoURL" />
         </q-avatar>
         <p class="column q-mb-none q-ml-sm">
-          <span class="text-body2">{{ comment.author.displayName }}</span>
+          <span class="text-body2">{{ comment.author.displayName || 'Anonymous' }}</span>
           <span class="text-body2 text-secondary">
             {{ comment.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
           </span>
@@ -14,22 +15,12 @@
         <q-space />
         <q-btn-dropdown color="secondary" dense dropdown-icon="more_vert" flat rounded>
           <q-list>
-            <q-item
-              :disable="!userStore.isAuthenticated || userStore.getUserRef.id !== comment.author.uid"
-              clickable
-              v-close-popup
-              @click="isEditing = !isEditing"
-            >
+            <q-item v-if="userId === (comment.author?.uid || comment.author)" clickable v-close-popup @click="editInput(comment.id)">
               <q-item-section>
                 <q-item-label>Edit</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item
-              :disable="!userStore.isAuthenticated || userStore.getUserRef.id !== comment.author.uid"
-              clickable
-              v-close-popup
-              @click="deleteComment(comment.id)"
-            >
+            <q-item v-if="userId === (comment.author?.uid || comment.author)" clickable v-close-popup @click="deleteComment(comment.id)">
               <q-item-section>
                 <q-item-label>Delete</q-item-label>
               </q-item-section>
@@ -37,13 +28,9 @@
           </q-list>
         </q-btn-dropdown>
       </div>
-      <div v-show="!isEditing" class="q-my-sm text-body2">
-        {{ comment.text }}
-      </div>
       <q-input
+        v-if="isEditing && comment.id === inputEdit"
         autogrow
-        :id="comment.id"
-        v-if="isEditing"
         class="bg-white q-px-sm q-page-container min-h-full"
         color="white"
         dense
@@ -51,19 +38,21 @@
         rounded
         standout="bg-secondary text-white"
         v-model="comment.text"
-        @keyup.enter="editComment(comment.text, comment.id), (isEditing = !isEditing)"
+        @keyup.enter="editComment(comment.text, comment.id)"
       >
         <template v-slot:append>
-          <q-icon class="cursor-pointer" name="send" @click="editComment(comment.text, comment.id), (isEditing = !isEditing)" />
+          <q-icon class="cursor-pointer" name="send" @click="editComment(comment.text, comment.id)" />
         </template>
       </q-input>
+      <div v-else class="q-my-sm text-body2">
+        {{ comment.text }}
+      </div>
       <q-separator />
     </div>
     <q-input
       class="bg-white fixed-bottom q-px-sm q-page-container"
       color="white"
       dense
-      :disable="!userStore.isAuthenticated"
       label="Comment"
       rounded
       standout="bg-secondary text-white"
@@ -81,7 +70,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useCommentStore, useUserStore } from 'src/stores'
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
   comments: { type: Array, required: true },
@@ -93,7 +82,14 @@ const myComment = reactive({})
 const commentStore = useCommentStore()
 const userStore = useUserStore()
 
+const userId = ref('')
+const inputEdit = ref('')
 const isEditing = ref(false)
+
+onMounted(async () => {
+  await userStore.fetchUserIp()
+  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+})
 
 async function sendComment() {
   if (myComment.text !== undefined) {
@@ -108,17 +104,23 @@ async function sendComment() {
   }
 }
 
-async function deleteComment(commentId) {
-  await commentStore
-    .deleteComment(commentId, props.entry)
-    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+function editInput(commentId) {
+  isEditing.value = !isEditing.value
+  inputEdit.value = commentId
 }
 
 async function editComment(editedComment, id) {
   await commentStore
     .editComment(editedComment, id, props.entry)
     .then(() => $q.notify({ message: 'Comment successfully edited!' }))
+    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .finally(() => (isEditing.value = false))
+}
+
+async function deleteComment(commentId) {
+  await commentStore
+    .deleteComment(props.entry.id, commentId, userId.value)
+    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
 </script>
