@@ -16,6 +16,7 @@ export const useUserStore = defineStore('user', {
     // TODO: fix this, get shoul only return the valu in the store, if we need to use the storage, we should use it to update the store
     getUser: (state) => LocalStorage.getItem('user') || state._user,
     getUserIp: (state) => state._userIp,
+    getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
     isAuthenticated: (getters) => !!getters.getUser?.uid,
