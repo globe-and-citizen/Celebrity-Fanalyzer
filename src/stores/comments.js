@@ -1,6 +1,5 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, runTransaction, where, Timestamp, deleteDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { comment } from 'postcss'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 
@@ -27,7 +26,9 @@ export const useCommentStore = defineStore('comments', {
       const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
       for (const comment of comments) {
-        comment.author = await getDoc(comment.author).then((doc) => doc.data())
+        if (!comment.isAnonymous) {
+          comment.author = await getDoc(comment.author).then((doc) => doc.data())
+        }
       }
       this._isLoading = false
 
@@ -36,12 +37,13 @@ export const useCommentStore = defineStore('comments', {
 
     async addComment(comment, entry) {
       const userStore = useUserStore()
-      await userStore.loadBrowserId()
+      await userStore.fetchUserIp()
 
-      comment.author = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
+      comment.author = userStore.getUserRef || userStore.getUserIpHash
       comment.created = Timestamp.fromDate(new Date())
+      comment.isAnonymous = !userStore.isAuthenticated
 
-      const docId = comment.author.id + Date.now()
+      const docId = (comment.author.id || comment.author) + '-' + Date.now()
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
@@ -78,24 +80,27 @@ export const useCommentStore = defineStore('comments', {
           .finally(() => (this._isLoading = false))
       } else {
         $q.notify({ message: 'Comment submission failed!' })
-        return 0
       }
     },
 
-    async deleteComment(id, entry) {
+    async deleteComment(entryId, id, userId) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
+
       const comment = this.getComments.find((comment) => comment.id === id)
-
-      const guyWhoIsDeleting = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
-
-      const guy = await getDoc(guyWhoIsDeleting).then((doc) => doc.data())
+      console.log('comment', comment)
 
       const index = this._comments.findIndex((comment) => comment.id === id)
+      console.log('index', index)
+
+      console.log(userId)
+      console.log([userId].includes(comment.author?.uid || comment.author))
+      console.log([comment.author?.uid, comment.author].includes(userId))
+      console.log(comment.author)
 
       this._isLoading = true
-      if (index !== -1 && guy.uid === comment.author.uid) {
-        await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
+      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
+        await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
           .then(() => {
             this._comments.splice(index, 1)
           })
@@ -107,7 +112,6 @@ export const useCommentStore = defineStore('comments', {
       } else {
         console.log('User is not authorize!')
         $q.notify({ message: 'Comment submission failed!' })
-        return 0
       }
     }
   }
