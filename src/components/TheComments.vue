@@ -18,7 +18,7 @@
               :disable="!userStore.isAuthenticated || userStore.getUserRef.id !== comment.author.uid"
               clickable
               v-close-popup
-              @click="comment.editShow = !comment.editShow"
+              @click="isEditing = !isEditing"
             >
               <q-item-section>
                 <q-item-label>Edit</q-item-label>
@@ -37,13 +37,13 @@
           </q-list>
         </q-btn-dropdown>
       </div>
-      <div v-show="!comment.editShow" class="q-my-sm text-body2">
+      <div v-show="!isEditing" class="q-my-sm text-body2">
         {{ comment.text }}
       </div>
       <q-input
         autogrow
         :id="comment.id"
-        v-if="comment.editShow"
+        v-if="isEditing"
         class="bg-white q-px-sm q-page-container min-h-full"
         color="white"
         dense
@@ -51,14 +51,10 @@
         rounded
         standout="bg-secondary text-white"
         v-model="comment.text"
-        @keyup.enter="editComment(comment.text, comment.id), (comment.editShow = !comment.editShow)"
+        @keyup.enter="editComment(comment.text, comment.id), (isEditing = !isEditing)"
       >
         <template v-slot:append>
-          <q-icon
-            class="cursor-pointer"
-            name="send"
-            @click="editComment(comment.text, comment.id), (comment.editShow = !comment.editShow)"
-          />
+          <q-icon class="cursor-pointer" name="send" @click="editComment(comment.text, comment.id), (isEditing = !isEditing)" />
         </template>
       </q-input>
       <q-separator />
@@ -94,8 +90,10 @@ const props = defineProps({
 
 const $q = useQuasar()
 const myComment = reactive({})
-const userStore = useUserStore()
 const commentStore = useCommentStore()
+const userStore = useUserStore()
+
+const isEditing = ref(false)
 
 async function sendComment() {
   if (myComment.text !== undefined) {

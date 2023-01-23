@@ -39,12 +39,12 @@ export const useCommentStore = defineStore('comments', {
       await userStore.loadBrowserId()
 
       comment.author = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
-      comment.id = comment.author.id + Date.now()
       comment.created = Timestamp.fromDate(new Date())
-      comment.showEdit = false
+
+      const docId = comment.author.id + Date.now()
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', entry.id, 'comments', comment.id), comment)
+      await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
         .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: userStore.getUser }] }))
         .catch((err) => {
           console.log(err)
@@ -92,7 +92,7 @@ export const useCommentStore = defineStore('comments', {
       const guy = await getDoc(guyWhoIsDeleting).then((doc) => doc.data())
 
       const index = this._comments.findIndex((comment) => comment.id === id)
-      // TODO: Check if the user is the author of the comment (check author id with user id)
+
       this._isLoading = true
       if (index !== -1 && guy.uid === comment.author.uid) {
         await deleteDoc(doc(db, 'entries', entry.id, 'comments', id))
