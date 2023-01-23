@@ -31,7 +31,7 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="comments.length" @click="toggleComments()">
+          <q-btn flat rounded icon="chat_bubble_outline" :label="comments.length" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
@@ -100,6 +100,11 @@ onMounted(async () => {
       .catch(() => (entry.value = null))
   }
 
+  if (!entry.value) {
+    router.push('/404')
+    return
+  }
+
   await commentStore.fetchComments(router.currentRoute.value.href)
   comments.value = commentStore.getComments
 
@@ -107,11 +112,6 @@ onMounted(async () => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
-
-  if (!entry.value) {
-    router.push('/404')
-    return
-  }
   await shareStore.countEntryShares(entry.value.id)
   countShares.value = shareStore.getShares
 
@@ -144,10 +144,6 @@ function dislike() {
 
 function onShare(socialNetwork) {
   shareStore.shareEntry(entry.value.id, socialNetwork)
-}
-
-function toggleComments() {
-  tab.value = 'comments'
 }
 </script>
 
