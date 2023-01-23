@@ -76,11 +76,7 @@
       @keyup.enter="sendComment()"
     >
       <template v-slot:append>
-        <q-icon
-          class="cursor-pointer"
-          name="send"
-          @click="sendComment()"
-        />
+        <q-icon class="cursor-pointer" name="send" @click="sendComment()" />
       </template>
     </q-input>
   </section>
@@ -102,7 +98,7 @@ const userStore = useUserStore()
 const commentStore = useCommentStore()
 
 async function sendComment() {
-  if(myComment.text !== undefined) {
+  if (myComment.text !== undefined) {
     await commentStore
       .addComment(myComment, props.entry)
       .then(() => $q.notify({ message: 'Comment successfully submitted' }))
@@ -110,7 +106,7 @@ async function sendComment() {
     this.myComment.text = ''
     window.scrollTo(0, document.body.scrollHeight)
   } else {
-    $q.notify({ message: "Fill the input!" })
+    $q.notify({ message: 'Fill the input!' })
   }
 }
 

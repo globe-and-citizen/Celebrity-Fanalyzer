@@ -72,17 +72,16 @@
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
-import { useEntryStore, useLikeStore, usePromptStore, useCommentStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { shortMonthDayTime } from '../utils/date'
 
 const router = useRouter()
 
+const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
-const commentStore = useCommentStore()
 const shareStore = useShareStore()
 
 const chartData = ref([])

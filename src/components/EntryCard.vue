@@ -79,7 +79,7 @@ import { useEntryStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['id', 'description', 'author', 'created', 'image', 'info', 'prompt', 'slug', 'title'])
+const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -91,8 +91,8 @@ const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt
 
 watchEffect(() => {
   if (props.id) {
-    entry.id = props.id
     entry.description = props.description
+    entry.id = props.id
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
