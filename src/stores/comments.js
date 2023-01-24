@@ -56,20 +56,21 @@ export const useCommentStore = defineStore('comments', {
         .finally(() => (this._isLoading = false))
     },
 
-    async editComment(editedComment, commentId, entry) {
+    async editComment(entryId, id, editedComment, userId) {
       const userStore = useUserStore()
-      const comment = this.getComments.find((comment) => comment.id === commentId)
+      await userStore.fetchUserIp()
 
-      const guyWhoIsEditing = !userStore.isAuthenticated ? userStore.getUserIp : userStore.getUserRef
-      const guy = await getDoc(guyWhoIsEditing).then((doc) => doc.data())
+      const comment = this.getComments.find((comment) => comment.id === id)
+      const index = this._comments.findIndex((comment) => comment.id === id)
+
+      comment.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      if (guy.uid === comment.author.uid) {
+      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
         await runTransaction(db, async (transaction) => {
-          transaction.update(doc(db, 'entries', entry.id, 'comments', comment.id), { text: editedComment })
+          transaction.update(doc(db, 'entries', entryId, 'comments', comment.id), { text: editedComment })
         })
           .then(() => {
-            const index = this.getComments.findIndex((comment) => comment.id === commentId)
             this.$patch({
               _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
             })
@@ -80,7 +81,7 @@ export const useCommentStore = defineStore('comments', {
           })
           .finally(() => (this._isLoading = false))
       } else {
-        $q.notify({ message: 'Comment submission failed!' })
+        throw new Error(error)
       }
     },
 
@@ -89,15 +90,7 @@ export const useCommentStore = defineStore('comments', {
       await userStore.fetchUserIp()
 
       const comment = this.getComments.find((comment) => comment.id === id)
-      console.log('comment', comment)
-
       const index = this._comments.findIndex((comment) => comment.id === id)
-      console.log('index', index)
-
-      console.log(userId)
-      console.log([userId].includes(comment.author?.uid || comment.author))
-      console.log([comment.author?.uid, comment.author].includes(userId))
-      console.log(comment.author)
 
       this._isLoading = true
       if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
@@ -111,8 +104,7 @@ export const useCommentStore = defineStore('comments', {
           })
           .finally(() => (this._isLoading = false))
       } else {
-        console.log('User is not authorize!')
-        $q.notify({ message: 'Comment submission failed!' })
+        throw new Error(error)
       }
     }
   }

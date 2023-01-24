@@ -115,9 +115,9 @@ function editInput(commentId) {
   inputEdit.value = commentId
 }
 
-async function editComment(editedComment, id) {
+async function editComment(commentId, editedComment) {
   await commentStore
-    .editComment(editedComment, id, props.entry)
+    .editComment(props.entry.id, commentId, editedComment, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully edited!' }))
     .catch(() => $q.notify({ message: 'Failed to edit comment' }))
     .finally(() => (isEditing.value = false))
