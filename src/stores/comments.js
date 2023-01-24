@@ -43,11 +43,12 @@ export const useCommentStore = defineStore('comments', {
       comment.created = Timestamp.fromDate(new Date())
       comment.isAnonymous = !userStore.isAuthenticated
 
-      const docId = (comment.author.id || comment.author) + '-' + Date.now()
+      const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
+      const docId = Date.now() + '-' + (comment.author.id || comment.author)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
-        .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: userStore.getUser }] }))
+        .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: stateAuthor }] }))
         .catch((err) => {
           console.log(err)
           throw new Error(err)
