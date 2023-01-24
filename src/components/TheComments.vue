@@ -13,14 +13,21 @@
           </span>
         </p>
         <q-space />
-        <q-btn-dropdown color="secondary" dense dropdown-icon="more_vert" flat rounded>
+        <q-btn-dropdown
+          v-if="(comment.author?.uid || comment.author) === userId"
+          color="secondary"
+          dense
+          dropdown-icon="more_vert"
+          flat
+          rounded
+        >
           <q-list>
-            <q-item v-if="userId === (comment.author?.uid || comment.author)" clickable v-close-popup @click="editInput(comment.id)">
+            <q-item clickable v-close-popup @click="editInput(comment.id)">
               <q-item-section>
                 <q-item-label>Edit</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item v-if="userId === (comment.author?.uid || comment.author)" clickable v-close-popup @click="deleteComment(comment.id)">
+            <q-item clickable v-close-popup @click="deleteComment(comment.id)">
               <q-item-section>
                 <q-item-label>Delete</q-item-label>
               </q-item-section>
