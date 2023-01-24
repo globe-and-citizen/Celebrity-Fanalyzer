@@ -37,7 +37,7 @@
       </div>
       <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
         <q-input
-          class="bg-white q-px-sm q-page-container min-h-full"
+          class="q-px-sm"
           dense
           label="Comment"
           lazy-rules
@@ -53,10 +53,30 @@
       <div v-else class="q-my-sm text-body2">
         {{ comment.text }}
       </div>
-      <q-separator />
+      <q-btn flat icon="chat_bubble_outline" round size="md" @click="replyInput(comment.id)">
+        <q-tooltip>Reply</q-tooltip>
+      </q-btn>
+      <q-slide-transition>
+        <q-form v-if="isReplying && comment.id === reply.parentId" greedy @submit.prevent="addReply(comment.id)">
+          <q-input
+            class="q-px-sm"
+            dense
+            label="Reply"
+            lazy-rules
+            :name="comment.id"
+            rounded
+            :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+            standout="bg-secondary text-white"
+            v-model="reply.text"
+          >
+            <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+          </q-input>
+        </q-form>
+      </q-slide-transition>
+      <q-separator spaced />
     </div>
 
-    <q-form greedy @submit.prevent="sendComment">
+    <q-form greedy @submit.prevent="addComment">
       <q-input
         class="bg-white fixed-bottom q-px-sm q-page-container"
         dense
@@ -86,20 +106,22 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
-const myComment = reactive({})
 const commentStore = useCommentStore()
 const userStore = useUserStore()
 
-const userId = ref('')
 const inputEdit = ref('')
 const isEditing = ref(false)
+const isReplying = ref(false)
+const myComment = reactive({})
+const reply = reactive({})
+const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 })
 
-async function sendComment() {
+async function addComment() {
   await commentStore
     .addComment(myComment, props.entry)
     .then(() => {
@@ -129,4 +151,21 @@ async function deleteComment(commentId) {
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => $q.notify({ message: 'Failed to delete comment' }))
 }
+
+function replyInput(parentId) {
+  isReplying.value = !isReplying.value
+  reply.parentId = parentId
+}
+
+async function addReply(commentId) {
+  await commentStore
+    .addReply(props.entry.id, commentId, reply)
+    .then(() => {
+      reply.text = ''
+      $q.notify({ message: 'Reply successfully submitted' })
+      window.scrollTo(0, document.body.scrollHeight)
+    })
+    .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
+}
+//Reply submission failed!FirebaseError: [code=invalid-argument]: Function setDoc() called with invalid data. Unsupported field value: a custom SubmitEvent object (found in field parentId in document entries/2022-08T1674307890920/comments/1674593638715-r3C28i2x4RUuqn2jrt69A5K6RcC3)
 </script>

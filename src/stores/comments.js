@@ -106,6 +106,30 @@ export const useCommentStore = defineStore('comments', {
       } else {
         throw new Error(error)
       }
+    },
+
+    async addReply(entryId, commentId, reply) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      reply.author = userStore.getUserRef || userStore.getUserIpHash
+      reply.created = Timestamp.fromDate(new Date())
+      reply.isAnonymous = !userStore.isAuthenticated
+
+      const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
+      const docId = Date.now() + '-' + (reply.author.id || reply.author)
+
+      this._isLoading = true
+      await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
+        .then(() => {
+          const index = this._comments.findIndex((comment) => comment.id === commentId)
+          this.$patch({})
+        })
+        .catch((err) => {
+          console.log(err)
+          throw new Error(err)
+        })
+        .finally(() => (this._isLoading = false))
     }
   }
 })
