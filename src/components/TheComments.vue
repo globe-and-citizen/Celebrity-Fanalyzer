@@ -35,29 +35,28 @@
           </q-list>
         </q-btn-dropdown>
       </div>
-      <q-input
-        v-if="isEditing && comment.id === inputEdit"
-        autogrow
-        class="bg-white q-px-sm q-page-container min-h-full"
-        color="white"
-        dense
-        label="Comment"
-        rounded
-        standout="bg-secondary text-white"
-        v-model="comment.text"
-        @keyup.enter="editComment(comment.text, comment.id)"
-      >
-        <template v-slot:append>
-          <q-icon class="cursor-pointer" name="send" @click="editComment(comment.text, comment.id)" />
-        </template>
-      </q-input>
+      <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
+        <q-input
+          class="bg-white q-px-sm q-page-container min-h-full"
+          dense
+          label="Comment"
+          lazy-rules
+          required
+          rounded
+          :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+          standout="bg-secondary text-white"
+          v-model="comment.text"
+        >
+          <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+        </q-input>
+      </q-form>
       <div v-else class="q-my-sm text-body2">
         {{ comment.text }}
       </div>
       <q-separator />
     </div>
 
-    <q-form @submit.prevent="sendComment">
+    <q-form greedy @submit.prevent="sendComment">
       <q-input
         class="bg-white fixed-bottom q-px-sm q-page-container"
         dense
