@@ -119,6 +119,8 @@ const userId = ref('')
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+
+  // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
 })
 
 async function addComment() {

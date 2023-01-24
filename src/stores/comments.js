@@ -123,7 +123,9 @@ export const useCommentStore = defineStore('comments', {
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
         .then(() => {
           const index = this._comments.findIndex((comment) => comment.id === commentId)
-          this.$patch({})
+          this.$patch({
+            // TODO: save reply to state, nested with the comment (use stateAuthor to preserve name and photo)
+          })
         })
         .catch((err) => {
           console.log(err)
