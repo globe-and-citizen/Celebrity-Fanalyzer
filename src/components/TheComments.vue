@@ -56,21 +56,23 @@
       </div>
       <q-separator />
     </div>
-    <q-input
-      class="bg-white fixed-bottom q-px-sm q-page-container"
-      color="white"
-      dense
-      label="Comment"
-      rounded
-      standout="bg-secondary text-white"
-      style="margin-bottom: 6.7rem"
-      v-model="myComment.text"
-      @keyup.enter="sendComment()"
-    >
-      <template v-slot:append>
-        <q-icon class="cursor-pointer" name="send" @click="sendComment()" />
-      </template>
-    </q-input>
+
+    <q-form @submit.prevent="sendComment">
+      <q-input
+        class="bg-white fixed-bottom q-px-sm q-page-container"
+        dense
+        label="Comment"
+        lazy-rules
+        required
+        rounded
+        :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+        standout="bg-secondary text-white"
+        style="margin-bottom: 6.7rem"
+        v-model="myComment.text"
+      >
+        <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+      </q-input>
+    </q-form>
   </section>
 </template>
 
@@ -99,16 +101,14 @@ onMounted(async () => {
 })
 
 async function sendComment() {
-  if (myComment.text !== undefined) {
-    await commentStore
-      .addComment(myComment, props.entry)
-      .then(() => $q.notify({ message: 'Comment successfully submitted' }))
-      .catch(() => $q.notify({ message: 'Comment submission failed!' }))
-    this.myComment.text = ''
-    window.scrollTo(0, document.body.scrollHeight)
-  } else {
-    $q.notify({ message: 'Fill the input!' })
-  }
+  await commentStore
+    .addComment(myComment, props.entry)
+    .then(() => {
+      myComment.text = ''
+      window.scrollTo(0, document.body.scrollHeight)
+      $q.notify({ message: 'Comment successfully submitted' })
+    })
+    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
 }
 
 function editInput(commentId) {
@@ -120,7 +120,7 @@ async function editComment(editedComment, id) {
   await commentStore
     .editComment(editedComment, id, props.entry)
     .then(() => $q.notify({ message: 'Comment successfully edited!' }))
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .catch(() => $q.notify({ message: 'Failed to edit comment' }))
     .finally(() => (isEditing.value = false))
 }
 
@@ -128,6 +128,6 @@ async function deleteComment(commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .catch(() => $q.notify({ message: 'Failed to delete comment' }))
 }
 </script>
