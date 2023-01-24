@@ -1,5 +1,9 @@
 /* app global css */
 
+html {
+  scroll-behavior: smooth;
+}
+
 .q-btn-toggle > .q-btn-item {
   border: 1px solid;
   border-radius: 24px !important;
