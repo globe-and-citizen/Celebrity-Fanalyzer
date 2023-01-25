@@ -39,7 +39,7 @@
     </section>
     <q-tab-panels animated swipeable v-model="category">
       <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
-        <TransitionGroup name="list" tag="div">
+        <TransitionGroup name="prompt" tag="div">
           <ItemCard
             v-for="prompt in computedPrompt"
             :item="prompt"
@@ -84,13 +84,14 @@ const computedPrompt = computed(() => {
 </script>
 
 <style>
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
+.prompt-enter-active,
+.prompt-leave-active {
+  transition: all 0.3s ease;
 }
-.list-enter-from,
-.list-leave-to {
+.prompt-enter-from,
+.prompt-leave-to {
   opacity: 0;
+  height: 0;
   transform: translateY(-90px);
 }
 </style>
