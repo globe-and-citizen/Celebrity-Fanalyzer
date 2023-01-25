@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
 
 export const useStatStore = defineStore('stats', {
@@ -10,7 +9,7 @@ export const useStatStore = defineStore('stats', {
   persist: true,
 
   getters: {
-    getStats: (state) => LocalStorage.getItem('stats') || state._stats
+    getStats: (state) => state._stats
   },
 
   actions: {
