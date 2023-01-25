@@ -16,6 +16,7 @@
     "echarts": "^5.4.1",
     "firebase": "^9.16.0",
     "pinia": "^2.0.29",
+    "pinia-plugin-persistedstate": "^3.0.2",
     "quasar": "^2.11.5",
     "sha1": "^1.1.1",
     "vue": "^3.2.45",

@@ -6,9 +6,10 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: [],
-    _entries: [],
     _isLoading: false
   }),
+
+  persist: true,
 
   getters: {
     getComments: (state) => state._comments,

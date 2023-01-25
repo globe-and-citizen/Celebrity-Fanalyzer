@@ -5,13 +5,13 @@ import { useUserStore } from 'src/stores'
 
 export const useLikeStore = defineStore('likes', {
   state: () => ({
-    _isLoading: false,
     _likes: 0,
     _dislikes: 0
   }),
 
+  persist: true,
+
   getters: {
-    isLoading: (state) => state._isLoading,
     getLikes: (state) => state._likes,
     getDislikes: (state) => state._dislikes
   },

@@ -1,4 +1,3 @@
-import 'firebase/firestore'
 import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -12,6 +11,8 @@ export const usePromptStore = defineStore('prompts', {
     _monthPrompt: null,
     _prompts: []
   }),
+
+  persist: true,
 
   getters: {
     getMonthPrompt: (state) => state._monthPrompt,
