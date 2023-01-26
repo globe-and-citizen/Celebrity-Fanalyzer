@@ -36,6 +36,25 @@ export const useCommentStore = defineStore('comments', {
       this._comments = comments
     },
 
+    async fetchCommentsByparentId(commentId) {
+      this._isLoading = true
+      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('parentId', '==', commentId)))
+      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      const c = query(collection(db, 'entries', entry.id, 'comments'))
+      const snap = await getDocs(c)
+      const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+      for (const comment of comments) {
+        if (!comment.isAnonymous) {
+          comment.author = await getDoc(comment.author).then((doc) => doc.data())
+        }
+      }
+      this._isLoading = false
+
+      this._comments = comments
+    },
+
     async addComment(comment, entry) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()

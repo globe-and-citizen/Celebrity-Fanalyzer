@@ -117,6 +117,7 @@ const isReplying = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
 const userId = ref('')
+const childComments = ref([])
 
 onMounted(async () => {
   await userStore.fetchUserIp()
@@ -156,9 +157,13 @@ async function deleteComment(commentId) {
     .catch(() => $q.notify({ message: 'Failed to delete comment' }))
 }
 
-function replyInput(parentId) {
+async function replyInput(parentId) {
   isReplying.value = !isReplying.value
   reply.parentId = parentId
+
+  await commentStore
+    .fetchCommentsByparentId(parentId)
+    childComments.value =commentStore.getComments
 }
 
 async function addReply(commentId) {
