@@ -1,5 +1,5 @@
 <template>
-  <section v-if="comments" class="q-pa-md" style="margin-bottom: 4rem">
+  <section v-if="comments.length" class="q-pa-md" style="margin-bottom: 4rem">
     <div v-for="comment of comments" class="q-mb-md" :key="comment.id">
       <div class="flex items-center">
         <q-icon v-if="comment.isAnonymous" name="person" size="2rem" />
@@ -9,7 +9,7 @@
         <p class="column q-mb-none q-ml-sm">
           <span class="text-body2">{{ comment.author.displayName || 'Anonymous' }}</span>
           <span class="text-body2 text-secondary">
-            {{ comment.created.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
+            {{ shortMonthDayTime(comment.created) }}
           </span>
         </p>
         <q-space />
@@ -100,6 +100,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useCommentStore, useUserStore } from 'src/stores'
+import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
