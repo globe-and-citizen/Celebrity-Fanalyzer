@@ -38,6 +38,7 @@
       <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
         <q-input
           class="q-px-sm"
+          autogrow
           dense
           label="Comment"
           lazy-rules
@@ -60,6 +61,7 @@
         <q-form v-if="isReplying && comment.id === reply.parentId" greedy @submit.prevent="addReply(comment.id)">
           <q-input
             class="q-px-sm"
+            autogrow
             dense
             label="Reply"
             lazy-rules
