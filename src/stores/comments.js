@@ -143,12 +143,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
-        .then(() => {
-          const index = this._comments.findIndex((comment) => comment.id === commentId)
-          this.$patch({
-            // TODO: save reply to state, nested with the comment (use stateAuthor to preserve name and photo)
-          })
-        })
+        .then(() => this.$patch({ _childcomments: [...this._childcomments, { ...reply, author: stateAuthor }] }))
         .catch((err) => {
           console.log(err)
           throw new Error(err)

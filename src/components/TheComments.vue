@@ -152,6 +152,7 @@ onMounted(async () => {
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
 
+
 })
 
 async function addComment() {
@@ -192,7 +193,6 @@ async function replyInput(parentId) {
   await commentStore
     .fetchCommentsByparentId(router.currentRoute.value.href, parentId)
     childComments.value = commentStore.getChildComments
-    console.log(childComments.value);
 }
 
 async function addReply(commentId) {
@@ -201,7 +201,6 @@ async function addReply(commentId) {
     .then(() => {
       reply.text = ''
       $q.notify({ message: 'Reply successfully submitted' })
-      window.scrollTo(0, document.body.scrollHeight)
     })
     .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
 }
