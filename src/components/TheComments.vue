@@ -59,6 +59,27 @@
       </q-btn>
       <q-slide-transition>
         <q-form v-if="isReplying && comment.id === reply.parentId" greedy @submit.prevent="addReply(comment.id)">
+          <!-- Started Child Comment section -->
+            <div v-for="childComment of childComments" class="q-mb-md q-ml-xl" :key="childComment.id">
+              <div class="flex items-center">
+                <q-icon v-if="childComment.isAnonymous" name="person" size="2rem" />
+                <q-avatar v-else size="2rem">
+                  <q-img :src="childComment.author.photoURL" />
+                </q-avatar>
+                <p class="column q-mb-none q-ml-sm">
+                  <span class="text-body2">{{ childComment.author.displayName || 'Anonymous' }}</span>
+                  <span class="text-body2 text-secondary">
+                    {{ shortMonthDayTime(childComment.created) }}
+                  </span>
+                </p>
+                <q-space />
+              </div>
+              <div class="q-my-sm text-body2">
+                {{ childComment.text }}
+              </div>
+              <q-separator spaced />
+            </div>
+          <!-- Ended Child Comment Section -->
           <q-input
             class="q-px-sm"
             autogrow
@@ -102,6 +123,11 @@ import { useQuasar } from 'quasar'
 import { useCommentStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import { db } from 'src/firebase'
+
+const router = useRouter()
 
 const props = defineProps({
   comments: { type: Array, required: true },
@@ -125,6 +151,7 @@ onMounted(async () => {
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
+
 })
 
 async function addComment() {
@@ -163,8 +190,9 @@ async function replyInput(parentId) {
   reply.parentId = parentId
 
   await commentStore
-    .fetchCommentsByparentId(parentId)
-    childComments.value =commentStore.getComments
+    .fetchCommentsByparentId(router.currentRoute.value.href, parentId)
+    childComments.value = commentStore.getChildComments
+    console.log(childComments.value);
 }
 
 async function addReply(commentId) {

@@ -6,6 +6,7 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: [],
+    _childcomments: [],
     _isLoading: false
   }),
 
@@ -13,6 +14,7 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
+    getChildComments: (state) => state._childcomments,
     isLoading: (state) => state._isLoading
   },
 
@@ -36,12 +38,12 @@ export const useCommentStore = defineStore('comments', {
       this._comments = comments
     },
 
-    async fetchCommentsByparentId(commentId) {
+    async fetchCommentsByparentId(slug, parentId) {
       this._isLoading = true
-      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('parentId', '==', commentId)))
+      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-      const c = query(collection(db, 'entries', entry.id, 'comments'))
+      const c = query(collection(db, 'entries', entry.id, 'comments'), where('parentId', '==', parentId))
       const snap = await getDocs(c)
       const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
@@ -52,7 +54,7 @@ export const useCommentStore = defineStore('comments', {
       }
       this._isLoading = false
 
-      this._comments = comments
+      this._childcomments = comments
     },
 
     async addComment(comment, entry) {
