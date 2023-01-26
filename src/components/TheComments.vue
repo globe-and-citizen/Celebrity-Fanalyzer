@@ -53,7 +53,21 @@
       <div v-else class="q-my-sm text-body2">
         {{ comment.text }}
       </div>
-      <q-btn flat icon="chat_bubble_outline" round size="md" @click="replyInput(comment.id)">
+      <!-- TODO: Disable buttons when loading -->
+      <q-btn color="green" flat icon="sentiment_satisfied_alt" :label="comment.likes?.length || 0" rounded @click="likeComment(comment.id)">
+        <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+      </q-btn>
+      <q-btn
+        color="red"
+        flat
+        icon="sentiment_very_dissatisfied"
+        :label="comment.dislikes?.length || 0"
+        rounded
+        @click="dislikeComment(comment.id)"
+      >
+        <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+      </q-btn>
+      <q-btn flat icon="chat_bubble_outline" :label="countReplies" rounded @click="replyInput(comment.id)">
         <q-tooltip>Reply</q-tooltip>
       </q-btn>
       <q-slide-transition>
@@ -110,6 +124,7 @@ const $q = useQuasar()
 const commentStore = useCommentStore()
 const userStore = useUserStore()
 
+const countReplies = ref(0)
 const inputEdit = ref('')
 const isEditing = ref(false)
 const isReplying = ref(false)
@@ -133,6 +148,16 @@ async function addComment() {
       $q.notify({ message: 'Comment successfully submitted' })
     })
     .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+}
+
+function likeComment(commentId) {
+  console.log('like comment', commentId)
+  commentStore.likeComment(props.entry.id, commentId)
+}
+
+function dislikeComment(commentId) {
+  console.log('dislike comment', commentId)
+  // commentStore.dislikeComment(props.entry.id, commentId)
 }
 
 function editInput(commentId) {
