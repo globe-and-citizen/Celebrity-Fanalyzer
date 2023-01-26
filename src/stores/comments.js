@@ -1,4 +1,17 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where
+} from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -84,6 +97,34 @@ export const useCommentStore = defineStore('comments', {
       } else {
         throw new Error(error)
       }
+    },
+
+    async likeComment(entryId, id) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const user = userStore.getUserRef || userStore.getUserIpHash
+
+      this._isLoading = true
+      await updateDoc(doc(db, 'entries', entryId, 'comments', id), { likes: arrayUnion(user) })
+        .then(() => {
+          const index = this._comments.findIndex((comment) => comment.id === id)
+          console.log(index)
+          console.log(this._comments)
+          // TODO: Fix state of comments after liking it
+          this.$patch({
+            _comments: [
+              ...this._comments.slice(0, index),
+              { ...this._comments[index], likes: [...this._comments[index].likes, user] },
+              ...this._comments.slice(index + 1)
+            ]
+          })
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async deleteComment(entryId, id, userId) {
