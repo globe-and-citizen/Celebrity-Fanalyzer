@@ -63,19 +63,56 @@
             <!-- Started Child Comment section -->
               <div v-for="childComment of childComments" class="q-mb-md q-ml-xl" :key="childComment.id">
                 <div class="flex items-center">
-                  <q-icon v-if="childComment.isAnonymous" name="person" size="2rem" />
-                  <q-avatar v-else size="2rem">
+                  <q-icon v-if="childComment.isAnonymous" name="person" size="1.5rem" />
+                  <q-avatar v-else size="1.5rem">
                     <q-img :src="childComment.author.photoURL" />
                   </q-avatar>
-                  <p class="column q-mb-none q-ml-sm">
-                    <span class="text-body2">{{ childComment.author.displayName || 'Anonymous' }}</span>
-                    <span class="text-body2 text-secondary">
+                  <p class="row q-mb-none q-ml-sm">
+                    <span class="text-body2 q-mr-sm">{{ childComment.author.displayName || 'Anonymous' }}</span>
+                    <span class="text-caption text-secondary">
                       {{ shortMonthDayTime(childComment.created) }}
                     </span>
                   </p>
                   <q-space />
+                  <q-btn-dropdown
+                    v-if="(childComment.author?.uid || childComment.author) === userId"
+                    color="secondary"
+                    dense
+                    dropdown-icon="more_vert"
+                    flat
+                    rounded
+                  >
+                    <q-list>
+                      <q-item clickable v-close-popup @click="editInput(childComment.id)">
+                        <q-item-section>
+                          <q-item-label>Edit</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                      <q-item clickable v-close-popup @click="deleteComment(childComment.id)">
+                        <q-item-section>
+                          <q-item-label>Delete</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-btn-dropdown>
                 </div>
-                <div class="q-my-sm text-body2">
+                <q-form v-if="isEditing && childComment.id === inputEdit" greedy @submit.prevent="editComment(childComment.id, childComment.text)">
+                  <q-input
+                    class="q-px-sm q-pt-md"
+                    autogrow
+                    dense
+                    label="Comment"
+                    lazy-rules
+                    required
+                    rounded
+                    :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+                    standout="bg-secondary text-white"
+                    v-model="childComment.text"
+                  >
+                    <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+                  </q-input>
+                </q-form>
+                <div v-else class="q-my-sm text-body2">
                   {{ childComment.text }}
                 </div>
                 <q-separator spaced />
@@ -154,7 +191,9 @@ onMounted(async () => {
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
-  
+  await commentStore
+    .fetchCommentsByparentId(router.currentRoute.value.href, parentId)
+    childComments.value = commentStore.getChildComments
 })
 
 async function addComment() {
