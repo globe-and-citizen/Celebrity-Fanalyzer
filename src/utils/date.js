@@ -76,3 +76,47 @@ export function calendarWeek(startDate, endDate) {
   calendar.push(startEndDay(endDate).end)
   return calendar
 }
+export const getStats = (reacts, startAt) =>{
+  let endAt = Timestamp.now()
+  if (endAt - startAt > 2678400) {
+    endAt = new Timestamp(startAt.seconds + 2678400, 0)
+  }
+
+  const _calendarDay = calendarDay(startAt, endAt)
+  const _calendarWeek = calendarWeek(startAt, endAt)
+
+  const weekStats = _calendarWeek.map((item, index) => {
+    if (index !== _calendarWeek.length - 1) {
+      // Get likes Count for the period
+      let likesCount = reacts.likes.filter((element) => {
+        return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
+      }).length
+
+      // Get dislikes Count for the period
+      let dislikesCount = reacts.dislikes.filter((element) => {
+        return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
+      }).length
+      return { date: item, likes: likesCount, dislikes: dislikesCount }
+    } else {
+      return { date: item, likes: 0, dislikes: 0 }
+    }
+  })
+  const dayStats = _calendarDay.map((item, index) => {
+    if (index !== _calendarDay.length - 1) {
+      // Get likes Count for the period
+      let likesCount = reacts.likes.filter((element) => {
+        return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
+      }).length
+
+      // Get dislikes Count for the period
+      let dislikesCount = reacts.dislikes.filter((element) => {
+        return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
+      }).length
+      return { date: item, likes: likesCount, dislikes: dislikesCount }
+    } else {
+      return { date: item, likes: 0, dislikes: 0 }
+    }
+  })
+
+  return {weekStats, dayStats}
+}
