@@ -37,6 +37,7 @@ export function getDay(intDate) {
   date.setTime(intDate)
   return new Date(date.getFullYear(), date.getMonth(), date.getDay()).getTime()
 }
+
 export function getNextDay(intDate) {
   const date = new Date()
   date.setTime(intDate)
@@ -58,18 +59,20 @@ export function calendarDay(startDate, endDate) {
   let calendar = []
   for (
     let currentDate = startEndDay(startDate).start;
-    currentDate.seconds < endDate.seconds - 86400;
+    currentDate.seconds < endDate.seconds + 86400;
     currentDate = startEndDay(currentDate).end
   ) {
     calendar.push(currentDate)
   }
   return calendar
 }
+
 export function calendarWeek(startDate, endDate) {
   let calendar = []
   const dayStart = startEndDay(startDate).start
-  for (let currentDate = dayStart; currentDate.seconds <= startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate)) {
+  for (let currentDate = dayStart; currentDate.seconds < startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate)) {
     calendar.push(currentDate)
   }
+  calendar.push(startEndDay(endDate).end)
   return calendar
 }
