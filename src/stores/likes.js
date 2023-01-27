@@ -36,6 +36,19 @@ export const useLikeStore = defineStore('likes', {
       }
     },
 
+    async getAllPromptLikesDislikes(promptId) {
+      const likesCollection = collection(db, 'prompts', promptId, 'likes')
+      const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
+
+      const likesSnapshot = await getDocs(likesCollection)
+      const dislikesSnapshot = await getDocs(dislikesCollection)
+
+      const likes = likesSnapshot.docs.map((doc) => doc.data())
+      const dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
+
+      return { likes, dislikes }
+    },
+
     /**
      *
      * @param promptId
