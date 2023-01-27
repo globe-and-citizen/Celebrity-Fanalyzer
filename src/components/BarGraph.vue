@@ -61,9 +61,9 @@ function loadData() {
     likes.push(stats[0].likes)
     dislikes.push(stats[0].dislikes)
   } else {
-    // dislikes.pop()
-    // likes.pop()
-    // periode.pop()
+    dislikes.pop()
+    likes.pop()
+    periode.pop()
   }
   if (props.data.type === 'all') {
     periode = ['All']
