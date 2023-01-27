@@ -96,7 +96,7 @@ import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
-import { monthYear } from 'src/utils/date'
+import { monthYear, shortMonthDayTime } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -140,6 +140,18 @@ onMounted(async () => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
+
+  await likeStore.getAllPromptLikesDislikes(prompt.value.id).then((reacts) => {
+    const likesDates = reacts.likes.map((like) => shortMonthDayTime(like.createdAt))
+    const dislikesDates = reacts.dislikes.map((dislike) => shortMonthDayTime(dislike.createdAt))
+
+    console.table(likesDates)
+    console.table(dislikesDates)
+
+    // TODO: @hermannleboss, here likesDates and dislikesDates are arrays of dates, you can use them to create the chart data
+    // I used 'shortMonthDayTime' to return a date in the format 'Jan 21, 12:48' but you could use another function to return a date in the format you need
+  })
+
   chartDataIsLoading.value = true
   await likeStore
     .fetchPromptStat(prompt.value.id, prompt.value.created)
