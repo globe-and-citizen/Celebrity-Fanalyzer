@@ -6,15 +6,15 @@ import { calendarDay, calendarWeek } from 'src/utils/date'
 
 export const useLikeStore = defineStore('likes', {
   state: () => ({
-    _isLoading: false,
     _likes: 0,
     _dislikes: 0,
     _promptStat: [],
     _entriesStat: []
   }),
 
+  persist: true,
+
   getters: {
-    isLoading: (state) => state._isLoading,
     getLikes: (state) => state._likes,
     getDislikes: (state) => state._dislikes
   },

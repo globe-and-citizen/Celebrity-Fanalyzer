@@ -115,10 +115,6 @@ const tab = ref('prompt')
 const type = ref('day')
 
 onMounted(async () => {
-  // TODO: Check the local prompts here, if they exist then use them inside the 'ifs' instead of fetching again
-  // if (promptStore.getPrompts.length === 0) {
-  //   prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.slug)
-  // }
   if (router.currentRoute.value.href === '/month') {
     await promptStore.fetchMonthPrompt()
     prompt.value = promptStore.getMonthPrompt

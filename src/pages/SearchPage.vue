@@ -8,15 +8,7 @@
     </q-toolbar>
     <q-toolbar>
       <q-toolbar-title>
-        <q-input
-          class="q-pb-lg q-px-lg text-black"
-          dense
-          label="Search"
-          rounded
-          standout="bg-secondary text-white"
-          v-model="search"
-          @update:model-value="searchPrompt"
-        >
+        <q-input class="q-pb-lg q-px-lg text-black" dense label="Search" rounded standout="bg-secondary text-white" v-model="search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -40,20 +32,23 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="!prompts.length && promptStore.isLoading">
+    <section v-if="!promptStore.getPrompts.length && promptStore.isLoading">
+      <ArticleSkeleton />
       <ArticleSkeleton />
       <ArticleSkeleton />
       <ArticleSkeleton />
     </section>
     <q-tab-panels animated swipeable v-model="category">
       <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
-        <ItemCard
-          v-for="prompt in prompts"
-          :item="prompt"
-          :key="prompt?.id"
-          :link="prompt?.slug"
-          v-show="prompt?.categories.includes(categ.value) || category === 'All'"
-        />
+        <TransitionGroup name="prompt" tag="div">
+          <ItemCard
+            v-for="prompt in computedPrompt"
+            :item="prompt"
+            :key="prompt?.id"
+            :link="prompt?.slug"
+            v-show="prompt?.categories.includes(categ.value) || category === 'All'"
+          />
+        </TransitionGroup>
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -63,22 +58,20 @@
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
 import { usePromptStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const promptStore = usePromptStore()
 
 const search = ref('')
 const category = ref('All')
 const categories = ref([])
-const prompts = ref([])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
     await promptStore.fetchPromptsAndEntries()
   }
-  prompts.value = promptStore.getPrompts
 
-  const categoriesArr = prompts.value.flatMap((prompt) => prompt.categories)
+  const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
   categories.value = [...new Set(categoriesArr)].map((category) => ({
     label: category,
     value: category
@@ -86,9 +79,20 @@ onMounted(async () => {
   categories.value.unshift({ label: 'All', value: 'All' })
 })
 
-function searchPrompt() {
-  prompts.value = promptStore.getPrompts.filter((prompt) => {
-    return prompt.title.toLowerCase().includes(search.value.toLowerCase())
-  })
-}
+const computedPrompt = computed(() => {
+  return promptStore.getPrompts.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+})
 </script>
+
+<style>
+.prompt-enter-active,
+.prompt-leave-active {
+  transition: all 0.3s ease;
+}
+.prompt-enter-from,
+.prompt-leave-to {
+  opacity: 0;
+  height: 0;
+  transform: translateY(-90px);
+}
+</style>

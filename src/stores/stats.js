@@ -1,16 +1,15 @@
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
 
 export const useStatStore = defineStore('stats', {
   state: () => ({
-    _stats: [],
-    _isLoading: false
+    _stats: []
   }),
 
+  persist: true,
+
   getters: {
-    getStats: (state) => LocalStorage.getItem('stats') || state._stats,
-    isLoading: (state) => state._isLoading
+    getStats: (state) => state._stats
   },
 
   actions: {

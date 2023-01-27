@@ -1,4 +1,5 @@
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { store } from 'quasar/wrappers'
 import { useAuthStore } from './auth'
 import { useCommentStore } from './comments'
@@ -19,6 +20,8 @@ import { useUserStore } from './user'
 
 export default store((/* { ssrContext } */) => {
   const pinia = createPinia()
+
+  pinia.use(piniaPluginPersistedstate)
 
   // You can add Pinia plugins here
   // pinia.use(SomePiniaPlugin)

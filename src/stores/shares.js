@@ -8,6 +8,8 @@ export const useShareStore = defineStore('shares', {
     _shares: 0
   }),
 
+  persist: true,
+
   getters: {
     getShares: (state) => state._shares
   },

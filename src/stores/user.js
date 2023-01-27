@@ -8,19 +8,17 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     _user: {},
     _userIp: '',
-    _isLoading: false,
-    _browserId: ''
+    _isLoading: false
   }),
 
   getters: {
-    // TODO: fix this, get shoul only return the valu in the store, if we need to use the storage, we should use it to update the store
     getUser: (state) => LocalStorage.getItem('user') || state._user,
     getUserIp: (state) => state._userIp,
+    getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
     isAuthenticated: (getters) => !!getters.getUser?.uid,
-    isLoading: (state) => state._isLoading,
-    getBrowserId: (state) => state._browserId
+    isLoading: (state) => state._isLoading
   },
   actions: {
     async fetchUserProfile(user) {
@@ -57,26 +55,6 @@ export const useUserStore = defineStore('user', {
             }
           })
         })
-    },
-
-    /**
-     * Create and store a unique Browser id in the storage and in the store
-     * @returns {Promise<void>}
-     */
-    async loadBrowserId() {
-      if (this.isAuthenticated && this._browserId !== this.getUser.uid) {
-        this._browserId = this.getUser.uid
-        LocalStorage.set('browserId', this._browserId)
-      } else if (!this.getUser || !this.getUser.uid) {
-        // Create the new browser id or use the localStorage browserId
-        const storageBrowserId = LocalStorage.getItem('browserId')
-        if (storageBrowserId) {
-          this._browserId = storageBrowserId
-        } else {
-          this._browserId = sha1(Math.random(), Date.now())
-          LocalStorage.set('browserId', this._browserId)
-        }
-      }
     },
 
     async updateProfile(user) {
