@@ -56,6 +56,15 @@ function loadData() {
     }
     return `${date.getDate()}-${end.getDate()}/${end.getMonth() + 1}`
   })
+
+  if(props.data.type === 'all'){
+    likes.push(stats[0].likes)
+    dislikes.push(stats[0].dislikes)
+  }else {
+    dislikes.pop()
+    likes.pop()
+    periode.pop()
+  }
   if (props.data.type === 'all') {
     periode = ['All']
   }
