@@ -191,9 +191,7 @@ onMounted(async () => {
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
-  await commentStore
-    .fetchCommentsByparentId(router.currentRoute.value.href, parentId)
-    childComments.value = commentStore.getChildComments
+  
 })
 
 async function addComment() {
