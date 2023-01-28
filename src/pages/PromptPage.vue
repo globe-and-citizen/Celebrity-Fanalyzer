@@ -60,8 +60,7 @@
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <q-spinner v-if="chartDataIsLoading" class="absolute-center" color="primary" size="3em" />
-        <section v-else>
+        <section >
           <h1 class="q-mt-none text-bold text-h4">{{ prompt?.title }}</h1>
 
           <div class="flex items-center q-mb-xl">
@@ -96,9 +95,10 @@ import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
-import { monthYear, shortMonthDayTime } from 'src/utils/date'
+import {  getStats, monthYear } from "src/utils/date";
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Timestamp } from "firebase/firestore";
 
 const router = useRouter()
 
@@ -106,7 +106,6 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 const chartData = ref({})
-const chartDataIsLoading = ref([false])
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const countShares = ref(0)
@@ -142,28 +141,12 @@ onMounted(async () => {
   })
 
   await likeStore.getAllPromptLikesDislikes(prompt.value.id).then((reacts) => {
-    const likesDates = reacts.likes.map((like) => shortMonthDayTime(like.createdAt))
-    const dislikesDates = reacts.dislikes.map((dislike) => shortMonthDayTime(dislike.createdAt))
+    const {weekStats, dayStats} = getStats(reacts, prompt.value.created)
 
-    console.table(likesDates)
-    console.table(dislikesDates)
-
-    // TODO: @hermannleboss, here likesDates and dislikesDates are arrays of dates, you can use them to create the chart data
-    // I used 'shortMonthDayTime' to return a date in the format 'Jan 21, 12:48' but you could use another function to return a date in the format you need
+    const allStats = [{ date: Timestamp.fromDate(new Date()), likes: reacts.likes.length, dislikes: reacts.dislikes.length }]
+     chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
   })
 
-  chartDataIsLoading.value = true
-  await likeStore
-    .fetchPromptStat(prompt.value.id, prompt.value.created)
-    .then(() => {
-      const currentPromtpStats = likeStore._promptStat.find((data) => data.promptId === prompt.value.id)
-      if (currentPromtpStats) {
-        chartData.value = { ...currentPromtpStats, type: type }
-      }
-    })
-    .finally(() => {
-      chartDataIsLoading.value = false
-    })
 })
 
 likeStore.$subscribe((_mutation, state) => {
