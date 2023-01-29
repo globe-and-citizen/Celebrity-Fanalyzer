@@ -2,8 +2,6 @@ import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, setDoc
 import { defineStore } from 'pinia'
 import { db } from '../firebase'
 import { useUserStore } from './user'
-import { calendarDay, calendarWeek } from 'src/utils/date'
-
 export const useLikeStore = defineStore('likes', {
   state: () => ({
     _likes: 0,
@@ -48,161 +46,17 @@ export const useLikeStore = defineStore('likes', {
 
       return { likes, dislikes }
     },
-
-    /**
-     *
-     * @param promptId
-     * @param startAt Start Date
-     * @returns {Promise<void>}
-     */
-    async fetchPromptStat(promptId, startAt) {
-      let endAt = Timestamp.now()
-      if (endAt - startAt > 2678400) {
-        endAt = new Timestamp(startAt.seconds + 2678400, 0)
-      }
-
-      const _calendarDay = calendarDay(startAt, endAt)
-      const _calendarWeek = calendarWeek(startAt, endAt)
-
-      const likesCollection = collection(db, 'prompts', promptId, 'likes')
-      const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
-
-      const likeSnapshot = await getDocs(likesCollection)
-      const dislikeSnapshot = await getDocs(dislikesCollection)
-      let likes = []
-      let dislikes = []
-      dislikeSnapshot.forEach((doc) => {
-        dislikes.push({ ...doc.data(), id: doc.id })
-      })
-      likeSnapshot.forEach((doc) => {
-        likes.push({ ...doc.data(), id: doc.id })
-      })
-
-      const weekStats = _calendarWeek.map((item, index) => {
-        if (index !== _calendarWeek.length - 1) {
-          // Get likes Count for the period
-          let likesCount = likes.filter((element) => {
-            const timestampCreatedAt = Timestamp.fromMillis(element.createdAt)
-            return timestampCreatedAt >= _calendarWeek[index] && timestampCreatedAt < _calendarWeek[index + 1]
-          }).length
-
-          // Get dislikes Count for the period
-          let dislikesCount = dislikes.filter((element) => {
-            const timestampCreatedAt = Timestamp.fromMillis(element.createdAt)
-            return timestampCreatedAt >= _calendarWeek[index] && timestampCreatedAt < _calendarWeek[index + 1]
-          }).length
-
-          return { date: item, likes: likesCount, dislikes: dislikesCount }
-        } else {
-          return { date: item, likes: 20, dislikes: 20 }
-        }
-      })
-
-      const dayStats = _calendarDay.map((item, index) => {
-        if (index !== _calendarDay.length - 1) {
-          // Get likes Count for the period
-          let likesCount = likes.filter((element) => {
-            const timestampCreatedAt = Timestamp.fromMillis(element.createdAt)
-            return timestampCreatedAt >= _calendarDay[index] && timestampCreatedAt < _calendarDay[index + 1]
-          }).length
-
-          // Get dislikes Count for the period
-          let dislikesCount = dislikes.filter((element) => {
-            const timestampCreatedAt = Timestamp.fromMillis(element.createdAt)
-            return timestampCreatedAt >= _calendarDay[index] && timestampCreatedAt < _calendarDay[index + 1]
-          }).length
-
-          return { date: item, likes: likesCount, dislikes: dislikesCount }
-        } else {
-          return { date: item, likes: 20, dislikes: 20 }
-        }
-      })
-
-      const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
-
-      const index = this._promptStat.findIndex((data) => data.promptId === promptId)
-      if (index >= 0) {
-        this._promptStat[index] = { promptId, dayStats, weekStats, allStats }
-      } else {
-        this._promptStat.push({ promptId, dayStats, weekStats, allStats })
-      }
-    },
-
-    /**
-     *
-     * @param entryId
-     * @param startAt Start Date
-     * @returns {Promise<void>}
-     */
-    async fetchEntryStat(entryId, startAt) {
-      let endAt = Timestamp.now()
-      if (endAt - startAt > 2678400) {
-        endAt = new Timestamp(startAt.seconds + 2678400, 0)
-      }
-
-      const _calendarDay = calendarDay(startAt, endAt)
-      const _calendarWeek = calendarWeek(startAt, endAt)
-
+    async getAllEntryLikesDislikes(entryId) {
       const likesCollection = collection(db, 'entries', entryId, 'likes')
       const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
 
-      const likeSnapshot = await getDocs(likesCollection)
-      const dislikeSnapshot = await getDocs(dislikesCollection)
-      let likes = []
-      let dislikes = []
-      dislikeSnapshot.forEach((doc) => {
-        dislikes.push({ ...doc.data(), id: doc.id })
-      })
-      likeSnapshot.forEach((doc) => {
-        likes.push({ ...doc.data(), id: doc.id })
-      })
+      const likesSnapshot = await getDocs(likesCollection)
+      const dislikesSnapshot = await getDocs(dislikesCollection)
 
-      const weekStats = _calendarWeek.map((item, index) => {
-        if (index !== _calendarWeek.length - 1) {
-          // Get likes Count for the period
-          let likesCount = likes.filter((element) => {
-            return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
-          }).length
+      const likes = likesSnapshot.docs.map((doc) => doc.data())
+      const dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
 
-          // Get dislikes Count for the period
-          let dislikesCount = dislikes.filter((element) => {
-            return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
-          }).length
-
-          return { date: item, likes: likesCount, dislikes: dislikesCount }
-        } else {
-          return { date: item, likes: 20, dislikes: 20 }
-        }
-      })
-
-      const dayStats = _calendarDay.map((item, index) => {
-
-        if (index !== _calendarDay.length - 1) {
-          // Get likes Count for the period
-          let likesCount = likes.filter((element) => {
-            return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
-          }).length
-
-
-          // Get dislikes Count for the period
-          let dislikesCount = dislikes.filter((element) => {
-            return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
-          }).length
-
-          return { date: item, likes: likesCount, dislikes: dislikesCount }
-        } else {
-          return { date: item, likes: 20, dislikes: 20 }
-        }
-      })
-
-      const allStats = [{ date: Timestamp.fromDate(new Date()), likes: this._likes, dislikes: this._dislikes }]
-
-      const index = this._entriesStat.findIndex((data) => data.entryId === entryId)
-      if (index >= 0) {
-        this._entriesStat[index] = { entryId, dayStats, weekStats, allStats }
-      } else {
-        this._entriesStat.push({ entryId, dayStats, weekStats, allStats })
-      }
+      return { likes, dislikes }
     },
 
     async likePrompt(promptId) {

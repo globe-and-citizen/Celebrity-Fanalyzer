@@ -4,7 +4,7 @@
     <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!entry && entryStore._isLoading" class="absolute-center" color="primary" size="3em" />
 
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="entry" style="padding: 0">
@@ -50,8 +50,7 @@
         </q-toolbar>
       </q-header>
       <q-page>
-        <q-spinner v-if="chartDataIsLoading" class="absolute-center" color="primary" size="3em" />
-        <section v-else>
+        <section>
           <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
 
           <div class="flex items-center q-mb-xl">
@@ -100,6 +99,8 @@ import TheComments from 'src/components/TheComments.vue'
 import { useCommentStore, useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getStats } from 'src/utils/date'
+import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
@@ -115,7 +116,6 @@ const countLikes = ref(0)
 const countDislikes = ref(0)
 const countShares = ref(0)
 const entry = ref({})
-const chartDataIsLoading = ref([false])
 const tab = ref('entry')
 const type = ref('day')
 
@@ -141,20 +141,22 @@ onMounted(async () => {
   })
   await shareStore.countEntryShares(entry.value.id)
   countShares.value = shareStore.getShares
-
-  chartDataIsLoading.value = true
-  await likeStore
-    .fetchEntryStat(entry.value.id, entry.value.created)
-    .then(() => {
-      const entryStats = likeStore._entriesStat.find((data) => data.entryId === entry.value.id)
-      if (entryStats) {
-        chartData.value = { ...entryStats, type: 'day' }
-      }
-    })
-    .finally(() => {
-      chartDataIsLoading.value = false
-    })
+  await updateCharData()
 })
+
+async function updateCharData() {
+  await likeStore.getAllEntryLikesDislikes(entry.value.id).then((reacts) => {
+    const { weekStats, dayStats } = getStats(reacts, entry.value.created)
+    const allStats = [
+      {
+        date: Timestamp.fromDate(new Date()),
+        likes: reacts.likes.length,
+        dislikes: reacts.dislikes.length
+      }
+    ]
+    chartData.value = { ...{ promptId: entry.value.id, weekStats, dayStats, allStats }, type: type.value }
+  })
+}
 
 commentStore.$subscribe((_mutation, state) => {
   comments.value = state._comments
@@ -169,12 +171,14 @@ shareStore.$subscribe((_mutation, state) => {
   countShares.value = state._shares
 })
 
-function like() {
-  likeStore.likeEntry(entry.value.id)
+async function like() {
+  await likeStore.likeEntry(entry.value.id)
+  await updateCharData()
 }
 
-function dislike() {
-  likeStore.dislikeEntry(entry.value.id)
+async function dislike() {
+  await likeStore.dislikeEntry(entry.value.id)
+  await updateCharData()
 }
 
 function onShare(socialNetwork) {
