@@ -76,7 +76,7 @@ export function calendarWeek(startDate, endDate) {
   calendar.push(startEndDay(endDate).end)
   return calendar
 }
-export const getStats = (reacts, startAt) =>{
+export const getStats = (reacts, startAt) => {
   let endAt = Timestamp.now()
   if (endAt - startAt > 2678400) {
     endAt = new Timestamp(startAt.seconds + 2678400, 0)
@@ -118,5 +118,5 @@ export const getStats = (reacts, startAt) =>{
     }
   })
 
-  return {weekStats, dayStats}
+  return { weekStats, dayStats }
 }

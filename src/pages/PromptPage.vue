@@ -60,7 +60,7 @@
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
-        <section >
+        <section>
           <h1 class="q-mt-none text-bold text-h4">{{ prompt?.title }}</h1>
 
           <div class="flex items-center q-mb-xl">
@@ -95,10 +95,10 @@ import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
-import {  getStats, monthYear } from "src/utils/date";
+import { getStats, monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
@@ -146,11 +146,13 @@ onMounted(async () => {
 async function updateCharData() {
   await likeStore.getAllPromptLikesDislikes(prompt.value.id).then((reacts) => {
     const { weekStats, dayStats } = getStats(reacts, prompt.value.created)
-    const allStats = [{
-      date: Timestamp.fromDate(new Date()),
-      likes: reacts.likes.length,
-      dislikes: reacts.dislikes.length
-    }]
+    const allStats = [
+      {
+        date: Timestamp.fromDate(new Date()),
+        likes: reacts.likes.length,
+        dislikes: reacts.dislikes.length
+      }
+    ]
     chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
   })
 }
