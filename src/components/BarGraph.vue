@@ -26,10 +26,8 @@ const option = ref({})
 
 function loadData() {
   if (props.data.type === 'day') {
-    // eslint-disable-next-line vue/no-setup-props-destructure
     stats = props.data.dayStats
   } else if (props.data.type === 'week') {
-    // eslint-disable-next-line vue/no-setup-props-destructure
     stats = props.data.weekStats
   } else {
     stats = props.data.allStats
@@ -79,10 +77,7 @@ function loadData() {
     },
     xAxis: {
       type: 'category',
-      // data: props.data.map((d) => d.name)
       data: periode
-      // TODO: use data from props
-      // https://echarts.apache.org/examples/en/editor.html?c=bar-negative
     },
     yAxis: {
       type: 'value'
