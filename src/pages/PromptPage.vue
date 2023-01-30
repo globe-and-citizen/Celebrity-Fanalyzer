@@ -131,36 +131,53 @@ onMounted(async () => {
       .then((res) => (prompt.value = res))
       .catch(() => (prompt.value = null))
   }
+
   if (!prompt.value) {
     router.push('/404')
     return
   }
 
-  await likeStore.countPromptLikes(prompt.value.id).then((res) => {
-    countLikes.value = res.likes
-    countDislikes.value = res.dislikes
-  })
+  await likeStore.getAllPromptLikesDislikes(prompt.value.id) //.then((res) => {
+  // countLikes.value = res.likes?.length
+  // countDislikes.value = res.dislikes?.length
+  // console.log(res.dislikes)
+  //})
 
-  await updateChartData()
+  // await likeStore.countPromptLikes(prompt.value.id).then((res) => {
+  //   countLikes.value = res.likes
+  //   countDislikes.value = res.dislikes
+  // })
+
+  // await updateChartData()
 })
 
-async function updateChartData() {
-  await likeStore.getAllPromptLikesDislikes(prompt.value.id).then((reacts) => {
-    const { weekStats, dayStats } = getStats(reacts, prompt.value.created)
-    const allStats = [
-      {
-        date: Timestamp.fromDate(new Date()),
-        likes: reacts.likes.length,
-        dislikes: reacts.dislikes.length
-      }
-    ]
-    chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
-  })
-}
+// async function updateChartData() {
+//   await likeStore.getAllPromptLikesDislikes(prompt.value.id).then((reacts) => {
+//     const { weekStats, dayStats } = getStats(reacts, prompt.value.created)
+//     const allStats = [
+//       {
+//         date: Timestamp.fromDate(new Date()),
+//         likes: reacts.likes.length,
+//         dislikes: reacts.dislikes.length
+//       }
+//     ]
+//     chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
+//   })
+// }
 
 likeStore.$subscribe((_mutation, state) => {
-  countLikes.value = state._likes
-  countDislikes.value = state._dislikes
+  countLikes.value = state._likes.length
+  countDislikes.value = state._dislikes.length
+
+  const { weekStats, dayStats } = getStats(state, prompt.value.created)
+  const allStats = [
+    {
+      date: Timestamp.fromDate(new Date()),
+      likes: state._likes.length,
+      dislikes: state._dislikes.length
+    }
+  ]
+  chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
 })
 
 shareStore.$subscribe((_mutation, state) => {
@@ -169,12 +186,12 @@ shareStore.$subscribe((_mutation, state) => {
 
 async function like() {
   await likeStore.likePrompt(prompt.value.id)
-  await updateChartData()
+  // await updateChartData()
 }
 
 async function dislike() {
   await likeStore.dislikePrompt(prompt.value.id)
-  await updateChartData()
+  // await updateChartData()
 }
 
 function onShare(socialNetwork) {
