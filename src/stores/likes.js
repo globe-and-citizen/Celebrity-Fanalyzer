@@ -46,6 +46,7 @@ export const useLikeStore = defineStore('likes', {
 
       return { likes, dislikes }
     },
+
     async getAllEntryLikesDislikes(entryId) {
       const likesCollection = collection(db, 'entries', entryId, 'likes')
       const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
@@ -72,7 +73,7 @@ export const useLikeStore = defineStore('likes', {
       this._likes++
 
       // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
-      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp)
+      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
@@ -96,7 +97,7 @@ export const useLikeStore = defineStore('likes', {
       this._dislikes++
 
       // Check if the same browserId exists in likes collection. If true, remove the current like from there
-      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getUserIp)
+      const likesRef = doc(db, 'prompts', promptId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
@@ -135,7 +136,7 @@ export const useLikeStore = defineStore('likes', {
       })
       this._likes++
 
-      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp)
+      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
@@ -158,7 +159,7 @@ export const useLikeStore = defineStore('likes', {
       })
       this._dislikes++
 
-      const likesRef = doc(db, 'entries', entryId, 'likes', userStore.getUserIp)
+      const likesRef = doc(db, 'entries', entryId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
