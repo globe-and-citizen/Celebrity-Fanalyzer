@@ -176,7 +176,7 @@
                     class="q-px-sm"
                     autogrow
                     dense
-                    label="Reply"
+                    label="Reply"   
                     lazy-rules
                     :name="comment.id"
                     rounded
