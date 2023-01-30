@@ -139,12 +139,14 @@ onMounted(async () => {
     countLikes.value = res.likes
     countDislikes.value = res.dislikes
   })
+
   await shareStore.countEntryShares(entry.value.id)
   countShares.value = shareStore.getShares
-  await updateCharData()
+
+  await updateChartData()
 })
 
-async function updateCharData() {
+async function updateChartData() {
   await likeStore.getAllEntryLikesDislikes(entry.value.id).then((reacts) => {
     const { weekStats, dayStats } = getStats(reacts, entry.value.created)
     const allStats = [
@@ -173,12 +175,12 @@ shareStore.$subscribe((_mutation, state) => {
 
 async function like() {
   await likeStore.likeEntry(entry.value.id)
-  await updateCharData()
+  await updateChartData()
 }
 
 async function dislike() {
   await likeStore.dislikeEntry(entry.value.id)
-  await updateCharData()
+  await updateChartData()
 }
 
 function onShare(socialNetwork) {

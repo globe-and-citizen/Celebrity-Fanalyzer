@@ -105,6 +105,7 @@ const router = useRouter()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
+
 const chartData = ref({})
 const countLikes = ref(0)
 const countDislikes = ref(0)
@@ -140,10 +141,10 @@ onMounted(async () => {
     countDislikes.value = res.dislikes
   })
 
-  await updateCharData()
+  await updateChartData()
 })
 
-async function updateCharData() {
+async function updateChartData() {
   await likeStore.getAllPromptLikesDislikes(prompt.value.id).then((reacts) => {
     const { weekStats, dayStats } = getStats(reacts, prompt.value.created)
     const allStats = [
@@ -168,12 +169,12 @@ shareStore.$subscribe((_mutation, state) => {
 
 async function like() {
   await likeStore.likePrompt(prompt.value.id)
-  await updateCharData()
+  await updateChartData()
 }
 
 async function dislike() {
   await likeStore.dislikePrompt(prompt.value.id)
-  await updateCharData()
+  await updateChartData()
 }
 
 function onShare(socialNetwork) {
