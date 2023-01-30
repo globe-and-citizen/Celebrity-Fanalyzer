@@ -8,7 +8,9 @@
             <q-img :src="comment.author.photoURL" />
           </q-avatar>
           <p class="column q-mb-none q-ml-sm">
-            <span class="text-body2">{{ comment.author.displayName || 'Anonymous' }}</span>
+            <span class="text-body2">{{
+              comment.author.displayName || "Anonymous"
+            }}</span>
             <span class="text-body2 text-secondary">
               {{ shortMonthDayTime(comment.created) }}
             </span>
@@ -28,7 +30,7 @@
                   <q-item-label>Edit</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteComment(1 ,comment.id)">
+              <q-item clickable v-close-popup @click="deleteComment(1, comment.id)">
                 <q-item-section>
                   <q-item-label>Delete</q-item-label>
                 </q-item-section>
@@ -36,7 +38,11 @@
             </q-list>
           </q-btn-dropdown>
         </div>
-        <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
+        <q-form
+          v-if="isEditing && comment.id === inputEdit"
+          greedy
+          @submit.prevent="editComment(comment.id, comment.text)"
+        >
           <q-input
             class="q-px-sm"
             autogrow
@@ -49,91 +55,151 @@
             standout="bg-secondary text-white"
             v-model="comment.text"
           >
-            <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+            <q-btn
+              class="cursor-pointer"
+              color="grey-6"
+              flat
+              icon="send"
+              round
+              type="submit"
+            />
           </q-input>
         </q-form>
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
-        <q-btn flat icon="chat_bubble_outline" round size="md" @click="replyInput(comment.id)">
-          <q-tooltip>Reply</q-tooltip>
-        </q-btn>
-        <q-slide-transition>
-          <q-form v-if="isReplying && comment.id === reply.parentId" greedy @submit.prevent="addReply(comment.id)">
-            <!-- Started Child Comment section -->
-              <div v-for="childComment of childComments" class="q-mb-md q-ml-xl" :key="childComment.id">
-                <div class="flex items-center">
-                  <q-icon v-if="childComment.isAnonymous" name="person" size="1.5rem" />
-                  <q-avatar v-else size="1.5rem">
-                    <q-img :src="childComment.author.photoURL" />
-                  </q-avatar>
-                  <p class="row q-mb-none q-ml-sm">
-                    <span class="text-body2 q-mr-sm">{{ childComment.author.displayName || 'Anonymous' }}</span>
-                    <span class="text-caption text-secondary">
-                      {{ shortMonthDayTime(childComment.created) }}
-                    </span>
-                  </p>
-                  <q-space />
-                  <q-btn-dropdown
-                    v-if="(childComment.author?.uid || childComment.author) === userId"
-                    color="secondary"
-                    dense
-                    dropdown-icon="more_vert"
-                    flat
-                    rounded
+        <q-expansion-item
+          group="somegroup"
+          @click="replyInput(comment.id)"
+          icon="chat_bubble_outline"
+        >
+          <q-card>
+            <q-card-section>
+              <q-slide-transition>
+                <q-spinner v-if="isLoading"
+                    color="primary"
+                    size="3em"
+                  />
+                <q-form v-else greedy @submit.prevent="addReply(comment.id)">
+                  <!-- Started Child Comment section -->
+                  <div
+                    v-for="childComment of childComments"
+                    class="q-mb-md q-ml-xl"
+                    :key="childComment.id"
                   >
-                    <q-list>
-                      <q-item clickable v-close-popup @click="editInput(childComment.id)">
-                        <q-item-section>
-                          <q-item-label>Edit</q-item-label>
-                        </q-item-section>
-                      </q-item>
-                      <q-item clickable v-close-popup @click="deleteComment(comment.id ,childComment.id)">
-                        <q-item-section>
-                          <q-item-label>Delete</q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-                  </q-btn-dropdown>
-                </div>
-                <q-form v-if="isEditing && childComment.id === inputEdit" greedy @submit.prevent="editComment(childComment.id, childComment.text)">
+                    <div class="flex items-center">
+                      <q-icon
+                        v-if="childComment.isAnonymous"
+                        name="person"
+                        size="1.5rem"
+                      />
+                      <q-avatar v-else size="1.5rem">
+                        <q-img :src="childComment.author.photoURL" />
+                      </q-avatar>
+                      <p class="row q-mb-none q-ml-sm">
+                        <span class="text-body2 q-mr-sm">{{
+                          childComment.author.displayName || "Anonymous"
+                        }}</span>
+                        <span class="text-caption text-secondary">
+                          {{ shortMonthDayTime(childComment.created) }}
+                        </span>
+                      </p>
+                      <q-space />
+                      <q-btn-dropdown
+                        v-if="
+                          (childComment.author?.uid || childComment.author) === userId
+                        "
+                        color="secondary"
+                        dense
+                        dropdown-icon="more_vert"
+                        flat
+                        rounded
+                      >
+                        <q-list>
+                          <q-item
+                            clickable
+                            v-close-popup
+                            @click="editInput(childComment.id)"
+                          >
+                            <q-item-section>
+                              <q-item-label>Edit</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <q-item
+                            clickable
+                            v-close-popup
+                            @click="deleteComment(comment.id, childComment.id)"
+                          >
+                            <q-item-section>
+                              <q-item-label>Delete</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-btn-dropdown>
+                    </div>
+                    <q-form
+                      v-if="isEditing && childComment.id === inputEdit"
+                      greedy
+                      @submit.prevent="editComment(childComment.id, childComment.text)"
+                    >
+                      <q-input
+                        class="q-px-sm q-pt-md"
+                        autogrow
+                        dense
+                        label="Comment"
+                        lazy-rules
+                        required
+                        rounded
+                        :rules="[
+                          (val) => val.length > 1 || 'Please type at least 2 characters',
+                        ]"
+                        standout="bg-secondary text-white"
+                        v-model="childComment.text"
+                      >
+                        <q-btn
+                          class="cursor-pointer"
+                          color="grey-6"
+                          flat
+                          icon="send"
+                          round
+                          type="submit"
+                        />
+                      </q-input>
+                    </q-form>
+                    <div v-else class="q-my-sm text-body2">
+                      {{ childComment.text }}
+                    </div>
+                    <q-separator spaced />
+                  </div>
+                  <!-- Ended Child Comment Section -->
                   <q-input
-                    class="q-px-sm q-pt-md"
+                    class="q-px-sm"
                     autogrow
                     dense
-                    label="Comment"
+                    label="Reply"
                     lazy-rules
-                    required
+                    :name="comment.id"
                     rounded
-                    :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+                    :rules="[
+                      (val) => val.length > 1 || 'Please type at least 2 characters',
+                    ]"
                     standout="bg-secondary text-white"
-                    v-model="childComment.text"
+                    v-model="reply.text"
                   >
-                    <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+                    <q-btn
+                      class="cursor-pointer"
+                      color="grey-6"
+                      flat
+                      icon="send"
+                      round
+                      type="submit"
+                    />
                   </q-input>
                 </q-form>
-                <div v-else class="q-my-sm text-body2">
-                  {{ childComment.text }}
-                </div>
-                <q-separator spaced />
-              </div>
-            <!-- Ended Child Comment Section -->
-            <q-input
-              class="q-px-sm"
-              autogrow
-              dense
-              label="Reply"
-              lazy-rules
-              :name="comment.id"
-              rounded
-              :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
-              standout="bg-secondary text-white"
-              v-model="reply.text"
-            >
-              <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
-            </q-input>
-          </q-form>
-        </q-slide-transition>
+              </q-slide-transition>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
         <q-separator spaced />
       </div>
     </div>
@@ -157,97 +223,112 @@
 </template>
 
 <script setup>
-import { useQuasar, LocalStorage } from 'quasar'
-import { useCommentStore, useUserStore } from 'src/stores'
-import { shortMonthDayTime } from 'src/utils/date'
-import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
-import { db } from 'src/firebase'
+import { useQuasar, LocalStorage } from "quasar";
+import { useCommentStore, useUserStore } from "src/stores";
+import { shortMonthDayTime } from "src/utils/date";
+import { onMounted, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where,
+} from "firebase/firestore";
+import { db } from "src/firebase";
 
-const router = useRouter()
+const router = useRouter();
 
 const props = defineProps({
   comments: { type: Array, required: true },
-  entry: { type: Object, required: true }
-})
+  entry: { type: Object, required: true },
+});
 
-const $q = useQuasar()
-const commentStore = useCommentStore()
-const userStore = useUserStore()
+const $q = useQuasar();
+const commentStore = useCommentStore();
+const userStore = useUserStore();
 
-const inputEdit = ref('')
-const isEditing = ref(false)
-const isReplying = ref(false)
-const myComment = reactive({})
-const reply = reactive({})
-const userId = ref('')
-const childComments = ref([])
+const inputEdit = ref("");
+const isEditing = ref(false);
+const isReplying = ref(true);
+const myComment = reactive({});
+const reply = reactive({});
+const userId = ref("");
+const isLoading = ref("");
+const childComments = ref([]);
 
 onMounted(async () => {
-  await userStore.fetchUserIp()
-  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+  await userStore.fetchUserIp();
+  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash;
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
-})
+});
 
 async function addComment() {
   await commentStore
     .addComment(myComment, props.entry)
     .then(() => {
-      myComment.text = ''
-      window.scrollTo(0, document.body.scrollHeight)
-      $q.notify({ message: 'Comment successfully submitted' })
+      myComment.text = "";
+      window.scrollTo(0, document.body.scrollHeight);
+      $q.notify({ message: "Comment successfully submitted" });
     })
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .catch(() => $q.notify({ message: "Comment submission failed!" }));
 }
 
 function editInput(commentId) {
-  isEditing.value = !isEditing.value
-  inputEdit.value = commentId
+  isEditing.value = !isEditing.value;
+  inputEdit.value = commentId;
 }
 
 async function editComment(commentId, editedComment) {
   await commentStore
     .editComment(props.entry.id, commentId, editedComment, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully edited!' }))
-    .catch(() => $q.notify({ message: 'Failed to edit comment' }))
-    .finally(() => (isEditing.value = false))
+    .then(() => $q.notify({ message: "Comment successfully edited!" }))
+    .catch(() => $q.notify({ message: "Failed to edit comment" }))
+    .finally(() => (isEditing.value = false));
 }
 
-async function deleteComment(commentIDD ,commentId) {
+async function deleteComment(commentParentId, commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Failed to delete comment' }))
+    .then(() => $q.notify({ message: "Comment successfully deleted" }))
+    .catch(() => $q.notify({ message: "Failed to delete comment" }));
 
-    await commentStore
-      .fetchCommentsByparentId(router.currentRoute.value.href, commentIDD)
-      childComments.value = commentStore.getChildComments
+  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId);
+  childComments.value = commentStore.getChildComments;
 }
 
 async function replyInput(parentId) {
-  isReplying.value = !isReplying.value
-  reply.parentId = parentId
+  reply.parentId = parentId;
 
-  await commentStore
-    .fetchCommentsByparentId(router.currentRoute.value.href, parentId)
-    childComments.value = commentStore.getChildComments
+  isLoading.value = true
+  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, parentId);
+  childComments.value = commentStore.getChildComments;
+  isLoading.value = false
 }
 
 async function addReply(commentId) {
   await commentStore
     .addReply(props.entry.id, commentId, reply)
     .then(() => {
-      reply.text = ''
-      $q.notify({ message: 'Reply successfully submitted' })
+      reply.text = "";
+      $q.notify({ message: "Reply successfully submitted" });
     })
-    .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
-    window.scrollTo(0, document.body.scrollHeight)
+    .catch((err) => $q.notify({ message: "Reply submission failed!" + err }));
+  window.scrollTo(0, document.body.scrollHeight);
 
-  await commentStore
-    .fetchCommentsByparentId(router.currentRoute.value.href, commentId)
-    childComments.value = commentStore.getChildComments
+  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentId);
+  childComments.value = commentStore.getChildComments;
 }
 //Reply submission failed!FirebaseError: [code=invalid-argument]: Function setDoc() called with invalid data. Unsupported field value: a custom SubmitEvent object (found in field parentId in document entries/2022-08T1674307890920/comments/1674593638715-r3C28i2x4RUuqn2jrt69A5K6RcC3)
 </script>
+<style>
+.q-item__section--main ~ .q-item__section--side {
+  display: none !important;
+}
+</style>
