@@ -184,14 +184,14 @@ const myComment = reactive({})
 const reply = reactive({})
 const userId = ref('')
 const childComments = ref([])
-const commentss = ref({})
+const parentID = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
-  
+
 })
 
 async function addComment() {
@@ -208,6 +208,7 @@ async function addComment() {
 function editInput(commentId) {
   isEditing.value = !isEditing.value
   inputEdit.value = commentId
+  console.log(commentId)
 }
 
 async function editComment(commentId, editedComment) {
@@ -235,6 +236,7 @@ async function replyInput(parentId) {
 }
 
 async function addReply(commentId) {
+  parentID.value = commentId
   await commentStore
     .addReply(props.entry.id, commentId, reply)
     .then(() => {
@@ -242,6 +244,10 @@ async function addReply(commentId) {
       $q.notify({ message: 'Reply successfully submitted' })
     })
     .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
+    window.scrollTo(10, document.body.scrollHeight)
+
+  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentId)
+    childComments.value = commentStore.getChildComments
 }
 //Reply submission failed!FirebaseError: [code=invalid-argument]: Function setDoc() called with invalid data. Unsupported field value: a custom SubmitEvent object (found in field parentId in document entries/2022-08T1674307890920/comments/1674593638715-r3C28i2x4RUuqn2jrt69A5K6RcC3)
 </script>
