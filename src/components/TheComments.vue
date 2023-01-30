@@ -137,24 +137,23 @@
         <q-separator spaced />
       </div>
     </div>
-
-    <q-form greedy @submit.prevent="addComment">
-      <q-input
-        class="bg-white fixed-bottom q-px-sm q-page-container"
-        dense
-        label="Comment"
-        lazy-rules
-        required
-        rounded
-        :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
-        standout="bg-secondary text-white"
-        style="margin-bottom: 6.7rem"
-        v-model="myComment.text"
-      >
-        <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
-      </q-input>
-    </q-form>
   </section>
+  <q-form greedy @submit.prevent="addComment">
+    <q-input
+      class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
+      dense
+      label="Comment"
+      lazy-rules
+      required
+      rounded
+      :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+      standout="bg-secondary text-white"
+      style="margin-bottom: 6.7rem"
+      v-model="myComment.text"
+    >
+      <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+    </q-input>
+  </q-form>
 </template>
 
 <script setup>
