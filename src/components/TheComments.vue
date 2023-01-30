@@ -223,6 +223,10 @@ async function deleteComment(commentId) {
     .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => $q.notify({ message: 'Failed to delete comment' }))
+
+    await commentStore
+    .fetchCommentsByparentId(router.currentRoute.value.href, commentId)
+    childComments.value = commentStore.getChildComments
 }
 
 async function replyInput(parentId) {
