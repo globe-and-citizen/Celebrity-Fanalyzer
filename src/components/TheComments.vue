@@ -28,7 +28,7 @@
                   <q-item-label>Edit</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteComment(comment.id)">
+              <q-item clickable v-close-popup @click="deleteComment(1 ,comment.id)">
                 <q-item-section>
                   <q-item-label>Delete</q-item-label>
                 </q-item-section>
@@ -88,7 +88,7 @@
                           <q-item-label>Edit</q-item-label>
                         </q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup @click="deleteComment(childComment.id)">
+                      <q-item clickable v-close-popup @click="deleteComment(comment.id ,childComment.id)">
                         <q-item-section>
                           <q-item-label>Delete</q-item-label>
                         </q-item-section>
@@ -157,7 +157,7 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { useQuasar, LocalStorage } from 'quasar'
 import { useCommentStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, reactive, ref } from 'vue'
@@ -183,14 +183,12 @@ const myComment = reactive({})
 const reply = reactive({})
 const userId = ref('')
 const childComments = ref([])
-const parentID = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   // TODO: After receiving all comments, we need to organized the replies. Use parentId to know which reply belongs to which comment.
-
 })
 
 async function addComment() {
@@ -207,7 +205,6 @@ async function addComment() {
 function editInput(commentId) {
   isEditing.value = !isEditing.value
   inputEdit.value = commentId
-  console.log(commentId)
 }
 
 async function editComment(commentId, editedComment) {
@@ -218,15 +215,15 @@ async function editComment(commentId, editedComment) {
     .finally(() => (isEditing.value = false))
 }
 
-async function deleteComment(commentId) {
+async function deleteComment(commentIDD ,commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => $q.notify({ message: 'Failed to delete comment' }))
 
     await commentStore
-    .fetchCommentsByparentId(router.currentRoute.value.href, commentId)
-    childComments.value = commentStore.getChildComments
+      .fetchCommentsByparentId(router.currentRoute.value.href, commentIDD)
+      childComments.value = commentStore.getChildComments
 }
 
 async function replyInput(parentId) {
@@ -239,7 +236,6 @@ async function replyInput(parentId) {
 }
 
 async function addReply(commentId) {
-  parentID.value = commentId
   await commentStore
     .addReply(props.entry.id, commentId, reply)
     .then(() => {
@@ -247,9 +243,10 @@ async function addReply(commentId) {
       $q.notify({ message: 'Reply successfully submitted' })
     })
     .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
-    window.scrollTo(10, document.body.scrollHeight)
+    window.scrollTo(0, document.body.scrollHeight)
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentId)
+  await commentStore
+    .fetchCommentsByparentId(router.currentRoute.value.href, commentId)
     childComments.value = commentStore.getChildComments
 }
 //Reply submission failed!FirebaseError: [code=invalid-argument]: Function setDoc() called with invalid data. Unsupported field value: a custom SubmitEvent object (found in field parentId in document entries/2022-08T1674307890920/comments/1674593638715-r3C28i2x4RUuqn2jrt69A5K6RcC3)
