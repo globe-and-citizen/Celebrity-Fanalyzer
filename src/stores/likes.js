@@ -8,7 +8,7 @@ export const useLikeStore = defineStore('likes', {
     _dislikes: []
   }),
 
-  // persist: true,
+  persist: true,
 
   getters: {
     getLikes: (state) => state._likes,
@@ -16,22 +16,6 @@ export const useLikeStore = defineStore('likes', {
   },
 
   actions: {
-    // async countPromptLikes(promptId) {
-    //   const likesCollection = collection(db, 'prompts', promptId, 'likes')
-    //   const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
-
-    //   const snapshot = await getCountFromServer(likesCollection)
-    //   const dislikesSnapshot = await getCountFromServer(dislikesCollection)
-
-    //   this._likes = snapshot.data().count
-    //   this._dislikes = dislikesSnapshot.data().count
-
-    //   return {
-    //     likes: this._likes,
-    //     dislikes: this._dislikes
-    //   }
-    // },
-
     async getAllPromptLikesDislikes(promptId) {
       const likesCollection = collection(db, 'prompts', promptId, 'likes')
       const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
@@ -41,8 +25,6 @@ export const useLikeStore = defineStore('likes', {
 
       this._likes = likesSnapshot.docs.map((doc) => doc.data())
       this._dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
-
-      // return { likes, dislikes }
     },
 
     async getAllEntryLikesDislikes(entryId) {
@@ -54,8 +36,6 @@ export const useLikeStore = defineStore('likes', {
 
       this._likes = likesSnapshot.docs.map((doc) => doc.data())
       this._dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
-
-      // return { likes, dislikes }
     },
 
     async likePrompt(promptId) {
@@ -77,7 +57,6 @@ export const useLikeStore = defineStore('likes', {
           throw new Error(error)
         })
 
-      // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
       const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
 
@@ -102,7 +81,7 @@ export const useLikeStore = defineStore('likes', {
       await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), dislike).then(() => {
         this._dislikes.push(dislike)
       })
-      // Check if the same browserId exists in likes collection. If true, remove the current like from there
+
       const likesRef = doc(db, 'prompts', promptId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)
 
@@ -113,22 +92,6 @@ export const useLikeStore = defineStore('likes', {
 
       this.getAllPromptLikesDislikes(promptId)
     },
-
-    // async countEntryLikes(entryId) {
-    //   const likesCollection = collection(db, 'entries', entryId, 'likes')
-    //   const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
-
-    //   const snapshot = await getCountFromServer(likesCollection)
-    //   const dislikesSnapshot = await getCountFromServer(dislikesCollection)
-
-    //   this._likes = snapshot.data().count
-    //   this._dislikes = dislikesSnapshot.data().count
-
-    //   return {
-    //     likes: this._likes,
-    //     dislikes: this._dislikes
-    //   }
-    // },
 
     async likeEntry(entryId) {
       const userStore = useUserStore()
