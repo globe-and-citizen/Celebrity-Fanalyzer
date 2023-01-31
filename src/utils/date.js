@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore'
+
 export function monthYear(date) {
   const [year, month] = date.split('-')
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
@@ -28,4 +30,93 @@ export function previousYearMonth() {
   date.setMonth(date.getMonth() - 1)
 
   return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
+}
+
+export function getDay(intDate) {
+  const date = new Date()
+  date.setTime(intDate)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDay()).getTime()
+}
+
+export function getNextDay(intDate) {
+  const date = new Date()
+  date.setTime(intDate)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1).getTime()
+}
+
+export function startEndDay(timeStamp) {
+  return {
+    start: new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400), 0),
+    end: new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400, 0)
+  }
+}
+
+export function nextWeekDate(timeStamp) {
+  return new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400 * 7, 0)
+}
+
+export function calendarDay(startDate, endDate) {
+  let calendar = []
+  for (
+    let currentDate = startEndDay(startDate).start;
+    currentDate.seconds < endDate.seconds + 86400;
+    currentDate = startEndDay(currentDate).end
+  ) {
+    calendar.push(currentDate)
+  }
+  return calendar
+}
+
+export function calendarWeek(startDate, endDate) {
+  let calendar = []
+  const dayStart = startEndDay(startDate).start
+  for (let currentDate = dayStart; currentDate.seconds < startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate)) {
+    calendar.push(currentDate)
+  }
+  calendar.push(startEndDay(endDate).end)
+  return calendar
+}
+export const getStats = (reacts, startAt) => {
+  let endAt = Timestamp.now()
+  if (endAt - startAt > 2678400) {
+    endAt = new Timestamp(startAt.seconds + 2678400, 0)
+  }
+
+  const _calendarDay = calendarDay(startAt, endAt)
+  const _calendarWeek = calendarWeek(startAt, endAt)
+
+  const weekStats = _calendarWeek.map((item, index) => {
+    if (index !== _calendarWeek.length - 1) {
+      // Get likes Count for the period
+      let likesCount = reacts._likes.filter((element) => {
+        return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
+      }).length
+
+      // Get dislikes Count for the period
+      let dislikesCount = reacts._dislikes.filter((element) => {
+        return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
+      }).length
+      return { date: item, likes: likesCount, dislikes: dislikesCount }
+    } else {
+      return { date: item, likes: 0, dislikes: 0 }
+    }
+  })
+  const dayStats = _calendarDay.map((item, index) => {
+    if (index !== _calendarDay.length - 1) {
+      // Get likes Count for the period
+      let likesCount = reacts._likes.filter((element) => {
+        return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
+      }).length
+
+      // Get dislikes Count for the period
+      let dislikesCount = reacts._dislikes.filter((element) => {
+        return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
+      }).length
+      return { date: item, likes: likesCount, dislikes: dislikesCount }
+    } else {
+      return { date: item, likes: 0, dislikes: 0 }
+    }
+  })
+
+  return { weekStats, dayStats }
 }

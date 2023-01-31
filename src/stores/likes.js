@@ -1,12 +1,11 @@
 import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { db } from 'src/firebase'
-import { useUserStore } from 'src/stores'
-
+import { db } from '../firebase'
+import { useUserStore } from './user'
 export const useLikeStore = defineStore('likes', {
   state: () => ({
-    _likes: 0,
-    _dislikes: 0
+    _likes: [],
+    _dislikes: []
   }),
 
   persist: true,
@@ -17,20 +16,26 @@ export const useLikeStore = defineStore('likes', {
   },
 
   actions: {
-    async countPromptLikes(promptId) {
+    async getAllPromptLikesDislikes(promptId) {
       const likesCollection = collection(db, 'prompts', promptId, 'likes')
       const dislikesCollection = collection(db, 'prompts', promptId, 'dislikes')
 
-      const snapshot = await getCountFromServer(likesCollection)
-      const dislikesSnapshot = await getCountFromServer(dislikesCollection)
+      const likesSnapshot = await getDocs(likesCollection)
+      const dislikesSnapshot = await getDocs(dislikesCollection)
 
-      this._likes = snapshot.data().count
-      this._dislikes = dislikesSnapshot.data().count
+      this._likes = likesSnapshot.docs.map((doc) => doc.data())
+      this._dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
+    },
 
-      return {
-        likes: this._likes,
-        dislikes: this._dislikes
-      }
+    async getAllEntryLikesDislikes(entryId) {
+      const likesCollection = collection(db, 'entries', entryId, 'likes')
+      const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
+
+      const likesSnapshot = await getDocs(likesCollection)
+      const dislikesSnapshot = await getDocs(dislikesCollection)
+
+      this._likes = likesSnapshot.docs.map((doc) => doc.data())
+      this._dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
     },
 
     async likePrompt(promptId) {
@@ -38,23 +43,29 @@ export const useLikeStore = defineStore('likes', {
       await userStore.fetchUserIp()
 
       const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-
-      await setDoc(doc(db, 'prompts', promptId, 'likes', docId), {
+      const like = {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Timestamp.fromDate(new Date())
-      })
-      this._likes++
+      }
 
-      // Check if the same browserId exists in dislikes collection. If true, remove the current Dislike from there
-      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', userStore.getUserIp)
+      await setDoc(doc(db, 'prompts', promptId, 'likes', docId), like)
+        .then(() => {
+          this._likes.push(like)
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+
+      const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
         await deleteDoc(dislikesRef)
-        this._dislikes--
+        this._dislikes.pop()
       }
 
-      this.countPromptLikes(promptId)
+      this.getAllPromptLikesDislikes(promptId)
     },
 
     async dislikePrompt(promptId) {
@@ -62,39 +73,24 @@ export const useLikeStore = defineStore('likes', {
       await userStore.fetchUserIp()
 
       const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-
-      await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), {
+      const dislike = {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Timestamp.fromDate(new Date())
-      })
-      this._dislikes++
+      }
 
-      // Check if the same browserId exists in likes collection. If true, remove the current like from there
-      const likesRef = doc(db, 'prompts', promptId, 'likes', userStore.getUserIp)
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), dislike).then(() => {
+        this._dislikes.push(dislike)
+      })
+
+      const likesRef = doc(db, 'prompts', promptId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
         await deleteDoc(likesRef)
-        this._likes--
+        this._likes.pop()
       }
 
-      this.countPromptLikes(promptId)
-    },
-
-    async countEntryLikes(entryId) {
-      const likesCollection = collection(db, 'entries', entryId, 'likes')
-      const dislikesCollection = collection(db, 'entries', entryId, 'dislikes')
-
-      const snapshot = await getCountFromServer(likesCollection)
-      const dislikesSnapshot = await getCountFromServer(dislikesCollection)
-
-      this._likes = snapshot.data().count
-      this._dislikes = dislikesSnapshot.data().count
-
-      return {
-        likes: this._likes,
-        dislikes: this._dislikes
-      }
+      this.getAllPromptLikesDislikes(promptId)
     },
 
     async likeEntry(entryId) {
@@ -102,22 +98,24 @@ export const useLikeStore = defineStore('likes', {
       await userStore.fetchUserIp()
 
       const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-
-      await setDoc(doc(db, 'entries', entryId, 'likes', docId), {
+      const like = {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Timestamp.fromDate(new Date())
-      })
-      this._likes++
+      }
 
-      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', userStore.getUserIp)
+      await setDoc(doc(db, 'entries', entryId, 'likes', docId), like)
+
+      this._likes.push(like)
+
+      const dislikesRef = doc(db, 'entries', entryId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
 
       if (dislikesSnap.exists()) {
         await deleteDoc(dislikesRef)
-        this._dislikes--
+        this._dislikes.pop()
       }
 
-      this.countEntryLikes(entryId)
+      this.getAllEntryLikesDislikes(entryId)
     },
 
     async dislikeEntry(entryId) {
@@ -125,22 +123,24 @@ export const useLikeStore = defineStore('likes', {
       await userStore.fetchUserIp()
 
       const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-
-      await setDoc(doc(db, 'entries', entryId, 'dislikes', docId), {
+      const dislike = {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Timestamp.fromDate(new Date())
-      })
-      this._dislikes++
+      }
 
-      const likesRef = doc(db, 'entries', entryId, 'likes', userStore.getUserIp)
+      await setDoc(doc(db, 'entries', entryId, 'dislikes', docId), dislike)
+
+      this._dislikes.push(dislike)
+
+      const likesRef = doc(db, 'entries', entryId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)
 
       if (likesSnap.exists()) {
         await deleteDoc(likesRef)
-        this._likes--
+        this._likes.pop()
       }
 
-      this.countEntryLikes(entryId)
+      this.getAllEntryLikesDislikes(entryId)
     },
 
     async deleteAllPromptLikes(promptId) {

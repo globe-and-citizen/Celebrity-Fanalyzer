@@ -50,7 +50,31 @@
         </q-toolbar>
       </q-header>
       <q-page>
-        <BarGraph :data="chartData" title="Likes & Dislikes" />
+        <section>
+          <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
+
+          <div class="flex items-center q-mb-xl">
+            <q-avatar size="6rem">
+              <img :src="entry.author.photoURL" alt="" />
+            </q-avatar>
+            <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
+          </div>
+
+          <q-tabs
+            v-model="type"
+            dense
+            class="text-grey q-mb-xl"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="day" label="Days" />
+            <q-tab name="week" label="Week" />
+            <q-tab name="all" label="All" />
+          </q-tabs>
+          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+        </section>
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="comments" class="bg-white">
@@ -75,6 +99,8 @@ import TheComments from 'src/components/TheComments.vue'
 import { useCommentStore, useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getStats } from 'src/utils/date'
+import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
@@ -84,13 +110,14 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
-const chartData = ref([])
+const chartData = ref({})
 const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const countShares = ref(0)
 const entry = ref({})
 const tab = ref('entry')
+const type = ref('day')
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
@@ -108,17 +135,10 @@ onMounted(async () => {
   await commentStore.fetchComments(router.currentRoute.value.href)
   comments.value = commentStore.getComments
 
-  await likeStore.countEntryLikes(entry.value.id).then((res) => {
-    countLikes.value = res.likes
-    countDislikes.value = res.dislikes
-  })
+  await likeStore.getAllEntryLikesDislikes(entry.value.id)
+
   await shareStore.countEntryShares(entry.value.id)
   countShares.value = shareStore.getShares
-
-  chartData.value = [
-    { value: countLikes, name: 'Likes' },
-    { value: countDislikes, name: 'Dislikes' }
-  ]
 })
 
 commentStore.$subscribe((_mutation, state) => {
@@ -126,20 +146,30 @@ commentStore.$subscribe((_mutation, state) => {
 })
 
 likeStore.$subscribe((_mutation, state) => {
-  countLikes.value = state._likes
-  countDislikes.value = state._dislikes
+  countLikes.value = state._likes.length
+  countDislikes.value = state._dislikes.length
+
+  const { weekStats, dayStats } = getStats(state, entry.value.created)
+  const allStats = [
+    {
+      date: Timestamp.fromDate(new Date()),
+      likes: state._likes.length,
+      dislikes: state._dislikes.length
+    }
+  ]
+  chartData.value = { ...{ promptId: entry.value.id, weekStats, dayStats, allStats }, type: type.value }
 })
 
 shareStore.$subscribe((_mutation, state) => {
   countShares.value = state._shares
 })
 
-function like() {
-  likeStore.likeEntry(entry.value.id)
+async function like() {
+  await likeStore.likeEntry(entry.value.id)
 }
 
-function dislike() {
-  likeStore.dislikeEntry(entry.value.id)
+async function dislike() {
+  await likeStore.dislikeEntry(entry.value.id)
 }
 
 function onShare(socialNetwork) {
