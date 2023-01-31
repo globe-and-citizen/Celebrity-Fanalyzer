@@ -6,6 +6,7 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: [],
+    _childcomments: [],
     _isLoading: false
   }),
 
@@ -13,6 +14,7 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
+    getChildComments: (state) => state._childcomments,
     isLoading: (state) => state._isLoading
   },
 
@@ -36,6 +38,25 @@ export const useCommentStore = defineStore('comments', {
       this._comments = comments
     },
 
+    async fetchCommentsByparentId(slug, parentId) {
+      this._isLoading = true
+      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
+      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      const c = query(collection(db, 'entries', entry.id, 'comments'), where('parentId', '==', parentId))
+      const snap = await getDocs(c)
+      const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+      for (const comment of comments) {
+        if (!comment.isAnonymous) {
+          comment.author = await getDoc(comment.author).then((doc) => doc.data())
+        }
+      }
+      this._isLoading = false
+
+      this._childcomments = comments
+    },
+
     async addComment(comment, entry) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
@@ -46,6 +67,8 @@ export const useCommentStore = defineStore('comments', {
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
       const docId = Date.now() + '-' + (comment.author.id || comment.author)
+
+      comment.id = docId
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
@@ -122,12 +145,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
-        .then(() => {
-          const index = this._comments.findIndex((comment) => comment.id === commentId)
-          this.$patch({
-            // TODO: save reply to state, nested with the comment (use stateAuthor to preserve name and photo)
-          })
-        })
+        .then(() => this.$patch({ _childcomments: [...this._childcomments, { ...reply, author: stateAuthor }] }))
         .catch((err) => {
           console.log(err)
           throw new Error(err)
