@@ -161,6 +161,8 @@ export const useCommentStore = defineStore('comments', {
         }
         return comment
       })
+
+      this.$patch({ _comments: comments })
     },
 
     async deleteComment(entryId, id, userId) {
