@@ -1,4 +1,5 @@
 import {
+  arrayRemove,
   arrayUnion,
   collection,
   deleteDoc,
@@ -122,32 +123,44 @@ export const useCommentStore = defineStore('comments', {
       }
     },
 
-    async likeComment(entryId, id) {
+    async likeComment(entryId, commentId) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
+      const commentRef = doc(db, 'entries', entryId, 'comments', commentId)
       const user = userStore.getUserRef || userStore.getUserIpHash
 
-      this._isLoading = true
-      await updateDoc(doc(db, 'entries', entryId, 'comments', id), { likes: arrayUnion(user) })
-        .then(() => {
-          const index = this._comments.findIndex((comment) => comment.id === id)
-          console.log(index)
-          console.log(this._comments)
-          // TODO: Fix state of comments after liking it
-          this.$patch({
-            _comments: [
-              ...this._comments.slice(0, index),
-              { ...this._comments[index], likes: [...this._comments[index].likes, user] },
-              ...this._comments.slice(index + 1)
-            ]
-          })
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      await updateDoc(commentRef, { likes: arrayUnion(user) })
+      await updateDoc(commentRef, { dislikes: arrayRemove(user) })
+
+      const comments = this._comments.map((comment) => {
+        if (comment.id === commentId && !comment.likes.includes(user)) {
+          comment.likes.push(user)
+          comment.dislikes = comment.dislikes.filter((user) => user !== user)
+        }
+        return comment
+      })
+
+      this.$patch({ _comments: comments })
+    },
+
+    async dislikeComment(entryId, id) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const commentRef = doc(db, 'entries', entryId, 'comments', id)
+      const user = userStore.getUserRef || userStore.getUserIpHash
+
+      await updateDoc(commentRef, { dislikes: arrayUnion(user) })
+      await updateDoc(commentRef, { likes: arrayRemove(user) })
+
+      const comments = this._comments.map((comment) => {
+        if (comment.id === id && !comment.dislikes.includes(user)) {
+          comment.dislikes.push(user)
+          comment.likes = comment.likes.filter((user) => user !== user)
+        }
+        return comment
+      })
     },
 
     async deleteComment(entryId, id, userId) {
