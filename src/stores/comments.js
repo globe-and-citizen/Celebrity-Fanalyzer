@@ -1,4 +1,18 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  arrayRemove,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where
+} from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -107,6 +121,48 @@ export const useCommentStore = defineStore('comments', {
       } else {
         throw new Error(error)
       }
+    },
+
+    async likeComment(entryId, commentId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const commentRef = doc(db, 'entries', entryId, 'comments', commentId)
+      const user = userStore.getUserRef || userStore.getUserIpHash
+
+      await updateDoc(commentRef, { likes: arrayUnion(user) })
+      await updateDoc(commentRef, { dislikes: arrayRemove(user) })
+
+      const comments = this._comments.map((comment) => {
+        if (comment.id === commentId && !comment.likes.includes(user)) {
+          comment.likes.push(user)
+          comment.dislikes = comment.dislikes.filter((user) => user !== user)
+        }
+        return comment
+      })
+
+      this.$patch({ _comments: comments })
+    },
+
+    async dislikeComment(entryId, id) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const commentRef = doc(db, 'entries', entryId, 'comments', id)
+      const user = userStore.getUserRef || userStore.getUserIpHash
+
+      await updateDoc(commentRef, { dislikes: arrayUnion(user) })
+      await updateDoc(commentRef, { likes: arrayRemove(user) })
+
+      const comments = this._comments.map((comment) => {
+        if (comment.id === id && !comment.dislikes.includes(user)) {
+          comment.dislikes.push(user)
+          comment.likes = comment.likes.filter((user) => user !== user)
+        }
+        return comment
+      })
+
+      this.$patch({ _comments: comments })
     },
 
     async deleteComment(entryId, id, userId) {

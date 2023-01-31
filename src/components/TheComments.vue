@@ -55,7 +55,27 @@
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
-        <q-expansion-item group="somegroup" @click="replyInput(comment.id)" icon="chat_bubble_outline">
+        <q-btn
+          color="green"
+          flat
+          icon="sentiment_satisfied_alt"
+          :label="comment.likes?.length || 0"
+          rounded
+          @click="likeComment(comment.id)"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+        </q-btn>
+        <q-btn
+          color="red"
+          flat
+          icon="sentiment_very_dissatisfied"
+          :label="comment.dislikes?.length || 0"
+          rounded
+          @click="dislikeComment(comment.id)"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+        </q-btn>
+        <q-expansion-item dense group="somegroup" hide-expand-icon icon="chat_bubble_outline" @click="replyInput(comment.id)">
           <q-card>
             <q-card-section>
               <q-slide-transition>
@@ -103,8 +123,8 @@
                       @submit.prevent="editComment(childComment.id, childComment.text)"
                     >
                       <q-input
-                        class="q-px-sm q-pt-md"
                         autogrow
+                        class="q-px-sm q-pt-md"
                         dense
                         label="Comment"
                         lazy-rules
@@ -182,13 +202,13 @@ const $q = useQuasar()
 const commentStore = useCommentStore()
 const userStore = useUserStore()
 
+const childComments = ref([])
 const inputEdit = ref('')
 const isEditing = ref(false)
+const isLoading = ref('')
 const myComment = reactive({})
 const reply = reactive({})
 const userId = ref('')
-const isLoading = ref('')
-const childComments = ref([])
 
 onMounted(async () => {
   await userStore.fetchUserIp()
@@ -204,6 +224,14 @@ async function addComment() {
       $q.notify({ message: 'Comment successfully submitted' })
     })
     .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+}
+
+function likeComment(commentId) {
+  commentStore.likeComment(props.entry.id, commentId)
+}
+
+function dislikeComment(commentId) {
+  commentStore.dislikeComment(props.entry.id, commentId)
 }
 
 function editInput(commentId) {
@@ -252,9 +280,3 @@ async function addReply(commentId) {
   childComments.value = commentStore.getChildComments
 }
 </script>
-
-<style>
-.q-item__section--main ~ .q-item__section--side {
-  display: none !important;
-}
-</style>
