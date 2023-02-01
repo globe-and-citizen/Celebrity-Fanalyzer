@@ -109,7 +109,7 @@
                               <q-item-label>Edit</q-item-label>
                             </q-item-section>
                           </q-item>
-                          <q-item clickable v-close-popup @click="deleteComment(comment.id, childComment.id)">
+                          <q-item clickable v-close-popup @click="deleteChildComment(comment.id, childComment.id)">
                             <q-item-section>
                               <q-item-label>Delete</q-item-label>
                             </q-item-section>
@@ -120,7 +120,7 @@
                     <q-form
                       v-if="isEditing && childComment.id === inputEdit"
                       greedy
-                      @submit.prevent="editComment(childComment.id, childComment.text)"
+                      @submit.prevent="editChildComment(childComment.id, childComment.text)"
                     >
                       <q-input
                         autogrow
@@ -247,9 +247,27 @@ async function editComment(commentId, editedComment) {
     .finally(() => (isEditing.value = false))
 }
 
+async function editChildComment(commentId, editedComment) {
+  await commentStore
+    .editChildComment(props.entry.id, commentId, editedComment, userId.value)
+    .then(() => $q.notify({ message: 'Comment successfully edited!' }))
+    .catch(() => $q.notify({ message: 'Failed to edit comment' }))
+    .finally(() => (isEditing.value = false))
+}
+
 async function deleteComment(commentParentId, commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
+    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
+    .catch(() => $q.notify({ message: 'Failed to delete comment' }))
+
+  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId)
+  childComments.value = commentStore.getChildComments
+}
+
+async function deleteChildComment(commentParentId, commentId) {
+  await commentStore
+    .deleteChildComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => $q.notify({ message: 'Failed to delete comment' }))
 
