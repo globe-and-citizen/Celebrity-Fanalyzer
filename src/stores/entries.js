@@ -1,96 +1,153 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, runTransaction, Timestamp } from 'firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import {
+  arrayRemove,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where
+} from 'firebase/firestore'
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
-import { usePromptStore, useUserStore } from 'src/stores'
+import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
     _isLoading: false
   }),
 
   getters: {
-    getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchEntries(id) {
+    async fetchEntryBySlug(slug) {
       this._isLoading = true
-      await getDocs(collection(db, 'prompts', id, 'entries'))
-        .then(async (querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
 
-          for (const entry of entries) {
-            entry.author = await getDoc(entry.author).then((doc) => doc.data())
-          }
+      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-          this._entries = []
-          this.$patch({ _entries: entries })
-        })
-        .catch((error) => {
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
+
+      this._isLoading = false
+
+      return entry
     },
 
     async addEntry(entry) {
+      const promptStore = usePromptStore()
       const userStore = useUserStore()
 
-      entry.author = userStore.getUserRef
+      const promptId = entry.prompt.value
+      const entryRef = doc(db, 'entries', entry.id)
+
       entry.created = Timestamp.fromDate(new Date())
+      entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+
+      const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
+      const prompt = promptStore.getPrompts[index]
+      prompt.entries ??= []
+      prompt.entries.push({ ...entry, author: userStore.getUser })
+      promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
+
+      entry.author = userStore.getUserRef
 
       this._isLoading = true
-      await addDoc(collection(db, 'prompts', entry.prompt.value, 'entries'), entry)
-        .then(() => {
-          this.$patch({ _entries: [...this.getEntries, entry] })
-          LocalStorage.set('entries', this._entries)
-        })
-        .catch((error) => {
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      await setDoc(entryRef, entry).catch((error) => {
+        console.error(error)
+        throw new Error(error)
+      })
+
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => {
+        console.error(error)
+        throw new Error(error)
+      })
+      this._isLoading = false
     },
 
     async editEntry(entry) {
+      const promptStore = usePromptStore()
+      const userStore = useUserStore()
+
+      const promptId = entry.prompt.value
+      entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+      entry.updated = Timestamp.fromDate(new Date())
+
+      const prompts = promptStore.getPrompts
+      const promptIndex = prompts.findIndex((prompt) => prompt.id === promptId)
+      const prompt = prompts[promptIndex]
+      const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
+
+      prompt.entries[entryIndex] = { ...entry, author: userStore.getUser }
+      prompts[promptIndex] = prompt
+      promptStore.$patch({ _prompts: prompts })
+
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'prompts', entry.prompt.id, 'entries', entry.id), { ...entry })
+        transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
+        .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async deleteEntry(entryId) {
+      const likeStore = useLikeStore()
+      const promptStore = usePromptStore()
+      const shareStore = useShareStore()
+
+      const promptId = entryId.split('T')[0]
+      const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
+      const entryRef = doc(db, 'entries', entryId)
+      const entryImage = entries.find((entry) => entry.id === entryId).id
+      const imageRef = ref(storage, `images/entry-${entryImage}`)
+
+      this._isLoading = true
+      const deleteImage = await deleteObject(imageRef)
+      const deleteLikes = await likeStore.deleteAllEntryLikes(entryId)
+      const deleteShares = await shareStore.deleteAllEntryShares(entryId)
+      const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
+      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
+
+      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteLikes, deleteShares])
         .then(() => {
-          const index = this.getEntries.findIndex((p) => p.id === entry.id)
-          this.$patch({
-            _entries: [...this._entries.slice(0, index), { ...this._entries[index], ...entry }, ...this._entries.slice(index + 1)]
+          const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
+          prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)
+          promptStore.$patch({
+            _prompts: [
+              ...promptStore._prompts.slice(0, promptStore._prompts.indexOf(prompt)),
+              prompt,
+              ...promptStore._prompts.slice(promptStore._prompts.indexOf(prompt) + 1)
+            ]
           })
-          LocalStorage.set('entries', this._entries)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
     },
 
-    async deleteEntry(id) {
+    async uploadImage(file, entryId) {
+      const storageRef = ref(storage, `images/entry-${entryId}`)
+
       this._isLoading = true
-      await deleteDoc(doc(db, 'prompts', entry.prompt.id, 'entries', id))
-        .then(() => {
-          const index = this._entries.findIndex((entry) => entry.id === id)
-          this._entries.splice(index, 1)
-          LocalStorage.set('entries', this._entries)
-        })
+      await uploadBytes(storageRef, file)
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
-    },
-
-    async uploadImage(file) {
-      this._isLoading = true
-      const storageRef = ref(storage, `images/entry-${file.name + Date.now()}`)
-
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     }

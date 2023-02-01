@@ -14,10 +14,10 @@
         transition-hide="jump-up"
       >
         <q-list style="min-width: 100px">
-          <q-item clickable @click="prompt.dialog = true">
+          <q-item clickable @click="openPromptDialog()">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
-          <q-item clickable @click="entry.dialog = true">
+          <q-item clickable @click="openEntryDialog()">
             <q-item-section>New Entry</q-item-section>
           </q-item>
         </q-list>
@@ -26,19 +26,40 @@
   </q-header>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table :columns="columns" :filter="promptFilter" flat :loading="promptStore.isLoading" :rows="prompts" title="Prompts">
-        <template v-slot:top-right>
-          <q-input dense v-model="promptFilter" placeholder="Search">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </template>
-        <template v-slot:body-cell-actions="props">
-          <q-td :props="props">
-            <q-btn color="warning" flat icon="edit" round size="sm" @click="prompt = props.row" />
-            <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
-          </q-td>
+      <q-table
+        :columns="columns"
+        flat
+        :filter="promptFilter"
+        hide-bottom
+        :loading="promptStore.isLoading || entryStore.isLoading"
+        :pagination="pagination"
+        :rows="prompts"
+        title="Manage Prompts & Entries"
+      >
+        <template v-slot:body="props">
+          <q-tr :props="props">
+            <q-td auto-width>
+              <q-btn
+                color="red"
+                dense
+                flat
+                :icon="props.expand ? 'expand_less' : 'expand_more'"
+                round
+                @click="props.expand = !props.expand"
+              />
+            </q-td>
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
+            <q-td>
+              <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
+              <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
+            </q-td>
+          </q-tr>
+          <q-tr v-show="props.expand" :props="props">
+            <q-td colspan="100%" style="padding: 0 !important">
+              <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
+              <TableEntry v-else :rows="props.row.entries" @editEntry="openEntryDialog" />
+            </q-td>
+          </q-tr>
         </template>
       </q-table>
     </q-page>
@@ -58,7 +79,7 @@
         </q-card-section>
         <q-card-section>
           <span class="q-ml-sm">
-            Are you sure you want to delete the prompt
+            Are you sure you want to delete the prompt:
             <b>{{ deleteDialog.prompt.title }}</b>
             ?
           </span>
@@ -76,47 +97,43 @@
 import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
-import { usePromptStore } from 'src/stores'
+import TableEntry from 'src/components/TableEntry.vue'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const promptStore = usePromptStore()
+const entryStore = useEntryStore()
 
 const columns = [
-  {
-    name: 'created',
-    label: 'Created at',
-    align: 'left',
-    field: (row) =>
-      new Date(row.created.seconds * 1000 + row.created.nanoseconds / 1000000).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
-      }),
-    format: (val) => `${val}`,
-    sortable: true
-  },
-  {
-    name: 'author',
-    align: 'center',
-    label: 'Author',
-    field: (row) => row.author.displayName,
-    sortable: true
-  },
+  {},
+  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const entries = ref([])
 const entry = ref({})
-const entryFilter = ref({})
+const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
 const prompts = ref([])
 const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  await promptStore.fetchPrompts()
+  if (!promptStore.getPrompts.length) {
+    await promptStore.fetchPromptsAndEntries()
+  }
   prompts.value = promptStore.getPrompts
 })
+
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+})
+
+function openPromptDialog(props) {
+  prompt.value = props?.id ? props : {}
+  prompt.value.dialog = true
+}
 
 function onDeleteDialog(prompt) {
   deleteDialog.value.show = true
@@ -131,5 +148,15 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+function openEntryDialog(props) {
+  if (props?.id) {
+    entry.value = props
+    entry.value.prompt = prompts.value.find((prompt) => prompt.id === props.prompt.id)
+  } else {
+    entry.value = {}
+  }
+  entry.value.dialog = true
 }
 </script>

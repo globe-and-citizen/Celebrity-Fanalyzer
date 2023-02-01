@@ -14,20 +14,28 @@ const routes = [
         component: () => import('pages/SearchPage.vue')
       },
       {
-        path: 'notifications',
-        component: () => import('pages/NotificationsPage.vue')
+        path: 'month',
+        component: () => import('pages/PromptPage.vue')
+      },
+      {
+        path: ':slug',
+        component: () => import('pages/PromptPage.vue')
+      },
+      {
+        path: ':year(\\d{4})/:month(\\d{2})',
+        component: () => import('pages/PromptPage.vue')
+      },
+      {
+        path: ':year(\\d{4})/:month(\\d{2})/:id',
+        component: () => import('pages/EntryPage.vue')
+      },
+      {
+        path: ':year(\\d{4})',
+        component: () => import('pages/YearArchivePage.vue')
       },
       {
         path: 'profile',
         component: () => import('pages/ProfilePage.vue')
-      },
-      {
-        path: 'prompt/:id',
-        component: () => import('pages/PromptPage.vue')
-      },
-      {
-        path: 'entry/:id',
-        component: () => import('pages/EntryPage.vue')
       },
       {
         path: 'admin',
@@ -42,6 +50,7 @@ const routes = [
   },
   {
     path: '/:catchAll(.*)*',
+    alias: '/404',
     component: () => import('pages/404Error.vue')
   }
 ]

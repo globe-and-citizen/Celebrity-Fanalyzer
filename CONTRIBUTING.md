@@ -24,26 +24,12 @@
 npm install
 ```
 
-### Add a .env file
+### The .env file
 
-Celebrity Fanalyzer is a serverless build using Firebase for a backend. To successfully run the project, you'll need a backend to connect to. In the top level domain, of the project, create a ".env" file.
+Celebrity Fanalyzer is a serverless build using Firebase for a backend.
 
-Add the following to the file that will connect your local app to a development back end.
-
-```
-# DEVELOPMENT FIREBASE CONFIG
-VITE_FIREBASE_API_KEY=''
-VITE_FIREBASE_AUTH_DOMAIN=''
-VITE_FIREBASE_PROJECT_ID=''
-VITE_FIREBASE_STORAGE_BUCKET=''
-VITE_FIREBASE_MESSAGING_SENDER_ID=''
-VITE_FIREBASE_APP_ID=''
-RELEASE_STAGE='development'
-```
-
-Reach out to one of the team to get official numbers. Alternatively, you can easily launch a Firebase instance of your own.
-
-(Note\* at present you will need to be manually added to the project as an admin after signing up. This will be updated shortly.)
+Public development environment variables are available.
+It is not necessary to configure anything related to this.
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 

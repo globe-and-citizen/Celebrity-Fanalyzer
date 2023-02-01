@@ -1,142 +1,186 @@
 <template>
-  <section v-if="promptStore.isLoading" class="absolute-center">
-    <q-spinner color="primary" size="3em" />
-  </section>
-  <q-page class="bg-white">
-    <q-img :ratio="21 / 9" :src="prompt?.image" spinner-color="primary" spinner-size="82px" class="cf-parallax q-page-container" />
-    <section class="q-pa-md cf-parallax-mt bg-white">
-      <h1 class="q-mt-none text-bold text-h5">{{ prompt.title }}</h1>
-      <p class="text-body1" v-html="prompt.description"></p>
-      <div class="q-mb-md">
-        <q-badge v-for="(category, index) of prompt.categories" class="q-mx-xs" :key="index" rounded>
-          {{ category }}
-        </q-badge>
-      </div>
-      <div class="inline-block">
-        <q-btn
-          color="green"
-          :disable="!userStore.isAuthenticated"
-          flat
-          icon="sentiment_satisfied_alt"
-          :label="prompt.info?.likes.length"
-          rounded
-          @click="like()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-tooltip v-if="!userStore.isAuthenticated" anchor="bottom middle" self="center middle">You need to login to vote</q-tooltip>
-        <q-btn
-          color="red"
-          :disable="!userStore.isAuthenticated"
-          flat
-          icon="sentiment_very_dissatisfied"
-          :label="prompt.info?.dislikes.length"
-          rounded
-          @click="dislike()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-      </div>
-      <q-btn
-        flat
-        rounded
-        icon="img:/icons/discord.svg"
-        href="https://discord.com/channels/1034461422962360380/1040994839610806343"
-        target="_blank"
-      >
-        <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
-      </q-btn>
-      <q-btn flat rounded icon="share" :label="prompt.info?.shares" @click="sharePrompt(true)">
-        <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
-      </q-btn>
-    </section>
-    <q-separator />
-    <q-separator />
-    <TheEntries :entries="entries" />
-  </q-page>
+  <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
+    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+  </q-tabs>
+  <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <q-tab-panel name="prompt" style="padding: 0">
+      <q-page class="bg-white">
+        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
+        <section class="q-pa-md" style="margin-top: 100%">
+          <div class="flex justify-between">
+            <p v-if="prompt.date" class="text-body2">{{ monthYear(prompt.date) }}</p>
+            <div>
+              <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
+                {{ category }}
+              </q-badge>
+            </div>
+          </div>
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
+          <p class="text-body1" v-html="prompt?.description"></p>
+          <div class="inline-block">
+            <q-btn
+              color="green"
+              :disable="promptStore.isLoading"
+              flat
+              icon="sentiment_satisfied_alt"
+              :label="countLikes"
+              rounded
+              @click="like()"
+            >
+              <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+            </q-btn>
+            <q-btn
+              color="red"
+              :disable="promptStore.isLoading"
+              flat
+              icon="sentiment_very_dissatisfied"
+              :label="countDislikes"
+              rounded
+              @click="dislike()"
+            >
+              <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+            </q-btn>
+          </div>
+          <q-btn
+            flat
+            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
+            icon="img:/icons/discord.svg"
+            rounded
+            target="_blank"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+          </q-btn>
+          <ShareComponent :label="countShares" @share="onShare($event)" />
+        </section>
+        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
+        <TheEntries :entries="prompt?.entries" />
+      </q-page>
+    </q-tab-panel>
+    <q-tab-panel name="stats" class="bg-white">
+      <q-page>
+        <section>
+          <h1 class="q-mt-none text-bold text-h4">{{ prompt?.title }}</h1>
+
+          <div class="flex items-center q-mb-xl">
+            <q-avatar size="6rem">
+              <img :src="prompt.author.photoURL" alt="" />
+            </q-avatar>
+            <p class="q-mb-none q-ml-md text-h5">{{ prompt.author.displayName }}</p>
+          </div>
+
+          <q-tabs
+            v-model="type"
+            dense
+            class="text-grey q-mb-xl"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="day" label="Days" />
+            <q-tab name="week" label="Week" />
+            <q-tab name="all" label="All" />
+          </q-tabs>
+          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+        </section>
+      </q-page>
+    </q-tab-panel>
+  </q-tab-panels>
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import BarGraph from 'src/components/BarGraph.vue'
+import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { getStats, monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Timestamp } from 'firebase/firestore'
 
-const $q = useQuasar()
 const router = useRouter()
 
-const entryStore = useEntryStore()
+const likeStore = useLikeStore()
 const promptStore = usePromptStore()
-const userStore = useUserStore()
+const shareStore = useShareStore()
 
-const entries = ref([])
+const chartData = ref({})
+const countLikes = ref(0)
+const countDislikes = ref(0)
+const countShares = ref(0)
 const prompt = ref({})
+const tab = ref('prompt')
+const type = ref('day')
 
 onMounted(async () => {
-  if (!promptStore.getPrompts?.length) {
-    await promptStore.fetchPrompts()
+  if (router.currentRoute.value.href === '/month') {
+    await promptStore.fetchMonthPrompt()
+    prompt.value = promptStore.getMonthPrompt
   }
-  updatePrompt()
-  await entryStore.fetchEntries(prompt.value.id)
-  entries.value = entryStore.getEntries
+  if (router.currentRoute.value.params.year) {
+    await promptStore
+      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
+      .then((res) => (prompt.value = res))
+      .catch(() => (prompt.value = null))
+  }
+  if (router.currentRoute.value.params.slug) {
+    await promptStore
+      .fetchPromptBySlug(router.currentRoute.value.params.slug)
+      .then((res) => (prompt.value = res))
+      .catch(() => (prompt.value = null))
+  }
+
+  if (!prompt.value) {
+    router.push('/404')
+    return
+  }
+
+  await likeStore.getAllPromptLikesDislikes(prompt.value.id)
 })
 
-function updatePrompt() {
-  prompt.value = promptStore.getPrompts.find((prompt) => prompt.slug === router.currentRoute.value.params.id)
-}
+likeStore.$subscribe((_mutation, state) => {
+  countLikes.value = state._likes.length
+  countDislikes.value = state._dislikes.length
 
-function like() {
-  promptStore.addLike(prompt.value.id).then(() => updatePrompt())
-}
-
-function dislike() {
-  promptStore.addDislike(prompt.value.id).then(() => updatePrompt())
-}
-
-function sharePrompt(grid) {
-  $q.bottomSheet({
-    message: 'Share with Social Media',
-    grid,
-    actions: [
-      { label: 'Copy to Clipboard', img: '/icons/clipboard.svg', id: 'clipboard' },
-      { label: 'Facebook', img: '/icons/facebook.svg', id: 'facebook', link: 'https://facebook.com/sharer/sharer.php?u=' },
-      { label: 'LinkedIn', img: '/icons/linkedin.svg', id: 'linkedin', link: 'https://linkedin.com/sharing/share-offsite/?url=' },
-      { label: 'Twitter', img: '/icons/twitter.svg', id: 'twitter', link: 'https://twitter.com/intent/tweet?text=' },
-      { label: 'Telegram', img: '/icons/telegram.svg', id: 'telegram', link: 'https://t.me/share/url?url=' },
-      { label: 'WhatsApp', img: '/icons/whatsapp.svg', id: 'whatsapp', link: 'https://api.whatsapp.com/send?text=' },
-      { label: 'Reddit', img: '/icons/reddit.svg', id: 'reddit', link: 'https://reddit.com/submit?url=' },
-      { label: 'Pinterest', img: '/icons/pinterest.svg', id: 'pinterest', link: 'https://pinterest.com/pin/create/button/?url=' },
-      {
-        label: 'Odnoklassniki',
-        img: '/icons/odnoklassniki.svg',
-        id: 'odnoklassniki',
-        link: 'https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl='
-      }
-    ]
-  }).onOk((action) => {
-    if (action.id === 'clipboard') {
-      navigator.clipboard.writeText(currentUrl.value)
-      copied.value = true
-      setInterval(() => {
-        copied.value = false
-      }, 800)
-    } else if (action.id === 'facebook' || action.id === 'linkedin') {
-      window.open(action.link + `${window.location.href}`, '_blank')
-    } else {
-      window.open(action.link + `Look what I just found on CelebrityFanalyzer: ${window.location.href}`, '_blank')
+  const { weekStats, dayStats } = getStats(state, prompt.value.created)
+  const allStats = [
+    {
+      date: Timestamp.fromDate(new Date()),
+      likes: state._likes.length,
+      dislikes: state._dislikes.length
     }
-  })
+  ]
+  chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
+})
+
+shareStore.$subscribe((_mutation, state) => {
+  countShares.value = state._shares
+})
+
+async function like() {
+  await likeStore.likePrompt(prompt.value.id)
+}
+
+async function dislike() {
+  await likeStore.dislikePrompt(prompt.value.id)
+}
+
+function onShare(socialNetwork) {
+  shareStore.sharePrompt(prompt.value.id, socialNetwork)
 }
 </script>
 
-<style lang="scss">
-.cf-parallax {
+<style scoped lang="scss">
+.parallax {
   position: fixed;
   top: 0;
   z-index: -1;
 }
-.cf-parallax-mt {
-  margin-top: 42.8571%;
+
+.tab-selector {
+  margin-bottom: 4rem;
+  z-index: 3;
 }
 </style>

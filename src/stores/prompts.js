@@ -1,87 +1,128 @@
-import {
-  addDoc,
-  arrayRemove,
-  arrayUnion,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  runTransaction,
-  Timestamp,
-  updateDoc
-} from 'firebase/firestore'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
 import { db, storage } from 'src/firebase'
-import { useUserStore } from 'src/stores'
+import { useEntryStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
-    _prompts: [],
+    _isLoading: false,
     _monthPrompt: null,
-    _isLoading: false
+    _prompts: []
   }),
 
+  persist: true,
+
   getters: {
-    getMonthPrompt: (state) => LocalStorage.getItem('monthPrompt') || state._monthPrompt,
-    getPrompts: (state) => LocalStorage.getItem('prompts') || state._prompts,
+    getMonthPrompt: (state) => state._monthPrompt,
+    getPromptRef: () => (id) => doc(db, 'prompts', id),
+    getPrompts: (state) => state._prompts,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
+    /**
+     * Fetch the current month prompt and set the value in the store :
+     * Checking if we have a data in the store.
+     * Check if we have data in the local storage.
+     * Fetch the data form firebase if 1-2 is false.
+     * @returns {Promise<void>}
+     */
     async fetchMonthPrompt() {
-      const q = query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))
-      const querySnapshot = await getDocs(q)
+      const currentMonthId = currentYearMonth()
+      const previousMonthId = previousYearMonth()
 
-      this._monthPrompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      await getDocs(collection(db, 'prompts', this._monthPrompt.id, 'entries'))
-        .then(async (querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-          for (const entry of entries) {
-            entry.author = await getDoc(entry.author).then((doc) => doc.data())
-          }
-
-          this._monthPrompt.entries = entries
-        })
-        .catch((error) => {
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-
-      LocalStorage.set('monthPrompt', this._monthPrompt)
-    },
-
-    async fetchPrompt(id) {
       this._isLoading = true
-      await getDoc(doc(db, 'prompts', id))
+      const docSnap = await getDoc(doc(db, 'prompts', currentMonthId))
+
+      if (docSnap.exists()) {
+        const prompt = docSnap.data()
+
+        prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+        if (prompt.entries?.length) {
+          for (const index in prompt.entries) {
+            prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+            prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+          }
+        }
+        this._monthPrompt = prompt
+      } else {
+        await getDoc(doc(db, 'prompts', previousMonthId))
+          .then(async (doc) => {
+            const prompt = { id: doc.id, ...doc.data() }
+
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            if (prompt.entries?.length) {
+              for (const index in prompt.entries) {
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+              }
+            }
+            this._monthPrompt = prompt
+          })
+          .catch((err) => {
+            console.error(err)
+            throw new Error('Document not found.')
+          })
+      }
+      this._isLoading = false
+    },
+    /**
+     * Fetch prompt By id if it's not exist or reload it if it's exist
+     * @param promptId
+     * @returns {Promise<void>}
+     */
+    async fetchPromptById(id) {
+      this._isLoading = true
+      return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
+          if (doc.data === undefined) {
+            throw new Error('Document not found.')
+          }
           const prompt = { id: doc.id, ...doc.data() }
           prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
 
-          this._prompts = this.getPrompts
-          const index = this._prompts.findIndex((p) => p.id === prompt.id)
+          if (prompt.entries?.length) {
+            for (const index in prompt.entries) {
+              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+            }
+          }
 
-          if (index === -1) this._prompts.push(prompt)
-          else this._prompts[index] = prompt
-
-          LocalStorage.set('prompts', this._prompts)
+          return prompt
         })
-        .catch((error) => {
-          throw new Error(error)
+        .catch((err) => {
+          throw new Error(err)
         })
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchPrompts() {
+    async fetchPromptBySlug(slug) {
+      const q = query(collection(db, 'prompts'), where('slug', '==', slug))
       this._isLoading = true
-      await getDocs(collection(db, 'prompts'))
+      const querySnapshot = await getDocs(q)
+
+      const prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+
+      if (prompt.entries?.length) {
+        for (const index in prompt.entries) {
+          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+        }
+      }
+      this._isLoading = false
+
+      return prompt
+    },
+
+    async fetchPromptsByYear(year) {
+      const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
+
+      this._isLoading = true
+      return await getDocs(q)
         .then(async (querySnapshot) => {
           const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
@@ -89,12 +130,41 @@ export const usePromptStore = defineStore('prompts', {
             prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
           }
 
-          this._prompts = []
-          this.$patch({ _prompts: prompts })
+          prompts.reverse()
 
-          LocalStorage.set('prompts', this._prompts)
+          return prompts
         })
         .catch((error) => {
+          console.error(error)
+          throw new Error(error)
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async fetchPromptsAndEntries() {
+      this._isLoading = true
+      await getDocs(collection(db, 'prompts'))
+        .then(async (querySnapshot) => {
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const prompt of prompts) {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+
+            if (prompt.entries) {
+              for (const index in prompt.entries) {
+                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => ({ id: doc.id, ...doc.data() }))
+                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+              }
+            }
+          }
+
+          prompts.reverse()
+
+          this._prompts = []
+          this.$patch({ _prompts: prompts })
+        })
+        .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -105,15 +175,16 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = userStore.getUserRef
       prompt.created = Timestamp.fromDate(new Date())
+      prompt.id = prompt.date
 
       this._isLoading = true
-      await addDoc(collection(db, 'prompts'), prompt)
+      await setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
+          prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
-          console.error('Error:', error)
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
@@ -129,63 +200,51 @@ export const usePromptStore = defineStore('prompts', {
           this.$patch({
             _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
           })
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
+      const entryStore = useEntryStore()
+      const likeStore = useLikeStore()
+      const shareStore = useShareStore()
+
+      const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
+
       this._isLoading = true
-      await deleteDoc(doc(db, 'prompts', id))
+      if (relatedEntries.length) {
+        for (const entry of relatedEntries) {
+          await entryStore.deleteEntry(entry.id)
+        }
+      }
+      const deleteLikes = await likeStore.deleteAllPromptLikes(id)
+      const deleteShares = await shareStore.deleteAllPromptShares(id)
+      const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+      const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
+
+      Promise.all([deleteLikes, deleteShares, deleteImage, deletePromptDoc])
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
-          LocalStorage.set('prompts', this._prompts)
         })
         .catch((error) => {
+          console.error(error)
           throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
     },
 
-    async uploadImage(file) {
-      const storageRef = ref(storage, `images/prompt-${file.name + Date.now()}`)
+    async uploadImage(file, promptId) {
+      const storageRef = ref(storage, `images/prompt-${promptId}`)
 
+      this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
-    },
-
-    async addLike(id) {
-      this._prompts = []
-      this.$patch({ _prompts: this.getPrompts })
-
-      this._isLoading = true
-      await updateDoc(doc(db, 'prompts', id), {
-        'info.likes': arrayUnion(useUserStore().getUserRef),
-        'info.dislikes': arrayRemove(useUserStore().getUserRef)
-      })
-        .then(() => this.fetchPrompt(id))
-        .catch((error) => {
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
-    async addDislike(id) {
-      this._isLoading = true
-      await updateDoc(doc(db, 'prompts', id), {
-        'info.dislikes': arrayUnion(useUserStore().getUserRef),
-        'info.likes': arrayRemove(useUserStore().getUserRef)
-      })
-        .then(() => this.fetchPrompt(id))
-        .catch((error) => {
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
     }
   }
 })
