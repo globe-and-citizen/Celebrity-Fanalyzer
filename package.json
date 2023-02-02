@@ -31,6 +31,7 @@
     "eslint-plugin-vue": "^9.9.0",
     "postcss": "^8.4.21",
     "prettier": "^2.8.3",
+    "vitest": "^0.28.3",
     "workbox-build": "^6.5.4",
     "workbox-cacheable-response": "^6.5.4",
     "workbox-core": "^6.5.4",
