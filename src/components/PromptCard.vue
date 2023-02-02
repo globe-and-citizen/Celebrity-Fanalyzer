@@ -53,7 +53,8 @@
                   {
                     icon: $q.iconSet.editor.formatting,
                     options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
-                  }
+                  },
+                  ['link']
                 ],
                 ['undo', 'redo']
               ]"
