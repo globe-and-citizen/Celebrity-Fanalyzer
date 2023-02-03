@@ -32,18 +32,6 @@ export function previousYearMonth() {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
 }
 
-export function getDay(intDate) {
-  const date = new Date()
-  date.setTime(intDate)
-  return new Date(date.getFullYear(), date.getMonth(), date.getDay()).getTime()
-}
-
-export function getNextDay(intDate) {
-  const date = new Date()
-  date.setTime(intDate)
-  return new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1).getTime()
-}
-
 export function startEndDay(timeStamp) {
   return {
     start: new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400), 0),
