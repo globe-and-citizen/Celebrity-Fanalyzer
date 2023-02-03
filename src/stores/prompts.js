@@ -2,7 +2,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, set
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useEntryStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
@@ -171,6 +171,7 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async addPrompt(prompt) {
+      const errorStore = useErrorStore()
       const userStore = useUserStore()
 
       prompt.author = userStore.getUserRef
@@ -185,7 +186,8 @@ export const usePromptStore = defineStore('prompts', {
         })
         .catch((error) => {
           console.error(error)
-          throw new Error(error)
+          // TODO: Force error when adding prompt to create document in Firestore
+          errorStore.throwError(error)
         })
         .finally(() => (this._isLoading = false))
     },
