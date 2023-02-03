@@ -4,7 +4,7 @@ import { signInWithCredential, GoogleAuthProvider, getAdditionalUserInfo } from 
 
 //Testing Frameworks
 import { setActivePinia, createPinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vitest } from 'vitest'
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
 
 // Necessary Components
@@ -40,7 +40,13 @@ describe('Main Menu Component', () => {
     expect(admin).toBe(true)
     let localUserString = localStorage.getItem('user')
     expect(localUserString.indexOf('role')).toBeTruthy()
+
+    const mockRouter = {
+      push: vitest.fn()
+    }
+
     const wrapper = mount(MainMenu)
+
     expect(wrapper.find('[to="/admin"]').exists()).toEqual(true)
   })
 })
