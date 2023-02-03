@@ -29,6 +29,7 @@
   "devDependencies": {
     "@quasar/app-vite": "^1.2.0",
     "@vitest/coverage-istanbul": "^0.28.4",
+    "@vue/test-utils": "^2.2.10",
     "autoprefixer": "^10.4.13",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
