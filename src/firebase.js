@@ -1,8 +1,8 @@
-import { getAnalytics } from 'firebase/analytics'
+import { getAnalytics, isSupported } from 'firebase/analytics'
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+import { getAuth, connectAuthEmulator, onAuthStateChanged } from 'firebase/auth'
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
+import { getStorage, connectStorageEmulator } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -16,10 +16,20 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 
-getAnalytics(app)
-
 const auth = getAuth(app)
 const db = getFirestore(app)
 const storage = getStorage(app)
+
+const userAnalytics = false
+if (userAnalytics) {
+  getAnalytics(app)
+}
+
+const useEmulators = true
+if (useEmulators) {
+  connectAuthEmulator(auth, 'http://localhost:9099')
+  connectFirestoreEmulator(db, 'localhost', 8000)
+  connectStorageEmulator(storage, 'localhost', 9199)
+}
 
 export { auth, db, storage }

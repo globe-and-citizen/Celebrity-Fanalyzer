@@ -1,4 +1,4 @@
-import { doc, getDoc, runTransaction } from '@firebase/firestore'
+import { doc, getDoc, runTransaction } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { db } from 'src/firebase'
@@ -36,7 +36,7 @@ export const useUserStore = defineStore('user', {
 
       if (this.getUser) {
         LocalStorage.set('user', this._user)
-        this.router.go(0)
+        //this.router.go(0)
       }
     },
 

@@ -9,7 +9,8 @@
     "dev": "quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "vitest",
+    "emulators": "firebase emulators:start --project celebrityfanalizer --import emulatorData"
   },
   "dependencies": {
     "@quasar/extras": "^1.15.10",
@@ -24,13 +25,18 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
+    "@pinia/testing": "^0.0.14",
     "@quasar/app-vite": "^1.2.0",
+    "@quasar/quasar-app-extension-testing-unit-vitest": "^0.1.2",
+    "@vue/test-utils": "^2.0.0",
     "autoprefixer": "^10.4.13",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-vue": "^9.9.0",
+    "jsdom": "^21.1.0",
     "postcss": "^8.4.21",
     "prettier": "^2.8.3",
+    "vitest": "^0.15.0",
     "workbox-build": "^6.5.4",
     "workbox-cacheable-response": "^6.5.4",
     "workbox-core": "^6.5.4",

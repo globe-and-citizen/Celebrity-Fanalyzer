@@ -2,7 +2,7 @@ import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } f
 import { doc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
-import { auth, db } from 'src/firebase.js'
+import { auth, db } from '../../firebase'
 import { useUserStore } from 'src/stores'
 
 export const useAuthStore = defineStore('auth', {
