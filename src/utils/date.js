@@ -75,6 +75,15 @@ export function calendarDay(startDate, endDate) {
   return calendar
 }
 
+/**
+ * Return A list of dates between the beginning of the startDate
+ * and the midnight of the endDate
+ * The period between two dates is one week, except for the last one which may be less.
+ *
+ * @param startDate
+ * @param endDate
+ * @returns {*[]}
+ */
 export function calendarWeek(startDate, endDate) {
   let calendar = []
   const dayStart = startEndDay(startDate).start
