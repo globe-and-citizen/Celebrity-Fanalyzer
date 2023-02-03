@@ -1,4 +1,4 @@
-import { getAnalytics, isSupported } from 'firebase/analytics'
+import { getAnalytics } from 'firebase/analytics'
 import { initializeApp } from 'firebase/app'
 import { getAuth, connectAuthEmulator, onAuthStateChanged } from 'firebase/auth'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
@@ -20,12 +20,12 @@ const auth = getAuth(app)
 const db = getFirestore(app)
 const storage = getStorage(app)
 
-const userAnalytics = false
+const userAnalytics = true
 if (userAnalytics) {
   getAnalytics(app)
 }
 
-const useEmulators = true
+const useEmulators = false
 if (useEmulators) {
   connectAuthEmulator(auth, 'http://localhost:9099')
   connectFirestoreEmulator(db, 'localhost', 8000)
