@@ -120,9 +120,7 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPromptsAndEntries()
-  }
+  await promptStore.fetchPromptsAndEntries()
   prompts.value = promptStore.getPrompts
 })
 
