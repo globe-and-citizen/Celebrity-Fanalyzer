@@ -55,6 +55,14 @@ export function nextWeekDate(timeStamp) {
   return new Timestamp(timeStamp.seconds - (timeStamp.seconds % 86400) + 86400 * 7, 0)
 }
 
+/**
+ * Return A list of dates between the beginning of the startDate
+ * and the midnight of the endDate
+ *
+ * @param startDate
+ * @param endDate
+ * @returns {Array<Timestamp>}
+ */
 export function calendarDay(startDate, endDate) {
   let calendar = []
   for (
