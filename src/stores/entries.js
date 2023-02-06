@@ -16,7 +16,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -43,6 +43,7 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(entry) {
+      const errorStore = useErrorStore()
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -61,19 +62,14 @@ export const useEntryStore = defineStore('entries', {
       entry.author = userStore.getUserRef
 
       this._isLoading = true
-      await setDoc(entryRef, entry).catch((error) => {
-        console.error(error)
-        throw new Error(error)
-      })
+      await setDoc(entryRef, entry).catch((error) => errorStore.setError(error))
 
-      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => {
-        console.error(error)
-        throw new Error(error)
-      })
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => errorStore.setError(error))
       this._isLoading = false
     },
 
     async editEntry(entry) {
+      const errorStore = useErrorStore()
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -94,10 +90,7 @@ export const useEntryStore = defineStore('entries', {
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.setError(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -131,22 +124,17 @@ export const useEntryStore = defineStore('entries', {
             ]
           })
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.setError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async uploadImage(file, entryId) {
+      const errorStore = useErrorStore()
       const storageRef = ref(storage, `images/entry-${entryId}`)
 
       this._isLoading = true
       await uploadBytes(storageRef, file)
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.setError(error))
         .finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))

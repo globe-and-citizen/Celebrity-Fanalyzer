@@ -30,6 +30,7 @@ export const usePromptStore = defineStore('prompts', {
      * @returns {Promise<void>}
      */
     async fetchMonthPrompt() {
+      const errorStore = useErrorStore()
       const currentMonthId = currentYearMonth()
       const previousMonthId = previousYearMonth()
 
@@ -61,10 +62,7 @@ export const usePromptStore = defineStore('prompts', {
             }
             this._monthPrompt = prompt
           })
-          .catch((err) => {
-            console.error(err)
-            throw new Error('Document not found.')
-          })
+          .catch((error) => errorStore.throwError(error))
       }
       this._isLoading = false
     },
@@ -74,6 +72,8 @@ export const usePromptStore = defineStore('prompts', {
      * @returns {Promise<void>}
      */
     async fetchPromptById(id) {
+      const errorStore = useErrorStore()
+
       this._isLoading = true
       return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
@@ -92,9 +92,7 @@ export const usePromptStore = defineStore('prompts', {
 
           return prompt
         })
-        .catch((err) => {
-          throw new Error(err)
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -119,6 +117,8 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async fetchPromptsByYear(year) {
+      const errorStore = useErrorStore()
+
       const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
 
       this._isLoading = true
@@ -134,14 +134,13 @@ export const usePromptStore = defineStore('prompts', {
 
           return prompts
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async fetchPromptsAndEntries() {
+      const errorStore = useErrorStore()
+
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
@@ -163,10 +162,7 @@ export const usePromptStore = defineStore('prompts', {
           this._prompts = []
           this.$patch({ _prompts: prompts })
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -184,18 +180,16 @@ export const usePromptStore = defineStore('prompts', {
           prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
-        .catch((error) => {
-          console.error(error)
-          // TODO: Force error when adding prompt to create document in Firestore
-          errorStore.throwError(error)
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async editPrompt(prompt) {
+      const errorStore = useErrorStore()
+
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'prompts', prompt.id), { ...prompt })
+        transaction.update(doc(db, 'prompts', prompt.id), prompt)
       })
         .then(() => {
           const index = this.getPrompts.findIndex((p) => p.id === prompt.id)
@@ -203,15 +197,13 @@ export const usePromptStore = defineStore('prompts', {
             _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
           })
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
       const entryStore = useEntryStore()
+      const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
 
@@ -223,20 +215,17 @@ export const usePromptStore = defineStore('prompts', {
           await entryStore.deleteEntry(entry.id)
         }
       }
-      const deleteLikes = await likeStore.deleteAllPromptLikes(id)
-      const deleteShares = await shareStore.deleteAllPromptShares(id)
       const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+      const deleteLikes = await likeStore.deleteAllPromptLikes(id)
       const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
+      const deleteShares = await shareStore.deleteAllPromptShares(id)
 
       Promise.all([deleteLikes, deleteShares, deleteImage, deletePromptDoc])
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 

@@ -1,8 +1,9 @@
 import { doc, getDoc, runTransaction } from '@firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
-import { db } from 'src/firebase'
 import sha1 from 'sha1'
+import { db } from 'src/firebase'
+import { useErrorStore } from 'src/stores'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -22,6 +23,8 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async fetchUserProfile(user) {
+      const errorStore = useErrorStore()
+
       this._isLoading = true
       await getDoc(doc(db, 'users', user.uid))
         .then((document) =>
@@ -29,9 +32,7 @@ export const useUserStore = defineStore('user', {
             _user: { uid: document.id, ...document.data() }
           })
         )
-        .catch((error) => {
-          throw error
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
 
       if (this.getUser) {
@@ -58,6 +59,8 @@ export const useUserStore = defineStore('user', {
     },
 
     async updateProfile(user) {
+      const errorStore = useErrorStore()
+
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), { ...user })
@@ -68,9 +71,7 @@ export const useUserStore = defineStore('user', {
           this._user.bio = user.bio
           LocalStorage.set('user', this._user)
         })
-        .catch((error) => {
-          throw error
-        })
+        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     }
   }
