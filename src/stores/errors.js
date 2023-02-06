@@ -1,7 +1,7 @@
-import { doc, setDoc, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { useUserStore } from './user'
+import { useUserStore } from 'src/stores'
 
 export const useErrorStore = defineStore('errors', {
   actions: {
@@ -11,14 +11,13 @@ export const useErrorStore = defineStore('errors', {
 
       const err = {
         createdAt: Timestamp.fromDate(new Date()),
-        error,
-        user: userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+        error: error.stack,
+        user: userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIp
       }
 
-      await setDoc(doc(db, 'errors', Date.now()), err)
-
-      console.error(error)
-      throw error.code
+      await addDoc(collection(db, 'errors'), err)
+        .then((res) => console.log('Error stored in database'))
+        .catch((e) => console.error(e))
     }
   }
 })
