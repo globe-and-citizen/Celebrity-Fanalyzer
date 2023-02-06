@@ -16,8 +16,11 @@ export const useErrorStore = defineStore('errors', {
       }
 
       await addDoc(collection(db, 'errors'), err)
-        .then((res) => console.log('Error stored in database'))
+        .then(() => console.log('Error stored in database'))
         .catch((e) => console.error(e))
+
+      console.error(error)
+      throw new Error(error)
     }
   }
 })
