@@ -16,7 +16,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -43,7 +43,6 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(entry) {
-      const errorStore = useErrorStore()
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -62,14 +61,13 @@ export const useEntryStore = defineStore('entries', {
       entry.author = userStore.getUserRef
 
       this._isLoading = true
-      await setDoc(entryRef, entry).catch((error) => errorStore.setError(error))
+      await setDoc(entryRef, entry)
 
-      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => errorStore.setError(error))
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
       this._isLoading = false
     },
 
     async editEntry(entry) {
-      const errorStore = useErrorStore()
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -89,9 +87,7 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      })
-        .catch((error) => errorStore.setError(error))
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async deleteEntry(entryId) {
@@ -124,18 +120,14 @@ export const useEntryStore = defineStore('entries', {
             ]
           })
         })
-        .catch((error) => errorStore.setError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async uploadImage(file, entryId) {
-      const errorStore = useErrorStore()
       const storageRef = ref(storage, `images/entry-${entryId}`)
 
       this._isLoading = true
-      await uploadBytes(storageRef, file)
-        .catch((error) => errorStore.setError(error))
-        .finally(() => (this._isLoading = false))
+      await uploadBytes(null, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     }

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import sha1 from 'sha1'
-import { useErrorStore } from 'src/stores'
 
 export const useStatStore = defineStore('stats', {
   state: () => ({
@@ -15,7 +14,6 @@ export const useStatStore = defineStore('stats', {
 
   actions: {
     fetchStats() {
-      const errorStore = useErrorStore()
       const projectId = import.meta.env.VITE_STATCOUNTER_PROJECTID
       const username = import.meta.env.VITE_STATCOUNTER_USER
       const password = import.meta.env.VITE_STATCOUNTER_PASSWORD
@@ -30,7 +28,6 @@ export const useStatStore = defineStore('stats', {
           .then((data) => {
             this._stats.push({ stat, data })
           })
-          .catch((error) => errorStore.setError(error))
       })
     }
   }

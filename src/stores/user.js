@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
 import { db } from 'src/firebase'
-import { useErrorStore } from 'src/stores'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -23,16 +22,9 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async fetchUserProfile(user) {
-      const errorStore = useErrorStore()
-
       this._isLoading = true
       await getDoc(doc(db, 'users', user.uid))
-        .then((document) =>
-          this.$patch({
-            _user: { uid: document.id, ...document.data() }
-          })
-        )
-        .catch((error) => errorStore.throwError(error))
+        .then((document) => this.$patch({ _user: { uid: document.id, ...document.data() } }))
         .finally(() => (this._isLoading = false))
 
       if (this.getUser) {
@@ -59,8 +51,6 @@ export const useUserStore = defineStore('user', {
     },
 
     async updateProfile(user) {
-      const errorStore = useErrorStore()
-
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), { ...user })
@@ -71,7 +61,6 @@ export const useUserStore = defineStore('user', {
           this._user.bio = user.bio
           LocalStorage.set('user', this._user)
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     }
   }

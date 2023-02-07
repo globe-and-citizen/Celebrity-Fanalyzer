@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { useErrorStore, useUserStore } from 'src/stores'
+import { useUserStore } from 'src/stores'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
@@ -24,7 +24,6 @@ export const useShareStore = defineStore('shares', {
     },
 
     async sharePrompt(promptId, socialNetwork) {
-      const errorStore = useErrorStore()
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -34,7 +33,7 @@ export const useShareStore = defineStore('shares', {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Timestamp.fromDate(new Date()),
         sharedOn: socialNetwork
-      }).catch((error) => errorStore.setError(error))
+      })
 
       this.countPromptShares(promptId)
     },
@@ -48,7 +47,6 @@ export const useShareStore = defineStore('shares', {
     },
 
     async shareEntry(entryId, socialNetwork) {
-      const errorStore = useErrorStore()
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -58,7 +56,7 @@ export const useShareStore = defineStore('shares', {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
         createdAt: Timestamp.fromDate(new Date()),
         sharedOn: socialNetwork
-      }).catch((error) => errorStore.setError(error))
+      })
 
       this.countEntryShares(entryId)
     },

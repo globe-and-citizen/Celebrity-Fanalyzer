@@ -3,7 +3,7 @@ import { doc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { auth, db } from 'src/firebase'
-import { useErrorStore, useUserStore } from 'src/stores'
+import { useUserStore } from 'src/stores'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -21,7 +21,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async googleSignIn() {
-      const errorStore = useErrorStore()
       const provider = new GoogleAuthProvider()
 
       this._isLoading = true
@@ -34,7 +33,6 @@ export const useAuthStore = defineStore('auth', {
           }
           this.fetchProfile(result.user)
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 

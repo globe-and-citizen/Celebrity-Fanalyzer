@@ -2,7 +2,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, set
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useEntryStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
@@ -30,7 +30,6 @@ export const usePromptStore = defineStore('prompts', {
      * @returns {Promise<void>}
      */
     async fetchMonthPrompt() {
-      const errorStore = useErrorStore()
       const currentMonthId = currentYearMonth()
       const previousMonthId = previousYearMonth()
 
@@ -49,20 +48,18 @@ export const usePromptStore = defineStore('prompts', {
         }
         this._monthPrompt = prompt
       } else {
-        await getDoc(doc(db, 'prompts', previousMonthId))
-          .then(async (doc) => {
-            const prompt = { id: doc.id, ...doc.data() }
+        await getDoc(doc(db, 'prompts', previousMonthId)).then(async (doc) => {
+          const prompt = { id: doc.id, ...doc.data() }
 
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-            if (prompt.entries?.length) {
-              for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-              }
+          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+          if (prompt.entries?.length) {
+            for (const index in prompt.entries) {
+              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
             }
-            this._monthPrompt = prompt
-          })
-          .catch((error) => errorStore.throwError(error))
+          }
+          this._monthPrompt = prompt
+        })
       }
       this._isLoading = false
     },
@@ -72,8 +69,6 @@ export const usePromptStore = defineStore('prompts', {
      * @returns {Promise<void>}
      */
     async fetchPromptById(id) {
-      const errorStore = useErrorStore()
-
       this._isLoading = true
       return await getDoc(doc(db, 'prompts', id))
         .then(async (doc) => {
@@ -92,7 +87,6 @@ export const usePromptStore = defineStore('prompts', {
 
           return prompt
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -117,8 +111,6 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async fetchPromptsByYear(year) {
-      const errorStore = useErrorStore()
-
       const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
 
       this._isLoading = true
@@ -134,13 +126,10 @@ export const usePromptStore = defineStore('prompts', {
 
           return prompts
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async fetchPromptsAndEntries() {
-      const errorStore = useErrorStore()
-
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
@@ -162,12 +151,10 @@ export const usePromptStore = defineStore('prompts', {
           this._prompts = []
           this.$patch({ _prompts: prompts })
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async addPrompt(prompt) {
-      const errorStore = useErrorStore()
       const userStore = useUserStore()
 
       prompt.author = userStore.getUserRef
@@ -180,13 +167,10 @@ export const usePromptStore = defineStore('prompts', {
           prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async editPrompt(prompt) {
-      const errorStore = useErrorStore()
-
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
@@ -197,13 +181,11 @@ export const usePromptStore = defineStore('prompts', {
             _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
           })
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
       const entryStore = useEntryStore()
-      const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
 
@@ -225,7 +207,6 @@ export const usePromptStore = defineStore('prompts', {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })
-        .catch((error) => errorStore.throwError(error))
         .finally(() => (this._isLoading = false))
     },
 
