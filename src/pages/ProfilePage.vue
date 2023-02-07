@@ -61,11 +61,12 @@
 
 <script setup>
 import { LocalStorage, useQuasar } from 'quasar'
-import { useAuthStore, useUserStore } from 'src/stores'
+import { useAuthStore, useErrorStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref } from 'vue'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
+const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const tab = ref('profile')
@@ -79,7 +80,7 @@ onMounted(() => {
 })
 
 function googleSignIn() {
-  authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: error }))
+  authStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
 
 function uploadPhoto() {
@@ -92,11 +93,11 @@ function save() {
   userStore
     .updateProfile(user)
     .then($q.notify({ message: 'Profile successfully updated' }))
-    .catch((error) => $q.notify({ icon: 'error', message: error }))
+    .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
 
 function logout() {
-  authStore.logout()
+  authStore.logout().catch((error) => errorStore.throwError(error))
 }
 </script>
 

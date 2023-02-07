@@ -92,7 +92,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -100,6 +100,7 @@ const props = defineProps(['author', 'created', 'description', 'id', 'image', 'p
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const editorRef = ref(null)
@@ -158,19 +159,19 @@ async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
 
   if (Object.keys(imageModel.value).length) {
-    entryStore.uploadImage(imageModel.value, entry.id)
+    entryStore.uploadImage(imageModel.value, entry.id).catch((error) => errorStore.throwError(error, 'Image upload failed'))
   }
 
   if (props.id) {
     await entryStore
       .editEntry(entry)
       .then(() => $q.notify({ message: 'Entry successfully edited' }))
-      .catch(() => $q.notify({ message: 'Entry edit failed' }))
+      .catch((error) => errorStore.throwError(error, 'Entry edit failed'))
   } else {
     await entryStore
       .addEntry(entry)
       .then(() => $q.notify({ message: 'Entry successfully submitted' }))
-      .catch(() => $q.notify({ message: 'Entry submission failed' }))
+      .catch((error) => errorStore.throwError(error, 'Entry submission failed'))
   }
 
   emit('hideDialog')
