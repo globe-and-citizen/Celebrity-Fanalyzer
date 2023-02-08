@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section class="row items-center no-wrap">
+    <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
       <q-btn flat round icon="close" v-close-popup />
