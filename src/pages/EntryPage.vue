@@ -40,9 +40,8 @@
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <q-separator />
       </q-page>
-
-      <!-- Panel 2: Anthrogram -->
     </q-tab-panel>
+    <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
       <q-header>
         <q-toolbar class="bg-white q-px-lg shadow-1">
