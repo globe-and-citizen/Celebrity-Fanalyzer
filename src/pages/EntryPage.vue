@@ -150,7 +150,7 @@ likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
 
-  const { weekStats, dayStats } = getStats(state, entry.value.created).catch((error) => errorStore.throwError(error))
+  const { weekStats, dayStats } = getStats(state, entry.value.created)
   const allStats = [
     {
       date: Timestamp.fromDate(new Date()),
