@@ -20,8 +20,7 @@ const auth = getAuth(app)
 const db = getFirestore(app)
 const storage = getStorage(app)
 
-const userAnalytics = true
-if (userAnalytics) {
+if (import.meta.env.VITE_RELEASE_STAGE === 'production') {
   getAnalytics(app)
 }
 
