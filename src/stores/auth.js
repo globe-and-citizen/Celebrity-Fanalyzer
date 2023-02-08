@@ -15,12 +15,8 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async fetchProfile(user) {
-      const userStore = useUserStore()
-      userStore.fetchUserProfile(user)
-    },
-
     async googleSignIn() {
+      const userStore = useUserStore()
       const provider = new GoogleAuthProvider()
 
       this._isLoading = true
@@ -31,7 +27,7 @@ export const useAuthStore = defineStore('auth', {
           if (isNewUser) {
             await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
           }
-          this.fetchProfile(result.user)
+          await userStore.fetchUserProfile(result.user)
         })
         .finally(() => (this._isLoading = false))
     },
