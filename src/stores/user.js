@@ -11,13 +11,15 @@ export const useUserStore = defineStore('user', {
     _isLoading: false
   }),
 
+  persist: true,
+
   getters: {
-    getUser: (state) => LocalStorage.getItem('user') || state._user,
+    getUser: (state) => state._user,
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
-    isAuthenticated: (getters) => !!getters.getUser?.uid,
+    isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading
   },
   actions: {
@@ -53,14 +55,9 @@ export const useUserStore = defineStore('user', {
     async updateProfile(user) {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'users', this.getUser.uid), { ...user })
+        transaction.update(doc(db, 'users', this.getUser.uid), user)
       })
-        .then(() => {
-          this._user.displayName = user.displayName
-          this._user.photoURL = user.photoURL
-          this._user.bio = user.bio
-          LocalStorage.set('user', this._user)
-        })
+        .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
         .finally(() => (this._isLoading = false))
     }
   }
