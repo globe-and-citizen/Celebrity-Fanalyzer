@@ -24,8 +24,7 @@ if (import.meta.env.VITE_RELEASE_STAGE === 'production') {
   getAnalytics(app)
 }
 
-const useEmulators = false
-if (useEmulators) {
+if (import.meta.env.VITE_RELEASE_STAGE === 'testing') {
   connectAuthEmulator(auth, 'http://localhost:9099')
   connectFirestoreEmulator(db, 'localhost', 8000)
   connectStorageEmulator(storage, 'localhost', 9199)
