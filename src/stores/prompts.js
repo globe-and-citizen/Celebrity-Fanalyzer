@@ -48,23 +48,18 @@ export const usePromptStore = defineStore('prompts', {
         }
         this._monthPrompt = prompt
       } else {
-        await getDoc(doc(db, 'prompts', previousMonthId))
-          .then(async (doc) => {
-            const prompt = { id: doc.id, ...doc.data() }
+        await getDoc(doc(db, 'prompts', previousMonthId)).then(async (doc) => {
+          const prompt = { id: doc.id, ...doc.data() }
 
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-            if (prompt.entries?.length) {
-              for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-              }
+          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+          if (prompt.entries?.length) {
+            for (const index in prompt.entries) {
+              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
             }
-            this._monthPrompt = prompt
-          })
-          .catch((err) => {
-            console.error(err)
-            throw new Error('Document not found.')
-          })
+          }
+          this._monthPrompt = prompt
+        })
       }
       this._isLoading = false
     },
@@ -91,9 +86,6 @@ export const usePromptStore = defineStore('prompts', {
           }
 
           return prompt
-        })
-        .catch((err) => {
-          throw new Error(err)
         })
         .finally(() => (this._isLoading = false))
     },
@@ -134,10 +126,6 @@ export const usePromptStore = defineStore('prompts', {
 
           return prompts
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
         .finally(() => (this._isLoading = false))
     },
 
@@ -163,10 +151,6 @@ export const usePromptStore = defineStore('prompts', {
           this._prompts = []
           this.$patch({ _prompts: prompts })
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
         .finally(() => (this._isLoading = false))
     },
 
@@ -183,27 +167,19 @@ export const usePromptStore = defineStore('prompts', {
           prompt.author = userStore.getUser
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
         .finally(() => (this._isLoading = false))
     },
 
     async editPrompt(prompt) {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'prompts', prompt.id), { ...prompt })
+        transaction.update(doc(db, 'prompts', prompt.id), prompt)
       })
         .then(() => {
           const index = this.getPrompts.findIndex((p) => p.id === prompt.id)
           this.$patch({
             _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
           })
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
     },
@@ -221,19 +197,15 @@ export const usePromptStore = defineStore('prompts', {
           await entryStore.deleteEntry(entry.id)
         }
       }
-      const deleteLikes = await likeStore.deleteAllPromptLikes(id)
-      const deleteShares = await shareStore.deleteAllPromptShares(id)
       const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+      const deleteLikes = await likeStore.deleteAllPromptLikes(id)
       const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
+      const deleteShares = await shareStore.deleteAllPromptShares(id)
 
       Promise.all([deleteLikes, deleteShares, deleteImage, deletePromptDoc])
         .then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
         })
         .finally(() => (this._isLoading = false))
     },

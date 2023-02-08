@@ -2,7 +2,7 @@ import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } f
 import { doc, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
-import { auth, db } from 'src/firebase.js'
+import { auth, db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 
 export const useAuthStore = defineStore('auth', {
@@ -22,6 +22,7 @@ export const useAuthStore = defineStore('auth', {
 
     async googleSignIn() {
       const provider = new GoogleAuthProvider()
+
       this._isLoading = true
       await signInWithPopup(auth, provider)
         .then(async (result) => {
@@ -31,10 +32,6 @@ export const useAuthStore = defineStore('auth', {
             await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
           }
           this.fetchProfile(result.user)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw error.code
         })
         .finally(() => (this._isLoading = false))
     },

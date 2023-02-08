@@ -61,15 +61,9 @@ export const useEntryStore = defineStore('entries', {
       entry.author = userStore.getUserRef
 
       this._isLoading = true
-      await setDoc(entryRef, entry).catch((error) => {
-        console.error(error)
-        throw new Error(error)
-      })
+      await setDoc(entryRef, entry)
 
-      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) }).catch((error) => {
-        console.error(error)
-        throw new Error(error)
-      })
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
       this._isLoading = false
     },
 
@@ -93,12 +87,7 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async deleteEntry(entryId) {
@@ -131,10 +120,6 @@ export const useEntryStore = defineStore('entries', {
             ]
           })
         })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
         .finally(() => (this._isLoading = false))
     },
 
@@ -142,12 +127,7 @@ export const useEntryStore = defineStore('entries', {
       const storageRef = ref(storage, `images/entry-${entryId}`)
 
       this._isLoading = true
-      await uploadBytes(storageRef, file)
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
-        .finally(() => (this._isLoading = false))
+      await uploadBytes(null, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     }

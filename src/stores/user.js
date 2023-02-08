@@ -1,8 +1,8 @@
 import { doc, getDoc, runTransaction } from '@firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
-import { db } from 'src/firebase'
 import sha1 from 'sha1'
+import { db } from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -24,14 +24,7 @@ export const useUserStore = defineStore('user', {
     async fetchUserProfile(user) {
       this._isLoading = true
       await getDoc(doc(db, 'users', user.uid))
-        .then((document) =>
-          this.$patch({
-            _user: { uid: document.id, ...document.data() }
-          })
-        )
-        .catch((error) => {
-          throw error
-        })
+        .then((document) => this.$patch({ _user: { uid: document.id, ...document.data() } }))
         .finally(() => (this._isLoading = false))
 
       if (this.getUser) {
@@ -67,9 +60,6 @@ export const useUserStore = defineStore('user', {
           this._user.photoURL = user.photoURL
           this._user.bio = user.bio
           LocalStorage.set('user', this._user)
-        })
-        .catch((error) => {
-          throw error
         })
         .finally(() => (this._isLoading = false))
     }
