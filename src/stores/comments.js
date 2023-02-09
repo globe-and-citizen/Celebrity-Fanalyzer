@@ -85,12 +85,8 @@ export const useCommentStore = defineStore('comments', {
       comment.id = docId
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
+      await setDoc(doc(db, 'entries', entry.id, 'comments', docId), commentAAA)
         .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: stateAuthor }] }))
-        .catch((err) => {
-          console.log(err)
-          throw new Error(err)
-        })
         .finally(() => (this._isLoading = false))
     },
 
@@ -112,10 +108,6 @@ export const useCommentStore = defineStore('comments', {
             this.$patch({
               _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
             })
-          })
-          .catch((error) => {
-            console.error(error)
-            throw new Error(error)
           })
           .finally(() => (this._isLoading = false))
       } else {
@@ -173,18 +165,11 @@ export const useCommentStore = defineStore('comments', {
       const index = this._comments.findIndex((comment) => comment.id === id)
 
       this._isLoading = true
+      // TODO: check if is possible to remove if statement
       if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
         await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
-          .then(() => {
-            this._comments.splice(index, 1)
-          })
-          .catch((error) => {
-            console.error(error)
-            throw new Error(error)
-          })
+          .then(() => this._comments.splice(index, 1))
           .finally(() => (this._isLoading = false))
-      } else {
-        throw new Error(error)
       }
     },
 
@@ -202,10 +187,6 @@ export const useCommentStore = defineStore('comments', {
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
         .then(() => this.$patch({ _childcomments: [...this._childcomments, { ...reply, author: stateAuthor }] }))
-        .catch((err) => {
-          console.log(err)
-          throw new Error(err)
-        })
         .finally(() => (this._isLoading = false))
     }
   }

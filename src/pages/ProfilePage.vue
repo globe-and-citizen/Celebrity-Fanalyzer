@@ -9,7 +9,7 @@
   <q-page v-if="authStore.isLoading || userStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </q-page>
-  <q-page v-if="!userStore.isAuthenticated" class="column content-center flex justify-center">
+  <q-page v-if="!user.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
     <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
       <q-avatar size="sm">
@@ -60,26 +60,21 @@
 </template>
 
 <script setup>
-import { LocalStorage, useQuasar } from 'quasar'
-import { useAuthStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref } from 'vue'
+import { useQuasar } from 'quasar'
+import { useAuthStore, useErrorStore, useUserStore } from 'src/stores'
+import { ref } from 'vue'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
+const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const tab = ref('profile')
-const user = reactive({ ...userStore.getUser })
 const newPhoto = ref([])
+const user = userStore.getUser
 
-onMounted(() => {
-  if (!userStore.isAuthenticated) {
-    LocalStorage.remove('user')
-  }
-})
-
-function googleSignIn() {
-  authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: error }))
+async function googleSignIn() {
+  await authStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
 
 function uploadPhoto() {
@@ -92,11 +87,11 @@ function save() {
   userStore
     .updateProfile(user)
     .then($q.notify({ message: 'Profile successfully updated' }))
-    .catch((error) => $q.notify({ icon: 'error', message: error }))
+    .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
 
 function logout() {
-  authStore.logout()
+  authStore.logout().catch((error) => errorStore.throwError(error))
 }
 </script>
 

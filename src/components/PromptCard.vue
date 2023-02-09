@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section class="row items-center no-wrap">
+    <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
       <span>&nbsp; for &nbsp;</span>
       <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date">
@@ -113,13 +113,14 @@
 
 <script setup>
 import { date, useQuasar } from 'quasar'
-import { usePromptStore } from 'src/stores'
+import { useErrorStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
 
 const $q = useQuasar()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const dataKey = ref(Date.now())
@@ -189,19 +190,19 @@ async function onSubmit() {
   }
 
   if (Object.keys(imageModel.value).length) {
-    promptStore.uploadImage(imageModel.value, prompt.date)
+    promptStore.uploadImage(imageModel.value, prompt.date).catch((error) => errorStore.throwError(error))
   }
 
   if (props.id) {
     await promptStore
       .editPrompt(prompt)
       .then(() => $q.notify({ message: 'Prompt successfully edited' }))
-      .catch(() => $q.notify({ message: 'Prompt edit failed' }))
+      .catch((error) => errorStore.throwError(error, 'Prompt edit failed'))
   } else {
     await promptStore
       .addPrompt(prompt)
       .then(() => $q.notify({ message: 'Prompt successfully submitted' }))
-      .catch(() => $q.notify({ message: 'Prompt submission failed' }))
+      .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 
   emit('hideDialog')
