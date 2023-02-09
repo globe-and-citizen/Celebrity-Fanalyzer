@@ -1,9 +1,22 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where
+} from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
 import { useEntryStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
-import { currentYearMonth, previousYearMonth } from 'src/utils/date'
+import { currentYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -31,36 +44,30 @@ export const usePromptStore = defineStore('prompts', {
      */
     async fetchMonthPrompt() {
       const currentMonthId = currentYearMonth()
-      const previousMonthId = previousYearMonth()
 
       this._isLoading = true
       const docSnap = await getDoc(doc(db, 'prompts', currentMonthId))
 
+      let prompt = {}
+
       if (docSnap.exists()) {
-        const prompt = docSnap.data()
-
-        prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-        if (prompt.entries?.length) {
-          for (const index in prompt.entries) {
-            prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-            prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-          }
-        }
-        this._monthPrompt = prompt
+        prompt = docSnap.data()
       } else {
-        await getDoc(doc(db, 'prompts', previousMonthId)).then(async (doc) => {
-          const prompt = { id: doc.id, ...doc.data() }
-
-          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-          if (prompt.entries?.length) {
-            for (const index in prompt.entries) {
-              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-            }
-          }
-          this._monthPrompt = prompt
+        await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))).then(async (querySnapshot) => {
+          prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         })
       }
+
+      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+      if (prompt.entries?.length) {
+        for (const index in prompt.entries) {
+          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
+          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
+        }
+      }
+
+      this._monthPrompt = prompt
+      console.log('prompt', prompt)
       this._isLoading = false
     },
     /**
