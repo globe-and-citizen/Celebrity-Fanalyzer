@@ -109,10 +109,6 @@ export const useCommentStore = defineStore('comments', {
               _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
             })
           })
-          .catch((error) => {
-            console.log(error)
-            throw new Error(error)
-          })
           .finally(() => (this._isLoading = false))
       } else {
         throw new Error(error)
@@ -134,12 +130,12 @@ export const useCommentStore = defineStore('comments', {
         })
           .then(() => {
             this.$patch({
-              _childcomments: [...this._childcomments.slice(0, index), { ...this._childcomments[index], ...comment }, ...this._childcomments.slice(index + 1)]
+              _childcomments: [
+                ...this._childcomments.slice(0, index),
+                { ...this._childcomments[index], ...comment },
+                ...this._childcomments.slice(index + 1)
+              ]
             })
-          })
-          .catch((error) => {
-            console.log(error)
-            throw new Error(error)
           })
           .finally(() => (this._isLoading = false))
       } else {
@@ -215,13 +211,7 @@ export const useCommentStore = defineStore('comments', {
       this._isLoading = true
       if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
         await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
-          .then(() => {
-            this._childcomments.splice(index, 1)
-          })
-          .catch((error) => {
-            console.error(error)
-            throw new Error(error)
-          })
+          .then(() => this._childcomments.splice(index, 1))
           .finally(() => (this._isLoading = false))
       } else {
         throw new Error(error)
