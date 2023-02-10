@@ -251,7 +251,7 @@ async function editChildComment(commentId, editedComment) {
   await commentStore
     .editChildComment(props.entry.id, commentId, editedComment, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully edited!' }))
-    .catch(() => $q.notify({ message: 'Failed to edit comment' }))
+    .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
 }
 
@@ -269,7 +269,7 @@ async function deleteChildComment(commentParentId, commentId) {
   await commentStore
     .deleteChildComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Failed to delete comment' }))
+    .catch(() => errorStore.throwError(error, 'Failed to delete comment'))
 
   await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId)
   childComments.value = commentStore.getChildComments
