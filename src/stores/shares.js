@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { useUserStore } from './user'
+import { useUserStore } from 'src/stores'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({

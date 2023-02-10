@@ -33,6 +33,7 @@ export function previousYearMonth() {
   date.setMonth(date.getMonth() - 1)
 
   return date.toLocaleDateString('en-US', {year: 'numeric', month: '2-digit'}).split('/').reverse().join('-') // 2022-10
+
 }
 
 export function startEndDay(timeStamp) {

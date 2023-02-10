@@ -96,7 +96,7 @@
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
-import { useCommentStore, useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getStats } from 'src/utils/date'
@@ -105,6 +105,7 @@ import { Timestamp } from 'firebase/firestore'
 const router = useRouter()
 
 const commentStore = useCommentStore()
+const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
@@ -132,12 +133,12 @@ onMounted(async () => {
     return
   }
 
-  await commentStore.fetchComments(router.currentRoute.value.href)
+  await commentStore.fetchComments(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
 
-  await likeStore.getAllEntryLikesDislikes(entry.value.id)
+  await likeStore.getAllEntryLikesDislikes(entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.countEntryShares(entry.value.id)
+  await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
   countShares.value = shareStore.getShares
 })
 
@@ -165,15 +166,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likeEntry(entry.value.id)
+  await likeStore.likeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikeEntry(entry.value.id)
+  await likeStore.dislikeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.shareEntry(entry.value.id, socialNetwork)
+  shareStore.shareEntry(entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 

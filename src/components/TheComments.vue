@@ -182,7 +182,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useCommentStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -196,6 +196,7 @@ const props = defineProps({
 
 const $q = useQuasar()
 const commentStore = useCommentStore()
+const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const childComments = ref([])
@@ -220,7 +221,7 @@ async function addComment() {
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ message: 'Comment successfully submitted' })
     })
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }
 
 function likeComment(commentId) {
@@ -240,7 +241,7 @@ async function editComment(commentId, editedComment) {
   await commentStore
     .editComment(props.entry.id, commentId, editedComment, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully edited!' }))
-    .catch(() => $q.notify({ message: 'Failed to edit comment' }))
+    .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
 }
 
@@ -248,7 +249,7 @@ async function deleteComment(commentParentId, commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Failed to delete comment' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
   await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId)
   childComments.value = commentStore.getChildComments
@@ -276,7 +277,7 @@ async function addReply(commentId) {
       reply.text = ''
       $q.notify({ message: 'Reply successfully submitted' })
     })
-    .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
+    .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
   window.scrollTo(0, document.body.scrollHeight)
 
   await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentId)

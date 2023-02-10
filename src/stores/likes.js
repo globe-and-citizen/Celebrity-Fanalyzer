@@ -1,7 +1,8 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { db } from '../firebase'
-import { useUserStore } from './user'
+import { db } from 'src/firebase'
+import { useUserStore } from 'src/stores'
+
 export const useLikeStore = defineStore('likes', {
   state: () => ({
     _likes: [],
@@ -48,14 +49,7 @@ export const useLikeStore = defineStore('likes', {
         createdAt: Timestamp.fromDate(new Date())
       }
 
-      await setDoc(doc(db, 'prompts', promptId, 'likes', docId), like)
-        .then(() => {
-          this._likes.push(like)
-        })
-        .catch((error) => {
-          console.error(error)
-          throw new Error(error)
-        })
+      await setDoc(doc(db, 'prompts', promptId, 'likes', docId), like).then(() => this._likes.push(like))
 
       const dislikesRef = doc(db, 'prompts', promptId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
@@ -78,9 +72,7 @@ export const useLikeStore = defineStore('likes', {
         createdAt: Timestamp.fromDate(new Date())
       }
 
-      await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), dislike).then(() => {
-        this._dislikes.push(dislike)
-      })
+      await setDoc(doc(db, 'prompts', promptId, 'dislikes', docId), dislike).then(() => this._dislikes.push(dislike))
 
       const likesRef = doc(db, 'prompts', promptId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)

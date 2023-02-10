@@ -94,7 +94,7 @@
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { getStats, monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -102,6 +102,7 @@ import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
+const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
@@ -116,20 +117,26 @@ const type = ref('day')
 
 onMounted(async () => {
   if (router.currentRoute.value.href === '/month') {
-    await promptStore.fetchMonthPrompt()
+    await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
     prompt.value = promptStore.getMonthPrompt
   }
   if (router.currentRoute.value.params.year) {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
-      .catch(() => (prompt.value = null))
+      .catch((error) => {
+        prompt.value = null
+        errorStore.throwError(error)
+      })
   }
   if (router.currentRoute.value.params.slug) {
     await promptStore
       .fetchPromptBySlug(router.currentRoute.value.params.slug)
       .then((res) => (prompt.value = res))
-      .catch(() => (prompt.value = null))
+      .catch((error) => {
+        prompt.value = null
+        errorStore.throwError(error)
+      })
   }
 
   if (!prompt.value) {
@@ -137,7 +144,7 @@ onMounted(async () => {
     return
   }
 
-  await likeStore.getAllPromptLikesDislikes(prompt.value.id)
+  await likeStore.getAllPromptLikesDislikes(prompt.value.id).catch((error) => errorStore.throwError(error))
 })
 
 likeStore.$subscribe((_mutation, state) => {
@@ -160,15 +167,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likePrompt(prompt.value.id)
+  await likeStore.likePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikePrompt(prompt.value.id)
+  await likeStore.dislikePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.sharePrompt(prompt.value.id, socialNetwork)
+  shareStore.sharePrompt(prompt.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 

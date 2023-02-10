@@ -31,10 +31,11 @@
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
-import { usePromptStore } from 'src/stores'
+import { useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const router = useRouter()
 
@@ -44,7 +45,10 @@ const prompts = ref([])
 year.value = router.currentRoute.value.params.year
 
 onMounted(async () => {
-  await promptStore.fetchPromptsByYear(year.value).then((data) => (prompts.value = data))
+  await promptStore
+    .fetchPromptsByYear(year.value)
+    .then((data) => (prompts.value = data))
+    .catch((error) => errorStore.throwError(error))
 
   for (const prompt of prompts.value) {
     prompt.year = prompt.date.split('-')[0]
