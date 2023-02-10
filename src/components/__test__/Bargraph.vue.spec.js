@@ -1,5 +1,4 @@
-import { describe, expect, it } from 'vitest'
-import { render } from '@testing-library/vue'
+import { describe, it } from 'vitest'
 
 // import BarGraph from "../BarGraph.vue";
 // TODO make the test
