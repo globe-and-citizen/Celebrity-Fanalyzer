@@ -114,6 +114,34 @@ export const useCommentStore = defineStore('comments', {
         throw new Error(error)
       }
     },
+    async editChildComment(entryId, id, editedComment, userId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const comment = this.getChildComments.find((comment) => comment.id === id)
+      const index = this._childcomments.findIndex((comment) => comment.id === id)
+
+      comment.updated = Timestamp.fromDate(new Date())
+
+      this._isLoading = true
+      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
+        await runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'entries', entryId, 'comments', comment.id), { text: editedComment })
+        })
+          .then(() => {
+            this.$patch({
+              _childcomments: [
+                ...this._childcomments.slice(0, index),
+                { ...this._childcomments[index], ...comment },
+                ...this._childcomments.slice(index + 1)
+              ]
+            })
+          })
+          .finally(() => (this._isLoading = false))
+      } else {
+        throw new Error(error)
+      }
+    },
 
     async likeComment(entryId, commentId) {
       const userStore = useUserStore()
@@ -173,6 +201,23 @@ export const useCommentStore = defineStore('comments', {
       }
     },
 
+    async deleteChildComment(entryId, id, userId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const comment = this.getChildComments.find((comment) => comment.id === id)
+      const index = this._childcomments.findIndex((comment) => comment.id === id)
+
+      this._isLoading = true
+      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
+        await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
+          .then(() => this._childcomments.splice(index, 1))
+          .finally(() => (this._isLoading = false))
+      } else {
+        throw new Error(error)
+      }
+    },
+
     async addReply(entryId, commentId, reply) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
@@ -183,6 +228,8 @@ export const useCommentStore = defineStore('comments', {
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
       const docId = Date.now() + '-' + (reply.author.id || reply.author)
+
+      reply.id = docId
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
