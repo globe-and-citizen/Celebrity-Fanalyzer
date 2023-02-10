@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section class="row items-center no-wrap">
+    <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
       <q-btn flat round icon="close" v-close-popup />
@@ -28,15 +28,32 @@
         <q-field counter label="Description" maxlength="400" v-model="entry.description">
           <template v-slot:control>
             <q-editor
-              flat
               class="q-mt-md"
+              dense
+              flat
               min-height="5rem"
+              ref="editorRef"
               :toolbar="[
-                ['bold', 'italic', 'strike', 'underline'],
-                ['quote', 'unordered', 'ordered'],
+                [
+                  {
+                    icon: $q.iconSet.editor.align,
+                    options: ['left', 'center', 'right', 'justify']
+                  },
+                  {
+                    icon: $q.iconSet.editor.fontSize,
+                    list: 'no-icons',
+                    options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
+                  },
+                  {
+                    icon: $q.iconSet.editor.formatting,
+                    options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
+                  },
+                  ['link']
+                ],
                 ['undo', 'redo']
               ]"
               v-model="entry.description"
+              @paste="onPaste($event)"
             />
           </template>
         </q-field>
@@ -75,7 +92,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -83,8 +100,10 @@ const props = defineProps(['author', 'created', 'description', 'id', 'image', 'p
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
+const editorRef = ref(null)
 const entry = reactive({})
 const imageModel = ref([])
 const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse()
@@ -115,23 +134,44 @@ function onRejected() {
   $q.notify({ type: 'negative', message: `Image did not pass validation constraints` })
 }
 
+function onPaste(evt) {
+  // Let inputs do their thing, so we don't break pasting of links.
+  if (evt.target.nodeName === 'INPUT') return
+  let text, onPasteStripFormattingIEPaste
+  evt.preventDefault()
+  evt.stopPropagation()
+  if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
+    text = evt.originalEvent.clipboardData.getData('text/plain')
+    editorRef.value.runCmd('insertText', text)
+  } else if (evt.clipboardData && evt.clipboardData.getData) {
+    text = evt.clipboardData.getData('text/plain')
+    editorRef.value.runCmd('insertText', text)
+  } else if (window.clipboardData && window.clipboardData.getData) {
+    if (!onPasteStripFormattingIEPaste) {
+      onPasteStripFormattingIEPaste = true
+      editorRef.value.runCmd('ms-pasteTextOnly', text)
+    }
+    onPasteStripFormattingIEPaste = false
+  }
+}
+
 async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
 
   if (Object.keys(imageModel.value).length) {
-    entryStore.uploadImage(imageModel.value, entry.id)
+    entryStore.uploadImage(imageModel.value, entry.id).catch((error) => errorStore.throwError(error, 'Image upload failed'))
   }
 
   if (props.id) {
     await entryStore
       .editEntry(entry)
       .then(() => $q.notify({ message: 'Entry successfully edited' }))
-      .catch(() => $q.notify({ message: 'Entry edit failed' }))
+      .catch((error) => errorStore.throwError(error, 'Entry edit failed'))
   } else {
     await entryStore
       .addEntry(entry)
       .then(() => $q.notify({ message: 'Entry successfully submitted' }))
-      .catch(() => $q.notify({ message: 'Entry submission failed' }))
+      .catch((error) => errorStore.throwError(error, 'Entry submission failed'))
   }
 
   emit('hideDialog')

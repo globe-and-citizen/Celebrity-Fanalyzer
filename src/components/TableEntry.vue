@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, useErrorStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { ref } from 'vue'
 
@@ -38,6 +38,7 @@ defineProps({
   rows: { type: Array, required: true }
 })
 
+const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 
 const columns = [
@@ -55,7 +56,10 @@ function onDeleteDialog(entry) {
 }
 
 function onDeleteEntry(id) {
-  entryStore.deleteEntry(id)
+  entryStore
+    .deleteEntry(id)
+    .then(() => $q.notify({ message: 'Entry deleted' }))
+    .catch((error) => errorStore.throwError(error, 'Error deleting entry'))
   deleteDialog.value.show = false
 }
 </script>

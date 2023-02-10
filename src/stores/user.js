@@ -1,8 +1,9 @@
-import { doc, getDoc, runTransaction } from '@firebase/firestore'
+import { doc, getDoc, runTransaction, setDoc } from '@firebase/firestore'
+import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
-import { db } from 'src/firebase'
 import sha1 from 'sha1'
+import { auth, db } from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -11,35 +12,18 @@ export const useUserStore = defineStore('user', {
     _isLoading: false
   }),
 
+  persist: true,
+
   getters: {
-    getUser: (state) => LocalStorage.getItem('user') || state._user,
+    getUser: (state) => state._user,
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     isAdmin: (getters) => getters.getUser.role === 'admin',
-    isAuthenticated: (getters) => !!getters.getUser?.uid,
+    isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading
   },
   actions: {
-    async fetchUserProfile(user) {
-      this._isLoading = true
-      await getDoc(doc(db, 'users', user.uid))
-        .then((document) =>
-          this.$patch({
-            _user: { uid: document.id, ...document.data() }
-          })
-        )
-        .catch((error) => {
-          throw error
-        })
-        .finally(() => (this._isLoading = false))
-
-      if (this.getUser) {
-        LocalStorage.set('user', this._user)
-        this.router.go(0)
-      }
-    },
-
     /**
      * Fetch the user ip from Cloudflare
      * @SaveState <string> IPV6
@@ -57,21 +41,42 @@ export const useUserStore = defineStore('user', {
         })
     },
 
+    async googleSignIn() {
+      const provider = new GoogleAuthProvider()
+
+      this._isLoading = true
+      await signInWithPopup(auth, provider)
+        .then(async (result) => {
+          const isNewUser = getAdditionalUserInfo(result)?.isNewUser
+          const { email, displayName, photoURL, uid } = result.user
+
+          if (isNewUser) {
+            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
+          }
+
+          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
+            this.$patch({ _user: { uid: document.id, ...document.data() } })
+          })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     async updateProfile(user) {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'users', this.getUser.uid), { ...user })
+        transaction.update(doc(db, 'users', this.getUser.uid), user)
       })
-        .then(() => {
-          this._user.displayName = user.displayName
-          this._user.photoURL = user.photoURL
-          this._user.bio = user.bio
-          LocalStorage.set('user', this._user)
-        })
-        .catch((error) => {
-          throw error
-        })
+        .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
         .finally(() => (this._isLoading = false))
+    },
+
+    logout() {
+      const userStore = useUserStore()
+      signOut(auth).then(() => {
+        userStore.$reset()
+        LocalStorage.remove('user')
+        this.router.go(0)
+      })
     }
   }
 })

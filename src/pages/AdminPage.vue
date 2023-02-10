@@ -98,12 +98,13 @@ import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
 import TableEntry from 'src/components/TableEntry.vue'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
-const promptStore = usePromptStore()
+const errorStore = useErrorStore()
 const entryStore = useEntryStore()
+const promptStore = usePromptStore()
 
 const columns = [
   {},
@@ -120,9 +121,7 @@ const prompt = ref({})
 const promptFilter = ref('')
 
 onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPromptsAndEntries()
-  }
+  await promptStore.fetchPromptsAndEntries()
   prompts.value = promptStore.getPrompts
 })
 
@@ -144,7 +143,7 @@ function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
     .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Prompt deletion failed' }))
+    .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}

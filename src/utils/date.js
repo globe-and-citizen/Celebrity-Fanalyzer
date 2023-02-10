@@ -25,13 +25,6 @@ export function currentYearMonth() {
   return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
 }
 
-export function previousYearMonth() {
-  const date = new Date()
-  date.setMonth(date.getMonth() - 1)
-
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
-}
-
 export function getDay(intDate) {
   const date = new Date()
   date.setTime(intDate)

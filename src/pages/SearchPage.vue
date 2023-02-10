@@ -57,9 +57,10 @@
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
-import { usePromptStore } from 'src/stores'
+import { useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const search = ref('')
@@ -68,7 +69,7 @@ const categories = ref([])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPromptsAndEntries()
+    await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
   }
 
   const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
