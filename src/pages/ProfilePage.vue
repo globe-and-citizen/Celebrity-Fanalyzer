@@ -6,7 +6,7 @@
       </q-toolbar-title>
     </q-toolbar>
   </q-header>
-  <q-page v-if="authStore.isLoading || userStore.isLoading" class="q-my-xl text-center">
+  <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </q-page>
   <q-page v-if="!user.uid" class="column content-center flex justify-center">
@@ -61,37 +61,40 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useAuthStore, useErrorStore, useUserStore } from 'src/stores'
+import { useErrorStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
 const $q = useQuasar()
-const authStore = useAuthStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const tab = ref('profile')
 const newPhoto = ref([])
-const user = userStore.getUser
+const user = ref(userStore.getUser)
+
+userStore.$subscribe((_mutation, state) => {
+  user.value = state._user
+})
 
 async function googleSignIn() {
-  await authStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
 
 function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(newPhoto.value)
-  reader.onload = () => (user.photoURL = reader.result)
+  reader.onload = () => (user.value.photoURL = reader.result)
 }
 
 function save() {
   userStore
-    .updateProfile(user)
+    .updateProfile(user.value)
     .then($q.notify({ message: 'Profile successfully updated' }))
     .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
 
 function logout() {
-  authStore.logout().catch((error) => errorStore.throwError(error))
+  userStore.logout().catch((error) => errorStore.throwError(error))
 }
 </script>
 

@@ -67,9 +67,9 @@
           accept=".jpg, image/*"
           counter
           hide-hint
-          hint="Max size is 5MB"
+          hint="Max size is 1MB"
           label="Image"
-          :max-total-size="5242880"
+          :max-total-size="1048487"
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
