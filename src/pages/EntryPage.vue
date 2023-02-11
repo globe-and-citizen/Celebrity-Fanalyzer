@@ -51,10 +51,9 @@
       </q-header>
       <q-page>
         <section>
-          <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
-
-          <div class="flex items-center q-mb-xl">
-            <q-avatar size="6rem">
+          <h1 class="q-mt-none text-bold text-h5">{{ entry?.title }}</h1>
+          <div class="flex no-wrap items-center q-mb-xl">
+            <q-avatar size="4rem">
               <img :src="entry.author.photoURL" alt="" />
             </q-avatar>
             <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
