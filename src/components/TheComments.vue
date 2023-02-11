@@ -75,7 +75,13 @@
         >
           <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
         </q-btn>
-        <q-btn flat icon="chat_bubble_outline" rounded @click="showReplies(comment.id)">
+        <q-btn
+          flat
+          icon="chat_bubble_outline"
+          rounded
+          :label="obj.greet(comment.id)"
+          @click="showReplies(comment.id)"
+        >
           <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
         </q-btn>
         <q-slide-transition>
@@ -214,6 +220,21 @@ onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 })
+
+let obj = {
+  count: 0,
+  greet(id) {
+    this.count = 0
+    for(const comment of props.comments) {
+      if(id === comment.parentId) {
+        this.count++
+      } else {
+        continue
+      }
+    }
+    return this.count
+  }
+};
 
 async function addComment() {
   await commentStore
