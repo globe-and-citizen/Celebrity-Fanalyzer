@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.15.10",
+    "@sentry/tracing": "^7.37.1",
+    "@sentry/vue": "^7.37.1",
     "echarts": "^5.4.1",
     "firebase": "^9.16.0",
     "pinia": "^2.0.29",
