@@ -1,18 +1,18 @@
-import { beforeEach, describe, expect, it, test } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useAuthStore } from '../auth.js'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useUserStore } from '../user.js'
 
-describe('authStore', () => {
+describe('userStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
 
   it('should load and work', () => {
-    const authStore = useAuthStore()
+    const userStore = useUserStore()
 
     const a = 7
     const b = 10
     expect(a + b).toEqual(17)
-    expect(authStore).toBeDefined()
+    expect(userStore).toBeDefined()
   })
 })
