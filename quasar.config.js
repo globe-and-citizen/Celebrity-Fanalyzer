@@ -9,6 +9,10 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers')
+const {sentryVitePlugin} = require("@sentry/vite-plugin");
+const path = require("path");
+
+require("dotenv").config({ path: path.resolve(__dirname, ".env.local") });
 
 module.exports = configure(function (ctx) {
   return {
@@ -68,6 +72,17 @@ module.exports = configure(function (ctx) {
       // polyfillModulePreload: true,
 
       extendViteConf(viteConf) {
+        viteConf.plugins.push(
+          sentryVitePlugin({
+            org: "global-citizen-g6",
+            project: "celebrity-fanalyzer",
+            // Specify the directory containing build artifacts
+            include: "./dist",
+            // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
+            // and needs the `project:releases` and `org:read` scopes
+            authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+          })
+        )
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {
