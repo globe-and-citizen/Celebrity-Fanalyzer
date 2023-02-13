@@ -17,7 +17,7 @@
           </q-toolbar>
         </q-header>
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
-        <section class="q-pa-md" style="margin-top: 100%">
+        <section class="q-pa-md" style="margin-top: 100%; margin-bottom: 10%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
           <div class="q-mb-md">
