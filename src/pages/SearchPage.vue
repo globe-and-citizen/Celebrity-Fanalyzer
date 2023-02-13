@@ -66,6 +66,7 @@ const promptStore = usePromptStore()
 const search = ref('')
 const category = ref('All')
 const categories = ref([])
+const prompts = ref([])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
@@ -78,10 +79,16 @@ onMounted(async () => {
     value: category
   }))
   categories.value.unshift({ label: 'All', value: 'All' })
+
+  prompts.value = promptStore.getPrompts
+})
+
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
 })
 
 const computedPrompt = computed(() => {
-  return promptStore.getPrompts.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return prompts.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
 })
 </script>
 
