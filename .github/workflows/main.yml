@@ -22,12 +22,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      #- run: npm run build --if-present
       - name: Execute Unit Tests
         env:
           VITE_RELEASE_STAGE: testing
         run: |
           npm ci
           npm install --save firebase-tools
-          npm run emulators
           npm run test
