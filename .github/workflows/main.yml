@@ -26,6 +26,6 @@ jobs:
       - name: Execute Unit Tests
         run: |
           npm ci
-          npm install --save firebase
+          npm install --save firebase-tools
           npm run emulators
           npm run test
