@@ -1,9 +1,8 @@
-import { boot } from 'quasar/wrappers'
-import * as Sentry from '@sentry/vue'
 import { BrowserTracing } from '@sentry/tracing'
+import * as Sentry from '@sentry/vue'
+import { boot } from 'quasar/wrappers'
 
 export default boot(async ({ app, router }) => {
-  console.log('sentry loaded', import.meta.env.VITE_SENTRY_DNS)
   Sentry.init({
     app,
     dsn: import.meta.env.VITE_SENTRY_DNS,
