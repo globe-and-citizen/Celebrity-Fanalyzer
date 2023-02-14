@@ -67,7 +67,6 @@ export const usePromptStore = defineStore('prompts', {
       }
 
       this._monthPrompt = prompt
-      console.log('prompt', prompt)
       this._isLoading = false
     },
     /**
