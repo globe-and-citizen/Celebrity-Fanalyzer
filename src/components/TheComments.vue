@@ -301,6 +301,7 @@ async function replyInput(parentId) {
 }
 
 async function showReplies(id) {
+  childComments.value = [];
   if (commentId.value === id) {
     expanded.value = false
     commentId.value = ''
@@ -311,8 +312,16 @@ async function showReplies(id) {
 
   reply.parentId = id
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, id)
-  childComments.value = commentStore.getChildComments
+  for(const comment of props.comments) {
+      if(id === comment.parentId) {
+        childComments.value.push(comment)
+      } else {
+        continue
+      }
+  }
+
+  // await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, id)
+  // childComments.value = commentStore.getChildComments
 }
 
 async function addReply(commentId) {
