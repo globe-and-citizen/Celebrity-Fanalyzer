@@ -121,7 +121,7 @@
                 <q-form
                   v-if="isEditing && childComment.id === inputEdit"
                   greedy
-                  @submit.prevent="editChildComment(childComment.id, childComment.text)"
+                  @submit.prevent="editComment(childComment.id, childComment.text)"
                 >
                   <q-input
                     autogrow
@@ -135,7 +135,7 @@
                     standout="bg-secondary text-white"
                     v-model="childComment.text"
                   >
-                    <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+                    <q-btn class="cursor-pointer" id="replyInput" color="grey-6" flat icon="send" round type="submit" />
                   </q-input>
                 </q-form>
                 <div v-else class="q-my-sm text-body2">
@@ -231,7 +231,7 @@ async function addComment() {
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
-      $q.notify({ message: 'Comment successfully submitted' })
+      $q.notify({ message: 'Comment successfully submitted', color: 'green' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }
@@ -257,32 +257,28 @@ async function editComment(commentId, editedComment) {
     .finally(() => (isEditing.value = false))
 }
 
-async function editChildComment(commentId, editedComment) {
-  await commentStore
-    .editChildComment(props.entry.id, commentId, editedComment, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully edited!' }))
-    .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
-    .finally(() => (isEditing.value = false))
-}
-
 async function deleteComment(commentParentId, commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId)
-  childComments.value = commentStore.getChildComments
 }
 
 async function deleteChildComment(commentParentId, commentId) {
   await commentStore
-    .deleteChildComment(props.entry.id, commentId, userId.value)
+    .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch(() => errorStore.throwError(error, 'Failed to delete comment'))
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId)
-  childComments.value = commentStore.getChildComments
+  childComments.value = [];
+  for(const comment of props.comments) {
+    if(commentParentId === comment.parentId) {
+        childComments.value.push(comment)
+      } else {
+        continue
+      }
+  }
 }
 
 async function replyInput(parentId) {
@@ -308,9 +304,6 @@ async function showReplies(id) {
         continue
       }
   }
-
-  // await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, id)
-  // childComments.value = commentStore.getChildComments
 }
 
 async function addReply(commentId) {
@@ -318,12 +311,17 @@ async function addReply(commentId) {
     .addReply(props.entry.id, commentId, reply)
     .then(() => {
       reply.text = ''
-      $q.notify({ message: 'Reply successfully submitted' })
+      $q.notify({ message: 'Reply successfully submitted', color: 'green' })
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
-  window.scrollTo(0, document.body.scrollHeight)
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentId)
-  childComments.value = commentStore.getChildComments
+  childComments.value = [];
+  for(const comment of props.comments) {
+    if(commentId === comment.parentId) {
+        childComments.value.push(comment)
+      } else {
+        continue
+      }
+  }
 }
 </script>
