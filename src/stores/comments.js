@@ -144,12 +144,9 @@ export const useCommentStore = defineStore('comments', {
       const index = this._comments.findIndex((comment) => comment.id === id)
 
       this._isLoading = true
-      // TODO: check if is possible to remove if statement
-      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
-        await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
-          .then(() => this._comments.splice(index, 1))
-          .finally(() => (this._isLoading = false))
-      }
+      await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
+        .then(() => this._comments.splice(index, 1))
+        .finally(() => (this._isLoading = false))
     },
 
     async addReply(entryId, commentId, reply) {
