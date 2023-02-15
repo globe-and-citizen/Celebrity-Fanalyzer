@@ -110,7 +110,7 @@
                           <q-item-label>Edit</q-item-label>
                         </q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup @click="deleteChildComment(comment.id, childComment.id)">
+                      <q-item clickable v-close-popup @click="deleteComment(comment.id, childComment.id)">
                         <q-item-section>
                           <q-item-label>Delete</q-item-label>
                         </q-item-section>
@@ -262,14 +262,6 @@ async function deleteComment(commentParentId, commentId) {
     .deleteComment(props.entry.id, commentId, userId.value)
     .then(() => $q.notify({ message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
-
-}
-
-async function deleteChildComment(commentParentId, commentId) {
-  await commentStore
-    .deleteComment(props.entry.id, commentId, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => errorStore.throwError(error, 'Failed to delete comment'))
 
   childComments.value = [];
   for(const comment of props.comments) {
