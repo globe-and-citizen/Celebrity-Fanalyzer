@@ -31,7 +31,7 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="comments.length" @click="tab = 'comments'">
+          <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
@@ -119,6 +119,7 @@ const countShares = ref(0)
 const entry = ref({})
 const tab = ref('entry')
 const type = ref('day')
+const count = ref(0)
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
@@ -140,6 +141,14 @@ onMounted(async () => {
 
   await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
   countShares.value = shareStore.getShares
+
+  for(const comment of comments.value) {
+    if(comment.parentId === undefined) {
+        count.value++
+      } else {
+        continue
+      }
+  }
 })
 
 commentStore.$subscribe((_mutation, state) => {
