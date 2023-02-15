@@ -1,11 +1,5 @@
 <template>
-  <q-header>
-    <q-toolbar class="bg-white q-px-lg shadow-1">
-      <q-toolbar-title>
-        <b class="text-secondary">Profile</b>
-      </q-toolbar-title>
-    </q-toolbar>
-  </q-header>
+  <TheHeader notification-btn title="Profile" />
   <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </q-page>
@@ -61,6 +55,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
+import TheHeader from 'src/components/TheHeader.vue'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
