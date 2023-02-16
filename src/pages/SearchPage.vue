@@ -1,22 +1,5 @@
 <template>
-  <q-header class="bg-white" elevated>
-    <q-toolbar class="q-px-lg">
-      <q-toolbar-title>
-        <b class="text-secondary">Search Archive</b>
-      </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
-    </q-toolbar>
-    <q-toolbar>
-      <q-toolbar-title>
-        <q-input class="q-pb-lg q-px-lg text-black" dense label="Search" rounded standout="bg-secondary text-white" v-model="search">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </q-toolbar-title>
-    </q-toolbar>
-  </q-header>
-
+  <TheHeader isSearch title="Search Archive" v-model="search" />
   <q-page class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle
@@ -57,6 +40,7 @@
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
+import TheHeader from 'src/components/TheHeader.vue'
 import { useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 
@@ -66,6 +50,7 @@ const promptStore = usePromptStore()
 const search = ref('')
 const category = ref('All')
 const categories = ref([])
+const prompts = ref([])
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
@@ -78,10 +63,16 @@ onMounted(async () => {
     value: category
   }))
   categories.value.unshift({ label: 'All', value: 'All' })
+
+  prompts.value = promptStore.getPrompts
+})
+
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
 })
 
 const computedPrompt = computed(() => {
-  return promptStore.getPrompts.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return prompts.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
 })
 </script>
 

@@ -1,29 +1,24 @@
 <template>
-  <q-header>
-    <q-toolbar class="bg-white q-px-lg shadow-1">
-      <q-toolbar-title>
-        <b class="text-secondary">Admin Panel</b>
-      </q-toolbar-title>
-      <q-btn-dropdown
-        auto-close
-        color="primary"
-        dropdown-icon="control_point"
-        flat
-        rounded
-        transition-show="jump-down"
-        transition-hide="jump-up"
-      >
-        <q-list style="min-width: 100px">
-          <q-item clickable @click="openPromptDialog()">
-            <q-item-section>New Prompt</q-item-section>
-          </q-item>
-          <q-item clickable @click="openEntryDialog()">
-            <q-item-section>New Entry</q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-    </q-toolbar>
-  </q-header>
+  <TheHeader title="Admin Panel">
+    <q-btn-dropdown
+      auto-close
+      color="primary"
+      dropdown-icon="control_point"
+      flat
+      rounded
+      transition-show="jump-down"
+      transition-hide="jump-up"
+    >
+      <q-list style="min-width: 100px">
+        <q-item clickable @click="openPromptDialog()">
+          <q-item-section>New Prompt</q-item-section>
+        </q-item>
+        <q-item clickable @click="openEntryDialog()">
+          <q-item-section>New Entry</q-item-section>
+        </q-item>
+      </q-list>
+    </q-btn-dropdown>
+  </TheHeader>
   <section class="q-pa-md">
     <q-page padding>
       <q-table
@@ -98,6 +93,7 @@ import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
 import PromptCard from 'src/components/PromptCard.vue'
 import TableEntry from 'src/components/TableEntry.vue'
+import TheHeader from 'src/components/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 

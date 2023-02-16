@@ -20,7 +20,6 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: [],
-    _childcomments: [],
     _isLoading: false
   }),
 
@@ -28,7 +27,6 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
-    getChildComments: (state) => state._childcomments,
     isLoading: (state) => state._isLoading
   },
 
@@ -52,25 +50,6 @@ export const useCommentStore = defineStore('comments', {
       this._comments = comments
     },
 
-    async fetchCommentsByparentId(slug, parentId) {
-      this._isLoading = true
-      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
-      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      const c = query(collection(db, 'entries', entry.id, 'comments'), where('parentId', '==', parentId))
-      const snap = await getDocs(c)
-      const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-      for (const comment of comments) {
-        if (!comment.isAnonymous) {
-          comment.author = await getDoc(comment.author).then((doc) => doc.data())
-        }
-      }
-      this._isLoading = false
-
-      this._childcomments = comments
-    },
-
     async addComment(comment, entry) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
@@ -85,7 +64,7 @@ export const useCommentStore = defineStore('comments', {
       comment.id = docId
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', entry.id, 'comments', docId), commentAAA)
+      await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
         .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: stateAuthor }] }))
         .finally(() => (this._isLoading = false))
     },
@@ -107,34 +86,6 @@ export const useCommentStore = defineStore('comments', {
           .then(() => {
             this.$patch({
               _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
-            })
-          })
-          .finally(() => (this._isLoading = false))
-      } else {
-        throw new Error(error)
-      }
-    },
-    async editChildComment(entryId, id, editedComment, userId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
-      const comment = this.getChildComments.find((comment) => comment.id === id)
-      const index = this._childcomments.findIndex((comment) => comment.id === id)
-
-      comment.updated = Timestamp.fromDate(new Date())
-
-      this._isLoading = true
-      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
-        await runTransaction(db, async (transaction) => {
-          transaction.update(doc(db, 'entries', entryId, 'comments', comment.id), { text: editedComment })
-        })
-          .then(() => {
-            this.$patch({
-              _childcomments: [
-                ...this._childcomments.slice(0, index),
-                { ...this._childcomments[index], ...comment },
-                ...this._childcomments.slice(index + 1)
-              ]
             })
           })
           .finally(() => (this._isLoading = false))
@@ -193,29 +144,9 @@ export const useCommentStore = defineStore('comments', {
       const index = this._comments.findIndex((comment) => comment.id === id)
 
       this._isLoading = true
-      // TODO: check if is possible to remove if statement
-      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
-        await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
-          .then(() => this._comments.splice(index, 1))
-          .finally(() => (this._isLoading = false))
-      }
-    },
-
-    async deleteChildComment(entryId, id, userId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
-      const comment = this.getChildComments.find((comment) => comment.id === id)
-      const index = this._childcomments.findIndex((comment) => comment.id === id)
-
-      this._isLoading = true
-      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
-        await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
-          .then(() => this._childcomments.splice(index, 1))
-          .finally(() => (this._isLoading = false))
-      } else {
-        throw new Error(error)
-      }
+      await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
+        .then(() => this._comments.splice(index, 1))
+        .finally(() => (this._isLoading = false))
     },
 
     async addReply(entryId, commentId, reply) {
@@ -233,7 +164,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
-        .then(() => this.$patch({ _childcomments: [...this._childcomments, { ...reply, author: stateAuthor }] }))
+        .then(() => this.$patch({ _comments: [...this._comments, { ...reply, author: stateAuthor }] }))
         .finally(() => (this._isLoading = false))
     }
   }
