@@ -109,7 +109,6 @@ const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
 const chartData = ref({})
-const chartDataV2 = ref({})
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const countShares = ref(0)
@@ -119,12 +118,12 @@ const type = ref('day')
 
 function graphData( type ){
   if (type==="day"){
-    return formatDayStats(chartDataV2.value.dayStats)
+    return formatDayStats(chartData.value.dayStats)
   }
   if(type==="week"){
-    return formatWeekStats(chartDataV2.value.weekStats)
+    return formatWeekStats(chartData.value.weekStats)
   }
-  return formatAllStats(chartDataV2.value.allStats)
+  return formatAllStats(chartData.value.allStats)
 }
 
 onMounted(async () => {
@@ -169,10 +168,9 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
-  chartDataV2.value= {
+  chartData.value= {
     weekStats, dayStats, allStats
   }
-  chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
 })
 
 shareStore.$subscribe((_mutation, state) => {

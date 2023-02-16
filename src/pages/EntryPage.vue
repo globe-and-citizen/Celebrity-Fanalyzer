@@ -1,16 +1,18 @@
 <template>
-  <q-tabs active-color="primary" class="tab-selector fixed-bottom bg-white" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
-    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
+  <q-tabs active-color="primary" class="tab-selector fixed-bottom bg-white" dense indicator-color="transparent"
+          v-model="tab">
+    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false"/>
+    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false"/>
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false"/>
   </q-tabs>
-  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em"/>
 
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
-        <TheHeader title="Entry Page" />
-        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
+        <TheHeader title="Entry Page"/>
+        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px"
+               :src="entry?.image"/>
         <section class="q-pa-md" style="margin-top: 100%; margin-bottom: 10%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
@@ -28,21 +30,21 @@
           <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="countShares" @share="onShare($event)" />
+          <ShareComponent :label="countShares" @share="onShare($event)"/>
         </section>
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
+        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate/>
 
-        <q-separator />
+        <q-separator/>
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
-      <TheHeader title="Anthrogram" />
+      <TheHeader title="Anthrogram"/>
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
           <div class="flex items-center q-mb-xl">
             <q-avatar size="6rem">
-              <img :src="entry.author.photoURL" alt="" />
+              <img :src="entry.author.photoURL" alt=""/>
             </q-avatar>
             <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
           </div>
@@ -55,33 +57,34 @@
             align="justify"
             narrow-indicator
           >
-            <q-tab name="day" label="Days" />
-            <q-tab name="week" label="Week" />
-            <q-tab name="all" label="All" />
+            <q-tab name="day" label="Days"/>
+            <q-tab name="week" label="Week"/>
+            <q-tab name="all" label="All"/>
           </q-tabs>
-          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+          <BarGraph :data="graphData(type)" title="Likes & Dislikes"/>
         </section>
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="comments" class="bg-white">
-      <TheHeader title="Comments" />
+      <TheHeader title="Comments"/>
       <q-page>
-        <TheComments :comments="comments" :entry="entry" />
+        <TheComments :comments="comments" :entry="entry"/>
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
 </template>
 
 <script setup>
-import { Timestamp } from 'firebase/firestore'
+import {Timestamp} from 'firebase/firestore'
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
-import { getStats } from 'src/utils/date'
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore} from 'src/stores'
+import {getStats} from 'src/utils/date'
+import {onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {formatAllStats, formatDayStats, formatWeekStats} from "src/utils/stats";
 
 const router = useRouter()
 
@@ -132,6 +135,16 @@ onMounted(async () => {
   }
 })
 
+function graphData(type) {
+  if (type === "day") {
+    return formatDayStats(chartData.value.dayStats)
+  }
+  if (type === "week") {
+    return formatWeekStats(chartData.value.weekStats)
+  }
+  return formatAllStats(chartData.value.allStats)
+}
+
 commentStore.$subscribe((_mutation, state) => {
   comments.value = state._comments
 })
@@ -140,7 +153,7 @@ likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
 
-  const { weekStats, dayStats } = getStats(state, entry.value.created)
+  const {weekStats, dayStats} = getStats(state, entry.value.created)
   const allStats = [
     {
       date: Timestamp.fromDate(new Date()),
@@ -148,7 +161,9 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
-  chartData.value = { ...{ promptId: entry.value.id, weekStats, dayStats, allStats }, type: type.value }
+  chartData.value = {
+    weekStats, dayStats, allStats
+  }
 })
 
 shareStore.$subscribe((_mutation, state) => {
@@ -174,6 +189,7 @@ function onShare(socialNetwork) {
   top: 65px;
   z-index: -1;
 }
+
 .tab-selector {
   margin-bottom: 4rem;
   z-index: 3;
