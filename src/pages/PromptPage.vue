@@ -83,7 +83,7 @@
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -108,12 +108,74 @@ const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
 const chartData = ref({})
+const chartDataV2 = ref({})
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const countShares = ref(0)
 const prompt = ref({})
 const tab = ref('prompt')
 const type = ref('day')
+
+function graphData( type ){
+  if (type==="day"){
+    return formatDayStats()
+  }
+  if(type==="week"){
+    return formatWeekStats()
+  }
+  return formatAllStats()
+}
+function formatDayStats(){
+  const data =  chartDataV2.value.dayStats.map((dayStat, index)=>{
+    let end
+    let label
+    const date=dayStat.date.toDate()
+
+    if (index + 1 < chartDataV2.value.dayStats.length) {
+      end = chartDataV2.value.dayStats[index + 1].date.toDate()
+    } else {
+      end = chartDataV2.value.dayStats[index].date.toDate()
+    }
+    if (end - date <= 86400000){
+      label= `${date.getDate()}/${date.getMonth() + 1}`
+    }else {
+      label= `${date.getDate()}-${end.getDate()}/${end.getMonth() + 1}`
+    }
+    return {...dayStat, label}
+  })
+  data.pop()
+  return data
+}
+function formatWeekStats(){
+  const data =  chartDataV2.value.weekStats.map((weekStat, index)=>{
+    let end
+    let label
+    const date=weekStat.date.toDate()
+
+    if (index + 1 < chartDataV2.value.weekStats.length) {
+      end = chartDataV2.value.weekStats[index + 1].date.toDate()
+    } else {
+      end = chartDataV2.value.weekStats[index].date.toDate()
+    }
+    if (end - date <= 86400000){
+      let newDate = date
+      newDate.setDate(date.getDate() + 7)
+      label = `${chartDataV2.value.weekStats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth() + 1}`
+    }else {
+      label= `${date.getDate()}-${end.getDate()}/${end.getMonth() + 1}`
+    }
+    return {...weekStat, label}
+  })
+
+  data.pop()
+  return data
+}
+
+function formatAllStats(){
+  return chartDataV2.value.allStats.map((weekStat)=>{
+    return {...weekStat, label: "All"}
+  })
+}
 
 onMounted(async () => {
   if (router.currentRoute.value.href === '/month') {
@@ -159,6 +221,9 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
+  chartDataV2.value= {
+    weekStats, dayStats, allStats
+  }
   chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
 })
 
