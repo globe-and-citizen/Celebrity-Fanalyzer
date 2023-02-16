@@ -9,13 +9,7 @@
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
-        <q-header>
-          <q-toolbar class="bg-white q-px-lg shadow-1">
-            <q-toolbar-title>
-              <b class="text-secondary">Entry Page</b>
-            </q-toolbar-title>
-          </q-toolbar>
-        </q-header>
+        <TheHeader title="Entry Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
         <section class="q-pa-md" style="margin-top: 100%; margin-bottom: 10%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
@@ -42,24 +36,16 @@
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="stats" class="bg-white">
-      <q-header>
-        <q-toolbar class="bg-white q-px-lg shadow-1">
-          <q-toolbar-title>
-            <b class="text-secondary">Stats Page</b>
-          </q-toolbar-title>
-        </q-toolbar>
-      </q-header>
+      <TheHeader title="Anthrogram" />
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
-
           <div class="flex items-center q-mb-xl">
             <q-avatar size="6rem">
               <img :src="entry.author.photoURL" alt="" />
             </q-avatar>
             <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
           </div>
-
           <q-tabs
             v-model="type"
             dense
@@ -78,13 +64,7 @@
       </q-page>
     </q-tab-panel>
     <q-tab-panel name="comments" class="bg-white">
-      <q-header>
-        <q-toolbar class="bg-white q-px-lg shadow-1">
-          <q-toolbar-title>
-            <b class="text-secondary">Comments</b>
-          </q-toolbar-title>
-        </q-toolbar>
-      </q-header>
+      <TheHeader title="Comments" />
       <q-page>
         <TheComments :comments="comments" :entry="entry" />
       </q-page>
@@ -93,14 +73,15 @@
 </template>
 
 <script setup>
+import { Timestamp } from 'firebase/firestore'
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
+import TheHeader from 'src/components/TheHeader.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { getStats } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getStats } from 'src/utils/date'
-import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
@@ -142,12 +123,12 @@ onMounted(async () => {
   await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
   countShares.value = shareStore.getShares
 
-  for(const comment of comments.value) {
-    if(comment.parentId === undefined) {
-        count.value++
-      } else {
-        continue
-      }
+  for (const comment of comments.value) {
+    if (comment.parentId === undefined) {
+      count.value++
+    } else {
+      continue
+    }
   }
 })
 
