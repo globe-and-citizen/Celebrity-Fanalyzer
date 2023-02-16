@@ -1,5 +1,5 @@
 <template>
-  <q-header class="bg-white" elevated>
+  <q-header class="bg-white" elevated reveal>
     <q-toolbar>
       <q-toolbar-title>
         <q-btn v-if="backBtn" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
