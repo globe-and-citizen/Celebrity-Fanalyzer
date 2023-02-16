@@ -99,6 +99,7 @@ import { getStats, monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Timestamp } from 'firebase/firestore'
+import {formatAllStats, formatDayStats, formatWeekStats} from "src/utils/stats";
 
 const router = useRouter()
 
@@ -118,63 +119,12 @@ const type = ref('day')
 
 function graphData( type ){
   if (type==="day"){
-    return formatDayStats()
+    return formatDayStats(chartDataV2.value.dayStats)
   }
   if(type==="week"){
-    return formatWeekStats()
+    return formatWeekStats(chartDataV2.value.weekStats)
   }
-  return formatAllStats()
-}
-function formatDayStats(){
-  const data =  chartDataV2.value.dayStats.map((dayStat, index)=>{
-    let end
-    let label
-    const date=dayStat.date.toDate()
-
-    if (index + 1 < chartDataV2.value.dayStats.length) {
-      end = chartDataV2.value.dayStats[index + 1].date.toDate()
-    } else {
-      end = chartDataV2.value.dayStats[index].date.toDate()
-    }
-    if (end - date <= 86400000){
-      label= `${date.getDate()}/${date.getMonth() + 1}`
-    }else {
-      label= `${date.getDate()}-${end.getDate()}/${end.getMonth() + 1}`
-    }
-    return {...dayStat, label}
-  })
-  data.pop()
-  return data
-}
-function formatWeekStats(){
-  const data =  chartDataV2.value.weekStats.map((weekStat, index)=>{
-    let end
-    let label
-    const date=weekStat.date.toDate()
-
-    if (index + 1 < chartDataV2.value.weekStats.length) {
-      end = chartDataV2.value.weekStats[index + 1].date.toDate()
-    } else {
-      end = chartDataV2.value.weekStats[index].date.toDate()
-    }
-    if (end - date <= 86400000){
-      let newDate = date
-      newDate.setDate(date.getDate() + 7)
-      label = `${chartDataV2.value.weekStats[index].date.toDate().getDate()}-${newDate.getDate()}/${newDate.getMonth() + 1}`
-    }else {
-      label= `${date.getDate()}-${end.getDate()}/${end.getMonth() + 1}`
-    }
-    return {...weekStat, label}
-  })
-
-  data.pop()
-  return data
-}
-
-function formatAllStats(){
-  return chartDataV2.value.allStats.map((weekStat)=>{
-    return {...weekStat, label: "All"}
-  })
+  return formatAllStats(chartDataV2.value.allStats)
 }
 
 onMounted(async () => {
@@ -200,12 +150,10 @@ onMounted(async () => {
         errorStore.throwError(error)
       })
   }
-
   if (!prompt.value) {
     router.push('/404')
     return
   }
-
   await likeStore.getAllPromptLikesDislikes(prompt.value.id).catch((error) => errorStore.throwError(error))
 })
 
