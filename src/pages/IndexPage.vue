@@ -152,7 +152,7 @@
             opinion, suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you
             want to get involved in shaping the future of the application, reach out to us via discord:
           </p>
-          <q-btn flat rounded icon="img:/icons/discord.svg" href="https://discord.gg/z4P3UrhhSH" size="xl" target="_blank">
+          <q-btn flat round icon="img:/icons/discord.svg" href="https://discord.gg/z4P3UrhhSH" size="xl" target="_blank">
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
         </div>
