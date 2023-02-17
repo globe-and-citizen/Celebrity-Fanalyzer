@@ -30,3 +30,6 @@ yarn-error.log*
 *.sln
 .vercel
 .firebase
+
+# Firebase Emulator Logs
+.log
