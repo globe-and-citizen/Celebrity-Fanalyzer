@@ -39,7 +39,7 @@
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel class="q-gutter-y-md" name="profile">
         <q-input v-model="user.displayName" label="Name" />
-        <q-input v-model="user.bio" label="Bio" />
+        <q-input v-model="user.bio" maxlength="150" label="Bio" />
         <h3 class="q-mt-lg text-bold text-h5 text-secondary">MetaData</h3>
         <q-input v-model="user.data1" label="Data 1" />
         <q-input v-model="user.data2" label="Data 2" />
