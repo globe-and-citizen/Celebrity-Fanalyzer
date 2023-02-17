@@ -21,42 +21,37 @@
   </TheHeader>
   <section class="q-pa-md">
     <q-page padding>
-      <q-table
-        :columns="columns"
-        flat
-        :filter="promptFilter"
-        hide-bottom
-        :loading="promptStore.isLoading || entryStore.isLoading"
-        :pagination="pagination"
-        :rows="prompts"
-        title="Manage Prompts & Entries"
-      >
-        <template v-slot:body="props">
-          <q-tr :props="props">
-            <q-td auto-width>
-              <q-btn
-                color="red"
-                dense
-                flat
-                :icon="props.expand ? 'expand_less' : 'expand_more'"
-                round
-                @click="props.expand = !props.expand"
-              />
-            </q-td>
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
-            <q-td>
-              <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
-              <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
-            </q-td>
-          </q-tr>
-          <q-tr v-show="props.expand" :props="props">
-            <q-td colspan="100%" style="padding: 0 !important">
-              <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-              <TableEntry v-else :rows="props.row.entries" @editEntry="openEntryDialog" />
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
+      <q-tabs v-model="tab" class="text-secondary">
+        <q-tab name="posts" icon="view_list" label="Prompts & Entries" />
+        <q-tab name="users" icon="people" label="Users" />
+      </q-tabs>
+
+      <q-tab-panels v-model="tab" animated swipeable>
+        <q-tab-panel name="posts">
+          <ManagePromptsEntries
+            :prompts="prompts"
+            @openPromptDialog="openPromptDialog($event)"
+            @openEntryDialog="openEntryDialog($event)"
+            @onDeleteDialog="onDeleteDialog($event)"
+          />
+        </q-tab-panel>
+
+        <q-tab-panel name="users">
+          <q-table
+            :columns="[
+              { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
+              { name: 'email', label: 'email', field: 'email', sortable: true, align: 'left' },
+              { name: 'actions', field: 'actions' }
+            ]"
+            :rows="users"
+            flat
+            hide-bottom
+            :pagination="pagination"
+            row-key="name"
+            title="Manage Users"
+          />
+        </q-tab-panel>
+      </q-tab-panels>
     </q-page>
 
     <q-dialog full-width position="bottom" v-model="prompt.dialog">
@@ -91,16 +86,18 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/EntryCard.vue'
+import ManagePromptsEntries from 'src/components/ManagePromptsEntries.vue'
 import PromptCard from 'src/components/PromptCard.vue'
 import TableEntry from 'src/components/TableEntry.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
 const columns = [
   {},
@@ -111,14 +108,19 @@ const columns = [
 ]
 const deleteDialog = ref({})
 const entry = ref({})
-const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
+const pagination = { sortBy: 'email', descending: false, rowsPerPage: 0 }
 const prompts = ref([])
 const prompt = ref({})
 const promptFilter = ref('')
+const tab = ref('posts')
+const users = ref([])
 
 onMounted(async () => {
   await promptStore.fetchPromptsAndEntries()
   prompts.value = promptStore.getPrompts
+
+  await userStore.fetchUsers()
+  users.value = userStore.getUsers
 })
 
 promptStore.$subscribe((_mutation, state) => {
