@@ -8,19 +8,33 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  job1:
+    name: Run Emulator
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.14.0]
-
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.14.0
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.14.0
+          cache: 'npm'
+      - name: Execute Emulator
+        env:
+          VITE_RELEASE_STAGE: testing
+        run: |
+          npm ci
+          npm install --save firebase-tools
+          npm run Emulator
+  job2:
+    name: Run Unit Tests
+    needs: job1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18.14.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.14.0
           cache: 'npm'
       - name: Execute Unit Tests
         env:
@@ -29,3 +43,24 @@ jobs:
           npm ci
           npm install --save firebase-tools
           npm run test
+  # build:
+  #   runs-on: ubuntu-latest
+
+  #   strategy:
+  #     matrix:
+  #       node-version: [18.14.0]
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         cache: 'npm'
+  #     - name: Execute Unit Tests
+  #       env:
+  #         VITE_RELEASE_STAGE: testing
+  #       run: |
+  #         npm ci
+  #         npm install --save firebase-tools
+  #         npm run test
