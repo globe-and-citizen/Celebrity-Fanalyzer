@@ -24,7 +24,7 @@ jobs:
         run: |
           npm ci
           npm install --save firebase-tools
-          npm run emulators
+          firebase emulators:start --project celebrityfanalizer --import emulatorData
   job2:
     name: Run Unit Tests
     needs: job1
@@ -41,8 +41,7 @@ jobs:
           VITE_RELEASE_STAGE: testing
         run: |
           npm ci
-          npm install --save firebase-tools
-          npm run test
+          vitest
   # build:
   #   runs-on: ubuntu-latest
 
