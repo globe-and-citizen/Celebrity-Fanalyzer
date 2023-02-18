@@ -24,7 +24,7 @@ jobs:
         run: |
           npm ci
           npm install --save firebase-tools
-          npm run Emulator
+          npm run emulators
   job2:
     name: Run Unit Tests
     needs: job1
