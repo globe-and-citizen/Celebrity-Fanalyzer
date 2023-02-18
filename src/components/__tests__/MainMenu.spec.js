@@ -1,16 +1,16 @@
 //Firebase
-import { auth, db } from '../../firebase'
-import { signInWithCredential, GoogleAuthProvider, getAdditionalUserInfo } from 'firebase/auth'
+import { getAdditionalUserInfo, GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
+import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
-import { setActivePinia, createPinia } from 'pinia'
-import { beforeEach, describe, expect, it, vitest } from 'vitest'
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vitest } from 'vitest'
 
 // Necessary Components
-import MainMenu from '../MainMenu.vue'
-import { useUserStore } from '../../stores/user'
 import { mount } from '@vue/test-utils'
+import MainMenu from 'src/components/MainMenu.vue'
+import { useUserStore } from 'src/stores/user'
 
 installQuasar()
 
