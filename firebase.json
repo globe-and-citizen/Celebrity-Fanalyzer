@@ -11,10 +11,7 @@
         "source": "/service-worker.js"
       }
     ],
-    "ignore": [
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["**/.*", "**/node_modules/**"],
     "public": "dist/pwa"
   },
   "emulators": {
@@ -31,5 +28,11 @@
       "enabled": true
     },
     "singleProjectMode": true
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

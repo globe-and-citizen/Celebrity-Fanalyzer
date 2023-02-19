@@ -1,0 +1,19 @@
+{
+  "name": "images/prompt-2023-02",
+  "bucket": "celebrityfanalizer.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1674272372333,
+  "storageClass": "STANDARD",
+  "etag": "someETag",
+  "contentDisposition": "inline",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "5b5416fe-fd3d-4295-ba6b-007b5efe84a2"
+  ],
+  "timeCreated": "2023-01-21T03:39:32.332Z",
+  "updated": "2023-01-21T03:39:32.334Z",
+  "size": 66478,
+  "md5Hash": "zbdDHI3oXyeonBD7cnQWtQ==",
+  "crc32c": "232091132"
+}
