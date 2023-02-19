@@ -31,3 +31,6 @@ ui-debug.log
 *.sln
 .vercel
 .firebase
+
+# Firebase Emulator Logs
+.log

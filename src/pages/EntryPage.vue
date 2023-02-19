@@ -7,11 +7,12 @@
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
 
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <!-- Panel 1: Entry -->
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
         <TheHeader title="Entry Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
-        <section class="q-pa-md" style="margin-top: 100%; margin-bottom: 10%">
+        <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
           <div class="q-mb-md">
@@ -31,10 +32,10 @@
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-
         <q-separator />
       </q-page>
     </q-tab-panel>
+    <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
       <TheHeader title="Anthrogram" />
       <q-page>
@@ -63,6 +64,7 @@
         </section>
       </q-page>
     </q-tab-panel>
+    <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
       <q-page>

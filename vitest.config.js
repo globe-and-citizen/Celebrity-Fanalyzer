@@ -7,13 +7,12 @@ import jsconfigPaths from 'vite-jsconfig-paths'
 export default defineConfig({
   test: {
     environment: 'jsdom',
+    coverage: {
+      provider: 'istanbul',
+      reporter: ['text', 'json', 'html']
+    },
     setupFiles: 'vitest/setup-file.js',
-    include: [
-      // Matches vitest tests in any subfolder of 'src' or into 'test/vitest/__tests__'
-      // Matches all files with extension 'js', 'jsx', 'ts' and 'tsx'
-      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-      'test/vitest/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
-    ]
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']
   },
   plugins: [
     vue({

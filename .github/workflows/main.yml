@@ -1,0 +1,31 @@
+name: Run Tests
+
+on:
+  # push:
+  #   branches: [main]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.14.0]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Execute Unit Tests
+        env:
+          VITE_RELEASE_STAGE: testing
+        run: |
+          npm ci
+          npm install --save firebase-tools
+          npm run test

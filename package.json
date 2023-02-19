@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
     "test": "vitest",
-    "test:unit:ci": "vitest run",
+    "test:unit:coverage": "vitest run --coverage",
     "emulators": "firebase emulators:start --project celebrityfanalizer --import emulatorData"
   },
   "dependencies": {
@@ -30,14 +30,16 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
+    "@pinia/testing": "^0.0.14",
     "@quasar/app-vite": "^1.2.0",
+    "@vue/test-utils": "^2.2.10",
+    "@vitest/coverage-istanbul": "^0.28.4",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^0.1.2",
     "@sentry/vite-plugin": "^0.4.0",
-    "@vue/test-utils": "^2.0.0",
     "autoprefixer": "^10.4.13",
-    "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-vue": "^9.9.0",
+    "jsdom": "^21.1.0",
     "postcss": "^8.4.21",
     "prettier": "^2.8.3",
     "vitest": "^0.15.0",
