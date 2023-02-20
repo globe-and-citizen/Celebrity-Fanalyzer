@@ -31,23 +31,16 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
-import EntryCard from 'src/components/EntryCard.vue'
-import PromptCard from 'src/components/PromptCard.vue'
 import TableEntry from 'src/components/TableEntry.vue'
-import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { useEntryStore, usePromptStore } from 'src/stores'
+import { ref } from 'vue'
 
 defineProps({
   prompts: { type: Array, required: true }
 })
 
-const $q = useQuasar()
-const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
-const userStore = useUserStore()
 
 const columns = [
   {},
@@ -57,8 +50,5 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
-const prompt = ref({})
 const promptFilter = ref('')
-const tab = ref('posts')
-const users = ref([])
 </script>

@@ -85,33 +85,23 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import EntryCard from 'src/components/EntryCard.vue'
-import ManagePromptsEntries from 'src/components/ManagePromptsEntries.vue'
-import PromptCard from 'src/components/PromptCard.vue'
-import TableEntry from 'src/components/TableEntry.vue'
+import EntryCard from 'src/components/Admin/EntryCard.vue'
+import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
+import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
-const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const columns = [
-  {},
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
-  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
-  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
-  { name: 'actions', field: 'actions' }
-]
 const deleteDialog = ref({})
 const entry = ref({})
 const pagination = { sortBy: 'email', descending: false, rowsPerPage: 0 }
 const prompts = ref([])
 const prompt = ref({})
-const promptFilter = ref('')
 const tab = ref('posts')
 const users = ref([])
 
