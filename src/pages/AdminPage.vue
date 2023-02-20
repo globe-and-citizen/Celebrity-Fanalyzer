@@ -19,9 +19,9 @@
       </q-list>
     </q-btn-dropdown>
   </TheHeader>
-  <section class="q-pa-md">
+  <section class="absolute-center window-width">
     <q-page padding>
-      <q-tabs v-model="tab" class="text-secondary">
+      <q-tabs align="justify" v-model="tab" class="text-secondary">
         <q-tab name="posts" icon="view_list" label="Prompts & Entries" />
         <q-tab name="users" icon="people" label="Users" />
       </q-tabs>
@@ -37,19 +37,7 @@
         </q-tab-panel>
 
         <q-tab-panel name="users">
-          <q-table
-            :columns="[
-              { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
-              { name: 'email', label: 'email', field: 'email', sortable: true, align: 'left' },
-              { name: 'actions', field: 'actions' }
-            ]"
-            :rows="users"
-            flat
-            hide-bottom
-            :pagination="pagination"
-            row-key="name"
-            title="Manage Users"
-          />
+          <ManageUsers :users="users" />
         </q-tab-panel>
       </q-tab-panels>
     </q-page>
@@ -87,6 +75,7 @@
 import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/Admin/EntryCard.vue'
 import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
+import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/TheHeader.vue'
 import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
@@ -99,7 +88,6 @@ const userStore = useUserStore()
 
 const deleteDialog = ref({})
 const entry = ref({})
-const pagination = { sortBy: 'email', descending: false, rowsPerPage: 0 }
 const prompts = ref([])
 const prompt = ref({})
 const tab = ref('posts')
@@ -110,7 +98,10 @@ onMounted(async () => {
   prompts.value = promptStore.getPrompts
 
   await userStore.fetchUsers()
-  users.value = userStore.getUsers
+  users.value = userStore.getUsers.map((user) => {
+    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
+    return user
+  })
 })
 
 promptStore.$subscribe((_mutation, state) => {
