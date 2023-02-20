@@ -2,7 +2,6 @@
   <q-table
     :columns="columns"
     flat
-    :filter="promptFilter"
     hide-bottom
     :loading="promptStore.isLoading || entryStore.isLoading"
     :pagination="pagination"
@@ -33,7 +32,6 @@
 <script setup>
 import TableEntry from 'src/components/TableEntry.vue'
 import { useEntryStore, usePromptStore } from 'src/stores'
-import { ref } from 'vue'
 
 defineProps({
   prompts: { type: Array, required: true }
@@ -50,5 +48,4 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
-const promptFilter = ref('')
 </script>
