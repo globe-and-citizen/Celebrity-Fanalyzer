@@ -21,7 +21,7 @@ export const useUserStore = defineStore('user', {
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     getUsers: (state) => state._users,
-    isAdmin: (getters) => getters.getUser.role === 'admin',
+    isAdmin: (getters) => getters.getUser.role.toLowerCase() === 'admin',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading
   },
@@ -79,6 +79,20 @@ export const useUserStore = defineStore('user', {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
       })
         .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
+        .finally(() => (this._isLoading = false))
+    },
+
+    async updateRole(user) {
+      this._isLoading = true
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'users', user.uid), user)
+      })
+        .then(() => {
+          const users = this.getUsers
+          const index = users.findIndex((u) => u.uid === user.uid)
+          users[index].role = user.role
+          this.$patch({ _users: users })
+        })
         .finally(() => (this._isLoading = false))
     },
 
