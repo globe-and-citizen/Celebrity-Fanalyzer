@@ -42,24 +42,24 @@
           <h1 class="q-mt-none text-bold text-h5">{{ entry?.title }}</h1>
           <div class="flex no-wrap items-center q-mb-xl">
             <q-avatar size="4rem">
-              <img :src="entry.author.photoURL" alt="" />
+              <img :src="entry.author.photoURL" alt="Author Image" />
             </q-avatar>
             <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
           </div>
           <q-tabs
-            v-model="type"
-            dense
-            class="text-grey q-mb-xl"
             active-color="primary"
-            indicator-color="primary"
             align="justify"
+            class="text-grey q-mb-xl"
+            dense
+            indicator-color="primary"
             narrow-indicator
+            v-model="type"
           >
             <q-tab name="day" label="Days" />
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -80,6 +80,7 @@ import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
+import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -132,6 +133,16 @@ onMounted(async () => {
   }
 })
 
+function graphData(type) {
+  if (type === 'day') {
+    return formatDayStats(chartData.value.dayStats)
+  }
+  if (type === 'week') {
+    return formatWeekStats(chartData.value.weekStats)
+  }
+  return formatAllStats(chartData.value.allStats)
+}
+
 commentStore.$subscribe((_mutation, state) => {
   comments.value = state._comments
 })
@@ -148,7 +159,7 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
-  chartData.value = { ...{ promptId: entry.value.id, weekStats, dayStats, allStats }, type: type.value }
+  chartData.value = { weekStats, dayStats, allStats }
 })
 
 shareStore.$subscribe((_mutation, state) => {
@@ -174,6 +185,7 @@ function onShare(socialNetwork) {
   top: 65px;
   z-index: -1;
 }
+
 .tab-selector {
   margin-bottom: 4rem;
   z-index: 3;
