@@ -72,7 +72,10 @@ promptStore.$subscribe((_mutation, state) => {
 })
 
 const computedPrompt = computed(() => {
-  return prompts.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return prompts.value.filter((item) =>
+    item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+    item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+    item.categories.some(category => category.toLowerCase().includes(search.value.toLocaleLowerCase())))
 })
 </script>
 
