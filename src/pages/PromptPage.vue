@@ -70,13 +70,13 @@
           </div>
 
           <q-tabs
-            v-model="type"
-            dense
-            class="text-grey q-mb-xl"
             active-color="primary"
-            indicator-color="primary"
             align="justify"
+            class="text-grey q-mb-xl"
+            dense
+            indicator-color="primary"
             narrow-indicator
+            v-model="type"
           >
             <q-tab name="day" label="Days" />
             <q-tab name="week" label="Week" />
@@ -90,15 +90,15 @@
 </template>
 
 <script setup>
+import { Timestamp } from 'firebase/firestore'
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { getStats, monthYear } from 'src/utils/date'
+import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Timestamp } from 'firebase/firestore'
-import {formatAllStats, formatDayStats, formatWeekStats} from "src/utils/stats";
 
 const router = useRouter()
 
@@ -115,11 +115,11 @@ const prompt = ref({})
 const tab = ref('prompt')
 const type = ref('day')
 
-function graphData( type ){
-  if (type==="day"){
+function graphData(type) {
+  if (type === 'day') {
     return formatDayStats(chartData.value.dayStats)
   }
-  if(type==="week"){
+  if (type === 'week') {
     return formatWeekStats(chartData.value.weekStats)
   }
   return formatAllStats(chartData.value.allStats)
@@ -167,9 +167,7 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
-  chartData.value= {
-    weekStats, dayStats, allStats
-  }
+  chartData.value = { weekStats, dayStats, allStats }
 })
 
 shareStore.$subscribe((_mutation, state) => {

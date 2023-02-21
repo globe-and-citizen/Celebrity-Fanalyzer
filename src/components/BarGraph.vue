@@ -1,26 +1,21 @@
 <template>
-  <v-chart class="chart" :option="option" autoresize/>
+  <v-chart class="chart" :option="option" autoresize />
 </template>
 
 <script setup>
-import {BarChart} from 'echarts/charts'
-import {GridComponent, TitleComponent, TooltipComponent} from 'echarts/components'
-import {use} from 'echarts/core'
-import {CanvasRenderer} from 'echarts/renderers'
-import { onBeforeUpdate, onMounted, ref} from 'vue'
+import { BarChart } from 'echarts/charts'
+import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { onBeforeUpdate, onMounted, ref } from 'vue'
 import VChart from 'vue-echarts'
 
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
 
 const props = defineProps({
-  data: {type: Array, required: true},
-  title: {type: String, required: false}
+  data: { type: Array, required: true },
+  title: { type: String, required: false }
 })
-
-let dislikes = []
-let likes = []
-let periode = []
-let stats = []
 
 const option = ref({})
 
@@ -35,7 +30,7 @@ function compute() {
     },
     xAxis: {
       type: 'category',
-      data: props.data.map((item) => item.label),
+      data: props.data.map((item) => item.label)
     },
     yAxis: {
       type: 'value'
