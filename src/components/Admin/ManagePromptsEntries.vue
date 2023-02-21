@@ -16,7 +16,7 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td>
           <q-btn color="warning" flat icon="edit" round size="sm" @click="$emit('openPromptDialog', props.row)" />
-          <q-btn color="negative" flat icon="delete" round size="sm" @click="$emit('onDeleteDialog', props.row)" />
+          <q-btn color="negative" flat icon="delete" round size="sm" @click="openDeleteDialog(props.row)" />
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
@@ -27,17 +27,41 @@
       </q-tr>
     </template>
   </q-table>
+
+  <q-dialog v-model="deleteDialog.show">
+    <q-card>
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Delete Prompt?</h6>
+      </q-card-section>
+      <q-card-section>
+        <span class="q-ml-sm">
+          Are you sure you want to delete the prompt:
+          <b>{{ deleteDialog.prompt.title }}</b>
+          ?
+        </span>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="primary" v-close-popup />
+        <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/TableEntry.vue'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { ref } from 'vue'
 
+defineEmits(['openPromptDialog', 'openEntryDialog'])
 defineProps({
   prompts: { type: Array, required: true }
 })
 
+const $q = useQuasar()
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const columns = [
@@ -47,5 +71,21 @@ const columns = [
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
 ]
-const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
+const deleteDialog = ref({})
+const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+
+function openDeleteDialog(prompt) {
+  deleteDialog.value.show = true
+  deleteDialog.value.prompt = prompt
+}
+
+function onDeletePrompt(id) {
+  promptStore
+    .deletePrompt(id)
+    .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
+    .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
+
+  deleteDialog.value.show = false
+  deleteDialog.value.prompt = {}
+}
 </script>

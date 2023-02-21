@@ -32,7 +32,6 @@
             :prompts="prompts"
             @openPromptDialog="openPromptDialog($event)"
             @openEntryDialog="openEntryDialog($event)"
-            @onDeleteDialog="onDeleteDialog($event)"
           />
         </q-tab-panel>
 
