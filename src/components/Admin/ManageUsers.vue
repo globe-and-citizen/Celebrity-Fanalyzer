@@ -36,7 +36,6 @@ const options = ['Admin', 'Writer', 'User']
 const pagination = { sortBy: 'email', descending: true, rowsPerPage: 0 }
 
 function updateRole(user) {
-  console.log(user)
   userStore.updateRole(user)
 }
 </script>

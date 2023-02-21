@@ -48,83 +48,46 @@
     <q-dialog full-width position="bottom" v-model="entry.dialog">
       <EntryCard v-bind="entry" @hideDialog="entry = {}" />
     </q-dialog>
-
-    <q-dialog v-model="deleteDialog.show">
-      <q-card>
-        <q-card-section class="q-pb-none">
-          <h6 class="q-my-sm">Delete Prompt?</h6>
-        </q-card-section>
-        <q-card-section>
-          <span class="q-ml-sm">
-            Are you sure you want to delete the prompt:
-            <b>{{ deleteDialog.prompt.title }}</b>
-            ?
-          </span>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </section>
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
 import EntryCard from 'src/components/Admin/EntryCard.vue'
 import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
-const $q = useQuasar()
-const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const deleteDialog = ref({})
 const entry = ref({})
 const prompts = ref([])
 const prompt = ref({})
 const tab = ref('posts')
 const users = ref([])
 
-onMounted(async () => {
-  await promptStore.fetchPromptsAndEntries()
-  prompts.value = promptStore.getPrompts
-
-  await userStore.fetchUsers()
-  users.value = userStore.getUsers.map((user) => {
-    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
-    return user
-  })
+onMounted(() => {
+  promptStore.fetchPromptsAndEntries()
+  userStore.fetchUsers()
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 })
 
+userStore.$subscribe((_mutation, state) => {
+  users.value = state._users.map((user) => {
+    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
+    return user
+  })
+})
+
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
-}
-
-function onDeleteDialog(prompt) {
-  deleteDialog.value.show = true
-  deleteDialog.value.prompt = prompt
-}
-
-function onDeletePrompt(id) {
-  promptStore
-    .deletePrompt(id)
-    .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
-    .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
-
-  deleteDialog.value.show = false
-  deleteDialog.value.prompt = {}
 }
 
 function openEntryDialog(props) {
