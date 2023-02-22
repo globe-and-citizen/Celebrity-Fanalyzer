@@ -14,7 +14,7 @@
           <q-btn color="red" dense flat :icon="props.expand ? 'expand_less' : 'expand_more'" round @click="props.expand = !props.expand" />
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
-        <q-td>
+        <q-td class="text-right">
           <q-btn color="warning" flat icon="edit" round size="sm" @click="$emit('openPromptDialog', props.row)" />
           <q-btn color="negative" flat icon="delete" round size="sm" @click="openDeleteDialog(props.row)" />
         </q-td>
@@ -69,7 +69,7 @@ const columns = [
   { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
-  { name: 'actions', field: 'actions' }
+  {}
 ]
 const deleteDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
