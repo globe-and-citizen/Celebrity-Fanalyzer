@@ -1,4 +1,5 @@
-import { doc, getDoc, runTransaction, setDoc } from 'firebase/firestore'
+
+import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from 'firebase/firestore'
 import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
@@ -9,6 +10,7 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     _user: {},
     _userIp: '',
+    _users: [],
     _isLoading: false
   }),
 
@@ -19,11 +21,22 @@ export const useUserStore = defineStore('user', {
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
-    isAdmin: (getters) => getters.getUser.role === 'admin',
+    getUsers: (state) => state._users,
+    isAdmin: (getters) => getters.getUser.role.toLowerCase() === 'admin',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading
   },
   actions: {
+    async fetchUsers() {
+      this._isLoading = true
+      await getDocs(collection(db, 'users'))
+        .then((querySnapshot) => {
+          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+          this.$patch({ _users: users })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     /**
      * Fetch the user ip from Cloudflare
      * @SaveState <string> IPV6
@@ -67,6 +80,20 @@ export const useUserStore = defineStore('user', {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
       })
         .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
+        .finally(() => (this._isLoading = false))
+    },
+
+    async updateRole(user) {
+      this._isLoading = true
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'users', user.uid), user)
+      })
+        .then(() => {
+          const users = this.getUsers
+          const index = users.findIndex((u) => u.uid === user.uid)
+          users[index].role = user.role
+          this.$patch({ _users: users })
+        })
         .finally(() => (this._isLoading = false))
     },
 
