@@ -19,44 +19,26 @@
       </q-list>
     </q-btn-dropdown>
   </TheHeader>
-  <section class="q-pa-md">
+  <section class="absolute-center window-width">
     <q-page padding>
-      <q-table
-        :columns="columns"
-        flat
-        :filter="promptFilter"
-        hide-bottom
-        :loading="promptStore.isLoading || entryStore.isLoading"
-        :pagination="pagination"
-        :rows="prompts"
-        title="Manage Prompts & Entries"
-      >
-        <template v-slot:body="props">
-          <q-tr :props="props">
-            <q-td auto-width>
-              <q-btn
-                color="red"
-                dense
-                flat
-                :icon="props.expand ? 'expand_less' : 'expand_more'"
-                round
-                @click="props.expand = !props.expand"
-              />
-            </q-td>
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
-            <q-td>
-              <q-btn color="warning" flat icon="edit" round size="sm" @click="openPromptDialog(props.row)" />
-              <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
-            </q-td>
-          </q-tr>
-          <q-tr v-show="props.expand" :props="props">
-            <q-td colspan="100%" style="padding: 0 !important">
-              <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-              <TableEntry v-else :rows="props.row.entries" @editEntry="openEntryDialog" />
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
+      <q-tabs align="justify" v-model="tab" class="text-secondary">
+        <q-tab name="posts" icon="view_list" label="Prompts & Entries" />
+        <q-tab name="users" icon="people" label="Users" />
+      </q-tabs>
+
+      <q-tab-panels v-model="tab" animated swipeable>
+        <q-tab-panel name="posts">
+          <ManagePromptsEntries
+            :prompts="prompts"
+            @openPromptDialog="openPromptDialog($event)"
+            @openEntryDialog="openEntryDialog($event)"
+          />
+        </q-tab-panel>
+
+        <q-tab-panel name="users">
+          <ManageUsers :users="users" />
+        </q-tab-panel>
+      </q-tab-panels>
     </q-page>
 
     <q-dialog full-width position="bottom" v-model="prompt.dialog">
@@ -66,83 +48,46 @@
     <q-dialog full-width position="bottom" v-model="entry.dialog">
       <EntryCard v-bind="entry" @hideDialog="entry = {}" />
     </q-dialog>
-
-    <q-dialog v-model="deleteDialog.show">
-      <q-card>
-        <q-card-section class="q-pb-none">
-          <h6 class="q-my-sm">Delete Prompt?</h6>
-        </q-card-section>
-        <q-card-section>
-          <span class="q-ml-sm">
-            Are you sure you want to delete the prompt:
-            <b>{{ deleteDialog.prompt.title }}</b>
-            ?
-          </span>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </section>
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
-import EntryCard from 'src/components/EntryCard.vue'
-import PromptCard from 'src/components/PromptCard.vue'
-import TableEntry from 'src/components/TableEntry.vue'
+import EntryCard from 'src/components/Admin/EntryCard.vue'
+import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
+import ManageUsers from 'src/components/Admin/ManageUsers.vue'
+import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
-const $q = useQuasar()
-const errorStore = useErrorStore()
-const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
-const columns = [
-  {},
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
-  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
-  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
-  { name: 'actions', field: 'actions' }
-]
-const deleteDialog = ref({})
 const entry = ref({})
-const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
 const prompts = ref([])
 const prompt = ref({})
-const promptFilter = ref('')
+const tab = ref('posts')
+const users = ref([])
 
-onMounted(async () => {
-  await promptStore.fetchPromptsAndEntries()
-  prompts.value = promptStore.getPrompts
+onMounted(() => {
+  promptStore.fetchPromptsAndEntries()
+  userStore.fetchUsers()
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 })
 
+userStore.$subscribe((_mutation, state) => {
+  users.value = state._users.map((user) => {
+    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
+    return user
+  })
+})
+
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
-}
-
-function onDeleteDialog(prompt) {
-  deleteDialog.value.show = true
-  deleteDialog.value.prompt = prompt
-}
-
-function onDeletePrompt(id) {
-  promptStore
-    .deletePrompt(id)
-    .then(() => $q.notify({ type: 'negative', message: 'Prompt successfully deleted' }))
-    .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
-
-  deleteDialog.value.show = false
-  deleteDialog.value.prompt = {}
 }
 
 function openEntryDialog(props) {

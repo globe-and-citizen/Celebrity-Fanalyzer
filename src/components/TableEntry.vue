@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { ref } from 'vue'
@@ -38,6 +39,7 @@ defineProps({
   rows: { type: Array, required: true }
 })
 
+const $q = useQuasar()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 
