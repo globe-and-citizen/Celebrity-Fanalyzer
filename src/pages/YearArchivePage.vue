@@ -59,7 +59,13 @@ onMounted(async () => {
 })
 
 const computedPrompt = computed(() => {
-  return prompts.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return prompts.value.filter((item) =>
+    item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+    item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+    item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+    item.entries.some(entry => entry.title.toLowerCase().includes(search.value.toLocaleLowerCase())) ||
+    item.categories.some(category => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  )
 })
 </script>
 
