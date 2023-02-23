@@ -84,7 +84,7 @@ function uploadPhoto() {
 function save() {
   userStore
     .updateProfile(user.value)
-    .then($q.notify({ message: 'Profile successfully updated' }))
+    .then($q.notify({ type: 'info', message: 'Profile successfully updated' }))
     .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
 

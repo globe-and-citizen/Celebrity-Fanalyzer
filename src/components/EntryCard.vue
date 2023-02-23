@@ -165,12 +165,12 @@ async function onSubmit() {
   if (props.id) {
     await entryStore
       .editEntry(entry)
-      .then(() => $q.notify({ message: 'Entry successfully edited' }))
+      .then(() => $q.notify({ type: 'info', message: 'Entry successfully edited' }))
       .catch((error) => errorStore.throwError(error, 'Entry edit failed'))
   } else {
     await entryStore
       .addEntry(entry)
-      .then(() => $q.notify({ message: 'Entry successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Entry successfully submitted' }))
       .catch((error) => errorStore.throwError(error, 'Entry submission failed'))
   }
 
