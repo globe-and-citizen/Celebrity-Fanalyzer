@@ -60,7 +60,7 @@ function onDeleteDialog(entry) {
 function onDeleteEntry(id) {
   entryStore
     .deleteEntry(id)
-    .then(() => $q.notify({ message: 'Entry deleted' }))
+    .then(() => $q.notify({ type: 'negative', message: 'Entry deleted' }))
     .catch((error) => errorStore.throwError(error, 'Error deleting entry'))
   deleteDialog.value.show = false
 }
