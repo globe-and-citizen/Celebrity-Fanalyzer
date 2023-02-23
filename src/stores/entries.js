@@ -99,10 +99,9 @@ export const useEntryStore = defineStore('entries', {
       const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
       const entryRef = doc(db, 'entries', entryId)
       const entryImage = entries.find((entry) => entry.id === entryId).id
-      const imageRef = ref(storage, `images/entry-${entryImage}`)
 
       this._isLoading = true
-      const deleteImage = await deleteObject(imageRef)
+      const deleteImage = deleteObject(ref(storage, `images/entry-${entryImage}`))
       const deleteLikes = await likeStore.deleteAllEntryLikes(entryId)
       const deleteShares = await shareStore.deleteAllEntryShares(entryId)
       const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
@@ -127,7 +126,7 @@ export const useEntryStore = defineStore('entries', {
       const storageRef = ref(storage, `images/entry-${entryId}`)
 
       this._isLoading = true
-      await uploadBytes(null, file).finally(() => (this._isLoading = false))
+      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
       return getDownloadURL(ref(storage, storageRef))
     }
