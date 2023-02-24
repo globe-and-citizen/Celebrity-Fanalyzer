@@ -5,7 +5,7 @@
         <RouterLink v-for="(route, index) in routes" :key="index" class="col-grow flex items-center justify-center" :to="route.path">
           <q-icon :name="route.icon" size="lg" />
         </RouterLink>
-        <RouterLink v-if="userStore.isAdmin" class="col-grow flex items-center justify-center" to="/admin">
+        <RouterLink v-if="userStore.isAdmin || userStore.isWriter" class="col-grow flex items-center justify-center" to="/admin">
           <q-icon name="admin_panel_settings" size="lg" />
         </RouterLink>
       </q-toolbar-title>
