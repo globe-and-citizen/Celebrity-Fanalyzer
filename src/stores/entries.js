@@ -55,6 +55,7 @@ export const useEntryStore = defineStore('entries', {
       const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
       const prompt = promptStore.getPrompts[index]
       prompt.entries ??= []
+      // TODO 2: Possibility to add the author of an entry
       prompt.entries.push({ ...entry, author: userStore.getUser })
       promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
 
@@ -80,6 +81,7 @@ export const useEntryStore = defineStore('entries', {
       const prompt = prompts[promptIndex]
       const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
 
+      // TODO 1: Possibility to update the author of an entry
       prompt.entries[entryIndex] = { ...entry, author: userStore.getUser }
       prompts[promptIndex] = prompt
       promptStore.$patch({ _prompts: prompts })
