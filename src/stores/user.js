@@ -19,6 +19,7 @@ export const useUserStore = defineStore('user', {
     getAdmins: (getters) => getters.getUsers.filter((user) => user.role === 'Admin'),
     getAdminsAndWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer'),
     getUser: (state) => state._user,
+    getUserById: (getters) => (id) => getters.getUsers.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
