@@ -196,12 +196,12 @@ async function onSubmit() {
   if (props.id) {
     await promptStore
       .editPrompt(prompt)
-      .then(() => $q.notify({ message: 'Prompt successfully edited' }))
+      .then(() => $q.notify({ type: 'info' ,message: 'Prompt successfully edited' }))
       .catch((error) => errorStore.throwError(error, 'Prompt edit failed'))
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive' ,message: 'Prompt successfully submitted' }))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 

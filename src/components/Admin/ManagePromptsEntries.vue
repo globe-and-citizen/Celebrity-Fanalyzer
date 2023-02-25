@@ -82,7 +82,7 @@ function openDeleteDialog(prompt) {
 function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
-    .then(() => $q.notify({ message: 'Prompt successfully deleted' }))
+    .then(() => $q.notify({ type: 'negative', message: 'Prompt successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
 
   deleteDialog.value.show = false
