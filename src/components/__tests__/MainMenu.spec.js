@@ -18,11 +18,12 @@ describe('Main Menu Component', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
-    const userString = '{"sub": "whatSubout?", "email": "algae.peach.153@example.com", "email_verified": true}'
+    const userString = '{"sub": "WCeN1oLBMndoLKzNBCS7RccV9cz1?", "email": "algae.peach.153@example.com", "email_verified": true}'
     const credential = GoogleAuthProvider.credential(userString)
     const result = await signInWithCredential(auth, credential)
     const isNewUser = getAdditionalUserInfo(result)?.isNewUser
     const { email, displayName, photoURL, uid } = result.user
+    console.log(result.user)
     if (isNewUser) {
       try {
         await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
@@ -35,9 +36,9 @@ describe('Main Menu Component', () => {
 
   it('should display the admin panel if the user logged has the admin role', async () => {
     const userStore = useUserStore()
-    const admin = userStore.isAdmin
+    const user = userStore.getUser
 
-    expect(admin).toBe(true)
+    expect(user.role).toBe('admin')
     let localUserString = localStorage.getItem('user')
     expect(localUserString.indexOf('role')).toBeTruthy()
 
@@ -46,7 +47,6 @@ describe('Main Menu Component', () => {
     }
 
     const wrapper = mount(MainMenu)
-
-    expect(wrapper.find('[to="/admin"]').exists()).toEqual(true)
+    expect(wrapper.html().indexOf('admin_panel_settings')).toBeGreaterThan(-1)
   })
 })
