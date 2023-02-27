@@ -38,10 +38,13 @@
         </h3>
         <p>
           Every month, the team at Celebrity Fanalyzer hosts an essay and/or art contest. There is a Prompt on the subject of a celebrity
-          and participants give their opinion. It's that simple! Prompts introduce the topic introductions and entries are where thoughts
-          are shared and discussed.
+          and participants give their opinion. It's that simple!
+          <i>Prompts</i>
+          introduce a topic and
+          <i>Entries</i>
+          are where thoughts are shared and discussed.
         </p>
-        <p>All submissions are original artwork and essays.</p>
+        <p>All submissions, artwork and essays, are originals.</p>
         <h3 class="text-bold text-h6">But Why?!</h3>
         <p>
           Celebrity Fanalyzer is the first iteration of a multi year endeavor to produce an
@@ -67,8 +70,12 @@
           Celebrity Fanalyzer cannot produce anthrograms in its current form. To do this, a technological solution which scrubs user data of
           all identifiers, is necessary. In fact, Celebrity Fanalyzer is one of few applications THAT DOES NOT WANT YOUR PERSONAL DATA.
           Ultimately, our goal is to launch the application behind a custom built anonymizing reverse proxy we call “Layer 8.” Once
-          launched, this specialized server will scrub all personally identifying information from incoming traffic separating a user's
-          content choices from their identity.
+          launched, this specialized server will scrub all personally identifying information from incoming traffic and thereby ireversibly
+          separate a user's
+          <i>online</i>
+          identity from their
+          <i>true</i>
+          identity.
         </p>
         <p>
           Following the launch and debugging of Layer 8, Celebrity Fanalyzer is to be recast as a general news website entitled “Globe &
@@ -114,14 +121,14 @@
               </q-card>
             </q-expansion-item>
 
-            <q-expansion-item icon="assessment" label="Connect C.F. to Layer 8" caption="2024">
+            <q-expansion-item icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8" caption="2024">
               <q-card>
                 <q-card-section>
                   How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
                   centralized process but this, of course, means only a single perspective is represented. A decentralize model of "better"
                   is necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast amounts of anonymous
                   data to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer is to-be-determined.
-                  Give us your thoughts!
+                  Give us your thoughts! Give us your feedback!
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -150,7 +157,7 @@
           <p>
             Want to communicate with the team here at Celebrity Fanalyzer? Contact us through a message on our Discord server: give an
             opinion, suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you
-            want to get involved in shaping the future of the application, reach out to us via discord:
+            want to get involved in shaping the future of the application, reach out to us via Discord:
           </p>
           <q-btn flat round icon="img:/icons/discord.svg" href="https://discord.gg/z4P3UrhhSH" size="xl" target="_blank">
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
