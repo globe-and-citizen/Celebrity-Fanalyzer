@@ -21,7 +21,7 @@ export const useUserStore = defineStore('user', {
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     getUsers: (state) => state._users,
-    isAdmin: (getters) => getters.getUser.role.toLowerCase() === 'admin',
+    isAdmin: (getters) => getters.getUser.role === 'Admin',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading
   },
