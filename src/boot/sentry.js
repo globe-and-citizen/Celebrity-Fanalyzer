@@ -6,12 +6,14 @@ export default boot(async ({ app, router }) => {
   Sentry.init({
     app,
     dsn: import.meta.env.VITE_SENTRY_DNS,
+    replaysOnErrorSampleRate: 1.0,
     // logErrors:true,
     integrations: [
       new BrowserTracing({
         routingInstrumentation: Sentry.vueRouterInstrumentation(router),
         tracingOrigins: ['localhost', 'my-site-url.com', /^\//]
-      })
+      }),
+      new Sentry.Replay()
     ],
 
     tracesSampleRate: 1.0
