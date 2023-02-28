@@ -49,19 +49,20 @@ export const useEntryStore = defineStore('entries', {
       const promptId = entry.prompt.value
       const entryRef = doc(db, 'entries', entry.id)
 
+      entry.author = doc(db, 'users', entry.author.value)
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
-      const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
-      const prompt = promptStore.getPrompts[index]
-      prompt.entries ??= []
-      prompt.entries.push({ ...entry, author: userStore.getUser })
-      promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
-
-      entry.author = userStore.getUserRef
-
       this._isLoading = true
-      await setDoc(entryRef, entry)
+      await setDoc(entryRef, entry).then(() => {
+        const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
+        const prompt = promptStore.getPrompts[index]
+        prompt.entries ??= []
+
+        entry.author = userStore.getUserById(entry.author.id)
+        prompt.entries.push({ ...entry, author: entry.author })
+        promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
+      })
 
       await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
       this._isLoading = false
@@ -71,23 +72,26 @@ export const useEntryStore = defineStore('entries', {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
-      const promptId = entry.prompt.value
+      entry.author = doc(db, 'users', entry.author.value)
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.updated = Timestamp.fromDate(new Date())
-
-      const prompts = promptStore.getPrompts
-      const promptIndex = prompts.findIndex((prompt) => prompt.id === promptId)
-      const prompt = prompts[promptIndex]
-      const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
-
-      prompt.entries[entryIndex] = { ...entry, author: userStore.getUser }
-      prompts[promptIndex] = prompt
-      promptStore.$patch({ _prompts: prompts })
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      }).finally(() => (this._isLoading = false))
+      })
+        .then(() => {
+          const prompts = promptStore.getPrompts
+          const promptIndex = prompts.findIndex((prompt) => prompt.id === entry.prompt.id)
+          const prompt = prompts[promptIndex]
+          const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
+
+          entry.author = userStore.getUserById(entry.author.id)
+          prompt.entries[entryIndex] = { ...entry, author: entry.author }
+          prompts[promptIndex] = prompt
+          promptStore.$patch({ _prompts: prompts })
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async deleteEntry(entryId) {

@@ -13,7 +13,6 @@ const { sentryVitePlugin } = require('@sentry/vite-plugin')
 const path = require('path')
 
 require('dotenv').config({ path: path.resolve(__dirname, '.env') })
-
 module.exports = configure(function (ctx) {
   return {
     eslint: {
@@ -74,8 +73,8 @@ module.exports = configure(function (ctx) {
       extendViteConf(viteConf) {
         viteConf.plugins.push(
           sentryVitePlugin({
-            org: 'global-citizen-g6',
-            project: 'celebrity-fanalyzer',
+            org: process.env.VITE_SENTRY_ORG,
+            project: process.env.VITE_SENTRY_PROJECT,
             // Specify the directory containing build artifacts
             include: './dist',
             // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
