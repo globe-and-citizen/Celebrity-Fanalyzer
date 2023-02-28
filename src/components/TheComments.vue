@@ -231,7 +231,7 @@ async function addComment() {
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
-      $q.notify({ message: 'Comment successfully submitted', color: 'green' })
+      $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }
@@ -252,7 +252,7 @@ function editInput(commentId) {
 async function editComment(commentId, editedComment) {
   await commentStore
     .editComment(props.entry.id, commentId, editedComment, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully edited!' }))
+    .then(() => $q.notify({ type: 'info', message: 'Comment successfully edited!' }))
     .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
 }
@@ -260,7 +260,7 @@ async function editComment(commentId, editedComment) {
 async function deleteComment(commentParentId, commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
+    .then(() => $q.notify({ type: 'negative', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
   childComments.value = []
@@ -303,7 +303,7 @@ async function addReply(commentId) {
     .addReply(props.entry.id, commentId, reply)
     .then(() => {
       reply.text = ''
-      $q.notify({ message: 'Reply successfully submitted', color: 'green' })
+      $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
 

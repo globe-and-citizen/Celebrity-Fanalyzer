@@ -30,6 +30,7 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
+        <q-select :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="prompt.author" />
         <q-input counter hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
         <q-field counter label="Description" maxlength="400" v-model="prompt.description">
           <template v-slot:control>
@@ -113,8 +114,8 @@
 
 <script setup>
 import { date, useQuasar } from 'quasar'
-import { useErrorStore, usePromptStore } from 'src/stores'
-import { reactive, ref, watchEffect } from 'vue'
+import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
@@ -122,7 +123,9 @@ const props = defineProps(['author', 'categories', 'created', 'date', 'descripti
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
+const authorOptions = reactive([])
 const dataKey = ref(Date.now())
 const editorRef = ref(null)
 const imageModel = ref([])
@@ -130,6 +133,7 @@ const prompt = reactive({})
 
 watchEffect(() => {
   if (props.id) {
+    prompt.author = { label: props.author.displayName, value: props.author.uid }
     prompt.categories = props.categories
     prompt.date = props.date
     prompt.description = props.description
@@ -143,6 +147,10 @@ watchEffect(() => {
     prompt.image = ''
     prompt.title = ''
   }
+})
+
+onMounted(() => {
+  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function onUpdateMonth() {
@@ -196,12 +204,12 @@ async function onSubmit() {
   if (props.id) {
     await promptStore
       .editPrompt(prompt)
-      .then(() => $q.notify({ message: 'Prompt successfully edited' }))
+      .then(() => $q.notify({ type: 'info', message: 'Prompt successfully edited' }))
       .catch((error) => errorStore.throwError(error, 'Prompt edit failed'))
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 

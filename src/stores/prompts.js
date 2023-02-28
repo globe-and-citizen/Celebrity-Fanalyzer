@@ -163,26 +163,32 @@ export const usePromptStore = defineStore('prompts', {
     async addPrompt(prompt) {
       const userStore = useUserStore()
 
-      prompt.author = userStore.getUserRef
+      prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
       prompt.id = prompt.date
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
-          prompt.author = userStore.getUser
+          prompt.author = userStore.getUserById(prompt.author.id)
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
         .finally(() => (this._isLoading = false))
     },
 
     async editPrompt(prompt) {
+      const userStore = useUserStore()
+
+      prompt.author = doc(db, 'users', prompt.author.value)
+      prompt.updated = Timestamp.fromDate(new Date())
+
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
       })
         .then(() => {
           const index = this.getPrompts.findIndex((p) => p.id === prompt.id)
+          prompt.author = userStore.getUserById(prompt.author.id)
           this.$patch({
             _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
           })
@@ -203,7 +209,8 @@ export const usePromptStore = defineStore('prompts', {
           await entryStore.deleteEntry(entry.id)
         }
       }
-      const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
+
+      const deleteImage = deleteObject(ref(storage, `images/prompt-${id}`))
       const deleteLikes = await likeStore.deleteAllPromptLikes(id)
       const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
       const deleteShares = await shareStore.deleteAllPromptShares(id)
