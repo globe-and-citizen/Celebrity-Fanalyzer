@@ -12,7 +12,7 @@ const { configure } = require('quasar/wrappers')
 const { sentryVitePlugin } = require('@sentry/vite-plugin')
 const path = require('path')
 
-require('dotenv').config({ path: path.resolve(__dirname, '.env.development') })
+require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 module.exports = configure(function (ctx) {
   return {
     eslint: {
