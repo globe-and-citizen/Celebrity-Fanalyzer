@@ -7,6 +7,7 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
+        <q-select :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="entry.author" />
         <q-select
           behavior="menu"
           counter
@@ -92,8 +93,8 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { reactive, ref, watchEffect } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
@@ -102,7 +103,9 @@ const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
+const authorOptions = reactive([])
 const editorRef = ref(null)
 const entry = reactive({})
 const imageModel = ref([])
@@ -110,6 +113,7 @@ const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt
 
 watchEffect(() => {
   if (props.id) {
+    entry.author = { label: props.author.displayName, value: props.author.uid }
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
@@ -121,6 +125,10 @@ watchEffect(() => {
     entry.image = ''
     entry.title = ''
   }
+})
+
+onMounted(() => {
+  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function uploadPhoto() {
