@@ -20,14 +20,29 @@ import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/s
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _isLoading: false
+    _isLoading: false,
+    _entries: []
   }),
 
   getters: {
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    getEntries: (state) => state._entries,
   },
 
   actions: {
+    async fetchEntry() {
+      this._isLoading = true
+      await getDocs(collection(db, 'entries'))
+        .then(async (querySnapshot) => {
+          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          entries.reverse()
+
+          this._entries = []
+          this.$patch({ _entries: entries })
+        })
+        .finally(() => (this._isLoading = false))
+    },
     async fetchEntryBySlug(slug) {
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
