@@ -23,7 +23,7 @@ describe('Main Menu Component', () => {
     const result = await signInWithCredential(auth, credential)
     const isNewUser = getAdditionalUserInfo(result)?.isNewUser
     const { email, displayName, photoURL, uid } = result.user
-    console.log(result.user)
+
     if (isNewUser) {
       try {
         await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
