@@ -75,9 +75,11 @@
         >
           <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
         </q-btn>
-        <q-btn flat icon="chat_bubble_outline" rounded @click="showReplies(comment.id)" />
+        <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
+          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+        </q-btn>
         <q-slide-transition>
-          <div class="q-px-md" v-show="expanded && comment.id === commentId">
+          <div class="q-px-md q-mt-md" v-show="expanded && comment.id === commentId">
             <div v-if="commentStore.isLoading" class="text-center">
               <q-spinner color="primary" size="3em" />
             </div>
@@ -133,7 +135,7 @@
                     standout="bg-secondary text-white"
                     v-model="childComment.text"
                   >
-                    <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+                    <q-btn class="cursor-pointer" id="replyInput" color="grey-6" flat icon="send" round type="submit" />
                   </q-input>
                 </q-form>
                 <div v-else class="q-my-sm text-body2">
@@ -182,7 +184,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useCommentStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -196,6 +198,7 @@ const props = defineProps({
 
 const $q = useQuasar()
 const commentStore = useCommentStore()
+const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const childComments = ref([])
@@ -212,15 +215,25 @@ onMounted(async () => {
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 })
 
+const replyCounter = (id) => {
+  let count = 0
+  for (const comment of props.comments) {
+    if (id === comment.parentId) {
+      count++
+    }
+  }
+  return count
+}
+
 async function addComment() {
   await commentStore
     .addComment(myComment, props.entry)
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
-      $q.notify({ message: 'Comment successfully submitted' })
+      $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
-    .catch(() => $q.notify({ message: 'Comment submission failed!' }))
+    .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }
 
 function likeComment(commentId) {
@@ -239,22 +252,33 @@ function editInput(commentId) {
 async function editComment(commentId, editedComment) {
   await commentStore
     .editComment(props.entry.id, commentId, editedComment, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully edited!' }))
-    .catch(() => $q.notify({ message: 'Failed to edit comment' }))
+    .then(() => $q.notify({ type: 'info', message: 'Comment successfully edited!' }))
+    .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
 }
 
 async function deleteComment(commentParentId, commentId) {
   await commentStore
     .deleteComment(props.entry.id, commentId, userId.value)
-    .then(() => $q.notify({ message: 'Comment successfully deleted' }))
-    .catch(() => $q.notify({ message: 'Failed to delete comment' }))
+    .then(() => $q.notify({ type: 'negative', message: 'Comment successfully deleted' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentParentId)
-  childComments.value = commentStore.getChildComments
+  childComments.value = []
+  for (const comment of props.comments) {
+    if (commentParentId === comment.parentId) {
+      childComments.value.push(comment)
+    } else {
+      continue
+    }
+  }
+}
+
+async function replyInput(parentId) {
+  reply.parentId = parentId
 }
 
 async function showReplies(id) {
+  childComments.value = []
   if (commentId.value === id) {
     expanded.value = false
     commentId.value = ''
@@ -265,8 +289,13 @@ async function showReplies(id) {
 
   reply.parentId = id
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, id)
-  childComments.value = commentStore.getChildComments
+  for (const comment of props.comments) {
+    if (id === comment.parentId) {
+      childComments.value.push(comment)
+    } else {
+      continue
+    }
+  }
 }
 
 async function addReply(commentId) {
@@ -274,12 +303,17 @@ async function addReply(commentId) {
     .addReply(props.entry.id, commentId, reply)
     .then(() => {
       reply.text = ''
-      $q.notify({ message: 'Reply successfully submitted' })
+      $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
     })
-    .catch((err) => $q.notify({ message: 'Reply submission failed!' + err }))
-  window.scrollTo(0, document.body.scrollHeight)
+    .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
 
-  await commentStore.fetchCommentsByparentId(router.currentRoute.value.href, commentId)
-  childComments.value = commentStore.getChildComments
+  childComments.value = []
+  for (const comment of props.comments) {
+    if (commentId === comment.parentId) {
+      childComments.value.push(comment)
+    } else {
+      continue
+    }
+  }
 }
 </script>

@@ -1,0 +1,32 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up NodeJS 18.14.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.14.0
+          cache: 'npm'
+
+      - name: Start Emulators and Run Tests
+        env:
+          VITE_RELEASE_STAGE: testing
+        run: |
+          npm ci
+          npm install --save firebase-tools
+          nohup npm run emulators &> emulators.log &
+          sleep 1m
+          npm run test

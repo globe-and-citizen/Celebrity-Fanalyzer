@@ -1,23 +1,15 @@
 <template>
-  <q-footer elevated>
-    <q-toolbar class="bg-white">
-      <q-toolbar-title class="flex self-stretch">
-        <RouterLink v-for="(route, index) in routes" :key="index" class="col-grow flex items-center justify-center" :to="route.path">
-          <q-icon :name="route.icon" size="lg" />
-        </RouterLink>
-        <RouterLink v-if="userStore.isAdmin" class="col-grow flex items-center justify-center" to="/admin">
-          <q-icon name="admin_panel_settings" size="lg" />
-        </RouterLink>
-      </q-toolbar-title>
-    </q-toolbar>
+  <q-footer class="bg-white" elevated>
+    <q-tabs active-class="text-primary" align="justify" class="tabs text-secondary" switch-indicator>
+      <q-route-tab v-for="(route, index) in routes" exact :icon="route.icon" :key="index" :to="route.path" />
+      <q-route-tab v-if="userStore.isAdmin || userStore.isWriter" exact icon="admin_panel_settings" to="/admin" />
+    </q-tabs>
   </q-footer>
 </template>
 
 <script setup>
 import { useUserStore } from 'src/stores'
-
 const userStore = useUserStore()
-
 const routes = [
   { icon: 'home', path: '/' },
   { icon: 'search', path: '/search' },
@@ -26,21 +18,15 @@ const routes = [
 ]
 </script>
 
-<style scoped lang="scss">
-a {
-  text-decoration: none;
-  transition: all 0.3s;
-  & .q-icon {
-    color: gray;
-  }
+<style lang="scss">
+.tabs .q-tab__icon {
+  display: grid;
+  font-size: 2rem;
+  height: 3.5rem !important;
+}
 
-  &.router-link-exact-active {
-    border-top: 2.5px solid #e54757;
-
-    & .q-icon {
-      color: #e54757;
-      text-decoration: none;
-    }
-  }
+.tabs .q-tabs__arrow--left,
+.tabs .q-tabs__arrow--right {
+  display: none;
 }
 </style>

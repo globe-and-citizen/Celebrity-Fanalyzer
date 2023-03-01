@@ -37,6 +37,17 @@ It is not necessary to configure anything related to this.
 npm run dev
 ```
 
+### Test your code
+
+Before submitting your PR you need to make sure that nothing has been broken.
+For that, you need to run the tests:
+
+```bash
+npm install -g firebase-tools # In case you don't have firebase-tools installed
+npm run emulators
+npm run test
+```
+
 ### Create a Pull request
 
 Once you're done developing your updates, `git push` your changes back to your personal branch.

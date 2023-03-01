@@ -28,9 +28,6 @@ export const useStatStore = defineStore('stats', {
           .then((data) => {
             this._stats.push({ stat, data })
           })
-          .catch((error) => {
-            console.error(error)
-          })
       })
     }
   }

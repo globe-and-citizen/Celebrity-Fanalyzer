@@ -9,7 +9,10 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers')
+const { sentryVitePlugin } = require('@sentry/vite-plugin')
+const path = require('path')
 
+require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 module.exports = configure(function (ctx) {
   return {
     eslint: {
@@ -27,7 +30,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli/boot-files
-    boot: [],
+    boot: ['/sentry.js'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.css'],
@@ -47,6 +50,7 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
+      sourceMap: true,
       target: {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
@@ -67,10 +71,32 @@ module.exports = configure(function (ctx) {
       // polyfillModulePreload: true,
 
       extendViteConf(viteConf) {
+        viteConf.plugins.push(
+          sentryVitePlugin({
+            org: process.env.VITE_SENTRY_ORG,
+            project: process.env.VITE_SENTRY_PROJECT,
+            // Specify the directory containing build artifacts
+            include: './dist',
+            // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
+            // and needs the `project:releases` and `org:read` scopes
+            authToken: process.env.VITE_SENTRY_AUTH_TOKEN
+          })
+        )
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {
-              const chunks = ['@quasar/extras', 'firebase', 'pinia', 'quasar', 'vue', 'vue-router']
+              const chunks = [
+                '@quasar/extras',
+                '@sentry/tracing',
+                '@sentry/vue',
+                'echarts',
+                'firebase',
+                'pinia',
+                'quasar',
+                'vue',
+                'vue-echarts',
+                'vue-router'
+              ]
               if (id.includes('/node_modules/')) {
                 for (const chunkName of chunks) {
                   if (id.includes(chunkName)) {

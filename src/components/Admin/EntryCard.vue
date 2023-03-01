@@ -1,12 +1,13 @@
 <template>
   <q-card>
-    <q-card-section class="row items-center no-wrap">
+    <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
       <q-btn flat round icon="close" v-close-popup />
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
+        <q-select :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="entry.author" />
         <q-select
           behavior="menu"
           counter
@@ -61,9 +62,9 @@
           accept=".jpg, image/*"
           counter
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 5MB'"
+          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 1MB'"
           label="Image"
-          :max-total-size="5242880"
+          :max-total-size="1048487"
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
@@ -92,16 +93,19 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, usePromptStore } from 'src/stores'
-import { reactive, ref, watchEffect } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
+const authorOptions = reactive([])
 const editorRef = ref(null)
 const entry = reactive({})
 const imageModel = ref([])
@@ -109,6 +113,7 @@ const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt
 
 watchEffect(() => {
   if (props.id) {
+    entry.author = { label: props.author.displayName, value: props.author.uid }
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
@@ -120,6 +125,10 @@ watchEffect(() => {
     entry.image = ''
     entry.title = ''
   }
+})
+
+onMounted(() => {
+  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function uploadPhoto() {
@@ -158,19 +167,19 @@ async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
 
   if (Object.keys(imageModel.value).length) {
-    entryStore.uploadImage(imageModel.value, entry.id)
+    entryStore.uploadImage(imageModel.value, entry.id).catch((error) => errorStore.throwError(error, 'Image upload failed'))
   }
 
   if (props.id) {
     await entryStore
       .editEntry(entry)
-      .then(() => $q.notify({ message: 'Entry successfully edited' }))
-      .catch(() => $q.notify({ message: 'Entry edit failed' }))
+      .then(() => $q.notify({ type: 'info', message: 'Entry successfully edited' }))
+      .catch((error) => errorStore.throwError(error, 'Entry edit failed'))
   } else {
     await entryStore
       .addEntry(entry)
-      .then(() => $q.notify({ message: 'Entry successfully submitted' }))
-      .catch(() => $q.notify({ message: 'Entry submission failed' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Entry successfully submitted' }))
+      .catch((error) => errorStore.throwError(error, 'Entry submission failed'))
   }
 
   emit('hideDialog')

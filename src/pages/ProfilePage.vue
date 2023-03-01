@@ -1,15 +1,9 @@
 <template>
-  <q-header>
-    <q-toolbar class="bg-white q-px-lg shadow-1">
-      <q-toolbar-title>
-        <b class="text-secondary">Profile</b>
-      </q-toolbar-title>
-    </q-toolbar>
-  </q-header>
-  <q-page v-if="authStore.isLoading || userStore.isLoading" class="q-my-xl text-center">
+  <TheHeader notification-btn title="Profile" />
+  <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </q-page>
-  <q-page v-if="!userStore.isAuthenticated" class="column content-center flex justify-center">
+  <q-page v-if="!user.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
     <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
       <q-avatar size="sm">
@@ -45,7 +39,7 @@
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel class="q-gutter-y-md" name="profile">
         <q-input v-model="user.displayName" label="Name" />
-        <q-input v-model="user.bio" label="Bio" />
+        <q-input v-model="user.bio" maxlength="150" label="Bio" />
         <h3 class="q-mt-lg text-bold text-h5 text-secondary">MetaData</h3>
         <q-input v-model="user.data1" label="Data 1" />
         <q-input v-model="user.data2" label="Data 2" />
@@ -60,43 +54,42 @@
 </template>
 
 <script setup>
-import { LocalStorage, useQuasar } from 'quasar'
-import { useAuthStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref } from 'vue'
+import { useQuasar } from 'quasar'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useErrorStore, useUserStore } from 'src/stores'
+import { ref } from 'vue'
 
 const $q = useQuasar()
-const authStore = useAuthStore()
+const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const tab = ref('profile')
-const user = reactive({ ...userStore.getUser })
 const newPhoto = ref([])
+const user = ref(userStore.getUser)
 
-onMounted(() => {
-  if (!userStore.isAuthenticated) {
-    LocalStorage.remove('user')
-  }
+userStore.$subscribe((_mutation, state) => {
+  user.value = state._user
 })
 
-function googleSignIn() {
-  authStore.googleSignIn().catch((error) => $q.notify({ icon: 'error', message: error }))
+async function googleSignIn() {
+  await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
 
 function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(newPhoto.value)
-  reader.onload = () => (user.photoURL = reader.result)
+  reader.onload = () => (user.value.photoURL = reader.result)
 }
 
 function save() {
   userStore
-    .updateProfile(user)
-    .then($q.notify({ message: 'Profile successfully updated' }))
-    .catch((error) => $q.notify({ icon: 'error', message: error }))
+    .updateProfile(user.value)
+    .then($q.notify({ type: 'info', message: 'Profile successfully updated' }))
+    .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
 
 function logout() {
-  authStore.logout()
+  userStore.logout().catch((error) => errorStore.throwError(error))
 }
 </script>
 

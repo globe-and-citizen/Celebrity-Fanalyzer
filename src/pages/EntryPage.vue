@@ -7,17 +7,12 @@
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
 
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <!-- Panel 1: Entry -->
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
-        <q-header>
-          <q-toolbar class="bg-white q-px-lg shadow-1">
-            <q-toolbar-title>
-              <b class="text-secondary">Entry Page</b>
-            </q-toolbar-title>
-          </q-toolbar>
-        </q-header>
+        <TheHeader title="Entry Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
-        <section class="q-pa-md" style="margin-top: 100%">
+        <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
           <div class="q-mb-md">
@@ -31,60 +26,47 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="comments.length" @click="tab = 'comments'">
+          <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-
         <q-separator />
       </q-page>
     </q-tab-panel>
+    <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
-      <q-header>
-        <q-toolbar class="bg-white q-px-lg shadow-1">
-          <q-toolbar-title>
-            <b class="text-secondary">Stats Page</b>
-          </q-toolbar-title>
-        </q-toolbar>
-      </q-header>
+      <TheHeader title="Anthrogram" />
       <q-page>
         <section>
-          <h1 class="q-mt-none text-bold text-h4">{{ entry?.title }}</h1>
-
-          <div class="flex items-center q-mb-xl">
-            <q-avatar size="6rem">
-              <img :src="entry.author.photoURL" alt="" />
+          <h1 class="q-mt-none text-bold text-h5">{{ entry?.title }}</h1>
+          <div class="flex no-wrap items-center q-mb-xl">
+            <q-avatar size="4rem">
+              <img :src="entry.author.photoURL" alt="Author Image" />
             </q-avatar>
             <p class="q-mb-none q-ml-md text-h5">{{ entry.author.displayName }}</p>
           </div>
-
           <q-tabs
-            v-model="type"
-            dense
-            class="text-grey q-mb-xl"
             active-color="primary"
-            indicator-color="primary"
             align="justify"
+            class="text-grey q-mb-xl"
+            dense
+            indicator-color="primary"
             narrow-indicator
+            v-model="type"
           >
             <q-tab name="day" label="Days" />
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
         </section>
       </q-page>
     </q-tab-panel>
+    <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
-      <q-header>
-        <q-toolbar class="bg-white q-px-lg shadow-1">
-          <q-toolbar-title>
-            <b class="text-secondary">Comments</b>
-          </q-toolbar-title>
-        </q-toolbar>
-      </q-header>
+      <TheHeader title="Comments" />
       <q-page>
         <TheComments :comments="comments" :entry="entry" />
       </q-page>
@@ -93,18 +75,21 @@
 </template>
 
 <script setup>
+import { Timestamp } from 'firebase/firestore'
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
-import { useCommentStore, useEntryStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { getStats } from 'src/utils/date'
+import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getStats } from 'src/utils/date'
-import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
 const commentStore = useCommentStore()
+const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
@@ -118,6 +103,7 @@ const countShares = ref(0)
 const entry = ref({})
 const tab = ref('entry')
 const type = ref('day')
+const count = ref(0)
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
@@ -132,14 +118,32 @@ onMounted(async () => {
     return
   }
 
-  await commentStore.fetchComments(router.currentRoute.value.href)
+  await commentStore.fetchComments(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
 
-  await likeStore.getAllEntryLikesDislikes(entry.value.id)
+  await likeStore.getAllEntryLikesDislikes(entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.countEntryShares(entry.value.id)
+  await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
   countShares.value = shareStore.getShares
+
+  for (const comment of comments.value) {
+    if (comment.parentId === undefined) {
+      count.value++
+    } else {
+      continue
+    }
+  }
 })
+
+function graphData(type) {
+  if (type === 'day') {
+    return formatDayStats(chartData.value.dayStats)
+  }
+  if (type === 'week') {
+    return formatWeekStats(chartData.value.weekStats)
+  }
+  return formatAllStats(chartData.value.allStats)
+}
 
 commentStore.$subscribe((_mutation, state) => {
   comments.value = state._comments
@@ -157,7 +161,7 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
-  chartData.value = { ...{ promptId: entry.value.id, weekStats, dayStats, allStats }, type: type.value }
+  chartData.value = { weekStats, dayStats, allStats }
 })
 
 shareStore.$subscribe((_mutation, state) => {
@@ -165,15 +169,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likeEntry(entry.value.id)
+  await likeStore.likeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikeEntry(entry.value.id)
+  await likeStore.dislikeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.shareEntry(entry.value.id, socialNetwork)
+  shareStore.shareEntry(entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 
@@ -183,6 +187,7 @@ function onShare(socialNetwork) {
   top: 65px;
   z-index: -1;
 }
+
 .tab-selector {
   margin-bottom: 4rem;
   z-index: 3;

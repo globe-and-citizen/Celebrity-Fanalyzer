@@ -61,29 +61,28 @@
     <q-tab-panel name="stats" class="bg-white">
       <q-page>
         <section>
-          <h1 class="q-mt-none text-bold text-h4">{{ prompt?.title }}</h1>
-
-          <div class="flex items-center q-mb-xl">
-            <q-avatar size="6rem">
+          <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
+          <div class="flex no-wrap items-center q-mb-xl">
+            <q-avatar size="4rem">
               <img :src="prompt.author.photoURL" alt="" />
             </q-avatar>
-            <p class="q-mb-none q-ml-md text-h5">{{ prompt.author.displayName }}</p>
+            <p class="q-mb-none q-ml-md text-h6 text-weight-light">{{ prompt.author.displayName }}</p>
           </div>
 
           <q-tabs
-            v-model="type"
-            dense
-            class="text-grey q-mb-xl"
             active-color="primary"
-            indicator-color="primary"
             align="justify"
+            class="text-grey q-mb-xl"
+            dense
+            indicator-color="primary"
             narrow-indicator
+            v-model="type"
           >
             <q-tab name="day" label="Days" />
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="{ ...chartData, type: type }" title="Likes & Dislikes" />
+          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -91,17 +90,19 @@
 </template>
 
 <script setup>
+import { Timestamp } from 'firebase/firestore'
 import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { getStats, monthYear } from 'src/utils/date'
+import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Timestamp } from 'firebase/firestore'
 
 const router = useRouter()
 
+const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
@@ -114,30 +115,44 @@ const prompt = ref({})
 const tab = ref('prompt')
 const type = ref('day')
 
+function graphData(type) {
+  if (type === 'day') {
+    return formatDayStats(chartData.value.dayStats)
+  }
+  if (type === 'week') {
+    return formatWeekStats(chartData.value.weekStats)
+  }
+  return formatAllStats(chartData.value.allStats)
+}
+
 onMounted(async () => {
   if (router.currentRoute.value.href === '/month') {
-    await promptStore.fetchMonthPrompt()
+    await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
     prompt.value = promptStore.getMonthPrompt
   }
   if (router.currentRoute.value.params.year) {
     await promptStore
       .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
       .then((res) => (prompt.value = res))
-      .catch(() => (prompt.value = null))
+      .catch((error) => {
+        prompt.value = null
+        errorStore.throwError(error)
+      })
   }
   if (router.currentRoute.value.params.slug) {
     await promptStore
       .fetchPromptBySlug(router.currentRoute.value.params.slug)
       .then((res) => (prompt.value = res))
-      .catch(() => (prompt.value = null))
+      .catch((error) => {
+        prompt.value = null
+        errorStore.throwError(error)
+      })
   }
-
   if (!prompt.value) {
     router.push('/404')
     return
   }
-
-  await likeStore.getAllPromptLikesDislikes(prompt.value.id)
+  await likeStore.getAllPromptLikesDislikes(prompt.value.id).catch((error) => errorStore.throwError(error))
 })
 
 likeStore.$subscribe((_mutation, state) => {
@@ -152,7 +167,7 @@ likeStore.$subscribe((_mutation, state) => {
       dislikes: state._dislikes.length
     }
   ]
-  chartData.value = { ...{ promptId: prompt.value.id, weekStats, dayStats, allStats }, type: type.value }
+  chartData.value = { weekStats, dayStats, allStats }
 })
 
 shareStore.$subscribe((_mutation, state) => {
@@ -160,15 +175,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likePrompt(prompt.value.id)
+  await likeStore.likePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikePrompt(prompt.value.id)
+  await likeStore.dislikePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.sharePrompt(prompt.value.id, socialNetwork)
+  shareStore.sharePrompt(prompt.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 
