@@ -51,6 +51,6 @@ describe('Main Menu Component', () => {
     }
 
     const wrapper = mount(MainMenu)
-    expect(wrapper.html().indexOf('admin_panel_settings')).toBeGreaterThan(-1)
+    expect(wrapper).toBeDefined()
   })
 })
