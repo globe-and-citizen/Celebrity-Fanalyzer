@@ -20,7 +20,13 @@ const routes = [
 
 <style lang="scss">
 .tabs .q-tab__icon {
+  display: grid;
   font-size: 2rem;
   height: 3.5rem !important;
+}
+
+.tabs .q-tabs__arrow--left,
+.tabs .q-tabs__arrow--right {
+  display: none;
 }
 </style>
