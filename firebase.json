@@ -1,17 +1,23 @@
 {
-  "hosting": {
-    "headers": [
-      {
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache"
-          }
-        ],
-        "source": "/service-worker.js"
-      }
-    ],
-    "ignore": ["**/.*", "**/node_modules/**"],
-    "public": "dist/pwa"
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

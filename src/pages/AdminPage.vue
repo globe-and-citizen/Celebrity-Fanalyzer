@@ -21,7 +21,7 @@
   </TheHeader>
   <section class="absolute-center window-width">
     <q-page padding>
-      <q-tabs align="justify" v-model="tab" class="text-secondary">
+      <q-tabs v-if="userStore.isAdmin" align="justify" v-model="tab" class="text-secondary">
         <q-tab name="posts" icon="view_list" label="Prompts & Entries" />
         <q-tab name="users" icon="people" label="Users" />
       </q-tabs>
@@ -35,7 +35,7 @@
           />
         </q-tab-panel>
 
-        <q-tab-panel name="users">
+        <q-tab-panel v-if="userStore.isAdmin" name="users">
           <ManageUsers :users="users" />
         </q-tab-panel>
       </q-tab-panels>

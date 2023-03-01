@@ -42,7 +42,7 @@ const routes = [
         component: () => import('pages/AdminPage.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-          if (userStore.isAdmin) next()
+          if (userStore.isAdmin || userStore.isWriter) next()
           else next('/')
         }
       }
