@@ -16,7 +16,7 @@
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.15.11",
-    "@sentry/tracing": "^7.39.0",
+    "@sentry/tracing": "^7.40.0",
     "@sentry/vue": "^7.39.0",
     "dotenv": "^16.0.3",
     "echarts": "^5.4.1",
