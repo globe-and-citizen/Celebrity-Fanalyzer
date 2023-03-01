@@ -35,7 +35,7 @@
       </q-tab-panel>
     </q-tab-panels>
     <TransitionGroup tag="div">
-      <TheEntries v-if="search && computedEntry.length > 0" :entries="computedEntry"/>
+      <TheEntries v-if="search && computedEntry.length > 0" :entries="computedEntry" />
     </TransitionGroup>
   </q-page>
 </template>
@@ -48,22 +48,22 @@ import { useErrorStore, usePromptStore, useEntryStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 import TheEntries from 'src/components/TheEntries.vue'
 
+const entrytStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
-const entrytStore = useEntryStore()
 
-const search = ref('')
+const entries = ref([])
 const category = ref('All')
 const categories = ref([])
 const prompts = ref([])
-const entries = ref([])
+const search = ref('')
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
     await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
   }
   if (!entrytStore.getEntries.length) {
-    await entrytStore.fetchEntry().catch((error) => errorStore.throwError(error))
+    await entrytStore.fetchEntriesCollection().catch((error) => errorStore.throwError(error))
   }
 
   const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
@@ -82,18 +82,17 @@ promptStore.$subscribe((_mutation, state) => {
 })
 
 const computedPrompt = computed(() => {
-  return prompts.value.filter((item) =>
-    item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-    item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-    item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-    item.entries.some(entry => entry.title.toLowerCase().includes(search.value.toLocaleLowerCase())) ||
-    item.categories.some(category => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return prompts.value.filter(
+    (item) =>
+      item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+      item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+      item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
+      item.entries.some((entry) => entry.title.toLowerCase().includes(search.value.toLocaleLowerCase())) ||
+      item.categories.some((category) => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
   )
 })
 const computedEntry = computed(() => {
-  return entries.value.filter((item) =>
-    item.title.toLowerCase().includes(search.value.toLocaleLowerCase())
-  )
+  return entries.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
 })
 </script>
 

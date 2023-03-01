@@ -20,17 +20,17 @@ import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/s
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _isLoading: false,
-    _entries: []
+    _entries: [],
+    _isLoading: false
   }),
 
   getters: {
-    isLoading: (state) => state._isLoading,
     getEntries: (state) => state._entries,
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchEntry() {
+    async fetchEntriesCollection() {
       this._isLoading = true
       await getDocs(collection(db, 'entries'))
         .then(async (querySnapshot) => {
