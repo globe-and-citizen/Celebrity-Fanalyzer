@@ -46,6 +46,10 @@ describe('Main Menu Component', () => {
       push: vitest.fn()
     }
 
+    if (user.role == 'admin') {
+      user.role = 'Admin'
+    }
+
     const wrapper = mount(MainMenu)
     expect(wrapper.html().indexOf('admin_panel_settings')).toBeGreaterThan(-1)
   })
