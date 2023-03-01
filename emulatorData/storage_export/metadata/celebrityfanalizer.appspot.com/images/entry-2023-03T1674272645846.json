@@ -1,0 +1,19 @@
+{
+  "name": "images/entry-2023-03T1674272645846",
+  "bucket": "celebrityfanalizer.appspot.com",
+  "contentType": "image/png",
+  "metageneration": 1,
+  "generation": 1674272674101,
+  "storageClass": "STANDARD",
+  "etag": "someETag",
+  "contentDisposition": "inline",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "47e405fa-8f70-4679-8f72-e60bb2d1f5ad"
+  ],
+  "timeCreated": "2023-01-21T03:44:34.100Z",
+  "updated": "2023-01-21T03:44:34.100Z",
+  "size": 19829,
+  "md5Hash": "rz2fWIAwBVHcuX7Yf+f1uw==",
+  "crc32c": "2430444298"
+}

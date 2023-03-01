@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from '@firebase/firestore'
+import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from 'firebase/firestore'
 import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
@@ -107,6 +107,13 @@ export const useUserStore = defineStore('user', {
         userStore.$reset()
         LocalStorage.remove('user')
         this.router.go(0)
+      })
+    },
+
+    async testing_loadUserProfile(user) {
+      await getDoc(doc(db, 'users', user.uid)).then((document) => {
+        this.$patch({ _user: { uid: document.id, ...document.data() } })
+        localStorage.setItem('user', JSON.stringify({ uid: document.id, ...document.data() }))
       })
     }
   }
