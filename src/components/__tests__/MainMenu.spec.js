@@ -23,12 +23,12 @@ describe('Main Menu Component', () => {
     const result = await signInWithCredential(auth, credential)
     const isNewUser = getAdditionalUserInfo(result)?.isNewUser
     const { email, displayName, photoURL, uid } = result.user
-    console.log(result.user)
+
     if (isNewUser) {
       try {
         await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
       } catch (e) {
-        console.log('MainMenu.spec.js error: ', e)
+        console.error('MainMenu.spec.js Error: ', e)
       }
     }
     await userStore.testing_loadUserProfile(result.user)
@@ -41,10 +41,6 @@ describe('Main Menu Component', () => {
     expect(user.role).toBe('admin')
     let localUserString = localStorage.getItem('user')
     expect(localUserString.indexOf('role')).toBeTruthy()
-
-    const mockRouter = {
-      push: vitest.fn()
-    }
 
     if (user.role == 'admin') {
       user.role = 'Admin'
