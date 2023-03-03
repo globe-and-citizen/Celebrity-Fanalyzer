@@ -9,9 +9,13 @@
     "dev": "quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
-    "test": "vitest",
+    "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
     "test:unit:coverage": "vitest run --coverage",
-    "emulators": "firebase emulators:start --project celebrityfanalizer --import emulatorData"
+    "emulators": "firebase emulators:start --project celebrityfanalizer --import emulatorData",
+    "test:e2e": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress open --e2e\"",
+    "test:e2e:ci": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress run --e2e\"",
+    "test:component": "cross-env NODE_ENV=test cypress open --component",
+    "test:component:ci": "cross-env NODE_ENV=test cypress run --component"
   },
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
@@ -22,26 +26,27 @@
     "echarts": "^5.4.1",
     "firebase": "^9.17.1",
     "jsdom": "^21.1.0",
-    "pinia-plugin-persistedstate": "^3.1.0",
     "pinia": "^2.0.32",
+    "pinia-plugin-persistedstate": "^3.1.0",
     "quasar": "^2.11.7",
     "sha1": "^1.1.1",
+    "vue": "^3.2.47",
     "vue-echarts": "^6.5.4",
-    "vue-router": "^4.1.6",
-    "vue": "^3.2.47"
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@pinia/testing": "^0.0.15",
     "@quasar/app-vite": "^1.2.1",
+    "@quasar/quasar-app-extension-testing-e2e-cypress": "^5.0.0-beta.11",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^0.1.2",
     "@sentry/vite-plugin": "^0.4.0",
     "@vitest/coverage-istanbul": "^0.28.4",
     "@vue/test-utils": "^2.3.0",
     "autoprefixer": "^10.4.13",
     "c8": "^7.13.0",
+    "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-vue": "^9.9.0",
-    "eslint": "^8.35.0",
     "jsdom": "^21.1.0",
     "postcss": "^8.4.21",
     "prettier": "^2.8.4",
@@ -52,7 +57,9 @@
     "workbox-expiration": "^6.5.4",
     "workbox-precaching": "^6.5.4",
     "workbox-routing": "^6.5.4",
-    "workbox-strategies": "^6.5.4"
+    "workbox-strategies": "^6.5.4",
+    "cypress": "^12.2.0",
+    "eslint-plugin-cypress": "^2.12.1"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",
