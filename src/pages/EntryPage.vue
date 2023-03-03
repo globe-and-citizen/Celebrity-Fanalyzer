@@ -123,7 +123,7 @@ onMounted(async () => {
 
   await likeStore.getAllEntryLikesDislikes(entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
+  await shareStore.countShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   countShares.value = shareStore.getShares
 
   for (const comment of comments.value) {

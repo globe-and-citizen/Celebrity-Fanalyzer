@@ -15,6 +15,14 @@ export const useShareStore = defineStore('shares', {
   },
 
   actions: {
+    async countShares(collectionName, documentId) {
+      const sharesCollection = collection(db, collectionName, documentId, 'shares')
+
+      const snapshot = await getCountFromServer(sharesCollection)
+
+      this._shares = snapshot.data().count
+    },
+
     async countPromptShares(promptId) {
       const sharesCollection = collection(db, 'prompts', promptId, 'shares')
 

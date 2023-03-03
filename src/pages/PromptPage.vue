@@ -152,7 +152,10 @@ onMounted(async () => {
     router.push('/404')
     return
   }
+
   await likeStore.getAllPromptLikesDislikes(prompt.value.id).catch((error) => errorStore.throwError(error))
+
+  await shareStore.countShares('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 })
 
 likeStore.$subscribe((_mutation, state) => {
