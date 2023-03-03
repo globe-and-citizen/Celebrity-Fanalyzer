@@ -210,7 +210,7 @@ export const usePromptStore = defineStore('prompts', {
         }
       }
 
-      const deleteImage = deleteObject(ref(storage, `images/prompt-${id}`))
+      const deleteImage = await deleteObject(ref(storage, `images/prompt-${id}`))
       const deleteLikes = await likeStore.deleteAllPromptLikes(id)
       const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
       const deleteShares = await shareStore.deleteAllPromptShares(id)
