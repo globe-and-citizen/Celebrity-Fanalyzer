@@ -12,8 +12,8 @@
     "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
     "test:unit:coverage": "vitest run --coverage",
     "emulators": "firebase emulators:start --project celebrityfanalizer --import emulatorData",
-    "test:e2e": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress open --e2e\"",
-    "test:e2e:ci": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress run --e2e\"",
+    "test:e2e": "cross-env NODE_ENV=test start-test \"quasar dev --mode pwa\" http-get://localhost:9200 \"cypress open --e2e\"",
+    "test:e2e:ci": "cross-env NODE_ENV=test start-test \"quasar dev --mode pwa\" http-get://localhost:9200 \"cypress run --e2e\"",
     "test:component": "cross-env NODE_ENV=test cypress open --component",
     "test:component:ci": "cross-env NODE_ENV=test cypress run --component"
   },
