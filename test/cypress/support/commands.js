@@ -28,3 +28,6 @@
 // Imports Quasar Cypress AE predefined commands
 import { registerCommands } from '@quasar/quasar-app-extension-testing-e2e-cypress';
 registerCommands();
+Cypress.Commands.add('getByData', (selector) => {
+  return cy.get(`[data-test=${selector}]`)
+})
