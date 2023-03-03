@@ -9,7 +9,7 @@
     "dev": "quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
-    "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
+    "test": "vitest",
     "test:unit:coverage": "vitest run --coverage",
     "emulators": "firebase emulators:start --project celebrityfanalizer --import emulatorData",
     "test:e2e": "cross-env NODE_ENV=test start-test \"quasar dev --mode pwa\" http-get://localhost:9200 \"cypress open --e2e\"",
@@ -37,15 +37,17 @@
   "devDependencies": {
     "@pinia/testing": "^0.0.15",
     "@quasar/app-vite": "^1.2.1",
-    "@quasar/quasar-app-extension-testing-e2e-cypress": "^5.0.0-beta.11",
+    "@quasar/quasar-app-extension-testing-e2e-cypress": "^5.1.0",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^0.1.2",
     "@sentry/vite-plugin": "^0.4.0",
     "@vitest/coverage-istanbul": "^0.28.4",
     "@vue/test-utils": "^2.3.0",
     "autoprefixer": "^10.4.13",
     "c8": "^7.13.0",
+    "cypress": "^12.2.0",
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-vue": "^9.9.0",
     "jsdom": "^21.1.0",
     "postcss": "^8.4.21",
@@ -57,9 +59,7 @@
     "workbox-expiration": "^6.5.4",
     "workbox-precaching": "^6.5.4",
     "workbox-routing": "^6.5.4",
-    "workbox-strategies": "^6.5.4",
-    "cypress": "^12.2.0",
-    "eslint-plugin-cypress": "^2.12.1"
+    "workbox-strategies": "^6.5.4"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",
