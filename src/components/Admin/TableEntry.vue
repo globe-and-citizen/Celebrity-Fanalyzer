@@ -2,8 +2,8 @@
   <q-table :columns="columns" dense flat hide-bottom hide-header :pagination="pagination" :rows="rows">
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
-        <q-btn color="warning" flat icon="edit" round size="sm" @click="$emit('editEntry', props.row)" />
-        <q-btn color="negative" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
+        <q-btn color="warning" :disable="promptStore.isLoading" flat icon="edit" round size="sm" @click="$emit('editEntry', props.row)" />
+        <q-btn color="negative" :disable="promptStore.isLoading" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
       </td>
     </template>
   </q-table>
@@ -30,7 +30,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { ref } from 'vue'
 
@@ -40,8 +40,9 @@ defineProps({
 })
 
 const $q = useQuasar()
-const errorStore = useErrorStore()
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
+const promptStore = usePromptStore()
 
 const columns = [
   { name: 'created', align: 'center', label: 'Created', field: (row) => shortMonthDayTime(row.created) },
