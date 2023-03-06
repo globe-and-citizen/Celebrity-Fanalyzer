@@ -124,7 +124,7 @@ export const useEntryStore = defineStore('entries', {
       const deleteImage = await deleteObject(ref(storage, `images/entry-${entryImage}`))
       const deleteComments = await commentStore.deleteCommentsCollection('entries', entryId)
       const deleteLikes = await likeStore.deleteAllEntryLikes(entryId)
-      const deleteShares = await shareStore.deleteAllEntryShares(entryId)
+      const deleteShares = await shareStore.deleteAllShares('entries', entryId)
       const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
       const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
 
