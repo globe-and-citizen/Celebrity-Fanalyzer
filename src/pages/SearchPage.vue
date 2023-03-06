@@ -43,12 +43,11 @@
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
-import TheHeader from 'src/components/TheHeader.vue'
-import { useErrorStore, usePromptStore, useEntryStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
 import TheEntries from 'src/components/TheEntries.vue'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useErrorStore, usePromptStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
-const entrytStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
@@ -62,19 +61,14 @@ onMounted(async () => {
   if (!promptStore.getPrompts.length) {
     await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
   }
-  if (!entrytStore.getEntries.length) {
-    await entrytStore.fetchEntriesCollection().catch((error) => errorStore.throwError(error))
-  }
 
   const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
-  categories.value = [...new Set(categoriesArr)].map((category) => ({
-    label: category,
-    value: category
-  }))
+  categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
   categories.value.unshift({ label: 'All', value: 'All' })
 
   prompts.value = promptStore.getPrompts
-  entries.value = entrytStore.getEntries
+  entries.value = prompts.value.flatMap((prompt) => prompt.entries)
+  console.log(entries.value)
 })
 
 promptStore.$subscribe((_mutation, state) => {
@@ -87,12 +81,11 @@ const computedPrompt = computed(() => {
       item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
       item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
       item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-      item.entries.some((entry) => entry.title.toLowerCase().includes(search.value.toLocaleLowerCase())) ||
       item.categories.some((category) => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
   )
 })
 const computedEntry = computed(() => {
-  return entries.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return entries.value.filter((item) => item?.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
 })
 </script>
 
