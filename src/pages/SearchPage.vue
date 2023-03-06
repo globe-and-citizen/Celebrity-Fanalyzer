@@ -25,7 +25,7 @@
       <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
         <TransitionGroup name="prompt" tag="div">
           <ItemCard
-            v-for="prompt in computedPrompt"
+            v-for="prompt in computedPrompts"
             :item="prompt"
             :key="prompt?.id"
             :link="prompt?.slug"
@@ -35,7 +35,7 @@
       </q-tab-panel>
     </q-tab-panels>
     <TransitionGroup tag="div">
-      <TheEntries v-if="search && computedEntry.length > 0" :entries="computedEntry" />
+      <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
     </TransitionGroup>
   </q-page>
 </template>
@@ -52,8 +52,8 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const entries = ref([])
-const category = ref('All')
 const categories = ref([])
+const category = ref('All')
 const prompts = ref([])
 const search = ref('')
 
@@ -75,7 +75,7 @@ promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 })
 
-const computedPrompt = computed(() => {
+const computedPrompts = computed(() => {
   return prompts.value.filter(
     (item) =>
       item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
@@ -84,7 +84,7 @@ const computedPrompt = computed(() => {
       item.categories.some((category) => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
   )
 })
-const computedEntry = computed(() => {
+const computedEntries = computed(() => {
   return entries.value.filter((item) => item?.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
 })
 </script>
