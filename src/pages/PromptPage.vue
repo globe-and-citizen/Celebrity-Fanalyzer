@@ -153,7 +153,7 @@ onMounted(async () => {
     return
   }
 
-  await likeStore.getAllPromptLikesDislikes(prompt.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
   await shareStore
     .countShares('prompts', prompt.value.id)
@@ -181,11 +181,11 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addLike('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addDislike('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
