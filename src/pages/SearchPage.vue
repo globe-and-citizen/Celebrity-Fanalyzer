@@ -68,7 +68,6 @@ onMounted(async () => {
 
   prompts.value = promptStore.getPrompts
   entries.value = prompts.value.flatMap((prompt) => prompt.entries)
-  console.log(entries.value)
 })
 
 promptStore.$subscribe((_mutation, state) => {
