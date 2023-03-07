@@ -121,10 +121,12 @@ onMounted(async () => {
   await commentStore.fetchComments(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
 
-  await likeStore.getAllEntryLikesDislikes(entry.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
-  countShares.value = shareStore.getShares
+  await shareStore
+    .countShares('entries', entry.value.id)
+    .then(() => (countShares.value = shareStore.getShares))
+    .catch((error) => errorStore.throwError(error))
 
   for (const comment of comments.value) {
     if (comment.parentId === undefined) {
@@ -169,15 +171,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addLike('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addDislike('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.shareEntry(entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
+  shareStore.addShare('entries', entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 
