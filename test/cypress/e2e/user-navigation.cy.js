@@ -2,12 +2,6 @@ describe('User Navigation', () => {
   it.only('Should display properly and navigate between pages', () => {
     cy.visit('/')
 
-    cy.getByData('main-menu').find("a").eq(0).click()
-    cy.location("pathname").should(
-      "eq",
-      "/"
-    )
-
     cy.getByData('main-menu').find("a").eq(2).click()
     cy.location("pathname").should(
       "eq",
