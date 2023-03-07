@@ -46,8 +46,8 @@ import { onMounted, ref } from 'vue'
 const errorStore = useErrorStore()
 
 const columns = [
-  { name: 'createdAt', label: 'Created At', field: 'createdAt', sortable: true },
-  { name: 'error', label: 'Error', field: 'error', sortable: true },
+  { name: 'createdAt', align: 'left', label: 'Created At', field: 'createdAt', sortable: true },
+  { name: 'error', align: 'left', label: 'Error', field: 'error', sortable: true },
   { name: 'action', label: 'Action', field: 'action' }
 ]
 const deleteDialog = ref({})
