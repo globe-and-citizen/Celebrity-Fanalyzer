@@ -1,15 +1,30 @@
 name: End-to-end tests
-on: [push]
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+
 jobs:
   cypress-run:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - name: Cypress run
-      - uses: cypress-io/github-action@v5
+
+      - name: Set up NodeJS 18.14.0
+        uses: actions/setup-node@v3
         with:
+          node-version: 18.14.0
+          cache: 'npm'
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm run dev
+          wait-on: http://localhost:9200/
           browser: chrome
           headed: true
