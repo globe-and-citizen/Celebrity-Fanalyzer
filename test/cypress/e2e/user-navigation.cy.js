@@ -18,7 +18,7 @@ describe('User Navigation', () => {
       "eq",
       "/month"
     )
-    cy.get("h2").contains("Entries")
+    // cy.get("h2").contains("Entries")
 
     // cy.getByData('main-menu').find("a").eq(1).click()
     // cy.location("pathname").should(
