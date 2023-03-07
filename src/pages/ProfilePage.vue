@@ -40,10 +40,10 @@
       <q-tab-panel class="q-gutter-y-md" name="profile">
         <q-input v-model="user.displayName" label="Name" />
         <q-input v-model="user.bio" maxlength="150" label="Bio" />
-        <h3 class="q-mt-lg text-bold text-h5 text-secondary">MetaData</h3>
+        <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
         <q-input v-model="user.data1" label="Data 1" />
         <q-input v-model="user.data2" label="Data 2" />
-        <q-btn class="full-width" color="primary" label="Save" padding="12px" rounded @click="save()" />
+        <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded @click="save()" />
       </q-tab-panel>
       <q-tab-panel class="q-gutter-y-md" name="settings">
         <q-input v-model="user.email" disable label="Email" />
