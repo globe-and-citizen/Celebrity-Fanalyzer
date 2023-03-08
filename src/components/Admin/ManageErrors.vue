@@ -63,7 +63,7 @@ function confirmDelete(error) {
 }
 
 function onDeleteError(id) {
-  errorStore.deleteError(id)
+  errorStore.deleteError(id).catch((error) => errorStore.throwError(error, 'Failed to delete error'))
   deleteDialog.value.show = false
 }
 </script>
