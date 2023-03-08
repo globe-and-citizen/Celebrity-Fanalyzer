@@ -1,4 +1,4 @@
-name: End-to-end tests
+name: End-to-end Cypress tests
 
 on:
   push:
@@ -28,3 +28,9 @@ jobs:
           wait-on: http://localhost:9200/
           browser: chrome
           headed: true
+          record: true
+          parallel: true
+        env:
+          # For recording and parallelization to work you must set your CYPRESS_RECORD_KEY
+          # in GitHub repo → Settings → Secrets → Actions
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}

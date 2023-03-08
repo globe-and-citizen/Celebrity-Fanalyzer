@@ -3,6 +3,7 @@ const { injectQuasarDevServerConfig } = require('@quasar/quasar-app-extension-te
 const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
+  projectId: "i4uq2d",
   fixturesFolder: 'test/cypress/fixtures',
   screenshotsFolder: 'test/cypress/screenshots',
   videosFolder: 'test/cypress/videos',
