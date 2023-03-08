@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from './user'
@@ -18,8 +18,13 @@ export const useFeedbackStore = defineStore('feedbacks', {
     async fetchFeedbacks() {
       this._isLoading = true
       await getDocs(collection(db, 'feedbacks'))
-        .then((querySnapshot) => {
+        .then(async (querySnapshot) => {
           const feedbacks = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const feedback of feedbacks) {
+            feedback.author = await getDoc(feedback.author).then((doc) => doc.data())
+          }
+
           this.$patch({ _feedbacks: feedbacks })
         })
         .finally(() => (this._isLoading = false))
