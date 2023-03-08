@@ -33,10 +33,10 @@ export const useFeedbackStore = defineStore('feedbacks', {
 
       const docId = Date.now()
 
+    async deleteFeedback(id) {
       this._isLoading = true
-      // BUG: This is not working (use addDoc() maybe)
-      await setDoc(doc(db, 'feedbacks', docId), feedback)
-        // .then(() => this.$patch({ _feedbacks: [...this._feedbacks, feedback] }))
+      await deleteDoc(doc(db, 'feedbacks', id))
+        .then(() => this.$patch({ _feedbacks: this._feedbacks.filter((feedback) => feedback.id !== id) }))
         .finally(() => (this._isLoading = false))
     }
   }
