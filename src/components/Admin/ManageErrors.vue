@@ -57,9 +57,9 @@ onMounted(async () => {
   await errorStore.fetchErrors()
 })
 
-function confirmDelete(id) {
+function confirmDelete(error) {
   deleteDialog.value.show = true
-  deleteDialog.value.id = id
+  deleteDialog.value.id = error.id
 }
 
 function onDeleteError(id) {
