@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDocs, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar'
 import { db } from 'src/firebase'
@@ -45,6 +45,14 @@ export const useErrorStore = defineStore('errors', {
           }
           throw new Error(error)
         })
+    },
+
+    async deleteError(id) {
+      this._isLoading = true
+      await deleteDoc(doc(db, 'errors', id))
+        .then(() => this.$patch({ _errors: this._errors.filter((error) => error.id !== id) }))
+        .catch((e) => console.error(e))
+        .finally(() => (this._isLoading = false))
     }
   }
 })

@@ -97,7 +97,7 @@
               <q-card>
                 <q-card-section>
                   Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are
-                  particularly interested in how to tweek contributor compensation for participating.
+                  particularly interested in how to tweak contributor compensation for participating.
                 </q-card-section>
               </q-card>
             </q-expansion-item>
