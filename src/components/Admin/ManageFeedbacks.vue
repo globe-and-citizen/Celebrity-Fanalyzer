@@ -13,13 +13,12 @@
       <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 q-pa-sm">
         <q-card class="feedback">
           <q-card-section class="text-center">
-            <strong>{{ props.row.author.displayName }}</strong>
+            <div class="text-body1">{{ props.row.author.displayName }}</div>
             <q-btn color="negative" icon="delete" round size="sm" @click="confirmDelete(props.row)" />
           </q-card-section>
           <q-separator />
           <q-card-section>
-            <u>{{ shortMonthDayTime(props.row.created) }}</u>
-            ~
+            <p class="text-body2 text-bold">{{ shortMonthDayTime(props.row.created) }} ~ {{ props.row.subject }}</p>
             <span>{{ props.row.message }}</span>
           </q-card-section>
         </q-card>
