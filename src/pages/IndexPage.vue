@@ -179,9 +179,9 @@ const monthPrompt = ref(promptStore.getMonthPrompt)
 onMounted(async () => {
   await promptStore.fetchMonthPrompt()
   monthPrompt.value = promptStore.getMonthPrompt
-})
 
-const whyModal = ref(false)
+  await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
+})
 </script>
 
 <style scoped lang="scss">
