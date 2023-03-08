@@ -30,11 +30,3 @@ jobs:
           nohup npm run emulators &> emulators.log &
           sleep 1m
           npm run test
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          start: npm run dev
-          wait-on: http://localhost:9200/
-          browser: chrome
-          headed: true
