@@ -31,7 +31,11 @@ export const useFeedbackStore = defineStore('feedbacks', {
       feedback.author = userStore.getUserRef
       feedback.created = Timestamp.fromDate(new Date())
 
-      const docId = Date.now()
+      this._isLoading = true
+      await addDoc(collection(db, 'feedbacks'), feedback)
+        .then(() => this.$patch({ _feedbacks: [...this._feedbacks, feedback] }))
+        .finally(() => (this._isLoading = false))
+    },
 
     async deleteFeedback(id) {
       this._isLoading = true
