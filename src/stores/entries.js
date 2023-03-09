@@ -24,12 +24,29 @@ export const useEntryStore = defineStore('entries', {
     _isLoading: false
   }),
 
+  persist: true,
+
   getters: {
     getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
+    async fetchAllEntries() {
+      this._isLoading = true
+      const querySnapshot = await getDocs(collection(db, 'entries'))
+      const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+      for (const entry of entries) {
+        entry.author = await getDoc(entry.author).then((doc) => doc.data())
+        // entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
+      }
+
+      this._entries = []
+      this.$patch({ _entries: entries })
+      this._isLoading = false
+    },
+
     async fetchEntryBySlug(slug) {
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
