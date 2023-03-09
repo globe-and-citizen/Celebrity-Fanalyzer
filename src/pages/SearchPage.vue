@@ -45,9 +45,10 @@ import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 
+const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
@@ -59,15 +60,18 @@ const search = ref('')
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
+    await promptStore.fetchAllPrompts().catch((error) => errorStore.throwError(error))
   }
+  prompts.value = promptStore.getPrompts
 
   const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
   categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
   categories.value.unshift({ label: 'All', value: 'All' })
 
-  prompts.value = promptStore.getPrompts
-  entries.value = prompts.value.flatMap((prompt) => prompt.entries)
+  if (!entryStore.getEntries.length) {
+    await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
+  }
+  entries.value = entryStore.getEntries
 })
 
 promptStore.$subscribe((_mutation, state) => {
