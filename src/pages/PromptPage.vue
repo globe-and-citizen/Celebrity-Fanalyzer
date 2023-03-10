@@ -19,30 +19,28 @@
           </div>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
           <p class="text-body1" v-html="prompt?.description"></p>
-          <div class="inline-block">
-            <q-btn
-              color="green"
-              :disable="promptStore.isLoading"
-              flat
-              icon="sentiment_satisfied_alt"
-              :label="countLikes"
-              rounded
-              @click="like()"
-            >
-              <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-            </q-btn>
-            <q-btn
-              color="red"
-              :disable="promptStore.isLoading"
-              flat
-              icon="sentiment_very_dissatisfied"
-              :label="countDislikes"
-              rounded
-              @click="dislike()"
-            >
-              <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-            </q-btn>
-          </div>
+          <q-btn
+            color="green"
+            :disable="promptStore.isLoading"
+            flat
+            icon="sentiment_satisfied_alt"
+            :label="countLikes"
+            rounded
+            @click="like()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </q-btn>
+          <q-btn
+            color="red"
+            :disable="promptStore.isLoading"
+            flat
+            icon="sentiment_very_dissatisfied"
+            :label="countDislikes"
+            rounded
+            @click="dislike()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </q-btn>
           <q-btn
             flat
             href="https://discord.com/channels/1034461422962360380/1040994839610806343"
