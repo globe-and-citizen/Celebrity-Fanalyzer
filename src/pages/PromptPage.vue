@@ -52,6 +52,17 @@
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
+        <q-separator inset spaced />
+        <section v-if="prompt.author" class="flex items-center no-wrap q-pa-md">
+          <q-avatar size="6rem">
+            <q-img :src="prompt.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ prompt.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ prompt.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator inset spaced />
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />
       </q-page>

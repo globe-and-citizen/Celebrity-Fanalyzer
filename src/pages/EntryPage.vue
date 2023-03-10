@@ -26,8 +26,18 @@
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <q-separator />
+        <q-separator inset spaced />
+        <section v-if="entry.author" class="flex items-center no-wrap q-pa-md">
+          <q-avatar size="6rem">
+            <q-img :src="entry.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ entry.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ entry.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator inset spaced />
+        <div class="q-my-xl"></div>
       </q-page>
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -75,7 +85,7 @@ import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -87,7 +97,6 @@ const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
-const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
 const chartData = ref({})
