@@ -24,25 +24,28 @@ export const useEntryStore = defineStore('entries', {
     _isLoading: false
   }),
 
+  persist: true,
+
   getters: {
     getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchEntriesCollection() {
+    async fetchAllEntries() {
       this._isLoading = true
-      await getDocs(collection(db, 'entries'))
-        .then(async (querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const querySnapshot = await getDocs(collection(db, 'entries'))
+      const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          entries.reverse()
+      for (const entry of entries) {
+        entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      }
 
-          this._entries = []
-          this.$patch({ _entries: entries })
-        })
-        .finally(() => (this._isLoading = false))
+      this._entries = []
+      this.$patch({ _entries: entries })
+      this._isLoading = false
     },
+
     async fetchEntryBySlug(slug) {
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))

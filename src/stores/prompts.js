@@ -35,6 +35,24 @@ export const usePromptStore = defineStore('prompts', {
   },
 
   actions: {
+    async fetchAllPrompts() {
+      this._isLoading = true
+      await getDocs(collection(db, 'prompts'))
+        .then(async (querySnapshot) => {
+          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const prompt of prompts) {
+            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+          }
+
+          prompts.reverse()
+
+          this._prompts = []
+          this.$patch({ _prompts: prompts })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     /**
      * Fetch the current month prompt and set the value in the store :
      * Checking if we have a data in the store.
