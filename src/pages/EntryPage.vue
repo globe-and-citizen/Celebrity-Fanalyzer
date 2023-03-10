@@ -15,11 +15,6 @@
         <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
-          <div class="q-mb-md">
-            <q-badge v-for="(category, index) of entry.categories" class="q-mx-xs" :key="index" rounded>
-              {{ category }}
-            </q-badge>
-          </div>
           <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="countLikes" @click="like()">
             <q-tooltip>Like</q-tooltip>
           </q-btn>
