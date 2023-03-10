@@ -169,19 +169,21 @@
 </template>
 
 <script setup>
-import { usePromptStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
+const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)
 
 onMounted(async () => {
-  await promptStore.fetchMonthPrompt()
+  await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
   monthPrompt.value = promptStore.getMonthPrompt
-})
 
-const whyModal = ref(false)
+  await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
+  await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
+})
 </script>
 
 <style scoped lang="scss">
