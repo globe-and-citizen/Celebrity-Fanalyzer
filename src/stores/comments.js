@@ -32,9 +32,11 @@ export const useCommentStore = defineStore('comments', {
 
   actions: {
     async fetchComments(slug) {
+      console.log(slug);
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+      console.log("entry", entry);
 
       const c = query(collection(db, 'entries', entry.id, 'comments'))
       const snap = await getDocs(c)
@@ -46,6 +48,7 @@ export const useCommentStore = defineStore('comments', {
         }
       }
       this._isLoading = false
+      console.log("comments", comments);
 
       this._comments = comments
     },

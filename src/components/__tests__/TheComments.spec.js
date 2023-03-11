@@ -4,13 +4,14 @@ import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
+import { mount, shallowMount, config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vitest } from 'vitest'
+import { beforeEach, describe, expect, it, vitest, vi, afterAll } from 'vitest'
 
 // Necessary Components
-import { mount } from '@vue/test-utils'
-import MainMenu from 'src/components/MainMenu.vue'
 import { useUserStore } from 'src/stores/user'
+import { useCommentStore } from 'src/stores/comments'
+import commentCard from '../TheComments.vue'
 
 installQuasar()
 
@@ -35,18 +36,43 @@ describe('TheComment Component', () => {
   })
 
   it('should display the admin panel if the user logged has the admin role', async () => {
-    const userStore = useUserStore()
-    const user = userStore.getUser
+    // 2) Set up fake comment
+    const commenStore = useCommentStore()
+    await commenStore.fetchComments("/2023/02/more-frogs")
+    const startingNumberOfComments = commenStore.getComments.length
+    const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
+    const fakeComment = shallowMount(commentCard, {
+      global: {
+        mocks: {
+          testMock: vi.fn(() => {
+            console.log('This mock is just a dummy')
+          }),
+          onSubmit: vi.fn(async () => {
+            console.log("You're now mocking with the best...")
+            await commenStore.addComment(fakeComment.vm.comment)
+          })
+        }
+      },
+    })
 
-    expect(user.role).toBe('admin')
-    let localUserString = localStorage.getItem('user')
-    expect(localUserString.indexOf('role')).toBeTruthy()
+    fakeComment.vm.comment.text = 'category1'
+    fakeComment.vm.comment.id = fakeCommentId
 
-    if (user.role == 'admin') {
-      user.role = 'Admin'
-    }
+    // 3) Trigger submission programatically
+    await fakeComment.vm.onSubmit() //Mocked
 
-    const wrapper = mount(MainMenu)
-    expect(wrapper).toBeDefined()
+    // 4) Test
+    await commenStore.fetchComments("/2023/02/more-frogs")
+    expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+
+    // const a = 7
+    // const b = 10
+    // expect(a + b).toEqual(17)
+  })
+
+  it('', async () => {})
+
+  afterAll(async () => {
+    localStorage.clear()
   })
 })
