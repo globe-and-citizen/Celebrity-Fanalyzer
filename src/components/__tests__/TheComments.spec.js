@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vitest, vi, afterAll } from 'vitest'
 
 // Necessary Components
 import { useUserStore } from 'src/stores/user'
-import { useCommentStore } from 'src/stores/comments'
+import { useCommentStore, useEntryStore } from 'src/stores'
 import commentCard from '../TheComments.vue'
 
 installQuasar()
@@ -35,10 +35,13 @@ describe('TheComment Component', () => {
     await userStore.testing_loadUserProfile(result.user)
   })
 
-  it('should display the admin panel if the user logged has the admin role', async () => {
-    // 2) Set up fake comment
+  it('create fake comment in here', async () => {
+    // 2) Create fake comment
     const commenStore = useCommentStore()
+    const entryStore = useEntryStore()
     await commenStore.fetchComments("/2023/02/more-frogs")
+    await entryStore.fetchEntryBySlug("/2023/02/more-frogs")
+
     const startingNumberOfComments = commenStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
     const fakeComment = shallowMount(commentCard, {
@@ -48,8 +51,8 @@ describe('TheComment Component', () => {
             console.log('This mock is just a dummy')
           }),
           onSubmit: vi.fn(async () => {
-            console.log("You're now mocking with the best...")
-            await commenStore.addComment(fakeComment.vm.comment)
+            console.log("We're now mocking with the best...")
+            await commenStore.addComment(fakeComment.vm.comment, entryStore.getEntries)
           })
         }
       },
@@ -64,13 +67,9 @@ describe('TheComment Component', () => {
     // 4) Test
     await commenStore.fetchComments("/2023/02/more-frogs")
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
-
-    // const a = 7
-    // const b = 10
-    // expect(a + b).toEqual(17)
   })
 
-  it('', async () => {})
+  it('delete that comment in here', async () => {})
 
   afterAll(async () => {
     localStorage.clear()
