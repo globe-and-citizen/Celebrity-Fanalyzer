@@ -39,8 +39,8 @@ describe('TheComment Component', () => {
     // 2) Create fake comment
     const commenStore = useCommentStore()
     const entryStore = useEntryStore()
-    await commenStore.fetchComments("/2023/02/more-frogs")
-    await entryStore.fetchEntryBySlug("/2023/02/more-frogs")
+    await commenStore.fetchComments("/2023/03/pompt-entry-3")
+    await entryStore.fetchEntryBySlug("/2023/03/pompt-entry-3")
 
     const startingNumberOfComments = commenStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
