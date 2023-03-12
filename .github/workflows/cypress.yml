@@ -26,7 +26,7 @@ jobs:
         with:
           start: npm run dev
           wait-on: http://localhost:9200/
-          browser: chrome
+          browser: firefox
           headed: true
           record: true
           parallel: true
