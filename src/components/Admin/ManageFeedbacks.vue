@@ -19,7 +19,7 @@
           <q-separator />
           <q-card-section>
             <p class="text-body2 text-bold">{{ shortMonthDayTime(props.row.created) }} ~ {{ props.row.subject }}</p>
-            <span>{{ props.row.message }}</span>
+            <span style="white-space: pre-line">{{ props.row.message }}</span>
           </q-card-section>
         </q-card>
       </div>
