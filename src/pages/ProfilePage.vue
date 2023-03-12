@@ -15,7 +15,7 @@
   </q-page>
 
   <q-page v-else class="q-px-lg">
-    <div class="flex items-center q-py-xl">
+    <div class="flex items-center no-wrap q-py-xl">
       <q-avatar size="5rem" color="teal" text-color="white">
         <q-img :src="user.photoURL" spinner-color="primary" spinner-size="82px">
           <div class="photo">
@@ -28,10 +28,7 @@
           </div>
         </q-img>
       </q-avatar>
-      <div class="column flex q-ml-md text-secondary">
-        <h2 class="q-my-none text-h5 text-bold">{{ user.displayName }}</h2>
-        <p class="q-my-none text-body1">{{ user.bio }}</p>
-      </div>
+      <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
     </div>
 
     <q-tabs v-model="tab" active-color="primary">
