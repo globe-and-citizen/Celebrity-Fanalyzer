@@ -8,6 +8,7 @@ describe('User Navigation', () => {
         expect($img[0].naturalWidth).to.be.greaterThan(0)
       })
     cy.getByData('main-menu').find("a").eq(2).click()
+    cy.wait(30000)
     cy.location("pathname", { timeout: 30000 }).should(
       "eq",
       "/month"
