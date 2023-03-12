@@ -13,11 +13,21 @@ import { useUserStore } from 'src/stores/user'
 import { useCommentStore, useEntryStore } from 'src/stores'
 import commentCard from '../TheComments.vue'
 
+import { VueRouterMock, createRouterMock, injectRouterMock } from 'vue-router-mock'
+config.plugins.VueWrapper.install(VueRouterMock)
+
 installQuasar()
 
 describe('TheComment Component', () => {
+  const router = createRouterMock({
+    spy: {
+      create: (fn) => vi.fn(fn),
+      reset: (spy) => spy.mockReset()
+    }
+  })
   beforeEach(async () => {
     setActivePinia(createPinia())
+    injectRouterMock(router)
     const userStore = useUserStore()
     const userString = '{"sub": "WCeN1oLBMndoLKzNBCS7RccV9cz1?", "email": "algae.peach.153@example.com", "email_verified": true}'
     const credential = GoogleAuthProvider.credential(userString)
@@ -35,7 +45,17 @@ describe('TheComment Component', () => {
     await userStore.testing_loadUserProfile(result.user)
   })
 
+
+
   it('create fake comment in here', async () => {
+    global.fetch = vi.fn(async () => {
+      return {
+        text: () => {
+          return '255.255.255.255'
+        }
+      }
+    })
+
     // 2) Create fake comment
     const commenStore = useCommentStore()
     const entryStore = useEntryStore()
@@ -43,6 +63,7 @@ describe('TheComment Component', () => {
     await entryStore.fetchEntryBySlug("/2023/03/pompt-entry-3")
 
     const startingNumberOfComments = commenStore.getComments.length
+    console.log("startingNUmebr", startingNumberOfComments);
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
     const fakeComment = shallowMount(commentCard, {
       global: {
@@ -50,24 +71,31 @@ describe('TheComment Component', () => {
           testMock: vi.fn(() => {
             console.log('This mock is just a dummy')
           }),
-          onSubmit: vi.fn(async () => {
-            console.log("We're now mocking with the best...")
-            await commenStore.addComment(fakeComment.vm.comment, entryStore.getEntries)
+          addComment: vi.fn(()=>{
+            console.log("I'm fake!")
           })
         }
       },
+      props: {
+        comments: [],
+        entry: { slug: '/2023/03/pompt-entry-3' }
+      }
     })
 
-    fakeComment.vm.comment.text = 'category1'
-    fakeComment.vm.comment.id = fakeCommentId
+    fakeComment.vm.childComments = 'test child comment'
+    fakeComment.vm.myComment = 'test my comment'
+    fakeComment.vm.reply = 'test reply comment'
+    fakeComment.vm.commentId = fakeCommentId
 
     // 3) Trigger submission programatically
-    await fakeComment.vm.onSubmit() //Mocked
+    await fakeComment.vm.addComment() //Mocked
 
     // 4) Test
     await commenStore.fetchComments("/2023/02/more-frogs")
+    console.log("Last length", commenStore.getComments.length);
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
   })
+
 
   it('delete that comment in here', async () => {})
 

@@ -32,7 +32,7 @@ export const useCommentStore = defineStore('comments', {
 
   actions: {
     async fetchComments(slug) {
-      console.log(slug);
+      console.log("slug what is", slug);
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
