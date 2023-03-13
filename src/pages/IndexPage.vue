@@ -157,10 +157,11 @@
 
 <script setup>
 import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)
