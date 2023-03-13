@@ -1,18 +1,5 @@
 <template>
-  <q-header class="shadow-1">
-    <q-toolbar class="bg-white q-px-lg">
-      <q-toolbar-title>
-        <q-img src="~assets/logo.svg" width="1.7rem" />
-        <span class="q-ml-sm inline row text-secondary">
-          <b>Celebrity</b>
-          Fanalyzer
-        </span>
-      </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
-    </q-toolbar>
-  </q-header>
-
-  <!-- *** -->
+  <TheHeader logo :backButton="false" />
 
   <q-page class="q-pa-md">
     <section class="text-center">
@@ -171,6 +158,7 @@
 <script setup>
 import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
+import TheHeader from '../components/TheHeader.vue'
 
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
