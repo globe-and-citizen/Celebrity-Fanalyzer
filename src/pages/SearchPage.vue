@@ -1,5 +1,5 @@
 <template>
-  <TheHeader searchInput title="Search Archive" v-model="search" />
+  <TheHeader feedbackButton searchInput title="Search Archive" v-model="search" />
   <q-page class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle

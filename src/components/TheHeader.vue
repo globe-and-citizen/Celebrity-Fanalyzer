@@ -12,7 +12,7 @@
         <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
         <b class="text-secondary">{{ title }}</b>
       </q-toolbar-title>
-      <q-btn v-if="feedbackButton" flat icon="feedback" round size="1rem" text-color="secondary" />
+      <q-btn v-if="feedbackButton" flat icon="feedback" round size="1rem" text-color="secondary" @click="goToFeedback" />
       <slot />
     </q-toolbar>
     <q-toolbar v-if="searchInput">
@@ -36,6 +36,7 @@
 </template>
 
 <script setup>
+import { useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 
 defineProps({
@@ -49,7 +50,14 @@ defineProps({
 
 const router = useRouter()
 
+const userStore = useUserStore()
+
 function goBack() {
   router.go(-1)
+}
+
+function goToFeedback() {
+  router.push('/profile')
+  userStore.setProfileTab('feedback')
 }
 </script>

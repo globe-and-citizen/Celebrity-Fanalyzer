@@ -1,22 +1,5 @@
 <template>
-  <TheHeader searchInput :title="`Search In ${year} Archive`" v-model="search" />
-  <!-- <q-header class="bg-white" elevated>
-    <q-toolbar class="q-px-lg">
-      <q-toolbar-title>
-        <b class="text-secondary">Search In {{ year }} Archive</b>
-      </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
-    </q-toolbar>
-    <q-toolbar>
-      <q-toolbar-title>
-        <q-input class="q-pb-lg q-px-lg" dense label="Search" rounded standout v-model="search">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </q-toolbar-title>
-    </q-toolbar>
-  </q-header> -->
+  <TheHeader feedbackButton searchInput :title="`Search In ${year} Archive`" v-model="search" />
 
   <q-page class="q-pa-md">
     <section v-if="!prompts.length && promptStore.isLoading">

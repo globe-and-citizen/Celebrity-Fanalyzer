@@ -7,6 +7,7 @@ import { auth, db } from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
+    _profileTab: 'profile',
     _user: {},
     _userIp: '',
     _users: [],
@@ -18,6 +19,7 @@ export const useUserStore = defineStore('user', {
   getters: {
     getAdmins: (getters) => getters.getUsers.filter((user) => user.role === 'Admin'),
     getAdminsAndWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer'),
+    getProfileTab: (state) => state._profileTab,
     getUser: (state) => state._user,
     getUserById: (getters) => (id) => getters.getUsers.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
@@ -108,6 +110,10 @@ export const useUserStore = defineStore('user', {
         LocalStorage.remove('user')
         this.router.go(0)
       })
+    },
+
+    setProfileTab(tab) {
+      this.$patch({ _profileTab: tab })
     },
 
     async testing_loadUserProfile(user) {

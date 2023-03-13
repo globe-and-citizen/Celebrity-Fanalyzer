@@ -1,8 +1,7 @@
 <template>
   <TheHeader feedbackButton title="Profile" />
-  <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
-    <q-spinner color="primary" size="3em" />
-  </q-page>
+
+  <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 
   <q-page v-if="!user.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
@@ -31,7 +30,7 @@
       <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
     </div>
 
-    <q-tabs v-model="tab" active-color="primary">
+    <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)">
       <q-tab name="profile" label="Profile" />
       <q-tab name="feedback" label="Feedback" />
       <q-tab name="settings" label="Settings" />
@@ -68,7 +67,7 @@ const userStore = useUserStore()
 
 const newPhoto = ref([])
 const user = ref(userStore.getUser)
-const tab = ref('profile')
+const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
