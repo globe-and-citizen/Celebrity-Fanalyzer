@@ -1,5 +1,5 @@
 <template>
-  <TheHeader notification-btn title="Profile" />
+  <TheHeader feedbackButton title="Profile" />
   <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
     <q-spinner color="primary" size="3em" />
   </q-page>
