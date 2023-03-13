@@ -4,6 +4,7 @@ import { store } from 'quasar/wrappers'
 import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
 import { useErrorStore } from './errors'
+import { useFeedbackStore } from './feedbacks'
 import { useLikeStore } from './likes'
 import { usePromptStore } from './prompts'
 import { useShareStore } from './shares'
@@ -29,4 +30,14 @@ export default store((/* { ssrContext } */) => {
   return pinia
 })
 
-export { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore }
+export {
+  useCommentStore,
+  useEntryStore,
+  useErrorStore,
+  useFeedbackStore,
+  useLikeStore,
+  usePromptStore,
+  useShareStore,
+  useStatStore,
+  useUserStore
+}

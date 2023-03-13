@@ -15,8 +15,24 @@
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">
-          <q-btn color="warning" flat icon="edit" round size="sm" @click="$emit('openPromptDialog', props.row)" />
-          <q-btn color="negative" flat icon="delete" round size="sm" @click="openDeleteDialog(props.row)" />
+          <q-btn
+            color="warning"
+            :disable="promptStore.isLoading"
+            flat
+            icon="edit"
+            round
+            size="sm"
+            @click="$emit('openPromptDialog', props.row)"
+          />
+          <q-btn
+            color="negative"
+            :disable="promptStore.isLoading"
+            flat
+            icon="delete"
+            round
+            size="sm"
+            @click="openDeleteDialog(props.row)"
+          />
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
@@ -50,7 +66,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import TableEntry from 'src/components/TableEntry.vue'
+import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { ref } from 'vue'
 

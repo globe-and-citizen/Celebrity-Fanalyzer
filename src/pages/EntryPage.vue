@@ -15,11 +15,6 @@
         <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
-          <div class="q-mb-md">
-            <q-badge v-for="(category, index) of entry.categories" class="q-mx-xs" :key="index" rounded>
-              {{ category }}
-            </q-badge>
-          </div>
           <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="countLikes" @click="like()">
             <q-tooltip>Like</q-tooltip>
           </q-btn>
@@ -31,8 +26,18 @@
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <q-separator />
+        <q-separator inset spaced />
+        <section v-if="entry.author" class="flex items-center no-wrap q-pa-md">
+          <q-avatar size="6rem">
+            <q-img :src="entry.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ entry.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ entry.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator inset spaced />
+        <div class="q-my-xl"></div>
       </q-page>
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -80,7 +85,7 @@ import BarGraph from 'src/components/BarGraph.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -92,7 +97,6 @@ const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
-const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
 const chartData = ref({})
@@ -121,10 +125,12 @@ onMounted(async () => {
   await commentStore.fetchComments(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
 
-  await likeStore.getAllEntryLikesDislikes(entry.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.countEntryShares(entry.value.id).catch((error) => errorStore.throwError(error))
-  countShares.value = shareStore.getShares
+  await shareStore
+    .countShares('entries', entry.value.id)
+    .then(() => (countShares.value = shareStore.getShares))
+    .catch((error) => errorStore.throwError(error))
 
   for (const comment of comments.value) {
     if (comment.parentId === undefined) {
@@ -169,15 +175,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addLike('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikeEntry(entry.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addDislike('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.shareEntry(entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
+  shareStore.addShare('entries', entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 

@@ -16,7 +16,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -24,25 +24,28 @@ export const useEntryStore = defineStore('entries', {
     _isLoading: false
   }),
 
+  persist: true,
+
   getters: {
     getEntries: (state) => state._entries,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchEntriesCollection() {
+    async fetchAllEntries() {
       this._isLoading = true
-      await getDocs(collection(db, 'entries'))
-        .then(async (querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const querySnapshot = await getDocs(collection(db, 'entries'))
+      const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          entries.reverse()
+      for (const entry of entries) {
+        entry.author = await getDoc(entry.author).then((doc) => doc.data())
+      }
 
-          this._entries = []
-          this.$patch({ _entries: entries })
-        })
-        .finally(() => (this._isLoading = false))
+      this._entries = []
+      this.$patch({ _entries: entries })
+      this._isLoading = false
     },
+
     async fetchEntryBySlug(slug) {
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
@@ -110,6 +113,7 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async deleteEntry(entryId) {
+      const commentStore = useCommentStore()
       const likeStore = useLikeStore()
       const promptStore = usePromptStore()
       const shareStore = useShareStore()
@@ -120,13 +124,14 @@ export const useEntryStore = defineStore('entries', {
       const entryImage = entries.find((entry) => entry.id === entryId).id
 
       this._isLoading = true
-      const deleteImage = deleteObject(ref(storage, `images/entry-${entryImage}`))
-      const deleteLikes = await likeStore.deleteAllEntryLikes(entryId)
-      const deleteShares = await shareStore.deleteAllEntryShares(entryId)
+      const deleteImage = await deleteObject(ref(storage, `images/entry-${entryImage}`))
+      const deleteComments = await commentStore.deleteCommentsCollection('entries', entryId)
+      const deleteLikes = await likeStore.deleteAllLikesDislikes('entries', entryId)
+      const deleteShares = await shareStore.deleteAllShares('entries', entryId)
       const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
       const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
 
-      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteLikes, deleteShares])
+      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares])
         .then(() => {
           const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
           prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)

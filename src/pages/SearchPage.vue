@@ -25,7 +25,7 @@
       <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
         <TransitionGroup name="prompt" tag="div">
           <ItemCard
-            v-for="prompt in computedPrompt"
+            v-for="prompt in computedPrompts"
             :item="prompt"
             :key="prompt?.id"
             :link="prompt?.slug"
@@ -35,7 +35,7 @@
       </q-tab-panel>
     </q-tab-panels>
     <TransitionGroup tag="div">
-      <TheEntries v-if="search && computedEntry.length > 0" :entries="computedEntry" />
+      <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
     </TransitionGroup>
   </q-page>
 </template>
@@ -43,56 +43,52 @@
 <script setup>
 import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
-import TheHeader from 'src/components/TheHeader.vue'
-import { useErrorStore, usePromptStore, useEntryStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
 import TheEntries from 'src/components/TheEntries.vue'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
-const entrytStore = useEntryStore()
+const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const entries = ref([])
-const category = ref('All')
 const categories = ref([])
+const category = ref('All')
 const prompts = ref([])
 const search = ref('')
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
+    await promptStore.fetchAllPrompts().catch((error) => errorStore.throwError(error))
   }
-  if (!entrytStore.getEntries.length) {
-    await entrytStore.fetchEntriesCollection().catch((error) => errorStore.throwError(error))
-  }
+  prompts.value = promptStore.getPrompts
 
   const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
-  categories.value = [...new Set(categoriesArr)].map((category) => ({
-    label: category,
-    value: category
-  }))
+  categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
   categories.value.unshift({ label: 'All', value: 'All' })
 
-  prompts.value = promptStore.getPrompts
-  entries.value = entrytStore.getEntries
+  if (!entryStore.getEntries.length) {
+    await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
+  }
+  entries.value = entryStore.getEntries
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 })
 
-const computedPrompt = computed(() => {
+const computedPrompts = computed(() => {
   return prompts.value.filter(
     (item) =>
       item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
       item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
       item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-      item.entries.some((entry) => entry.title.toLowerCase().includes(search.value.toLocaleLowerCase())) ||
       item.categories.some((category) => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
   )
 })
-const computedEntry = computed(() => {
-  return entries.value.filter((item) => item.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+const computedEntries = computed(() => {
+  return entries.value.filter((item) => item?.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
 })
 </script>
 

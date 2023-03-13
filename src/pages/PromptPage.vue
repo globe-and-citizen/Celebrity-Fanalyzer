@@ -19,30 +19,28 @@
           </div>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
           <p class="text-body1" v-html="prompt?.description"></p>
-          <div class="inline-block">
-            <q-btn
-              color="green"
-              :disable="promptStore.isLoading"
-              flat
-              icon="sentiment_satisfied_alt"
-              :label="countLikes"
-              rounded
-              @click="like()"
-            >
-              <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-            </q-btn>
-            <q-btn
-              color="red"
-              :disable="promptStore.isLoading"
-              flat
-              icon="sentiment_very_dissatisfied"
-              :label="countDislikes"
-              rounded
-              @click="dislike()"
-            >
-              <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-            </q-btn>
-          </div>
+          <q-btn
+            color="green"
+            :disable="promptStore.isLoading"
+            flat
+            icon="sentiment_satisfied_alt"
+            :label="countLikes"
+            rounded
+            @click="like()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </q-btn>
+          <q-btn
+            color="red"
+            :disable="promptStore.isLoading"
+            flat
+            icon="sentiment_very_dissatisfied"
+            :label="countDislikes"
+            rounded
+            @click="dislike()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </q-btn>
           <q-btn
             flat
             href="https://discord.com/channels/1034461422962360380/1040994839610806343"
@@ -54,6 +52,17 @@
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
+        <q-separator inset spaced />
+        <section v-if="prompt.author" class="flex items-center no-wrap q-pa-md">
+          <q-avatar size="6rem">
+            <q-img :src="prompt.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ prompt.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ prompt.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator inset spaced />
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />
       </q-page>
@@ -152,7 +161,13 @@ onMounted(async () => {
     router.push('/404')
     return
   }
-  await likeStore.getAllPromptLikesDislikes(prompt.value.id).catch((error) => errorStore.throwError(error))
+
+  await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+
+  await shareStore
+    .countShares('prompts', prompt.value.id)
+    .then(() => (countShares.value = shareStore.getShares))
+    .catch((error) => errorStore.throwError(error))
 })
 
 likeStore.$subscribe((_mutation, state) => {
@@ -175,15 +190,15 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 async function like() {
-  await likeStore.likePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addLike('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.dislikePrompt(prompt.value.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addDislike('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 }
 
 function onShare(socialNetwork) {
-  shareStore.sharePrompt(prompt.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
+  shareStore.addShare('prompts', prompt.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 

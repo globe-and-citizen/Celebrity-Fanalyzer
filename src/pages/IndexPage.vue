@@ -97,7 +97,7 @@
               <q-card>
                 <q-card-section>
                   Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are
-                  particularly interested in how to tweek contributor compensation for participating.
+                  particularly interested in how to tweak contributor compensation for participating.
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -169,19 +169,21 @@
 </template>
 
 <script setup>
-import { usePromptStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
+const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)
 
 onMounted(async () => {
-  await promptStore.fetchMonthPrompt()
+  await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
   monthPrompt.value = promptStore.getMonthPrompt
-})
 
-const whyModal = ref(false)
+  await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
+  await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
+})
 </script>
 
 <style scoped lang="scss">

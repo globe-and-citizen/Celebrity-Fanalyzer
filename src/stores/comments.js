@@ -149,6 +149,16 @@ export const useCommentStore = defineStore('comments', {
         .finally(() => (this._isLoading = false))
     },
 
+    async deleteCommentsCollection(collectionName, documentId) {
+      const commentsCollection = collection(db, collectionName, documentId, 'comments')
+
+      const commentsSnapshot = await getDocs(commentsCollection)
+
+      commentsSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+    },
+
     async addReply(entryId, commentId, reply) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
