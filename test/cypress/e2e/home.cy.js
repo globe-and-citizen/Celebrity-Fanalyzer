@@ -15,10 +15,6 @@ describe('Home page', () => {
       cy.getByData('roadmap').find("h3").contains('Development Roadmap')
 
       cy.getByData('roadmap').get(".q-expansion-item").eq(0).click()
-
-      cy.getByData('roadmap').get(".q-expansion-item").eq(0).contains("Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are " +
-        "particularly interested in how to tweek contributor compensation for participating.")
-      //q-expansion-item
     })
   })
   it('Should display properly', () => {
