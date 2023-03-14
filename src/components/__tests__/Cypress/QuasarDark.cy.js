@@ -1,5 +1,5 @@
 import { Dark } from 'quasar';
-import QuasarDark from '../QuasarDark.vue';
+import QuasarDark from '../../Cypress/QuasarDark.vue';
 
 describe('QuasarDark', () => {
   it('changes its color', () => {

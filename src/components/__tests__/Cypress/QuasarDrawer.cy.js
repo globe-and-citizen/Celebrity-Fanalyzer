@@ -1,5 +1,5 @@
 import LayoutContainer from 'app/test/cypress/wrappers/LayoutContainer.vue';
-import QuasarDrawer from '../QuasarDrawer.vue';
+import QuasarDrawer from '../../Cypress/QuasarDrawer.vue';
 
 describe('QuasarDrawer', () => {
   it('should show a drawer', () => {

@@ -1,6 +1,6 @@
 import { vModelAdapter } from '@quasar/quasar-app-extension-testing-e2e-cypress';
 import { ref } from 'vue';
-import VModelComponent from '../VModelComponent.vue';
+import VModelComponent from '../../Cypress/VModelComponent.vue';
 
 describe('VModelComponent', () => {
   it('should show the value', () => {

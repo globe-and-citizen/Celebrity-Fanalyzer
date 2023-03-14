@@ -1,4 +1,4 @@
-import QuasarMenu from '../QuasarMenu.vue';
+import QuasarMenu from '../../Cypress/QuasarMenu.vue';
 
 describe('QuasarMenu', () => {
   it('click an item by content', () => {

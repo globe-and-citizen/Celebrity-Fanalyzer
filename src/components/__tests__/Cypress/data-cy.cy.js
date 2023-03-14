@@ -1,4 +1,4 @@
-import DataCyComponent from '../data-cy.vue';
+import DataCyComponent from '../../Cypress/data-cy.vue';
 
 describe('dataCy command', () => {
   it('works as a parent command', () => {

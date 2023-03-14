@@ -1,4 +1,4 @@
-import ColorAssertionsComponent from '../color-assertions.vue';
+import ColorAssertionsComponent from '../../Cypress/color-assertions.vue';
 
 describe('color assertions', () => {
   it('works with names, hex codes and CSS variables', () => {

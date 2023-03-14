@@ -1,4 +1,4 @@
-import QuasarTooltip from '../QuasarTooltip.vue';
+import QuasarTooltip from '../../Cypress/QuasarTooltip.vue';
 
 describe('QuasarTooltip', () => {
   it('should show a tooltip', () => {
