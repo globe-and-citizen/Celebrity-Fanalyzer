@@ -1,10 +1,9 @@
 //Testing Frameworks
-import {installQuasar} from '@quasar/quasar-app-extension-testing-unit-vitest'
-import {createPinia, setActivePinia} from 'pinia'
-import {beforeEach, describe, expect, it, vitest} from 'vitest'
+import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
+import { describe, expect, it } from 'vitest'
 
 // Necessary Components
-import {mount, shallowMount} from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import BarGraph from 'src/components/BarGraph.vue'
 
 installQuasar()
