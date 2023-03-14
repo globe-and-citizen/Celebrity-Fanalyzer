@@ -2,7 +2,7 @@ name: End-to-end Cypress tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/cypress-v2]
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
