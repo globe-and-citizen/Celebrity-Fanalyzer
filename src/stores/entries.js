@@ -44,6 +44,7 @@ export const useEntryStore = defineStore('entries', {
         .finally(() => (this._isLoading = false))
     },
     async fetchEntryBySlug(slug) {
+      console.log("fetchEntryBySlugAAA", slug);
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
 

@@ -36,7 +36,7 @@ export const useCommentStore = defineStore('comments', {
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-      console.log("entry", entry);
+      console.log("ENTRY", entry);
 
       const c = query(collection(db, 'entries', entry.id, 'comments'))
       const snap = await getDocs(c)
@@ -48,12 +48,14 @@ export const useCommentStore = defineStore('comments', {
         }
       }
       this._isLoading = false
-      console.log("comments", comments);
+      // console.log("comments", comments);
 
       this._comments = comments
+      console.log("this._comments", this._comments)
     },
 
     async addComment(comment, entry) {
+      console.log("I am in the comments jsBBBBB", comment, entry)
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 

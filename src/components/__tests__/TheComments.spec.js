@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it, vitest, vi, afterAll } from 'vitest'
 import { useUserStore } from 'src/stores/user'
 import { useCommentStore, useEntryStore } from 'src/stores'
 import commentCard from '../TheComments.vue'
+import { ref, reactive } from 'vue'
 
 import { VueRouterMock, createRouterMock, injectRouterMock } from 'vue-router-mock'
 config.plugins.VueWrapper.install(VueRouterMock)
@@ -59,8 +60,16 @@ describe('TheComment Component', () => {
     // 2) Create fake comment
     const commenStore = useCommentStore()
     const entryStore = useEntryStore()
+    const entry = ref({})
+    const myComment = reactive({})
+
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
     await entryStore.fetchEntryBySlug("/2023/03/pompt-entry-3")
+
+    await entryStore
+      .fetchEntryBySlug("/2023/03/pompt-entry-3")
+      .then((res) => (entry.value = res))
+      .catch(() => (entry.value = null))
 
     const startingNumberOfComments = commenStore.getComments.length
     console.log("startingNUmebr", startingNumberOfComments);
@@ -82,16 +91,17 @@ describe('TheComment Component', () => {
       }
     })
 
-    fakeComment.vm.childComments = 'test child comment'
-    fakeComment.vm.myComment = 'test my comment'
-    fakeComment.vm.reply = 'test reply comment'
-    fakeComment.vm.commentId = fakeCommentId
+
+    fakeComment.vm.myComment.text = 'test my comment'
+    // fakeComment.vm.childComments = 'test child comment'
+    // fakeComment.vm.reply = 'test reply comment'
+    // fakeComment.vm.commentId = fakeCommentId
 
     // 3) Trigger submission programatically
-    await fakeComment.vm.addComment() //Mocked
+    await commenStore.addComment(fakeComment.vm.myComment.text, entry) //Mocked
 
     // 4) Test
-    await commenStore.fetchComments("/2023/02/more-frogs")
+    await commenStore.fetchComments("/2023/03/pompt-entry-3")
     console.log("Last length", commenStore.getComments.length);
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
   })
