@@ -15,14 +15,6 @@ export const useShareStore = defineStore('shares', {
   },
 
   actions: {
-    async countShares(collectionName, documentId) {
-      const sharesCollection = collection(db, collectionName, documentId, 'shares')
-
-      const snapshot = await getCountFromServer(sharesCollection)
-
-      this._shares = snapshot.data().count
-    },
-
     async fetchShares(collectionName, documentId) {
       const sharesCollection = collection(db, collectionName, documentId, 'shares')
 
@@ -43,7 +35,7 @@ export const useShareStore = defineStore('shares', {
         sharedOn: socialNetwork
       })
 
-      this.countShares(collectionName, documentId)
+      this.fetchShares(collectionName, documentId)
     },
 
     async deleteAllShares(collectionName, documentId) {
