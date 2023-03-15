@@ -5,7 +5,7 @@ import { useUserStore } from 'src/stores'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
-    _shares: 0
+    _shares: []
   }),
 
   persist: true,
@@ -21,6 +21,14 @@ export const useShareStore = defineStore('shares', {
       const snapshot = await getCountFromServer(sharesCollection)
 
       this._shares = snapshot.data().count
+    },
+
+    async fetchShares(collectionName, documentId) {
+      const sharesCollection = collection(db, collectionName, documentId, 'shares')
+
+      const snapshot = await getDocs(sharesCollection)
+
+      this._shares = snapshot.docs.map((doc) => doc.data())
     },
 
     async addShare(collectionName, documentId, socialNetwork) {
