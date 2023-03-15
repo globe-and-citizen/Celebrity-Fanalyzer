@@ -46,8 +46,6 @@ describe('TheComment Component', () => {
     await userStore.testing_loadUserProfile(result.user)
   })
 
-
-
   it('create fake comment in here', async () => {
     global.fetch = vi.fn(async () => {
       return {
@@ -56,12 +54,10 @@ describe('TheComment Component', () => {
         }
       }
     })
-
     // 2) Create fake comment
     const commenStore = useCommentStore()
     const entryStore = useEntryStore()
     const entry = ref({})
-    const myComment = reactive({})
 
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
     await entryStore.fetchEntryBySlug("/2023/03/pompt-entry-3")
@@ -95,10 +91,10 @@ describe('TheComment Component', () => {
     fakeComment.vm.myComment.text = 'test my comment'
     // fakeComment.vm.childComments = 'test child comment'
     // fakeComment.vm.reply = 'test reply comment'
-    // fakeComment.vm.commentId = fakeCommentId
+    fakeComment.vm.myComment.id = fakeCommentId
 
     // 3) Trigger submission programatically
-    await commenStore.addComment(fakeComment.vm.myComment.text, entry) //Mocked
+    await commenStore.addComment(fakeComment.vm.myComment, entry.value) //Mocked
 
     // 4) Test
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
