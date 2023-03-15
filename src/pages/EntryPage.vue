@@ -65,7 +65,7 @@
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
+          <LikesBar :data="graphData(type)" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -81,7 +81,7 @@
 
 <script setup>
 import { Timestamp } from 'firebase/firestore'
-import BarGraph from 'src/components/BarGraph.vue'
+import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
