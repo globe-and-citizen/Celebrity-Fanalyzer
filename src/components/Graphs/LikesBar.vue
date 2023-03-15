@@ -7,7 +7,7 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { onBeforeUpdate, onMounted, ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
@@ -53,10 +53,7 @@ function compute() {
   }
 }
 
-onBeforeUpdate(() => {
-  compute()
-})
-onMounted(() => {
+watchEffect(() => {
   compute()
 })
 </script>

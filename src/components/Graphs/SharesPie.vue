@@ -7,7 +7,7 @@ import { PieChart } from 'echarts/charts'
 import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { onBeforeUpdate, onMounted, ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent])
@@ -44,11 +44,7 @@ function compute() {
   }
 }
 
-onBeforeUpdate(() => {
-  compute()
-})
-
-onMounted(() => {
+watchEffect(() => {
   compute()
 })
 </script>
