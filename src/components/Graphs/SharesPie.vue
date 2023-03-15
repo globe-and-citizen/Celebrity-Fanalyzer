@@ -30,7 +30,7 @@ const platforms = {
   whatsapp: 'WhatsApp'
 }
 
-const sharesGraph = ref([])
+const shares = ref([])
 
 function compute() {
   option.value = {
@@ -50,7 +50,7 @@ function compute() {
       {
         type: 'pie',
         radius: '55%',
-        data: sharesGraph,
+        data: shares,
         colorBy: 'data',
         color: ['#48982a', '#ea3423', '#f9a61a', '#2e7bb4', '#fc8452', '#9a60b4', '#ea7ccc']
       }
@@ -59,7 +59,7 @@ function compute() {
 }
 
 watchEffect(() => {
-  sharesGraph.value = Object.entries(platforms)
+  shares.value = Object.entries(platforms)
     .map(([key, name]) => {
       const count = props.data?.reduce((acc, share) => {
         return share.sharedOn === key ? acc + 1 : acc
