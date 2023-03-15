@@ -17,6 +17,20 @@ const props = defineProps({
 })
 
 const option = ref({})
+const platforms = {
+  clipboard: 'Clipboard',
+  discord: 'Discord',
+  facebook: 'Facebook',
+  linkedin: 'LinkedIn',
+  odnoklassniki: 'Odnoklassniki',
+  pinterest: 'Pinterest',
+  reddit: 'Reddit',
+  telegram: 'Telegram',
+  twitter: 'Twitter',
+  whatsapp: 'WhatsApp'
+}
+
+const sharesGraph = ref([])
 
 function compute() {
   option.value = {
@@ -36,7 +50,7 @@ function compute() {
       {
         type: 'pie',
         radius: '55%',
-        data: props.data,
+        data: sharesGraph,
         colorBy: 'data',
         color: ['#48982a', '#ea3423', '#f9a61a', '#2e7bb4', '#fc8452', '#9a60b4', '#ea7ccc']
       }
@@ -45,6 +59,15 @@ function compute() {
 }
 
 watchEffect(() => {
+  sharesGraph.value = Object.entries(platforms)
+    .map(([key, name]) => {
+      const count = props.data?.reduce((acc, share) => {
+        return share.sharedOn === key ? acc + 1 : acc
+      }, 0)
+      return { name, value: count }
+    })
+    .filter((platform) => platform.value > 0)
+
   compute()
 })
 </script>
