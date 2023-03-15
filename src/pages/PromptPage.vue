@@ -136,7 +136,9 @@ function graphData(type) {
 
 onMounted(async () => {
   if (router.currentRoute.value.href === '/month') {
-    await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
+    if (!promptStore.getMonthPrompt) {
+      await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
+    }
     prompt.value = promptStore.getMonthPrompt
   }
   if (router.currentRoute.value.params.year) {
