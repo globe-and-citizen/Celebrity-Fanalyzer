@@ -50,7 +50,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
-          <ShareComponent :label="countShares" @share="onShare($event)" />
+          <ShareComponent :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
         <section v-if="prompt.author" class="flex items-center no-wrap q-pa-md">
@@ -92,6 +92,7 @@
             <q-tab name="all" label="All" />
           </q-tabs>
           <LikesBar :data="graphData(type)" />
+          <SharesPie :data="shares" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -101,6 +102,7 @@
 <script setup>
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
+import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
@@ -119,8 +121,8 @@ const shareStore = useShareStore()
 const chartData = ref({})
 const countLikes = ref(0)
 const countDislikes = ref(0)
-const countShares = ref(0)
 const prompt = ref({})
+const shares = ref(0)
 const tab = ref('prompt')
 const type = ref('day')
 
@@ -167,8 +169,8 @@ onMounted(async () => {
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
   await shareStore
-    .countShares('prompts', prompt.value.id)
-    .then(() => (countShares.value = shareStore.getShares))
+    .fetchShares('prompts', prompt.value.id)
+    .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
 })
 
@@ -188,7 +190,7 @@ likeStore.$subscribe((_mutation, state) => {
 })
 
 shareStore.$subscribe((_mutation, state) => {
-  countShares.value = state._shares
+  shares.value = state._shares
 })
 
 async function like() {

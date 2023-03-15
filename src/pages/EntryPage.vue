@@ -24,7 +24,7 @@
           <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="countShares" @share="onShare($event)" />
+          <ShareComponent :label="shares.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
         <section v-if="entry.author" class="flex items-center no-wrap q-pa-md">
@@ -66,6 +66,7 @@
             <q-tab name="all" label="All" />
           </q-tabs>
           <LikesBar :data="graphData(type)" />
+          <SharesPie :data="shares" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -82,6 +83,7 @@
 <script setup>
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
+import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
@@ -103,8 +105,8 @@ const chartData = ref({})
 const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
-const countShares = ref(0)
 const entry = ref({})
+const shares = ref(0)
 const tab = ref('entry')
 const type = ref('day')
 const count = ref(0)
@@ -128,8 +130,8 @@ onMounted(async () => {
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
   await shareStore
-    .countShares('entries', entry.value.id)
-    .then(() => (countShares.value = shareStore.getShares))
+    .fetchShares('entries', entry.value.id)
+    .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
 
   for (const comment of comments.value) {
@@ -171,7 +173,7 @@ likeStore.$subscribe((_mutation, state) => {
 })
 
 shareStore.$subscribe((_mutation, state) => {
-  countShares.value = state._shares
+  shares.value = state._shares
 })
 
 async function like() {
