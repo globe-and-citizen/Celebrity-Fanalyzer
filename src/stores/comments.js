@@ -66,7 +66,7 @@ export const useCommentStore = defineStore('comments', {
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
       const docId = Date.now() + '-' + (comment.author.id || comment.author)
 
-      comment.id = docId
+      comment.id = (comment.id ? comment.id : docId)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
@@ -84,7 +84,7 @@ export const useCommentStore = defineStore('comments', {
       comment.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
+      // if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
         await runTransaction(db, async (transaction) => {
           transaction.update(doc(db, 'entries', entryId, 'comments', comment.id), { text: editedComment })
         })
@@ -94,9 +94,9 @@ export const useCommentStore = defineStore('comments', {
             })
           })
           .finally(() => (this._isLoading = false))
-      } else {
-        throw new Error(error)
-      }
+      // } else {
+      //   throw new Error(error)
+      // }
     },
 
     async likeComment(entryId, commentId) {
@@ -142,6 +142,7 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(entryId, id, userId) {
+      console.log("DDDDD", entryId, id, userId)
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 

@@ -64,7 +64,9 @@ describe('TheComment Component', () => {
 
     await entryStore
       .fetchEntryBySlug("/2023/03/pompt-entry-3")
-      .then((res) => (entry.value = res))
+      .then((res) => (
+        entry.value = res
+      ))
       .catch(() => (entry.value = null))
 
     const startingNumberOfComments = commenStore.getComments.length
@@ -78,6 +80,9 @@ describe('TheComment Component', () => {
           }),
           addComment: vi.fn(()=>{
             console.log("I'm fake!")
+          }),
+          deleteComment: vi.fn(()=>{
+            console.log("Deleted fake comment")
           })
         }
       },
@@ -97,13 +102,20 @@ describe('TheComment Component', () => {
     await commenStore.addComment(fakeComment.vm.myComment, entry.value) //Mocked
 
     // 4) Test
+    console.log("First Length", commenStore.getComments.length)
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
     console.log("Last length", commenStore.getComments.length);
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+
+    // 5) Edit test
+    // await commenStore.editComment(entry.value.id, fakeCommentId, 'test my comment edited', '1')
+    // expect(fakeComment.vm.myComment.text).toBe('test my comment edited')
+
+    // 5) Delete fake comment
+    await commenStore.deleteComment(entry.value.id, fakeCommentId, '1')
+    console.log("Delete Last length", startingNumberOfComments);
+    expect(commenStore.getComments.length).toBe(startingNumberOfComments)
   })
-
-
-  it('delete that comment in here', async () => {})
 
   afterAll(async () => {
     localStorage.clear()
