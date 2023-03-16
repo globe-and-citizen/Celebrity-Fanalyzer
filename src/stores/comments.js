@@ -70,7 +70,6 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async editComment(entryId, id, editedComment, userId) {
-      console.log("EDIT", entryId, id, editedComment, userId);
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 

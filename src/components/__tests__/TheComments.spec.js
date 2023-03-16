@@ -15,6 +15,7 @@ import commentCard from '../TheComments.vue'
 import { ref, reactive } from 'vue'
 
 import { VueRouterMock, createRouterMock, injectRouterMock } from 'vue-router-mock'
+import { async } from '@firebase/util'
 config.plugins.VueWrapper.install(VueRouterMock)
 
 installQuasar()
@@ -82,12 +83,15 @@ describe('TheComment Component', () => {
             console.log('This mock is just a dummy')
           }),
           addComment: vi.fn(()=>{
+            console.log("ADD FAKECOMMENTID", fakeCommentId);
             commenStore.addComment(fakeComment.vm.myComment, entry.value)
           }),
           editComment: vi.fn(()=>{
+            console.log("FAKE COMMENTID", fakeCommentId);
             commenStore.editComment(entry.value.id, fakeCommentId, editedComment, user.uid)
           }),
           deleteComment: vi.fn(()=>{
+            console.log("DEL FAKECOMMENTID", fakeCommentId);
             commenStore.deleteComment(entry.value.id, fakeCommentId, user.uid)
           })
         }
@@ -101,6 +105,7 @@ describe('TheComment Component', () => {
 
     fakeComment.vm.myComment.text = 'test my comment'
     fakeComment.vm.myComment.id = fakeCommentId
+
     const editedComment = "Edited fake comment!"
 
     // 3) Trigger submission programatically
@@ -109,19 +114,21 @@ describe('TheComment Component', () => {
     // 4) Test
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
-    console.log("After adding comment", commenStore.getComments.length);
 
     // 5) Edit test
     await fakeComment.vm.editComment()
     expect(editedComment).toBe("Edited fake comment!")
 
     // 5) Delete fake comment
-    // await fakeComment.vm.deleteComment(entry.value.id, fakeCommentId, user.uid)
+    // await fakeComment.vm.deleteComment()
 
     // // 6) Test
-    // await commenStore.fetchComments("/2023/03/pompt-entry-3")
-    // expect(commenStore.getComments.length).toBe(startingNumberOfComments)
-    // console.log("After deleting comment", startingNumberOfComments);
+    await commenStore.fetchComments("/2023/03/pompt-entry-3")
+    expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+
+    await new Promise((res, rej) => {
+      setTimeout(()=>{res()}, 1000)
+    })
   })
 
 })
