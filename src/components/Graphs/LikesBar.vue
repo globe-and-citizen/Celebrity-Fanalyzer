@@ -29,7 +29,7 @@ function compute() {
     },
     xAxis: {
       type: 'category',
-      data: props.data.map((item) => item.label)
+      data: props.data?.map((item) => item.label)
     },
     yAxis: {
       type: 'value'
@@ -39,14 +39,14 @@ function compute() {
         name: 'Likes',
         type: 'bar',
         stack: 'Total',
-        data: props.data.map((item) => item.likes),
+        data: props.data?.map((item) => item.likes),
         color: '#48982a'
       },
       {
         name: 'Dislikes',
         type: 'bar',
         stack: 'Total',
-        data: props.data.map((item) => -item.dislikes),
+        data: props.data?.map((item) => -item.dislikes),
         color: '#ea3423'
       }
     ]

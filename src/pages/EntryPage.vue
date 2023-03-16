@@ -46,7 +46,7 @@
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h5">{{ entry?.title }}</h1>
-          <div class="flex no-wrap items-center q-mb-xl">
+          <div v-if="entry.author" class="flex no-wrap items-center q-mb-xl">
             <q-avatar size="4rem">
               <img :src="entry.author.photoURL" alt="Author Image" />
             </q-avatar>
@@ -106,7 +106,7 @@ const comments = ref([])
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const entry = ref({})
-const shares = ref(0)
+const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
 const count = ref(0)

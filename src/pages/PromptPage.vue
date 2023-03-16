@@ -122,7 +122,7 @@ const chartData = ref({})
 const countLikes = ref(0)
 const countDislikes = ref(0)
 const prompt = ref({})
-const shares = ref(0)
+const shares = ref([])
 const tab = ref('prompt')
 const type = ref('day')
 
