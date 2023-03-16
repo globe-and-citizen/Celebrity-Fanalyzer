@@ -36,4 +36,5 @@ ui-debug.log
 # Firebase Emulator Logs
 *.log
 firebase-debug.log
-/coverage
+.nyc_output
+coverage/

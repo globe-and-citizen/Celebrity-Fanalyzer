@@ -1,4 +1,4 @@
-name: Run Tests
+name: Vitest Unit Tests
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
-      - name: Start Emulators and Run Tests
+      - name: Start Emulators and Run Vitests
         env:
           VITE_RELEASE_STAGE: testing
         run: |

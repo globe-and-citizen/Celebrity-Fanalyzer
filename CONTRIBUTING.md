@@ -42,10 +42,19 @@ npm run dev
 Before submitting your PR you need to make sure that nothing has been broken.
 For that, you need to run the tests:
 
+#### Unit test
+
 ```bash
 npm install -g firebase-tools # In case you don't have firebase-tools installed
 npm run emulators
 npm run test
+```
+
+#### E2E test
+
+```bash
+npm run dev # In case you don't have firebase-tools installed
+npm run cy:open
 ```
 
 ### Create a Pull request

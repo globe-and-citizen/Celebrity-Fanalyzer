@@ -10,7 +10,7 @@
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
           <div class="flex justify-between">
-            <p v-if="prompt.date" class="text-body2">{{ monthYear(prompt.date) }}</p>
+            <p v-if="prompt?.date" class="text-body2">{{ monthYear(prompt.date) }}</p>
             <div>
               <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
                 {{ category }}
@@ -53,7 +53,7 @@
           <ShareComponent :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
-        <section v-if="prompt.author" class="flex items-center no-wrap q-pa-md">
+        <section v-if="prompt?.author" class="flex items-center no-wrap q-pa-md">
           <q-avatar size="6rem">
             <q-img :src="prompt.author.photoURL" />
           </q-avatar>
@@ -71,7 +71,7 @@
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
-          <div class="flex no-wrap items-center q-mb-xl">
+          <div v-if="prompt?.author" class="flex no-wrap items-center q-mb-xl">
             <q-avatar size="4rem">
               <img :src="prompt.author.photoURL" alt="" />
             </q-avatar>
