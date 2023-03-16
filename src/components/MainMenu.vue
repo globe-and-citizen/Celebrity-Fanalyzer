@@ -1,6 +1,6 @@
 <template>
   <q-footer class="bg-white" elevated>
-    <q-tabs active-class="text-primary" align="justify" class="tabs text-secondary" switch-indicator>
+    <q-tabs active-class="text-primary" align="justify" class="tabs text-secondary" switch-indicator data-test="main-menu">
       <q-route-tab v-for="(route, index) in routes" exact :icon="route.icon" :key="index" :to="route.path" />
       <q-route-tab v-if="userStore.isAdmin || userStore.isWriter" exact icon="admin_panel_settings" to="/admin" />
     </q-tabs>
