@@ -1,4 +1,4 @@
-name: End-to-end Cypress tests
+name: Cypress End-to-End Tests
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
-
 
 jobs:
   cypress-run:
