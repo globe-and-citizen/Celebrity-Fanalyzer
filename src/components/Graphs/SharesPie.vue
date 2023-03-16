@@ -14,22 +14,22 @@ use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent
 
 const props = defineProps({
   data: { type: Array, required: true },
-  interval: { type: String }
+  interval: { type: String, default: 'day' }
 })
 
 const option = ref({})
-const platforms = {
-  clipboard: 'Clipboard',
-  discord: 'Discord',
-  facebook: 'Facebook',
-  linkedin: 'LinkedIn',
-  odnoklassniki: 'Odnoklassniki',
-  pinterest: 'Pinterest',
-  reddit: 'Reddit',
-  telegram: 'Telegram',
-  twitter: 'Twitter',
-  whatsapp: 'WhatsApp'
-}
+const platforms = [
+  { name: 'Clipboard', color: '#F9A61A' },
+  { name: 'Discord', color: '#7289DA' },
+  { name: 'Facebook', color: '#4267B2' },
+  { name: 'LinkedIn', color: '#0072B1' },
+  { name: 'Odnoklassniki', color: '#ED812B' },
+  { name: 'Pinterest', color: '#E60023' },
+  { name: 'Reddit', color: '#FF8700' },
+  { name: 'Telegram', color: '#0088CC' },
+  { name: 'Twitter', color: '#1DA1F2' },
+  { name: 'WhatsApp', color: '#25D366' }
+]
 const shares = ref([])
 const sharesCount = ref(0)
 
@@ -53,34 +53,36 @@ function compute() {
         radius: '55%',
         data: shares,
         colorBy: 'data',
+        // TODO: use correct color for each platform
         color: ['#48982a', '#ea3423', '#f9a61a', '#2e7bb4', '#fc8452', '#9a60b4', '#ea7ccc']
       }
     ]
   }
 }
 
+const intervalFunctions = {
+  day: (shareDate, now) => shareDate >= new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+  week: (shareDate, now) => {
+    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()))
+    return shareDate >= weekStart
+  },
+  all: () => true
+}
+
 watchEffect(() => {
-  shares.value = Object.entries(platforms)
-    .map(([key, name]) => {
-      let count = 0
-      const now = Date.now() / 1000
-      const intervalSeconds = (() => {
-        switch (props.interval) {
-          case 'day':
-            return 24 * 60 * 60
-          case 'week':
-            return 7 * 24 * 60 * 60
-          default:
-            return now - props.data[props.data.length - 1].createdAt.seconds
+  shares.value = platforms
+    .map((platform) => {
+      const count = props.data.reduce((acc, share) => {
+        const shareDate = new Date(share.createdAt.seconds * 1000)
+        const now = new Date()
+
+        if (platform.name.toLowerCase() === share.sharedOn.toLowerCase() && intervalFunctions[props.interval](shareDate, now)) {
+          return acc + 1
         }
-      })()
-      props.data.forEach((share) => {
-        const createdAt = share.createdAt.seconds
-        if (share.sharedOn === key && now - createdAt <= intervalSeconds) {
-          count++
-        }
-      })
-      return { name, value: count }
+        return acc
+      }, 0)
+
+      return { name: platform.name, value: count, color: platform.color }
     })
     .filter((platform) => platform.value > 0)
 
