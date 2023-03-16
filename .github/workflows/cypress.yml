@@ -1,0 +1,37 @@
+name: Cypress End-to-End Tests
+
+on:
+  push:
+    branches: [main, feature/cypress-v2]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up NodeJS 18.14.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.14.0
+          cache: 'npm'
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm run dev
+          wait-on: http://localhost:9200/
+          browser: firefox
+          headed: true
+          record: true
+          parallel: true
+        env:
+          # For recording and parallelization to work you must set your CYPRESS_RECORD_KEY
+          # in GitHub repo → Settings → Secrets → Actions
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          # pass GitHub token to detect new build vs re-run build
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -5,7 +5,12 @@
     <section class="text-center">
       <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
       <RouterLink to="month">
-        <q-img :src="monthPrompt?.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+        <q-img
+          :src="monthPrompt?.image"
+          spinner-color="primary"
+          style="border: 3px solid #e54757; border-radius: 12px"
+          data-test="month-link"
+        />
       </RouterLink>
       <p class="q-my-md text-body1">
         This Month's Prompt:
@@ -81,7 +86,7 @@
 
     <!-- *** -->
 
-    <section class="q-my-xl text-body1 text-center" style="max-width: 100%">
+    <section class="q-my-xl text-body1 text-center" style="max-width: 100%" data-test="roadmap">
       <h3 class="text-bold text-h5">Development Roadmap</h3>
       <q-list bordered class="q-ma-md rounded-borders">
         <q-expansion-item expand-separator icon="stars" label="Build Celebrity Fanalyzer" caption="2022/23">
