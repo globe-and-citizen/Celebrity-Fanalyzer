@@ -59,9 +59,9 @@ export const useCommentStore = defineStore('comments', {
       comment.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const docId = Date.now() + '-' + (comment.author.id || comment.author)
+      const docId = (comment.id ? comment.id : Date.now() + '-' + (comment.author.id || comment.author))
 
-      comment.id = (comment.id ? comment.id : docId)
+      comment.id = docId
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
