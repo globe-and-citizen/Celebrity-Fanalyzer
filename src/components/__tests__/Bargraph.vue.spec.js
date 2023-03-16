@@ -4,13 +4,13 @@ import { describe, expect, it } from 'vitest'
 
 // Necessary Components
 import { shallowMount } from '@vue/test-utils'
-import BarGraph from 'src/components/BarGraph.vue'
+import LikesBar from 'src/components/Graphs/LikesBar.vue'
 
 installQuasar()
 
 describe('Mounting Bar Graph', () => {
-  it('should be able to mount the Bargraph', async () => {
-    const wrapper = shallowMount(BarGraph, {
+  it('should be able to mount the LikesBar', async () => {
+    const wrapper = shallowMount(LikesBar, {
       props: {
         data: [
           {

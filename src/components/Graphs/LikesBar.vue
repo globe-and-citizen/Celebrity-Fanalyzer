@@ -13,8 +13,7 @@ import VChart from 'vue-echarts'
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
 
 const props = defineProps({
-  data: { type: Array, required: true },
-  title: { type: String, required: false }
+  data: { type: Array, required: true }
 })
 
 const option = ref({})
@@ -22,7 +21,7 @@ const option = ref({})
 function compute() {
   option.value = {
     title: {
-      text: props.title,
+      text: 'Likes & Dislikes',
       left: 'center'
     },
     tooltip: {
