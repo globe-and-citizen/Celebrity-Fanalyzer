@@ -66,7 +66,7 @@
             <q-tab name="all" label="All" />
           </q-tabs>
           <LikesBar :data="graphData(type)" />
-          <SharesPie :data="shares" />
+          <SharesPie :data="shares" :interval="type" />
         </section>
       </q-page>
     </q-tab-panel>
