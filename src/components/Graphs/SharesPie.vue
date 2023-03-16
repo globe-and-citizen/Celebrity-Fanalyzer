@@ -13,7 +13,8 @@ import VChart from 'vue-echarts'
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent])
 
 const props = defineProps({
-  data: { type: Array, required: true }
+  data: { type: Array, required: true },
+  interval: { type: String }
 })
 
 const option = ref({})
@@ -29,13 +30,13 @@ const platforms = {
   twitter: 'Twitter',
   whatsapp: 'WhatsApp'
 }
-
 const shares = ref([])
+const sharesCount = ref(0)
 
 function compute() {
   option.value = {
     title: {
-      text: 'Shares',
+      text: `${sharesCount.value} Shares`,
       left: 'center'
     },
     tooltip: {
@@ -61,12 +62,29 @@ function compute() {
 watchEffect(() => {
   shares.value = Object.entries(platforms)
     .map(([key, name]) => {
-      const count = props.data?.reduce((acc, share) => {
-        return share.sharedOn === key ? acc + 1 : acc
-      }, 0)
+      let count = 0
+      const now = Date.now() / 1000
+      const intervalSeconds = (() => {
+        switch (props.interval) {
+          case 'day':
+            return 24 * 60 * 60
+          case 'week':
+            return 7 * 24 * 60 * 60
+          default:
+            return now - props.data[props.data.length - 1].createdAt.seconds
+        }
+      })()
+      props.data.forEach((share) => {
+        const createdAt = share.createdAt.seconds
+        if (share.sharedOn === key && now - createdAt <= intervalSeconds) {
+          count++
+        }
+      })
       return { name, value: count }
     })
     .filter((platform) => platform.value > 0)
+
+  sharesCount.value = shares.value.reduce((acc, share) => acc + share.value, 0)
 
   compute()
 })
