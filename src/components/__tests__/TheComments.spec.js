@@ -81,6 +81,9 @@ describe('TheComment Component', () => {
           addComment: vi.fn(()=>{
             console.log("I'm fake!")
           }),
+          editComment: vi.fn(()=>{
+            console.log("Edited fake comment!")
+          }),
           deleteComment: vi.fn(()=>{
             console.log("Deleted fake comment")
           })
@@ -108,8 +111,8 @@ describe('TheComment Component', () => {
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5) Edit test
-    // await commenStore.editComment(entry.value.id, fakeCommentId, 'test my comment edited', '1')
-    // expect(fakeComment.vm.myComment.text).toBe('test my comment edited')
+    await commenStore.editComment(entry.value.id, fakeCommentId, 'test my comment edited', '1')
+    expect(fakeComment.vm.myComment.text).toBe('test my comment edited')
 
     // 5) Delete fake comment
     await commenStore.deleteComment(entry.value.id, fakeCommentId, '1')
