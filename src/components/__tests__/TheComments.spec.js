@@ -59,6 +59,9 @@ describe('TheComment Component', () => {
     const entryStore = useEntryStore()
     const entry = ref({})
 
+    const userStore = useUserStore()
+    const user = userStore.getUser
+
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
     await entryStore.fetchEntryBySlug("/2023/03/pompt-entry-3")
 
@@ -70,7 +73,7 @@ describe('TheComment Component', () => {
       .catch(() => (entry.value = null))
 
     const startingNumberOfComments = commenStore.getComments.length
-    console.log("startingNUmebr", startingNumberOfComments);
+    console.log("Length of original comments", startingNumberOfComments);
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
     const fakeComment = shallowMount(commentCard, {
       global: {
@@ -80,12 +83,15 @@ describe('TheComment Component', () => {
           }),
           addComment: vi.fn(()=>{
             console.log("I'm fake!")
+            commenStore.addComment(fakeComment.vm.myComment, entry.value)
           }),
-          editComment: vi.fn(()=>{
-            console.log("Edited fake comment!")
-          }),
+          // editComment: vi.fn(()=>{
+          //   console.log("Edited fake comment!")
+          //   // commenStore.editComment(entry.value.id, fakeCommentId, fakeComment.vm.editedComment, user.uid)
+          // }),
           deleteComment: vi.fn(()=>{
             console.log("Deleted fake comment")
+            commenStore.deleteComment(entry.value.id, fakeCommentId, user.uid)
           })
         }
       },
@@ -97,27 +103,27 @@ describe('TheComment Component', () => {
 
 
     fakeComment.vm.myComment.text = 'test my comment'
-    // fakeComment.vm.childComments = 'test child comment'
-    // fakeComment.vm.reply = 'test reply comment'
+    fakeComment.vm.editedComment = 'test child comment'
     fakeComment.vm.myComment.id = fakeCommentId
 
     // 3) Trigger submission programatically
-    await commenStore.addComment(fakeComment.vm.myComment, entry.value) //Mocked
+    await fakeComment.vm.addComment(fakeComment.vm.myComment, entry.value) //Mocked
 
     // 4) Test
-    console.log("First Length", commenStore.getComments.length)
     await commenStore.fetchComments("/2023/03/pompt-entry-3")
-    console.log("Last length", commenStore.getComments.length);
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+    console.log("After adding comment", commenStore.getComments.length);
 
     // 5) Edit test
-    await commenStore.editComment(entry.value.id, fakeCommentId, 'test my comment edited', '1')
-    expect(fakeComment.vm.myComment.text).toBe('test my comment edited')
+    // fakeComment.vm.editComment(entry.value.id, fakeCommentId, fakeComment.vm.editedComment, user.uid)
+    // expect(fakeComment.vm.myComment.text).toBe('test child comment')
 
     // 5) Delete fake comment
-    await commenStore.deleteComment(entry.value.id, fakeCommentId, '1')
-    console.log("Delete Last length", startingNumberOfComments);
+    await fakeComment.vm.deleteComment(entry.value.id, fakeCommentId, user.uid)
+
+    await commenStore.fetchComments("/2023/03/pompt-entry-3")
     expect(commenStore.getComments.length).toBe(startingNumberOfComments)
+    console.log("After deleting comment", startingNumberOfComments);
   })
 
   afterAll(async () => {

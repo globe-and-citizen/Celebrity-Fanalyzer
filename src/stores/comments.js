@@ -32,11 +32,9 @@ export const useCommentStore = defineStore('comments', {
 
   actions: {
     async fetchComments(slug) {
-      console.log("slug what is", slug);
       this._isLoading = true
       const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
       const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-      console.log("ENTRY", entry);
 
       const c = query(collection(db, 'entries', entry.id, 'comments'))
       const snap = await getDocs(c)
@@ -48,14 +46,11 @@ export const useCommentStore = defineStore('comments', {
         }
       }
       this._isLoading = false
-      // console.log("comments", comments);
 
       this._comments = comments
-      console.log("this._comments", this._comments)
     },
 
     async addComment(comment, entry) {
-      console.log("I am in the comments jsBBBBB", comment, entry)
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -75,6 +70,7 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async editComment(entryId, id, editedComment, userId) {
+      console.log("EDIT", entryId, id, editedComment, userId);
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -84,7 +80,7 @@ export const useCommentStore = defineStore('comments', {
       comment.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      // if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
+      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
         await runTransaction(db, async (transaction) => {
           transaction.update(doc(db, 'entries', entryId, 'comments', comment.id), { text: editedComment })
         })
@@ -94,9 +90,9 @@ export const useCommentStore = defineStore('comments', {
             })
           })
           .finally(() => (this._isLoading = false))
-      // } else {
-      //   throw new Error(error)
-      // }
+      } else {
+        throw new Error(error)
+      }
     },
 
     async likeComment(entryId, commentId) {
@@ -142,7 +138,6 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(entryId, id, userId) {
-      console.log("DDDDD", entryId, id, userId)
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -177,6 +172,7 @@ export const useCommentStore = defineStore('comments', {
       const docId = Date.now() + '-' + (reply.author.id || reply.author)
 
       reply.id = docId
+      reply.id = (reply.id ? reply.id : docId)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
