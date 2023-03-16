@@ -16,12 +16,14 @@ const props = defineProps({
   data: { type: Array, required: true }
 })
 
+const likes = ref(0)
+const dislikes = ref(0)
 const option = ref({})
 
 function compute() {
   option.value = {
     title: {
-      text: 'Likes & Dislikes',
+      text: `${likes.value} Likes & ${dislikes.value} Dislikes`,
       left: 'center'
     },
     tooltip: {
@@ -54,6 +56,9 @@ function compute() {
 }
 
 watchEffect(() => {
+  likes.value = props.data?.reduce((acc, item) => acc + item.likes, 0)
+  dislikes.value = props.data?.reduce((acc, item) => acc + item.dislikes, 0)
+
   compute()
 })
 </script>
