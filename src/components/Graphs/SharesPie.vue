@@ -19,7 +19,7 @@ const props = defineProps({
 
 const option = ref({})
 const platforms = [
-  { name: 'Clipboard', color: '#F9A61A' },
+  { name: 'Clipboard', color: '#777777' },
   { name: 'Discord', color: '#7289DA' },
   { name: 'Facebook', color: '#4267B2' },
   { name: 'LinkedIn', color: '#0072B1' },
@@ -53,8 +53,7 @@ function compute() {
         radius: '55%',
         data: shares,
         colorBy: 'data',
-        // TODO: use correct color for each platform
-        color: ['#48982a', '#ea3423', '#f9a61a', '#2e7bb4', '#fc8452', '#9a60b4', '#ea7ccc']
+        color: shares.value.map((share) => share.color)
       }
     ]
   }
