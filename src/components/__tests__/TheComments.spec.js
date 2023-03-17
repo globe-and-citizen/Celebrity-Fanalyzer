@@ -6,16 +6,15 @@ import { auth, db } from 'src/firebase'
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
 import { mount, shallowMount, config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vitest, vi, afterAll } from 'vitest'
+import { beforeEach, describe, expect, it, vi, afterAll } from 'vitest'
 
 // Necessary Components
 import { useUserStore } from 'src/stores/user'
-import { useCommentStore, useEntryStore } from 'src/stores'
+import { useCommentStore, usePromptStore } from 'src/stores'
 import commentCard from '../TheComments.vue'
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 
 import { VueRouterMock, createRouterMock, injectRouterMock } from 'vue-router-mock'
-import { async } from '@firebase/util'
 config.plugins.VueWrapper.install(VueRouterMock)
 
 installQuasar()
@@ -47,6 +46,7 @@ describe('TheComment Component', () => {
     await userStore.testing_loadUserProfile(result.user)
   })
 
+  // FIRST TEST
   it('create fake comment in here', async () => {
     global.fetch = vi.fn(async () => {
       return {
@@ -55,83 +55,99 @@ describe('TheComment Component', () => {
         }
       }
     })
-    // 2) Create fake comment
-    const commenStore = useCommentStore()
-    const entryStore = useEntryStore()
-    const entry = ref({})
 
+    const commenStore = useCommentStore()
+    const promptStore = usePromptStore()
+    const firstEntrySlug = ref({})
+
+    // Get slug of first entry,
+    // this slug is used for fetching entry and add comment to that entry
+    await promptStore.fetchPromptsAndEntries()
+    firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
+
+    // User is coming, it is used for getting userId
     const userStore = useUserStore()
     const user = userStore.getUser
 
-    await commenStore.fetchComments("/2023/03/pompt-entry-3")
-    await entryStore.fetchEntryBySlug("/2023/03/pompt-entry-3")
-
-    await entryStore
-      .fetchEntryBySlug("/2023/03/pompt-entry-3")
-      .then((res) => (
-        entry.value = res
-      ))
-      .catch(() => (entry.value = null))
+    // Getting all comments of first entry
+    await commenStore.fetchComments(firstEntrySlug.value.slug)
 
     const startingNumberOfComments = commenStore.getComments.length
-    console.log("Length of original comments", startingNumberOfComments);
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
+
     const fakeComment = shallowMount(commentCard, {
       global: {
         mocks: {
-          testMock: vi.fn(() => {
-            console.log('This mock is just a dummy')
-          }),
           addComment: vi.fn(()=>{
-            console.log("ADD FAKECOMMENTID", fakeCommentId);
-            commenStore.addComment(fakeComment.vm.myComment, entry.value)
+            commenStore.addComment(fakeComment.vm.myComment, firstEntrySlug.value)
           }),
           editComment: vi.fn(()=>{
-            console.log("FAKE COMMENTID", fakeCommentId);
-            commenStore.editComment(entry.value.id, fakeCommentId, editedComment, user.uid)
+            commenStore.editComment(firstEntrySlug.value.id, fakeCommentId, editedComment, user.uid)
           }),
-          deleteComment: vi.fn(()=>{
-            console.log("DEL FAKECOMMENTID", fakeCommentId);
-            commenStore.deleteComment(entry.value.id, fakeCommentId, user.uid)
-          })
         }
       },
       props: {
         comments: [],
-        entry: { slug: '/2023/03/pompt-entry-3' }
+        entry: { slug: firstEntrySlug.value.slug }
       }
     })
-
 
     fakeComment.vm.myComment.text = 'test my comment'
     fakeComment.vm.myComment.id = fakeCommentId
 
     const editedComment = "Edited fake comment!"
 
-    // 3) Trigger submission programatically
+    // 3) Adding fake comment
     await fakeComment.vm.addComment() //Mocked
 
-    // 4) Test
-    await commenStore.fetchComments("/2023/03/pompt-entry-3")
+    // 4) Test added fake comment
+    await commenStore.fetchComments(firstEntrySlug.value.slug)
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5) Edit test
     await fakeComment.vm.editComment()
     expect(editedComment).toBe("Edited fake comment!")
+  }),
 
-    // 5) Delete fake comment
-    // await fakeComment.vm.deleteComment()
+  // SECOND TEST
+  it('delete fake comment in here', async () => {
+    const commenStore = useCommentStore()
+    const promptStore = usePromptStore()
+    const firstEntrySlug = ref({})
 
-    // // 6) Test
-    await commenStore.fetchComments("/2023/03/pompt-entry-3")
-    expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+    await promptStore.fetchPromptsAndEntries()
+    firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
 
-    await new Promise((res, rej) => {
-      setTimeout(()=>{res()}, 1000)
+    const userStore = useUserStore()
+    const user = userStore.getUser
+
+    await commenStore.fetchComments(firstEntrySlug.value.slug)
+
+    const startingNumberOfComments = commenStore.getComments.length
+    const fakeCommentId = localStorage.getItem('id')
+    const deleteComment = shallowMount(commentCard, {
+      global: {
+        mocks: {
+          deleteComment: vi.fn(()=>{
+            commenStore.deleteComment(firstEntrySlug.value.id, fakeCommentId, user.uid)
+          })
+        }
+      },
+      props: {
+        comments: [],
+        entry: { slug: firstEntrySlug.value.slug }
+      }
     })
-  })
 
+    // Delete fake comment
+    await deleteComment.vm.deleteComment()
+
+    // Test deleted comment
+    await commenStore.fetchComments(firstEntrySlug.value.slug)
+    expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
+  })
 })
+
 afterAll(async () => {
   localStorage.clear()
 })

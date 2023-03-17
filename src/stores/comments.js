@@ -62,6 +62,7 @@ export const useCommentStore = defineStore('comments', {
       const docId = (comment.id ? comment.id : Date.now() + '-' + (comment.author.id || comment.author))
 
       comment.id = docId
+      localStorage.setItem('id', docId)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
