@@ -140,11 +140,7 @@ export const useCommentStore = defineStore('comments', {
       this.$patch({ _comments: comments })
     },
 
-    async deleteComment(entryId, id, userId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
-      const comment = this.getComments.find((comment) => comment.id === id)
+    async deleteComment(entryId, id) {
       const index = this._comments.findIndex((comment) => comment.id === id)
 
       this._isLoading = true
