@@ -108,6 +108,9 @@ export const useCommentStore = defineStore('comments', {
         if (comment.id === commentId && !comment.likes.includes(user)) {
           comment.likes.push(user)
           comment.dislikes = comment.dislikes.filter((user) => user !== user)
+        } else if (comment.likes.includes(user)) {
+          updateDoc(commentRef, { likes: arrayRemove(user) })
+          comment.likes = comment.likes.filter((user) => user !== user)
         }
         return comment
       })
@@ -129,6 +132,9 @@ export const useCommentStore = defineStore('comments', {
         if (comment.id === id && !comment.dislikes.includes(user)) {
           comment.dislikes.push(user)
           comment.likes = comment.likes.filter((user) => user !== user)
+        } else if (comment.dislikes.includes(user)) {
+          updateDoc(commentRef, { dislikes: arrayRemove(user) })
+          comment.dislikes = comment.dislikes.filter((user) => user !== user)
         }
         return comment
       })
