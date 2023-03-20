@@ -1,13 +1,14 @@
 <template>
   <q-table
+    class="fixed q-px-lg"
     :columns="columns"
     flat
     hide-bottom
     :loading="userStore.isLoading"
     :pagination="pagination"
-    no-data-label="No data"
     :rows="users"
     row-key="email"
+    style="left: 0; right: 0"
     title="Manage Users"
   >
     <template v-slot:body-cell-role="props">

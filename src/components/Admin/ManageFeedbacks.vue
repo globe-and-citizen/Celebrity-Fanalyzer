@@ -1,5 +1,6 @@
 <template>
   <q-table
+    class="fixed q-px-lg"
     :columns="columns"
     grid
     hide-header
@@ -7,6 +8,7 @@
     :pagination="pagination"
     row-key="created"
     :rows="feedbackStore.getFeedbacks"
+    style="left: 0; right: 0"
     title="Manage Feedbacks"
   >
     <template v-slot:item="props">
