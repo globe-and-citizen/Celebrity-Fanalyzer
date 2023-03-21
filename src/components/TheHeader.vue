@@ -1,14 +1,21 @@
 <template>
   <q-header class="bg-white" elevated reveal>
     <q-toolbar>
+      <q-toolbar-title v-if="logo">
+        <q-img src="~assets/logo.svg" width="1.7rem" />
+        <span class="q-ml-sm inline row text-secondary">
+          <b>Celebrity</b>
+          Fanalyzer
+        </span>
+      </q-toolbar-title>
       <q-toolbar-title>
-        <q-btn v-if="backBtn" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
+        <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
         <b class="text-secondary">{{ title }}</b>
       </q-toolbar-title>
-      <q-btn v-if="notificationBtn" flat icon="notifications" round size="1rem" text-color="secondary" />
+      <q-btn v-if="feedbackButton" flat icon="feedback" round size="1rem" text-color="secondary" @click="goToFeedback" />
       <slot />
     </q-toolbar>
-    <q-toolbar v-if="isSearch">
+    <q-toolbar v-if="searchInput">
       <q-toolbar-title>
         <q-input
           class="q-pb-lg text-black"
@@ -29,19 +36,28 @@
 </template>
 
 <script setup>
+import { useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 
 defineProps({
-  backBtn: { type: Boolean, required: false, default: true },
-  notificationBtn: { type: Boolean, required: false, default: false },
-  isSearch: { type: Boolean, required: false, default: false },
-  title: { type: String, required: false },
-  modelValue: { required: false }
+  backButton: { type: Boolean, required: false, default: true },
+  logo: { type: Boolean, required: false, default: false },
+  modelValue: { required: false },
+  feedbackButton: { type: Boolean, required: false, default: false },
+  searchInput: { type: Boolean, required: false, default: false },
+  title: { type: String, required: false }
 })
 
 const router = useRouter()
 
+const userStore = useUserStore()
+
 function goBack() {
   router.go(-1)
+}
+
+function goToFeedback() {
+  router.push('/profile')
+  userStore.setProfileTab('feedback')
 }
 </script>

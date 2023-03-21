@@ -10,7 +10,7 @@
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
           <div class="flex justify-between">
-            <p v-if="prompt.date" class="text-body2">{{ monthYear(prompt.date) }}</p>
+            <p v-if="prompt?.date" class="text-body2">{{ monthYear(prompt.date) }}</p>
             <div>
               <q-badge v-for="(category, index) of prompt?.categories" class="q-mx-xs" :key="index" rounded>
                 {{ category }}
@@ -19,30 +19,28 @@
           </div>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
           <p class="text-body1" v-html="prompt?.description"></p>
-          <div class="inline-block">
-            <q-btn
-              color="green"
-              :disable="promptStore.isLoading"
-              flat
-              icon="sentiment_satisfied_alt"
-              :label="countLikes"
-              rounded
-              @click="like()"
-            >
-              <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-            </q-btn>
-            <q-btn
-              color="red"
-              :disable="promptStore.isLoading"
-              flat
-              icon="sentiment_very_dissatisfied"
-              :label="countDislikes"
-              rounded
-              @click="dislike()"
-            >
-              <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-            </q-btn>
-          </div>
+          <q-btn
+            color="green"
+            :disable="promptStore.isLoading"
+            flat
+            icon="sentiment_satisfied_alt"
+            :label="countLikes"
+            rounded
+            @click="like()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </q-btn>
+          <q-btn
+            color="red"
+            :disable="promptStore.isLoading"
+            flat
+            icon="sentiment_very_dissatisfied"
+            :label="countDislikes"
+            rounded
+            @click="dislike()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </q-btn>
           <q-btn
             flat
             href="https://discord.com/channels/1034461422962360380/1040994839610806343"
@@ -54,6 +52,17 @@
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
+        <q-separator inset spaced />
+        <section v-if="prompt?.author" class="flex items-center no-wrap q-pa-md">
+          <q-avatar size="6rem">
+            <q-img :src="prompt.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ prompt.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ prompt.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator inset spaced />
         <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />
       </q-page>
@@ -62,7 +71,7 @@
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
-          <div class="flex no-wrap items-center q-mb-xl">
+          <div v-if="prompt?.author" class="flex no-wrap items-center q-mb-xl">
             <q-avatar size="4rem">
               <img :src="prompt.author.photoURL" alt="" />
             </q-avatar>
@@ -82,7 +91,7 @@
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
+          <LikesBar :data="graphData(type)" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -91,7 +100,7 @@
 
 <script setup>
 import { Timestamp } from 'firebase/firestore'
-import BarGraph from 'src/components/BarGraph.vue'
+import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
@@ -127,7 +136,9 @@ function graphData(type) {
 
 onMounted(async () => {
   if (router.currentRoute.value.href === '/month') {
-    await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
+    if (!promptStore.getMonthPrompt) {
+      await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
+    }
     prompt.value = promptStore.getMonthPrompt
   }
   if (router.currentRoute.value.params.year) {

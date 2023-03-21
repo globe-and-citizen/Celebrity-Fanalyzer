@@ -259,7 +259,7 @@ async function editComment(commentId, editedComment) {
 
 async function deleteComment(commentParentId, commentId) {
   await commentStore
-    .deleteComment(props.entry.id, commentId, userId.value)
+    .deleteComment(props.entry.id, commentId)
     .then(() => $q.notify({ type: 'negative', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 

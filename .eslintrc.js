@@ -13,7 +13,16 @@ module.exports = {
     browser: true,
     'vue/setup-compiler-macros': true
   },
-
+  overrides: [
+    {
+      files: ['**/*.cy.{js,jsx,ts,tsx}'],
+      extends: [
+        // Add Cypress-specific lint rules, globals and Cypress plugin
+        // See https://github.com/cypress-io/eslint-plugin-cypress#rules
+        'plugin:cypress/recommended',
+      ],
+    },
+  ],
   // Rules order is important, please avoid shuffling them
   extends: [
     // Base ESLint recommended rules

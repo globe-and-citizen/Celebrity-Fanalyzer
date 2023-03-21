@@ -1,11 +1,13 @@
 <template>
   <q-table
+    class="fixed q-px-lg"
     :columns="columns"
     flat
     hide-bottom
     :loading="promptStore.isLoading || entryStore.isLoading"
     :pagination="pagination"
     :rows="prompts"
+    style="left: 0; right: 0"
     title="Manage Prompts & Entries"
   >
     <template v-slot:body="props">

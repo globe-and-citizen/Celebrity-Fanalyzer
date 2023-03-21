@@ -1,5 +1,6 @@
 <template>
   <q-table
+    class="fixed q-px-lg"
     :columns="columns"
     grid
     hide-header
@@ -7,6 +8,7 @@
     :pagination="pagination"
     row-key="created"
     :rows="feedbackStore.getFeedbacks"
+    style="left: 0; right: 0"
     title="Manage Feedbacks"
   >
     <template v-slot:item="props">
@@ -19,7 +21,7 @@
           <q-separator />
           <q-card-section>
             <p class="text-body2 text-bold">{{ shortMonthDayTime(props.row.created) }} ~ {{ props.row.subject }}</p>
-            <span>{{ props.row.message }}</span>
+            <span style="white-space: pre-line">{{ props.row.message }}</span>
           </q-card-section>
         </q-card>
       </div>

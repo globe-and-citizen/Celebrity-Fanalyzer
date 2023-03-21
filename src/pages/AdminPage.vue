@@ -41,7 +41,7 @@
           <ManageUsers :users="users" />
         </q-tab-panel>
 
-        <q-tab-panel v-if="userStore.isAdmin" name="feedbacks">
+        <q-tab-panel v-if="userStore.isAdmin || userStore.isWriter" name="feedbacks">
           <ManageFeedbacks />
         </q-tab-panel>
 

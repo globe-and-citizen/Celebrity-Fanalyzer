@@ -1,11 +1,13 @@
 <template>
   <q-table
+    class="fixed q-px-lg"
     :columns="columns"
     flat
     hide-bottom
     :loading="errorStore.isLoading"
     :pagination="pagination"
     :rows="errorStore.getErrors"
+    style="left: 0; right: 0"
     title="Manage Errors"
   >
     <template v-slot:body="props">

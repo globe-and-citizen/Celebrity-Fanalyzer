@@ -10,16 +10,11 @@
     <!-- Panel 1: Entry -->
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
-        <TheHeader title="Entry Page" />
+        <TheHeader feedbackButton title="Entry Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
         <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
-          <div class="q-mb-md">
-            <q-badge v-for="(category, index) of entry.categories" class="q-mx-xs" :key="index" rounded>
-              {{ category }}
-            </q-badge>
-          </div>
           <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="countLikes" @click="like()">
             <q-tooltip>Like</q-tooltip>
           </q-btn>
@@ -31,8 +26,18 @@
           </q-btn>
           <ShareComponent :label="countShares" @share="onShare($event)" />
         </section>
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
-        <q-separator />
+        <q-separator inset spaced />
+        <section v-if="entry.author" class="flex items-center no-wrap q-pa-md">
+          <q-avatar size="6rem">
+            <q-img :src="entry.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ entry.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ entry.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator inset spaced />
+        <div class="q-my-xl"></div>
       </q-page>
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -60,7 +65,7 @@
             <q-tab name="week" label="Week" />
             <q-tab name="all" label="All" />
           </q-tabs>
-          <BarGraph :data="graphData(type)" title="Likes & Dislikes" />
+          <LikesBar :data="graphData(type)" />
         </section>
       </q-page>
     </q-tab-panel>
@@ -76,11 +81,11 @@
 
 <script setup>
 import { Timestamp } from 'firebase/firestore'
-import BarGraph from 'src/components/BarGraph.vue'
+import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -92,7 +97,6 @@ const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
-const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
 const chartData = ref({})

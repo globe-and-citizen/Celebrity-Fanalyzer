@@ -1,8 +1,7 @@
 <template>
-  <TheHeader notification-btn title="Profile" />
-  <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
-    <q-spinner color="primary" size="3em" />
-  </q-page>
+  <TheHeader feedbackButton title="Profile" />
+
+  <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 
   <q-page v-if="!user.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
@@ -15,7 +14,7 @@
   </q-page>
 
   <q-page v-else class="q-px-lg">
-    <div class="flex items-center q-py-xl">
+    <div class="flex items-center no-wrap q-py-xl">
       <q-avatar size="5rem" color="teal" text-color="white">
         <q-img :src="user.photoURL" spinner-color="primary" spinner-size="82px">
           <div class="photo">
@@ -28,13 +27,10 @@
           </div>
         </q-img>
       </q-avatar>
-      <div class="column flex q-ml-md text-secondary">
-        <h2 class="q-my-none text-h5 text-bold">{{ user.displayName }}</h2>
-        <p class="q-my-none text-body1">{{ user.bio }}</p>
-      </div>
+      <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
     </div>
 
-    <q-tabs v-model="tab" active-color="primary">
+    <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)">
       <q-tab name="profile" label="Profile" />
       <q-tab name="feedback" label="Feedback" />
       <q-tab name="settings" label="Settings" />
@@ -71,7 +67,7 @@ const userStore = useUserStore()
 
 const newPhoto = ref([])
 const user = ref(userStore.getUser)
-const tab = ref('profile')
+const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
