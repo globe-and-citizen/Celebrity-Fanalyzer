@@ -58,6 +58,7 @@
     "prettier": "^2.8.4",
     "start-server-and-test": "^2.0.0",
     "vitest": "^0.15.0",
+    "vue-router-mock": "^0.2.0",
     "workbox-build": "^6.5.4",
     "workbox-cacheable-response": "^6.5.4",
     "workbox-core": "^6.5.4",
