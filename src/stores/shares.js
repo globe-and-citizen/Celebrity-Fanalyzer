@@ -27,7 +27,7 @@ export const useShareStore = defineStore('shares', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp)
+      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash)
 
       await setDoc(doc(db, collectionName, documentId, 'shares', docId), {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
