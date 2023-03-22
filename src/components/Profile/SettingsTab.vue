@@ -1,6 +1,6 @@
 <template>
   <q-input v-model="user.email" disable label="Email" />
-  <q-btn class="full-width q-mt-lg" color="secondary" label="Logout" padding="12px" rounded @click="logout()" />
+  <q-btn class="full-width q-mt-lg" color="secondary" label="Logout" padding="12px" rounded @click="logout()" data-test="logout-button"/>
 </template>
 
 <script setup>

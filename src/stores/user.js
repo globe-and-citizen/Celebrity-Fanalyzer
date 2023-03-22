@@ -1,9 +1,15 @@
-import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from 'firebase/firestore'
-import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
-import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
+import {collection, doc, getDoc, getDocs, runTransaction, setDoc} from 'firebase/firestore'
+import {
+  getAdditionalUserInfo,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  signOut
+} from 'firebase/auth'
+import {defineStore} from 'pinia'
+import {LocalStorage} from 'quasar'
 import sha1 from 'sha1'
-import { auth, db } from 'src/firebase'
+import {auth, db} from 'src/firebase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -37,8 +43,8 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await getDocs(collection(db, 'users'))
         .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
+          const users = querySnapshot.docs.map((doc) => ({uid: doc.id, ...doc.data()}))
+          this.$patch({_users: users})
         })
         .finally(() => (this._isLoading = false))
     },
@@ -60,6 +66,25 @@ export const useUserStore = defineStore('user', {
         })
     },
 
+    async googleSignInWithEmailAndPassword() {
+      this._isLoading = true
+
+      await signInWithEmailAndPassword(auth, "test@test.com", "12345678")
+        .then(async (result) => {
+          const isNewUser = getAdditionalUserInfo(result)?.isNewUser
+          const {email, displayName, photoURL, uid} = result.user
+
+          if (isNewUser) {
+            await setDoc(doc(db, 'users', uid), {email, displayName, photoURL})
+          }
+
+          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
+            this.$patch({_user: {uid: document.id, ...document.data()}})
+          })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     async googleSignIn() {
       const provider = new GoogleAuthProvider()
 
@@ -67,14 +92,14 @@ export const useUserStore = defineStore('user', {
       await signInWithPopup(auth, provider)
         .then(async (result) => {
           const isNewUser = getAdditionalUserInfo(result)?.isNewUser
-          const { email, displayName, photoURL, uid } = result.user
+          const {email, displayName, photoURL, uid} = result.user
 
           if (isNewUser) {
-            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
+            await setDoc(doc(db, 'users', uid), {email, displayName, photoURL})
           }
 
           await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
-            this.$patch({ _user: { uid: document.id, ...document.data() } })
+            this.$patch({_user: {uid: document.id, ...document.data()}})
           })
         })
         .finally(() => (this._isLoading = false))
@@ -85,7 +110,7 @@ export const useUserStore = defineStore('user', {
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
       })
-        .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
+        .then(() => this.$patch({_user: {...this.getUser, ...user}}))
         .finally(() => (this._isLoading = false))
     },
 
@@ -98,7 +123,7 @@ export const useUserStore = defineStore('user', {
           const users = this.getUsers
           const index = users.findIndex((u) => u.uid === user.uid)
           users[index].role = user.role
-          this.$patch({ _users: users })
+          this.$patch({_users: users})
         })
         .finally(() => (this._isLoading = false))
     },
@@ -113,13 +138,13 @@ export const useUserStore = defineStore('user', {
     },
 
     setProfileTab(tab) {
-      this.$patch({ _profileTab: tab })
+      this.$patch({_profileTab: tab})
     },
 
     async testing_loadUserProfile(user) {
       await getDoc(doc(db, 'users', user.uid)).then((document) => {
-        this.$patch({ _user: { uid: document.id, ...document.data() } })
-        localStorage.setItem('user', JSON.stringify({ uid: document.id, ...document.data() }))
+        this.$patch({_user: {uid: document.id, ...document.data()}})
+        localStorage.setItem('user', JSON.stringify({uid: document.id, ...document.data()}))
       })
     }
   }
