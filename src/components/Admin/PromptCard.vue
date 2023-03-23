@@ -5,7 +5,7 @@
       <span>&nbsp; for &nbsp;</span>
       <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date">
         <template v-slot:append>
-          <q-icon name="event" class="cursor-pointer">
+          <q-icon name="event" class="cursor-pointer" data-test="icon-date">
             <q-popup-proxy cover transition-show="scale" transition-hide="scale">
               <q-date
                 default-view="Months"
@@ -30,12 +30,13 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-        <q-select :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="prompt.author" />
-        <q-input counter hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
+        <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="prompt.author" />
+        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
         <q-field counter label="Description" maxlength="400" v-model="prompt.description">
           <template v-slot:control>
             <q-editor
               class="q-mt-md"
+              data-test="input-description"
               dense
               flat
               min-height="5rem"
@@ -67,6 +68,7 @@
         <q-file
           accept=".jpg, image/*"
           counter
+          data-test="file-image"
           hide-hint
           hint="Max size is 1MB"
           label="Image"
@@ -83,6 +85,7 @@
         <q-select
           behavior="menu"
           counter
+          data-test="select-categories"
           hide-dropdown-icon
           hide-hint
           hint="Click Enter ↵ to add a new category"
@@ -101,6 +104,7 @@
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
+          data-test="button-submit"
           :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
