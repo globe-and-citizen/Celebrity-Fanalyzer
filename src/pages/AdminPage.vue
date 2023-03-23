@@ -10,10 +10,10 @@
       transition-hide="jump-up"
     >
       <q-list style="min-width: 100px">
-        <q-item clickable @click="openPromptDialog()">
+        <q-item clickable data-test="new-prompt" @click="openPromptDialog()">
           <q-item-section>New Prompt</q-item-section>
         </q-item>
-        <q-item clickable @click="openEntryDialog()">
+        <q-item clickable data-test="new-entry" @click="openEntryDialog()">
           <q-item-section>New Entry</q-item-section>
         </q-item>
       </q-list>
