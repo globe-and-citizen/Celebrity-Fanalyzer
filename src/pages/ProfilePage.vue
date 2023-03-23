@@ -74,7 +74,11 @@ userStore.$subscribe((_mutation, state) => {
 })
 
 async function googleSignIn() {
-  await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  if (import.meta.env.VITE_MODE === 'E2E') {
+    await userStore.emailSignIn().catch((error) => errorStore.throwError(error))
+  } else {
+    await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  }
 }
 
 function uploadPhoto() {
