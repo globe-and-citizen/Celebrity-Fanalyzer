@@ -1,3 +1,4 @@
+/* eslint-disable cypress/no-unnecessary-waiting */
 /// <reference types="cypress" />
 // Use `cy.dataCy` custom command for more robust tests
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
@@ -6,19 +7,42 @@
 
 // This test will pass when run against a clean Quasar project
 describe('Prompt Page', () => {
-  it('Should open prompt of the month and click like button', () => {
-    cy.viewport(1280, 800)
-    cy.visit('/')
-    cy.getByData('month-link')
-      .find('img', { timeout: 10000 })
-      .should('be.visible')
-      .and(($img) => {
-        expect($img[0].naturalWidth).to.be.greaterThan(0)
-      })
-      .click()
+  it('Should login and create a Cypress prompt', () => {
+    // Visits the profile page
+    cy.visit('/profile')
 
-    cy.location('pathname').should('eq', '/month')
+    // Get the login button and click it
+    cy.get('.q-page > .q-btn').click().wait(2000)
 
-    cy.get('.q-btn').eq(0).scrollIntoView().click({ force: true })
+    // Visits the admin page and wait for 4 seconds
+    cy.visit('/admin', { timeout: 10000 }).wait(5000)
+
+    // Get the dropdown button and click it
+    cy.get('.q-btn--rectangle').click().wait(2000)
+
+    // Get the first button (New Prompt) and click it
+    cy.get('[data-test="new-prompt"]').click().wait(2000)
+
+    // Get the date input and choose the last option
+    cy.get('[data-test="icon-date"]').click()
+    cy.get('.q-date__view > :nth-child(13)').click()
+
+    // Get the author select and choose the first option
+    cy.get('[data-test="select-author"]').select('TESTER')
+
+    // Get the title input and type 'Hello World!' into it
+    cy.get('[data-test="input-title"]').type('Hello World!')
+
+    // Get the description input and type 'This is a sample prompt' into it
+    cy.get('[data-test="input-description"]').type('This is a sample prompt')
+
+    // Get the file image input and upload the Cypress logo
+    cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+
+    // Get the categories select and choose add 'Cypress' and 'Test' categories
+    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
+
+    // Get the submit button and click it
+    cy.get('[data-test="button-submit"]').click().wait(3000)
   })
 })
