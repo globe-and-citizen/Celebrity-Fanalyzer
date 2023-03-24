@@ -7,7 +7,7 @@
 
 // This test will pass when run against a clean Quasar project
 describe('Prompt Page', () => {
-  it('Should login and create a Cypress prompt', () => {
+  beforeEach(() => {
     // Visits the profile page
     cy.visit('/profile')
 
@@ -16,12 +16,14 @@ describe('Prompt Page', () => {
 
     // Visits the admin page and wait for 4 seconds
     cy.visit('/admin', { timeout: 10000 }).wait(5000)
+  })
 
+  it('Should login and create a Cypress prompt', () => {
     // Get the dropdown button and click it
-    cy.get('.q-btn--rectangle').click().wait(2000)
+    cy.get('.q-btn-dropdown').click().wait(1000)
 
     // Get the first button (New Prompt) and click it
-    cy.get('[data-test="new-prompt"]').click().wait(2000)
+    cy.get('[data-test="new-prompt"]').click().wait(1000)
 
     // Get the date input and choose the last option
     cy.get('[data-test="icon-date"]').click()
@@ -44,5 +46,16 @@ describe('Prompt Page', () => {
 
     // Get the submit button and click it
     cy.get('[data-test="button-submit"]').click().wait(3000)
+  })
+
+  it('Should delete the Cypress prompt', () => {
+    // Get the second button (Delete Prompt) and click it
+    cy.get('[data-test="input-search"]').type('TESTER', { timeout: 500 })
+
+    // Get the delete button and click it
+    cy.get('[data-test="button-delete"]').click().wait(1000)
+
+    // Get the confirm button and click it
+    cy.get('[data-test="button-confirm-delete"]').click().wait(2000)
   })
 })

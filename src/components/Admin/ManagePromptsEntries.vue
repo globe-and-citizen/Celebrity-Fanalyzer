@@ -2,6 +2,7 @@
   <q-table
     class="fixed q-px-lg"
     :columns="columns"
+    :filter="filter"
     flat
     hide-bottom
     :loading="promptStore.isLoading || entryStore.isLoading"
@@ -10,6 +11,13 @@
     style="left: 0; right: 0"
     title="Manage Prompts & Entries"
   >
+    <template v-slot:top-right>
+      <q-input data-test="input-search" debounce="300" dense placeholder="Search" v-model="filter">
+        <template v-slot:append>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+    </template>
     <template v-slot:body="props">
       <q-tr :props="props">
         <q-td auto-width>
@@ -19,6 +27,7 @@
         <q-td class="text-right">
           <q-btn
             color="warning"
+            data-test="button-edit"
             :disable="promptStore.isLoading"
             flat
             icon="edit"
@@ -28,6 +37,7 @@
           />
           <q-btn
             color="negative"
+            data-test="button-delete"
             :disable="promptStore.isLoading"
             flat
             icon="delete"
@@ -59,8 +69,8 @@
         </span>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn color="negative" data-test="button-confirm-delete" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -90,6 +100,7 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
+const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function openDeleteDialog(prompt) {
