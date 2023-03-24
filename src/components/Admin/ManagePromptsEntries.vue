@@ -21,7 +21,15 @@
     <template v-slot:body="props">
       <q-tr :props="props">
         <q-td auto-width>
-          <q-btn color="red" dense flat :icon="props.expand ? 'expand_less' : 'expand_more'" round @click="props.expand = !props.expand" />
+          <q-btn
+            color="red"
+            data-test="button-expand"
+            dense
+            flat
+            :icon="props.expand ? 'expand_less' : 'expand_more'"
+            round
+            @click="props.expand = !props.expand"
+          />
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">

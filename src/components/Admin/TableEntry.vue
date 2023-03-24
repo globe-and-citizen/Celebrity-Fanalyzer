@@ -30,8 +30,8 @@
         </span>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeleteEntry(deleteDialog.entry.id)" />
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn color="negative" data-test="confirm-delete-entry" flat label="Delete" @click="onDeleteEntry(deleteDialog.entry.id)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
