@@ -6,7 +6,7 @@
 // ** This file is an example of how to write Cypress tests, you can safely delete it **
 
 // This test will pass when run against a clean Quasar project
-describe('Prompt Page', () => {
+describe('Admin Prompt', () => {
   beforeEach(() => {
     // Visits the profile page
     cy.visit('/profile')
@@ -18,7 +18,7 @@ describe('Prompt Page', () => {
     cy.visit('/admin', { timeout: 10000 }).wait(5000)
   })
 
-  it('Should login and create a Cypress prompt', () => {
+  it('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('.q-btn-dropdown').click().wait(1000)
 
@@ -48,14 +48,14 @@ describe('Prompt Page', () => {
     cy.get('[data-test="button-submit"]').click().wait(3000)
   })
 
-  it('Should delete the Cypress prompt', () => {
+  it('Should delete the prompt', () => {
     // Get the second button (Delete Prompt) and click it
     cy.get('[data-test="input-search"]').type('TESTER', { timeout: 500 })
 
     // Get the delete button and click it
-    cy.get('[data-test="button-delete"]').click().wait(1000)
+    cy.get('[data-test="button-delete-prompt"]').click().wait(1000)
 
     // Get the confirm button and click it
-    cy.get('[data-test="button-confirm-delete"]').click().wait(2000)
+    cy.get('[data-test="confirm-delete-prompt"]').click().wait(2000)
   })
 })

@@ -37,7 +37,7 @@
           />
           <q-btn
             color="negative"
-            data-test="button-delete"
+            data-test="button-delete-prompt"
             :disable="promptStore.isLoading"
             flat
             icon="delete"
@@ -70,7 +70,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="button-confirm-delete" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
