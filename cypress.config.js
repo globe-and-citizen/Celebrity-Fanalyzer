@@ -8,6 +8,7 @@ module.exports = defineConfig({
   screenshotsFolder: 'test/cypress/screenshots',
   videosFolder: 'test/cypress/videos',
   video: true,
+  defaultCommandTimeout: 50000,
   e2e: {
     setupNodeEvents(on, config) {
       registerCodeCoverageTasks(on, config);

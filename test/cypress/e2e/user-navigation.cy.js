@@ -33,11 +33,11 @@ describe('User Navigation', () => {
         "/month"
       )
 
-      cy.getByData('like-button').should('have.attr', 'disabled'); // Wait for the button to be disabled
-      cy.wait(20000); // Wait for 5 seconds
+      cy.getByData('like-button').should('have.attr', 'disabled');
+      // Wait for the button to be disabled
+      cy.get("button.q-btn.q-btn-item.non-selectable.no-outline.q-btn--flat.q-btn--rectangle.q-btn--rounded.text-red.q-btn--actionable.q-focusable.q-hoverable")
 
-      // cy.waitUntil(() => cy.getByData('like-button').should('not.have.attr', 'disabled'));
-      // cy.waitUntil(() => cy.getByData('like-button').should('not.have.attr', 'disabled'));
+
       cy.getByData('like-button').should('not.have.attr', 'disabled');
       cy.getByData('dislike-button').should('not.have.attr', 'disabled');
 
