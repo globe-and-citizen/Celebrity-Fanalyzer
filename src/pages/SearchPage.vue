@@ -21,7 +21,7 @@
       <ArticleSkeleton />
       <ArticleSkeleton />
     </section>
-    <q-tab-panels animated swipeable v-model="category">
+    <q-tab-panels animated swipeable v-model="category"  data-test="prompt-list" >
       <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
         <TransitionGroup name="prompt" tag="div">
           <ItemCard
