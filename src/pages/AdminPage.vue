@@ -2,6 +2,7 @@
   <TheHeader title="Admin Panel">
     <q-btn-dropdown
       auto-close
+      data-test="button-dropdown"
       color="primary"
       dropdown-icon="control_point"
       flat
