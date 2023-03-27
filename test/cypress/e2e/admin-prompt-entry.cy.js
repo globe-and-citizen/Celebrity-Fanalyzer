@@ -9,21 +9,21 @@
 describe('Admin Prompt & Entry', () => {
   beforeEach(() => {
     // Visits the profile page
-    cy.visit('/profile')
+    cy.visit('/profile', { timeout: 10000 })
 
     // Get the login button and click it
-    cy.get('.q-page > .q-btn').click({ timeout: 4000 }).wait(5000)
+    cy.get('.q-page > .q-btn').click({ timeout: 10000 }).wait(2000)
 
-    // Visits the admin page and wait for 4 seconds
-    cy.visit('/admin', { timeout: 10000 }).wait(5000)
+    // Visits the admin page and wait for 15 seconds
+    cy.visit('/admin', { timeout: 15000 }).wait(10000)
   })
 
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
-    cy.get('.q-btn-dropdown').click().wait(1000)
+    cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
 
     // Get the first button (New Prompt) and click it
-    cy.get('[data-test="new-prompt"]').click().wait(1000)
+    cy.get('[data-test="new-prompt"]').click({ timeout: 1000 })
 
     // Get the date input and choose the last option
     cy.get('[data-test="icon-date"]').click()
@@ -45,15 +45,15 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
 
     // Get the submit button and click it
-    cy.get('[data-test="button-submit"]').click().wait(3000)
+    cy.get('[data-test="button-submit"]').click({ timeout: 5000 }).wait(2000)
   })
 
   it('Should create a entry', () => {
     // Get the dropdown button and click it
-    cy.get('.q-btn-dropdown').click().wait(1000)
+    cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
 
     // Get the first button (New Entry) and click it
-    cy.get('[data-test="new-entry"]').click().wait(1000)
+    cy.get('[data-test="new-entry"]').click({ timeout: 1000 })
 
     // Get the author select and choose the "TESTER" option
     cy.get('[data-test="select-author"]').select('TESTER')
@@ -71,12 +71,12 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
 
     // Get the submit button and click it
-    cy.get('[data-test="button-submit"]').click().wait(3000)
+    cy.get('[data-test="button-submit"]').click({ timeout: 5000 }).wait(2000)
   })
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('TESTER', { timeout: 500 })
+    cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
 
     // Get the expand button and click it
     cy.get('[data-test="button-expand"]').click({ timeout: 1000 })
@@ -90,7 +90,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the prompt', () => {
     // Get the second button (Delete Prompt) and click it
-    cy.get('[data-test="input-search"]').type('TESTER', { timeout: 500 })
+    cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
 
     // Get the delete button and click it
     cy.get('[data-test="button-delete-prompt"]').click({ timeout: 1000 })
