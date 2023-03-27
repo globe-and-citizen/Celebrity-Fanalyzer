@@ -59,9 +59,10 @@ export const useCommentStore = defineStore('comments', {
       comment.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const docId = Date.now() + '-' + (comment.author.id || comment.author)
+      const docId = (comment.id ? comment.id : Date.now() + '-' + (comment.author.id || comment.author))
 
       comment.id = docId
+      localStorage.setItem('id', docId)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
@@ -171,6 +172,7 @@ export const useCommentStore = defineStore('comments', {
       const docId = Date.now() + '-' + (reply.author.id || reply.author)
 
       reply.id = docId
+      reply.id = (reply.id ? reply.id : docId)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
