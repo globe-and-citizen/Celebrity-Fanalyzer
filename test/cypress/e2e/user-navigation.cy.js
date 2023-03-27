@@ -4,6 +4,8 @@ describe('User Navigation', () => {
     cy.visit('/')
 
     cy.get('h2').contains('Welcome to Celebrity Fanalyzer!')
+
+    // Create alias @month-link
     cy.getByData('month-link').find('img', {timeout: 10000}).should('be.visible')
       .and(($img) => {
         // "naturalWidth" and "naturalHeight" are set when the image loads
@@ -26,7 +28,7 @@ describe('User Navigation', () => {
   })
 
   context("UnAuthenticated user", function () {
-    it.only("Should Be able to navigate and implement somme actions", function () {
+    it("Should Be able to navigate to month page, like and dislike a prompt", function () {
       cy.get("@month-link").click()
       cy.location("pathname").should(
         "eq",

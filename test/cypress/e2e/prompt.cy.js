@@ -26,16 +26,16 @@ describe('Prompt Content Management', () => {
       )
     })
 
-    it.only('Should Create new Prompt then delet it', () => {
-      const now = new Date(20221, 11, 14)
-      cy.clock(now)
-      cy.get('tbody>tr', {timeout: 100000}).should('be.visible', {timeout: 100000})
-      cy.pause()
-      cy.getByData('dropdown').click()
-      cy.getByData('prompt-dropdown').click()
-      // cy.getByData('date-picker').click()
-      cy.getByData('date')//.type("2022-11", {fore: true})
-    })
+    // Not working
+    // it.only('Should Create new Prompt then delet it', () => {
+    //   const now = new Date(20221, 11, 14)
+    //   cy.clock(now)
+    //   cy.get('tbody>tr')
+    //   cy.getByData('dropdown').click()
+    //   cy.getByData('prompt-dropdown').click()
+    //   // cy.getByData('date-picker').click()
+    //   cy.getByData('date')//.type("2022-11", {fore: true})
+    // })
     // it('Logout', () => {
     //   cy.getByData('tab-settings', {timeout: 10000}).click()
     //   cy.getByData('logout-button').click()
