@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card :class="{loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading}">
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
       <span>&nbsp; for &nbsp;</span>
@@ -18,20 +18,22 @@
                 @update:model-value="onUpdateMonth"
               >
                 <div class="row items-center justify-end">
-                  <q-btn v-close-popup label="Close" color="primary" flat />
+                  <q-btn v-close-popup label="Close" color="primary" flat/>
                 </div>
               </q-date>
             </q-popup-proxy>
           </q-icon>
         </template>
       </q-input>
-      <q-space />
-      <q-btn flat round icon="close" v-close-popup />
+      <q-space/>
+      <q-btn flat round icon="close" v-close-popup/>
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-        <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="prompt.author" />
-        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
+        <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions"
+                  v-model="prompt.author"/>
+        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required
+                 v-model="prompt.title"/>
         <q-field counter label="Description" maxlength="400" v-model="prompt.description">
           <template v-slot:control>
             <q-editor
@@ -79,7 +81,7 @@
           @update:model-value="uploadPhoto()"
         >
           <template v-slot:append>
-            <q-icon name="image" />
+            <q-icon name="image"/>
           </template>
         </q-file>
         <q-select
@@ -99,7 +101,8 @@
           v-model="prompt.categories"
         />
         <div class="text-center">
-          <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+          <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain"
+                 style="max-height: 40vh; max-width: 80vw"/>
         </div>
         <q-btn
           class="full-width q-mt-xl"
@@ -112,14 +115,14 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="promptStore.isLoading" />
+    <q-inner-loading color="primary" :showing="promptStore.isLoading"/>
   </q-card>
 </template>
 
 <script setup>
-import { date, useQuasar } from 'quasar'
-import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import {date, useQuasar} from 'quasar'
+import {useErrorStore, usePromptStore, useUserStore} from 'src/stores'
+import {onMounted, reactive, ref, watchEffect} from 'vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
@@ -137,7 +140,7 @@ const prompt = reactive({})
 
 watchEffect(() => {
   if (props.id) {
-    prompt.author = { label: props.author.displayName, value: props.author.uid }
+    prompt.author = {label: props.author.displayName, value: props.author.uid}
     prompt.categories = props.categories
     prompt.date = props.date
     prompt.description = props.description
@@ -154,7 +157,7 @@ watchEffect(() => {
 })
 
 onMounted(() => {
-  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({label: user.displayName, value: user.uid}))
 })
 
 function onUpdateMonth() {
@@ -169,7 +172,7 @@ function uploadPhoto() {
 }
 
 function onRejected() {
-  $q.notify({ type: 'negative', message: 'Image did not pass validation constraints' })
+  $q.notify({type: 'negative', message: 'Image did not pass validation constraints'})
 }
 
 function onPaste(evt) {
@@ -197,7 +200,7 @@ async function onSubmit() {
   prompt.slug = prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (!props.id && promptStore.getPrompts.find((p) => p.date === prompt.date)) {
-    $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
+    $q.notify({type: 'negative', message: 'Choose another month for this prompt.'})
     return
   }
 
@@ -208,12 +211,12 @@ async function onSubmit() {
   if (props.id) {
     await promptStore
       .editPrompt(prompt)
-      .then(() => $q.notify({ type: 'info', message: 'Prompt successfully edited' }))
+      .then(() => $q.notify({type: 'info', message: 'Prompt successfully edited'}))
       .catch((error) => errorStore.throwError(error, 'Prompt edit failed'))
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({type: 'positive', message: 'Prompt successfully submitted'}))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 
