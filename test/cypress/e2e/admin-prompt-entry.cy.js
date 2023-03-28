@@ -3,9 +3,6 @@
 // Use `cy.dataCy` custom command for more robust tests
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
-// ** This file is an example of how to write Cypress tests, you can safely delete it **
-
-// This test will pass when run against a clean Quasar project
 describe('Admin Prompt & Entry', () => {
   beforeEach(() => {
     cy.viewport('iphone-x')
@@ -16,13 +13,8 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-page > .q-btn').click({ timeout: 10000 }).wait(2000)
 
     // Visits the admin page and wait for 15 seconds
-    // cy.visit('/admin', { timeout: 15000 }).wait(10000)
-
-    cy.getByData('main-menu').find("a").eq(4).click()
-    cy.location("pathname").should(
-      "eq",
-      "/admin"
-    )
+    cy.get('[data-test="main-menu"]').find('a').eq(4).click({ timeout: 10000 }).wait(5000)
+    cy.location('pathname').should('eq', '/admin')
   })
 
   it('Should create a prompt', () => {
@@ -30,13 +22,13 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
 
     // Get the first button (New Prompt) and click it
-    cy.get('[data-test="new-prompt"]').should("be.visible").click()
+    cy.get('[data-test="new-prompt"]').should('be.visible').click()
     cy.get('.q-card.not-loading', { timeout: 50000 })
 
     // Get the date input and choose the last option
-    cy.get('[data-test="icon-date"]').should("be.visible").click()
+    cy.get('[data-test="icon-date"]').should('be.visible').click()
     cy.get('.q-date__view > :nth-child(13)').click()
-    cy.get("span.block").eq(14).click()
+    cy.get('span.block').eq(14).click()
 
     // Get the author select and choose the first option
     cy.get('[data-test="select-author"]').select('TESTER')
