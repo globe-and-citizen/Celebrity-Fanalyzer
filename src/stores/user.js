@@ -69,7 +69,8 @@ export const useUserStore = defineStore('user', {
     async googleSignInWithEmailAndPassword() {
       this._isLoading = true
 
-      await signInWithEmailAndPassword(auth, "test@test.com", "12345678")
+      console.log("import.meta.env.VITE_TEST_USER", import.meta.env.VITE_TEST_USER)
+      await signInWithEmailAndPassword(auth, import.meta.env.VITE_TEST_USER, import.meta.env.VITE_TEST_PASSWORD)
         .then(async (result) => {
           const isNewUser = getAdditionalUserInfo(result)?.isNewUser
           const {email, displayName, photoURL, uid} = result.user
