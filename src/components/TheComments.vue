@@ -66,7 +66,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </div>
           <div>
-            <span @click="dislikeComment(comment.id)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+            <span @click="dislikeComment(comment.id)" :class="comment.dislikes?.includes(user) ? 'bolder-icon' : ''" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_dissatisfied
             </span>
             <span class="text-body2">
@@ -216,23 +216,6 @@ onMounted(async () => {
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   user.value = userStore.getUserRef || userStore.getUserIpHash
-
-  console.log("USER", user);
-  console.log("COMMENT", props.comments);
-
-  // for (const comment of props.comments) {
-  //   if (comment.likes?.includes(user)) {
-  //     isBold.value = true
-  //   } else {
-  //     continue
-  //   }
-  // }
-
-  // const isBold = props.comments.map((comment) => {
-  //   if (comment.likes?.includes(user)) {
-  //     isBold.value = true
-  //   }
-  // })
 })
 
 const replyCounter = (id) => {
