@@ -328,6 +328,7 @@ async function addReply(commentId) {
   'wght' 300,
   'GRAD' 0,
   'opsz' 32;
+  color: #4caf50
 }
 
 .warning-icon {
