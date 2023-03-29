@@ -55,29 +55,29 @@
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
-        <q-btn
-          color="green"
-          flat
-          icon="sentiment_satisfied_alt"
-          :label="comment.likes?.length || 0"
-          rounded
-          @click="likeComment(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-btn
-          color="red"
-          flat
-          icon="sentiment_very_dissatisfied"
-          :label="comment.dislikes?.length || 0"
-          rounded
-          @click="dislikeComment(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-        <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
-          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
-        </q-btn>
+        <div class="row">
+          <div class="q-pr-md">
+            <span @click="likeComment(comment.id)" :class="comment.likes?.includes(user) ? 'bolder-icon' : ''" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+              sentiment_satisfied
+            </span>
+            <span class="text-body2">
+              {{ comment.likes?.length || 0 }}
+            </span>
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </div>
+          <div>
+            <span @click="dislikeComment(comment.id)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+              sentiment_dissatisfied
+            </span>
+            <span class="text-body2">
+              {{ comment.dislikes?.length || 0 }}
+            </span>
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </div>
+          <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
+            <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+          </q-btn>
+        </div>
         <q-slide-transition>
           <div class="q-px-md q-mt-md" v-show="expanded && comment.id === commentId">
             <div v-if="commentStore.isLoading" class="text-center">
@@ -209,10 +209,30 @@ const isEditing = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
 const userId = ref('')
+const user = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+
+  user.value = userStore.getUserRef || userStore.getUserIpHash
+
+  console.log("USER", user);
+  console.log("COMMENT", props.comments);
+
+  // for (const comment of props.comments) {
+  //   if (comment.likes?.includes(user)) {
+  //     isBold.value = true
+  //   } else {
+  //     continue
+  //   }
+  // }
+
+  // const isBold = props.comments.map((comment) => {
+  //   if (comment.likes?.includes(user)) {
+  //     isBold.value = true
+  //   }
+  // })
 })
 
 const replyCounter = (id) => {
@@ -224,6 +244,7 @@ const replyCounter = (id) => {
   }
   return count
 }
+
 
 async function addComment() {
   await commentStore
@@ -317,3 +338,18 @@ async function addReply(commentId) {
   }
 }
 </script>
+<style>
+.bolder-icon {
+  font-variation-settings:
+  'FILL' 1,
+  'wght' 300,
+  'GRAD' 0,
+  'opsz' 32;
+}
+
+.warning-icon {
+  font-size: 28px;
+  width: 32px;
+  height: 32px;
+}
+</style>
