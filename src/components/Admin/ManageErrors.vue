@@ -13,6 +13,7 @@
     <template v-slot:body="props">
       <q-tr :props="props">
         <q-td key="createdAt" :props="props">{{ shortMonthDayTime(props.row.createdAt) }}</q-td>
+        <q-td key="user" :props="props">{{ props.row.user?.displayName || props.row.user }}</q-td>
         <q-td key="error" :props="props">
           {{ props.row.error.split('\n')[0] }}
         </q-td>
@@ -49,6 +50,7 @@ const errorStore = useErrorStore()
 
 const columns = [
   { name: 'createdAt', align: 'left', label: 'Created At', field: 'createdAt', sortable: true },
+  { name: 'user', align: 'left', label: 'User', field: 'user', sortable: true },
   { name: 'error', align: 'left', label: 'Error', field: 'error', sortable: true },
   { name: 'action', label: 'Action', field: 'action' }
 ]
