@@ -57,7 +57,7 @@
         </div>
         <div class="row">
           <div class="q-pr-md">
-            <span @click="likeComment(comment.id)" :class="comment.likes?.includes(user) ? 'bolder-icon' : 'bolder-icon-dislikes'" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+            <span @click="likeComment(comment.id)" :class="comment.likes?.includes(user) ? 'bolder-icon' : ''" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_satisfied
             </span>
             <span class="text-body2">
@@ -211,18 +211,17 @@ const reply = reactive({})
 const userId = ref('')
 const user = ref('')
 
-watchEffect(() => {
-  user.value = userStore.getUserRef || userStore.getUserIpHash
-  console.log('The count is now ' + user.value)
-})
-
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   user.value = userStore.getUserRef || userStore.getUserIpHash
+  console.log('The mount is now ' + user.value)
 })
 
+watchEffect(() => {
+  console.log('The count is now ' + user.value)
+})
 
 const replyCounter = (id) => {
   let count = 0
