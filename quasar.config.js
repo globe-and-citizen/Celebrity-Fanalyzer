@@ -72,15 +72,17 @@ module.exports = configure(function (ctx) {
 
       extendViteConf(viteConf) {
         viteConf.plugins.push(
-          sentryVitePlugin({
-            org: process.env.VITE_SENTRY_ORG,
-            project: process.env.VITE_SENTRY_PROJECT,
-            // Specify the directory containing build artifacts
-            include: './dist',
-            // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
-            // and needs the `project:releases` and `org:read` scopes
-            authToken: process.env.VITE_SENTRY_AUTH_TOKEN
-          })
+          process.env.VITE_SENTRY_ORG
+            ? sentryVitePlugin({
+                org: process.env.VITE_SENTRY_ORG,
+                project: process.env.VITE_SENTRY_PROJECT,
+                // Specify the directory containing build artifacts
+                include: './dist',
+                // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
+                // and needs the `project:releases` and `org:read` scopes
+                authToken: process.env.VITE_SENTRY_AUTH_TOKEN
+              })
+            : null
         )
         viteConf.build.rollupOptions = {
           output: {
