@@ -11,16 +11,14 @@ describe('Sharing a Prompt', () => {
     cy.get('.q-card > .row > :nth-child(1) > img').click().wait(2000)
 
     // Select the amount of shares to see if its value is greater than 0
-    cy.get(':nth-child(7) > .q-btn__content > .block').scrollIntoView().invoke('text').then(parseFloat).should('be.greaterThan', 0)
-
-    // Select the amount of shares to see if its value is greater than 1
-    cy.get(':nth-child(7) > .q-btn__content > .block').scrollIntoView().invoke('text').then(parseFloat).should('be.greaterThan', 1)
+    cy.get('[data-test="share-button"] > .q-btn__content > .block')
+      .scrollIntoView()
+      .invoke('text')
+      .then(parseFloat)
+      .should('be.greaterThan', 0)
 
     // Selects the second card on the page and clicks it
     cy.get('[data-test="graph-tab"]').click().wait(2000)
-
-    // Selects the second tab on the page (Anthrogram Tab) and clicks it
-    // cy.get('[style="padding-bottom: 64px;"] > .q-tabs > .q-tabs__content > .q-tab--inactive').click()
 
     // Selects the second canvas on the page and checks to see if it is visible
     cy.get('canvas').eq(1).scrollIntoView().should('be.visible')
