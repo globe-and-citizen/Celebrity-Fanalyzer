@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar'
 import { db } from 'src/firebase'
@@ -19,8 +19,15 @@ export const useErrorStore = defineStore('errors', {
     async fetchErrors() {
       this._isLoading = true
       await getDocs(collection(db, 'errors'))
-        .then((querySnapshot) => {
+        .then(async (querySnapshot) => {
           const errors = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+          for (const error of errors) {
+            if (typeof error.user === 'object') {
+              error.user = await getDoc(error.user).then((doc) => doc.data())
+            }
+          }
+
           this.$patch({ _errors: errors })
         })
         .finally(() => (this._isLoading = false))
