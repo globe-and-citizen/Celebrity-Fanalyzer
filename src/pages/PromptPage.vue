@@ -1,7 +1,7 @@
 <template>
   <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="prompt" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-ml-auto q-pb-md" data-test="prompt-tab" icon="fiber_manual_record" name="prompt" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="stats" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
@@ -21,6 +21,7 @@
           <p class="text-body1" v-html="prompt?.description"></p>
           <q-btn
             color="green"
+            data-test="like-button"
             :disable="promptStore.isLoading"
             flat
             icon="sentiment_satisfied_alt"
@@ -32,6 +33,7 @@
           </q-btn>
           <q-btn
             color="red"
+            data-test="dislike-button"
             :disable="promptStore.isLoading"
             flat
             icon="sentiment_very_dissatisfied"
