@@ -17,6 +17,6 @@ userStore.$subscribe((_mutation, state) => {
 })
 
 function logout() {
-  userStore.logout().catch((error) => errorStore.throwError(error))
+  userStore.logout()
 }
 </script>
