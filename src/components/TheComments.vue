@@ -57,7 +57,7 @@
         </div>
         <div class="row">
           <div class="q-pr-md">
-            <span @click="likeComment(comment.id)" :class="comment.likes?.includes(user) ? 'bolder-icon' : ''" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+            <span @click="likeComment(comment.id)" :class="comment.likes?.includes(user) ? 'bolder-icon' : 'bolder-icon-default'" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_satisfied
             </span>
             <span class="text-body2">
@@ -66,7 +66,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </div>
           <div>
-            <span @click="dislikeComment(comment.id)" :class="comment.dislikes?.includes(user) ? 'bolder-icon-dislikes' : ''" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+            <span @click="dislikeComment(comment.id)" :class="comment.dislikes?.includes(user) ? 'bolder-icon-dislikes' : 'bolder-icon-dislikes-default'" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_dissatisfied
             </span>
             <span class="text-body2">
@@ -327,6 +327,14 @@ async function addReply(commentId) {
 }
 </script>
 <style>
+.bolder-icon-default {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 300,
+  'GRAD' 0,
+  'opsz' 32;
+  color: #4caf50
+}
 .bolder-icon {
   font-variation-settings:
   'FILL' 1,
@@ -334,6 +342,14 @@ async function addReply(commentId) {
   'GRAD' 0,
   'opsz' 32;
   color: #4caf50
+}
+.bolder-icon-dislikes-default {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 300,
+  'GRAD' 0,
+  'opsz' 32;
+  color: #f44336
 }
 .bolder-icon-dislikes {
   font-variation-settings:
