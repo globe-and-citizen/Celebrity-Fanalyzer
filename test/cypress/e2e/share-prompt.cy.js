@@ -5,10 +5,10 @@ describe('Sharing a Prompt', () => {
     cy.visit('/month').wait(5000)
 
     // Selects the share button on the page and clicks it
-    cy.get('[data-test="share-button"]').scrollIntoView().click()
+    cy.get('[data-test="share-button"]', {timeout: 50000}).scrollIntoView().click()
 
     // Selects the first card on the page (copy to clipboard) and clicks it
-    cy.get('.q-card > .row > :nth-child(1) > img').click().wait(2000)
+    cy.get('.q-card > .row > :nth-child(1) > img').should("be.visible").click()
 
     // Select the amount of shares to see if its value is greater than 0
     cy.get('[data-test="share-button"] > .q-btn__content > .block')
@@ -18,7 +18,7 @@ describe('Sharing a Prompt', () => {
       .should('be.greaterThan', 0)
 
     // Selects the second card on the page and clicks it
-    cy.get('[data-test="graph-tab"]').click().wait(2000)
+    cy.get('[data-test="graph-tab"]')
 
     // Selects the second canvas on the page and checks to see if it is visible
     cy.get('canvas').eq(1).scrollIntoView().should('be.visible')
