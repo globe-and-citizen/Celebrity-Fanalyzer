@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { copyToClipboard, useQuasar } from 'quasar'
 
 const $q = useQuasar()
 
@@ -35,7 +35,7 @@ function onShare() {
     ]
   }).onOk((action) => {
     if (action.id === 'clipboard') {
-      navigator.clipboard.writeText(window.location.href)
+      copyToClipboard(window.location.href)
     } else if (action.id === 'facebook' || action.id === 'linkedin') {
       window.open(action.link + `${window.location.href}`, '_blank')
     } else {
