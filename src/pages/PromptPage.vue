@@ -52,7 +52,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shares?.length" @share="onShare($event)" />
+          <ShareComponent v-if="shares?.length" :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
         <section v-if="prompt?.author" class="flex items-center no-wrap q-pa-md">
