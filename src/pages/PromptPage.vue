@@ -28,7 +28,6 @@
             :label="countLikes"
             rounded
             @click="like()"
-            data-test="like-button"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
@@ -41,7 +40,6 @@
             :label="countDislikes"
             rounded
             @click="dislike()"
-            data-test="dislike-button"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
