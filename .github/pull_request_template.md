@@ -12,7 +12,7 @@ INSERT YOUR DESCRIPTION HERE.
 
 ---
 
-Before requesting a review of this Pull Request, I certify that I have tested the following items in the application and all have passed my local tests without any side effects:
+Before requesting a review of this Pull Request, I have certified that I have tested the following items in the application and all have passed my local tests without any side effects:
 
 - [x] Logout and login;
 - [x] Navigation between pages;
