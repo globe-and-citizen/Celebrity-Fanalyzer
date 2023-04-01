@@ -1,5 +1,5 @@
+import { getAdditionalUserInfo, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth'
 import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from 'firebase/firestore'
-import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
@@ -60,9 +60,9 @@ export const useUserStore = defineStore('user', {
         })
     },
 
-    async googleSignInWithEmailAndPassword() {
+    async emailSignIn() {
       this._isLoading = true
-      await signInWithEmailAndPassword(auth, import.meta.env.VITE_TEST_USER, import.meta.env.VITE_TEST_PASSWORD)
+      await signInWithEmailAndPassword(auth, 'test@test.com', '12345678')
         .then(async (result) => {
           const isNewUser = getAdditionalUserInfo(result)?.isNewUser
           const { email, displayName, photoURL, uid } = result.user

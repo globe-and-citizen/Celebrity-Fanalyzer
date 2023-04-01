@@ -75,7 +75,7 @@ userStore.$subscribe((_mutation, state) => {
 
 async function googleSignIn() {
   if (import.meta.env.VITE_MODE === 'E2E') {
-    await userStore.googleSignInWithEmailAndPassword().catch((error) => errorStore.throwError(error))
+    await userStore.emailSignIn().catch((error) => errorStore.throwError(error))
   } else {
     await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
   }

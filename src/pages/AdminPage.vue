@@ -2,13 +2,13 @@
   <TheHeader title="Admin Panel">
     <q-btn-dropdown
       auto-close
+      data-test="button-dropdown"
       color="primary"
       dropdown-icon="control_point"
       flat
       rounded
       transition-show="jump-down"
       transition-hide="jump-up"
-      data-test="dropdown"
     >
       <q-list style="min-width: 100px">
         <q-item clickable @click="openPromptDialog()" data-test="prompt-dropdown">
