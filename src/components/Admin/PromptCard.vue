@@ -3,9 +3,9 @@
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
       <span>&nbsp; for &nbsp;</span>
-      <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date">
+      <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date" data-test="date">
         <template v-slot:append>
-          <q-icon name="event" class="cursor-pointer">
+          <q-icon name="event" class="cursor-pointer" data-test="date-picker">
             <q-popup-proxy cover transition-show="scale" transition-hide="scale">
               <q-date
                 default-view="Months"

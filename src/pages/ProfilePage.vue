@@ -5,7 +5,7 @@
 
   <q-page v-if="!user.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
-    <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
+    <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()" data-test="login-button">
       <q-avatar size="sm">
         <q-img src="~assets/google.svg" alt="Google Logo" />
       </q-avatar>
@@ -30,10 +30,10 @@
       <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
     </div>
 
-    <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)">
-      <q-tab name="profile" label="Profile" />
-      <q-tab name="feedback" label="Feedback" />
-      <q-tab name="settings" label="Settings" />
+    <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
+      <q-tab name="profile" label="Profile" data-test="tab-profile" />
+      <q-tab name="feedback" label="Feedback" data-test="tab-feedback" />
+      <q-tab name="settings" label="Settings" data-test="tab-settings" />
     </q-tabs>
 
     <q-separator />
@@ -74,7 +74,11 @@ userStore.$subscribe((_mutation, state) => {
 })
 
 async function googleSignIn() {
-  await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  if (import.meta.env.VITE_MODE === 'E2E') {
+    await userStore.googleSignInWithEmailAndPassword().catch((error) => errorStore.throwError(error))
+  } else {
+    await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  }
 }
 
 function uploadPhoto() {
