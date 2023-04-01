@@ -22,11 +22,11 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
 
     // Get the first button (New Prompt) and click it
-    cy.get('[data-test="new-prompt"]').should('be.visible').click()
+    cy.get('[data-test="prompt-dropdown"]').should('be.visible').click()
     cy.get('.q-card.not-loading', { timeout: 50000 })
 
     // Get the date input and choose the last option
-    cy.get('[data-test="icon-date"]').should('be.visible').click()
+    cy.get('[data-test="date-picker"]').should('be.visible').click()
     cy.get('.q-date__view > :nth-child(13)').click()
     cy.get('span.block').eq(14).click()
 
@@ -54,7 +54,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
 
     // Get the first button (New Entry) and click it
-    cy.get('[data-test="new-entry"]').click({ timeout: 1000 })
+    cy.get('[data-test="entry-dropdown"]').click({ timeout: 1000 })
 
     // Get the author select and choose the "TESTER" option
     cy.get('[data-test="select-author"]').select('TESTER')
