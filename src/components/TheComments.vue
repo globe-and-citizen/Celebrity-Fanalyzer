@@ -57,7 +57,7 @@
         </div>
         <div class="row">
           <div class="q-pr-md">
-            <span @click="likeComment(comment.id)" :class="comment.likes?.includes(user) ? 'bolder-icon' : 'bolder-icon-default'" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+            <span @click="likeComment(comment.id)" :class="likeIconClass(comment)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_satisfied
             </span>
             <span class="text-body2">
@@ -66,7 +66,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </div>
           <div>
-            <span @click="dislikeComment(comment.id)" :class="comment.dislikes?.includes(user) ? 'bolder-icon-dislikes' : 'bolder-icon-dislikes-default'" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+            <span @click="dislikeComment(comment.id)" :class="dislikeIconClass(comment)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_dissatisfied
             </span>
             <span class="text-body2">
@@ -186,7 +186,7 @@
 import { useQuasar } from 'quasar'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -216,11 +216,25 @@ onMounted(async () => {
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   user.value = userStore.getUserRef || userStore.getUserIpHash
-  console.log('The mount is now ' + user.value)
+  console.log('The mount is now ' + userId.value)
 })
 
+const likeIconClass = computed(() => {
+  return (comment) =>
+    comment.likes?.includes(user.value)
+      ? 'bolder-icon'
+      : 'bolder-icon-default';
+})
+
+const dislikeIconClass = computed(() => {
+  return (comment) =>
+    comment.dislikes?.includes(user.value) 
+      ? 'bolder-icon-dislikes'
+      : 'bolder-icon-dislikes-default';
+});
+
 watchEffect(() => {
-  console.log('The count is now ' + user.value)
+  console.log('The count is now ' + userId.value)
 })
 
 const replyCounter = (id) => {
