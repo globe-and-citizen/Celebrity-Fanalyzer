@@ -145,6 +145,7 @@ watchEffect(() => {
     prompt.image = props.image
     prompt.title = props.title
   } else {
+    prompt.author = userStore.isWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
     prompt.description = ''

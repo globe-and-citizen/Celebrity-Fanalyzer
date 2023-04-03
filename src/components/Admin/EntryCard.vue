@@ -111,23 +111,25 @@ const userStore = useUserStore()
 
 const authorOptions = reactive([])
 const editorRef = ref(null)
-const entry = reactive({})
+const entry = reactive({
+  description: '',
+  image: '',
+  title: ''
+})
 const imageModel = ref([])
 const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse()
 
 watchEffect(() => {
   if (props.id) {
-    entry.author = { label: props.author.displayName, value: props.author.uid }
+    entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
     entry.id = props.id
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
-    entry.description = ''
+    entry.author = userStore.isWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
-    entry.image = ''
-    entry.title = ''
   }
 })
 
