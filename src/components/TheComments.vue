@@ -194,10 +194,7 @@
 import { useQuasar } from 'quasar'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+import { computed, onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
   comments: { type: Array, required: true },
@@ -216,15 +213,14 @@ const inputEdit = ref('')
 const isEditing = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
-const userId = ref('')
 const user = ref('')
+const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
 
   user.value = userStore.getUserRef || userStore.getUserIpHash
-  console.log('The mount is now ' + userId.value)
 })
 
 const likeIconClass = computed(() => {
@@ -255,11 +251,6 @@ const dislikeIconClass = computed(() => {
   }
 })
 
-
-watchEffect(() => {
-  console.log('The count is now ' + userId.value)
-})
-
 const replyCounter = (id) => {
   let count = 0
   for (const comment of props.comments) {
@@ -269,7 +260,6 @@ const replyCounter = (id) => {
   }
   return count
 }
-
 
 async function addComment() {
   await commentStore
