@@ -56,7 +56,7 @@
           {{ comment.text }}
         </div>
         <div class="row">
-          <div class="q-pr-md">
+          <q-btn flat class="q-pr-md">
             <span @click="likeComment(comment.id)" :class="likeIconClass(comment)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_satisfied
             </span>
@@ -64,8 +64,8 @@
               {{ comment.likes?.length || 0 }}
             </span>
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-          </div>
-          <div>
+          </q-btn>
+          <q-btn flat>
             <span @click="dislikeComment(comment.id)" :class="dislikeIconClass(comment)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
               sentiment_dissatisfied
             </span>
@@ -73,7 +73,7 @@
               {{ comment.dislikes?.length || 0 }}
             </span>
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-          </div>
+          </q-btn>
           <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
