@@ -56,7 +56,7 @@ const promptStore = usePromptStore()
 
 const columns = [
   { name: 'created', align: 'center', label: 'Created', field: (row) => shortMonthDayTime(row.created) },
-  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName },
   { name: 'title', align: 'left', label: 'Title', field: 'title' },
   { name: 'actions', field: 'actions' }
 ]
