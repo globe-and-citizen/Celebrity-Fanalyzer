@@ -56,8 +56,12 @@
           {{ comment.text }}
         </div>
         <div class="row">
-          <q-btn flat class="q-pr-md">
-            <span @click="likeComment(comment.id)" :class="likeIconClass(comment)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+          <q-btn flat rounded>
+            <span
+              @click="likeComment(comment.id)"
+              :class="likeIconClass(comment)"
+              class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm"
+            >
               sentiment_satisfied
             </span>
             <span class="text-body2">
@@ -65,8 +69,12 @@
             </span>
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat>
-            <span @click="dislikeComment(comment.id)" :class="dislikeIconClass(comment)" class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm">
+          <q-btn flat rounded>
+            <span
+              @click="dislikeComment(comment.id)"
+              :class="dislikeIconClass(comment)"
+              class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm"
+            >
               sentiment_dissatisfied
             </span>
             <span class="text-body2">
