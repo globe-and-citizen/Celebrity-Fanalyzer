@@ -75,10 +75,11 @@ export const useEntryStore = defineStore('entries', {
       await setDoc(entryRef, entry).then(() => {
         const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
         const prompt = promptStore.getPrompts[index]
-        prompt.entries ??= []
 
-        entry.author = userStore.getUserById(entry.author.id)
-        prompt.entries.push({ ...entry, author: entry.author })
+        entry.author = userStore.getUserById(entry.author.value)
+
+        prompt.entries ??= []
+        prompt.entries.push(entry)
         promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
       })
 
