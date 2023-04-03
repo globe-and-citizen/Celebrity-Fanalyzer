@@ -60,7 +60,7 @@
             <span
               @click="likeComment(comment.id)"
               :class="likeIconClass(comment)"
-              class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm"
+              class="cursor-pointer material-symbols-outlined text-positive q-pr-sm warning-icon"
             >
               sentiment_satisfied
             </span>
@@ -73,7 +73,7 @@
             <span
               @click="dislikeComment(comment.id)"
               :class="dislikeIconClass(comment)"
-              class="material-symbols-outlined warning-icon cursor-pointer q-pr-sm"
+              class="cursor-pointer material-symbols-outlined text-negative q-pr-sm warning-icon"
             >
               sentiment_dissatisfied
             </span>
@@ -226,28 +226,19 @@ onMounted(async () => {
 const likeIconClass = computed(() => {
   return (comment) => {
     if (!comment || !comment.likes) {
-      return 'bolder-icon-default';
+      return 'bolder-icon-default'
     }
-
-    let arrr = []
-    for (let i = 0; i < comment.likes.length; i++) {
-      arrr.push(comment.likes[i].id)
-    }
-    return arrr.includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default';
+    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
   }
 })
 
 const dislikeIconClass = computed(() => {
   return (comment) => {
     if (!comment || !comment.dislikes) {
-      return 'bolder-icon-dislikes-default';
+      return 'bolder-icon-default'
     }
 
-    let arr = []
-    for (let i = 0; i < comment.dislikes.length; i++) {
-      arr.push(comment.dislikes[i].id)
-    }
-    return arr.includes(user.value.id) ? 'bolder-icon-dislikes' : 'bolder-icon-dislikes-default'
+    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
   }
 })
 
@@ -357,19 +348,10 @@ async function addReply(commentId) {
 <style scoped>
 .bolder-icon-default {
   font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-  color: #4caf50;
 }
+
 .bolder-icon {
   font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-  color: #4caf50;
-}
-.bolder-icon-dislikes-default {
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-  color: #f44336;
-}
-.bolder-icon-dislikes {
-  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-  color: #f44336;
 }
 
 .warning-icon {
