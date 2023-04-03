@@ -220,18 +220,33 @@ onMounted(async () => {
 })
 
 const likeIconClass = computed(() => {
-  return (comment) =>
-    comment.likes?.includes(user.value)
-      ? 'bolder-icon'
-      : 'bolder-icon-default';
+  return (comment) => {
+    if (!comment || !comment.likes) {
+      return 'bolder-icon-default';
+    }
+
+    let arrr = []
+    for (let i = 0; i < comment.likes.length; i++) {
+      arrr.push(comment.likes[i].id)
+    }
+    return arrr.includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default';
+  }
 })
 
 const dislikeIconClass = computed(() => {
-  return (comment) =>
-    comment.dislikes?.includes(user.value) 
-      ? 'bolder-icon-dislikes'
-      : 'bolder-icon-dislikes-default';
-});
+  return (comment) => {
+    if (!comment || !comment.dislikes) {
+      return 'bolder-icon-dislikes-default';
+    }
+
+    let arr = []
+    for (let i = 0; i < comment.dislikes.length; i++) {
+      arr.push(comment.dislikes[i].id)
+    }
+    return arr.includes(user.value.id) ? 'bolder-icon-dislikes' : 'bolder-icon-dislikes-default'
+  }
+})
+
 
 watchEffect(() => {
   console.log('The count is now ' + userId.value)
