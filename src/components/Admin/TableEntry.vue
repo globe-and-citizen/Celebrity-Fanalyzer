@@ -46,7 +46,7 @@ import { ref } from 'vue'
 defineEmits(['editEntry'])
 defineProps({
   filter: { type: String, required: false, default: '' },
-  rows: { type: Array, required: true }
+  rows: { type: Array, required: true, default: () => [] }
 })
 
 const $q = useQuasar()

@@ -92,7 +92,7 @@ import { ref } from 'vue'
 
 defineEmits(['openPromptDialog', 'openEntryDialog'])
 defineProps({
-  prompts: { type: Array, required: true }
+  prompts: { type: Array, required: true, default: () => [] }
 })
 
 const $q = useQuasar()
