@@ -353,43 +353,28 @@ async function addReply(commentId) {
   }
 }
 </script>
-<style>
+
+<style scoped>
 .bolder-icon-default {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 300,
-  'GRAD' 0,
-  'opsz' 32;
-  color: #4caf50
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
+  color: #4caf50;
 }
 .bolder-icon {
-  font-variation-settings:
-  'FILL' 1,
-  'wght' 300,
-  'GRAD' 0,
-  'opsz' 32;
-  color: #4caf50
+  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
+  color: #4caf50;
 }
 .bolder-icon-dislikes-default {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 300,
-  'GRAD' 0,
-  'opsz' 32;
-  color: #f44336
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
+  color: #f44336;
 }
 .bolder-icon-dislikes {
-  font-variation-settings:
-  'FILL' 1,
-  'wght' 300,
-  'GRAD' 0,
-  'opsz' 32;
-  color: #f44336
+  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
+  color: #f44336;
 }
 
 .warning-icon {
   font-size: 28px;
-  width: 32px;
   height: 32px;
+  width: 32px;
 }
 </style>
