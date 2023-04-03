@@ -59,7 +59,7 @@ export const useCommentStore = defineStore('comments', {
       comment.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const docId = (comment.id ? comment.id : Date.now() + '-' + (comment.author.id || comment.author))
+      const docId = comment.id ? comment.id : Date.now() + '-' + (comment.author.id || comment.author)
 
       comment.id = docId
       localStorage.setItem('id', docId)
@@ -109,8 +109,7 @@ export const useCommentStore = defineStore('comments', {
         if (comment.id === commentId && !comment.likes?.includes(user)) {
           comment.likes.push(user)
           comment.dislikes = comment.dislikes.filter((dislike) => dislike.id !== user.id)
-        }
-         else if (comment.id === commentId && comment.likes?.includes(user)) {
+        } else if (comment.id === commentId && comment.likes?.includes(user)) {
           comment.likes = comment.likes.filter((like) => like.id !== user.id)
         }
         return comment
@@ -133,8 +132,7 @@ export const useCommentStore = defineStore('comments', {
         if (comment.id === id && !comment.dislikes?.includes(user)) {
           comment.dislikes.push(user)
           comment.likes = comment.likes.filter((like) => like.id !== user.id)
-        }
-         else if (comment.id === id && comment.dislikes?.includes(user)) {
+        } else if (comment.id === id && comment.dislikes?.includes(user)) {
           comment.dislikes = comment.dislikes.filter((dislike) => dislike.id !== user.id)
         }
         return comment
@@ -174,7 +172,7 @@ export const useCommentStore = defineStore('comments', {
       const docId = Date.now() + '-' + (reply.author.id || reply.author)
 
       reply.id = docId
-      reply.id = (reply.id ? reply.id : docId)
+      reply.id = reply.id ? reply.id : docId
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
