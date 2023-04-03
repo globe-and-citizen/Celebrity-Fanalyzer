@@ -27,6 +27,7 @@
 // DO NOT REMOVE
 // Imports Quasar Cypress AE predefined commands
 import { registerCommands } from '@quasar/quasar-app-extension-testing-e2e-cypress';
+import 'cypress-wait-until';
 registerCommands();
 Cypress.Commands.add('getByData', (selector) => {
   return cy.get(`[data-test=${selector}]`)

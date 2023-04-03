@@ -2,6 +2,7 @@
   <q-table
     class="fixed q-px-lg"
     :columns="columns"
+    :filter="filter"
     flat
     hide-bottom
     :loading="promptStore.isLoading || entryStore.isLoading"
@@ -10,15 +11,31 @@
     style="left: 0; right: 0"
     title="Manage Prompts & Entries"
   >
+    <template v-slot:top-right>
+      <q-input data-test="input-search" debounce="300" dense placeholder="Search" v-model="filter">
+        <template v-slot:append>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+    </template>
     <template v-slot:body="props">
       <q-tr :props="props">
         <q-td auto-width>
-          <q-btn color="red" dense flat :icon="props.expand ? 'expand_less' : 'expand_more'" round @click="props.expand = !props.expand" />
+          <q-btn
+            color="red"
+            data-test="button-expand"
+            dense
+            flat
+            :icon="props.expand ? 'expand_less' : 'expand_more'"
+            round
+            @click="props.expand = !props.expand"
+          />
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">
           <q-btn
             color="warning"
+            data-test="button-edit"
             :disable="promptStore.isLoading"
             flat
             icon="edit"
@@ -28,6 +45,7 @@
           />
           <q-btn
             color="negative"
+            data-test="button-delete-prompt"
             :disable="promptStore.isLoading"
             flat
             icon="delete"
@@ -40,7 +58,7 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :rows="props.row.entries" @editEntry="$emit('openEntryDialog', $event)" />
+          <TableEntry v-else :filter="filter" :rows="props.row.entries" @editEntry="$emit('openEntryDialog', $event)" />
         </q-td>
       </q-tr>
     </template>
@@ -59,8 +77,8 @@
         </span>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -90,6 +108,7 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
+const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function openDeleteDialog(prompt) {

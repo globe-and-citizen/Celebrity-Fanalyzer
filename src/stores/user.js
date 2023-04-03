@@ -1,5 +1,5 @@
+import { getAdditionalUserInfo, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth'
 import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from 'firebase/firestore'
-import { getAdditionalUserInfo, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
@@ -58,6 +58,24 @@ export const useUserStore = defineStore('user', {
             }
           })
         })
+    },
+
+    async emailSignIn() {
+      this._isLoading = true
+      await signInWithEmailAndPassword(auth, 'test@test.com', '12345678')
+        .then(async (result) => {
+          const isNewUser = getAdditionalUserInfo(result)?.isNewUser
+          const { email, displayName, photoURL, uid } = result.user
+
+          if (isNewUser) {
+            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
+          }
+
+          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
+            this.$patch({ _user: { uid: document.id, ...document.data() } })
+          })
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async googleSignIn() {

@@ -1,9 +1,18 @@
 <template>
-  <q-table :columns="columns" dense flat hide-bottom hide-header :pagination="pagination" :rows="rows">
+  <q-table :columns="columns" dense flat :filter="filter" hide-bottom hide-header :pagination="pagination" :rows="rows">
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
         <q-btn color="warning" :disable="promptStore.isLoading" flat icon="edit" round size="sm" @click="$emit('editEntry', props.row)" />
-        <q-btn color="negative" :disable="promptStore.isLoading" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
+        <q-btn
+          color="negative"
+          data-test="button-delete-entry"
+          :disable="promptStore.isLoading"
+          flat
+          icon="delete"
+          round
+          size="sm"
+          @click="onDeleteDialog(props.row)"
+        />
       </td>
     </template>
   </q-table>
@@ -21,8 +30,8 @@
         </span>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeleteEntry(deleteDialog.entry.id)" />
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn color="negative" data-test="confirm-delete-entry" flat label="Delete" @click="onDeleteEntry(deleteDialog.entry.id)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -36,6 +45,7 @@ import { ref } from 'vue'
 
 defineEmits(['editEntry'])
 defineProps({
+  filter: { type: String, required: false, default: '' },
   rows: { type: Array, required: true }
 })
 

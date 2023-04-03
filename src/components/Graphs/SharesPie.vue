@@ -1,5 +1,5 @@
 <template>
-  <v-chart class="chart" :option="option" autoresize />
+  <v-chart class="chart" data-test="shares-pie" :option="option" autoresize />
 </template>
 
 <script setup>

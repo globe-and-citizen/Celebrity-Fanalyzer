@@ -16,7 +16,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -114,6 +114,7 @@ export const useEntryStore = defineStore('entries', {
 
     async deleteEntry(entryId) {
       const commentStore = useCommentStore()
+      const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const promptStore = usePromptStore()
       const shareStore = useShareStore()
@@ -124,15 +125,15 @@ export const useEntryStore = defineStore('entries', {
       const entryImage = entries.find((entry) => entry.id === entryId).id
 
       this._isLoading = true
-      const deleteImage = await deleteObject(ref(storage, `images/entry-${entryImage}`))
-      const deleteComments = await commentStore.deleteCommentsCollection('entries', entryId)
-      const deleteLikes = await likeStore.deleteAllLikesDislikes('entries', entryId)
-      const deleteShares = await shareStore.deleteAllShares('entries', entryId)
-      const deleteEntryRef = await updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
-      const deleteEntryDoc = await deleteDoc(doc(db, 'entries', entryId))
+      try {
+        const deleteImage = deleteObject(ref(storage, `images/entry-${entryImage}`))
+        const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
+        const deleteLikes = likeStore.deleteAllLikesDislikes('entries', entryId)
+        const deleteShares = shareStore.deleteAllShares('entries', entryId)
+        const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
+        const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
-      Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares])
-        .then(() => {
+        Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares]).then(() => {
           const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
           prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)
           promptStore.$patch({
@@ -143,7 +144,10 @@ export const useEntryStore = defineStore('entries', {
             ]
           })
         })
-        .finally(() => (this._isLoading = false))
+      } catch (error) {
+        errorStore.throwError(error)
+      }
+      this._isLoading = false
     },
 
     async uploadImage(file, entryId) {
