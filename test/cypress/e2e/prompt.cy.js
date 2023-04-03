@@ -6,24 +6,18 @@
 
 // This test will pass when run against a clean Quasar project
 describe('Prompt Content Management', () => {
-  context("login then Navigate to admin panel", () => {
+  context('login then Navigate to admin panel', () => {
     beforeEach(() => {
       cy.viewport('iphone-x')
       cy.visit('/profile')
       cy.getByData('login-button').click()
-      cy.getByData('main-menu').find("a").eq(1).click()
-      cy.location("pathname").should(
-        "eq",
-        "/search"
-      )
-      cy.getByData("prompt-list", {timeout: 100000}).find("article", {timeout: 10000})
+      cy.getByData('main-menu').find('a').eq(1).click()
+      cy.location('pathname').should('eq', '/search')
+      cy.getByData('prompt-list', { timeout: 100000 }).find('article', { timeout: 10000 })
 
       // Checkout Admin page
-      cy.getByData('main-menu').find("a").eq(4, {timeout: 10000}).click()
-      cy.location("pathname").should(
-        "eq",
-        "/admin"
-      )
+      cy.getByData('main-menu').find('a').eq(4, { timeout: 10000 }).click()
+      cy.location('pathname').should('eq', '/admin')
     })
 
     // Not working
@@ -41,6 +35,4 @@ describe('Prompt Content Management', () => {
     //   cy.getByData('logout-button').click()
     // })
   })
-
 })
-

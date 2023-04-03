@@ -18,7 +18,7 @@ Before requesting a review of this Pull Request, I have certified that I have te
 - [x] Navigation between pages;
 - [ ] Creation of a new prompt;
 - [ ] Creation of a new entry;
-- [X] Like and Dislike button;
+- [x] Like and Dislike button;
 - [ ] Share button;
 - [ ] Exclusion of the newly created prompt;
 - [ ] Deletion of the newly created entry;

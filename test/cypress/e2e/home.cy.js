@@ -6,15 +6,15 @@
 
 // This test will pass when run against a clean Quasar project
 describe('Home page', () => {
-  context("Roadmap Section", ()=>{
+  context('Roadmap Section', () => {
     it('Testing accordion', () => {
       cy.viewport(1280, 800)
       cy.visit('/')
       cy.get('h3').should('have.length', 4)
       cy.get('h3').eq(0).contains('“Celebrity Fanalyzer?”')
-      cy.getByData('roadmap').find("h3").contains('Development Roadmap')
+      cy.getByData('roadmap').find('h3').contains('Development Roadmap')
 
-      cy.getByData('roadmap').get(".q-expansion-item").eq(0).click()
+      cy.getByData('roadmap').get('.q-expansion-item').eq(0).click()
     })
   })
   it('Should display properly', () => {
@@ -22,7 +22,7 @@ describe('Home page', () => {
     cy.get('h2').contains('Welcome to Celebrity Fanalyzer!')
     // cy.get('h3').should('have.length', 3)
     cy.get('h3').eq(0).contains('“Celebrity Fanalyzer?”')
-    cy.get('[data-test="roadmap"]').find("h3").contains('Development Roadmap')
+    cy.get('[data-test="roadmap"]').find('h3').contains('Development Roadmap')
   })
 })
 
