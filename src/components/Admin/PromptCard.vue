@@ -133,7 +133,11 @@ const authorOptions = reactive([])
 const dataKey = ref(Date.now())
 const editorRef = ref(null)
 const imageModel = ref([])
-const prompt = reactive({})
+const prompt = reactive({
+  description: '',
+  image: '',
+  title: ''
+})
 
 watchEffect(() => {
   if (props.id) {
@@ -145,12 +149,9 @@ watchEffect(() => {
     prompt.image = props.image
     prompt.title = props.title
   } else {
-    prompt.author = userStore.isWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
     prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
-    prompt.description = ''
-    prompt.image = ''
-    prompt.title = ''
   }
 })
 

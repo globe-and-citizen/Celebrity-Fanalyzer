@@ -128,7 +128,7 @@ watchEffect(() => {
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
-    entry.author = userStore.isWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    entry.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
   }
 })
