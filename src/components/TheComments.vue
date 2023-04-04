@@ -55,29 +55,37 @@
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
-        <q-btn
-          color="green"
-          flat
-          icon="sentiment_satisfied_alt"
-          :label="comment.likes?.length || 0"
-          rounded
-          @click="likeComment(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-btn
-          color="red"
-          flat
-          icon="sentiment_very_dissatisfied"
-          :label="comment.dislikes?.length || 0"
-          rounded
-          @click="dislikeComment(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-        <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
-          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
-        </q-btn>
+        <div class="row">
+          <q-btn flat rounded>
+            <span
+              @click="likeComment(comment.id)"
+              :class="likeIconClass(comment)"
+              class="cursor-pointer material-symbols-outlined text-positive q-pr-sm warning-icon"
+            >
+              sentiment_satisfied
+            </span>
+            <span class="text-body2">
+              {{ comment.likes?.length || 0 }}
+            </span>
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </q-btn>
+          <q-btn flat rounded>
+            <span
+              @click="dislikeComment(comment.id)"
+              :class="dislikeIconClass(comment)"
+              class="cursor-pointer material-symbols-outlined text-negative q-pr-sm warning-icon"
+            >
+              sentiment_dissatisfied
+            </span>
+            <span class="text-body2">
+              {{ comment.dislikes?.length || 0 }}
+            </span>
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </q-btn>
+          <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
+            <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+          </q-btn>
+        </div>
         <q-slide-transition>
           <div class="q-px-md q-mt-md" v-show="expanded && comment.id === commentId">
             <div v-if="commentStore.isLoading" class="text-center">
@@ -186,10 +194,7 @@
 import { useQuasar } from 'quasar'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+import { computed, onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
   comments: { type: Array, required: true },
@@ -208,11 +213,33 @@ const inputEdit = ref('')
 const isEditing = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
+const user = ref('')
 const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+
+  user.value = userStore.getUserRef || userStore.getUserIpHash
+})
+
+const likeIconClass = computed(() => {
+  return (comment) => {
+    if (!comment || !comment.likes) {
+      return 'bolder-icon-default'
+    }
+    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+  }
+})
+
+const dislikeIconClass = computed(() => {
+  return (comment) => {
+    if (!comment || !comment.dislikes) {
+      return 'bolder-icon-default'
+    }
+
+    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+  }
 })
 
 const replyCounter = (id) => {
@@ -317,3 +344,19 @@ async function addReply(commentId) {
   }
 }
 </script>
+
+<style scoped>
+.bolder-icon-default {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
+}
+
+.bolder-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
+}
+
+.warning-icon {
+  font-size: 28px;
+  height: 32px;
+  width: 32px;
+}
+</style>

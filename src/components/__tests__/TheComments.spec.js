@@ -78,12 +78,12 @@ describe('TheComment Component', () => {
     const fakeComment = shallowMount(commentCard, {
       global: {
         mocks: {
-          addComment: vi.fn(()=>{
+          addComment: vi.fn(() => {
             commenStore.addComment(fakeComment.vm.myComment, firstEntrySlug.value)
           }),
-          editComment: vi.fn(()=>{
+          editComment: vi.fn(() => {
             commenStore.editComment(firstEntrySlug.value.id, fakeCommentId, editedComment, user.uid)
-          }),
+          })
         }
       },
       props: {
@@ -95,7 +95,7 @@ describe('TheComment Component', () => {
     fakeComment.vm.myComment.text = 'test my comment'
     fakeComment.vm.myComment.id = fakeCommentId
 
-    const editedComment = "Edited fake comment!"
+    const editedComment = 'Edited fake comment!'
 
     // 3) Adding fake comment
     await fakeComment.vm.addComment() //Mocked
@@ -106,46 +106,45 @@ describe('TheComment Component', () => {
 
     // 5) Edit test
     await fakeComment.vm.editComment()
-    expect(editedComment).toBe("Edited fake comment!")
+    expect(editedComment).toBe('Edited fake comment!')
   }),
+    // SECOND TEST
+    it('delete fake comment in here', async () => {
+      const commenStore = useCommentStore()
+      const promptStore = usePromptStore()
+      const firstEntrySlug = ref({})
 
-  // SECOND TEST
-  it('delete fake comment in here', async () => {
-    const commenStore = useCommentStore()
-    const promptStore = usePromptStore()
-    const firstEntrySlug = ref({})
+      await promptStore.fetchPromptsAndEntries()
+      firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
 
-    await promptStore.fetchPromptsAndEntries()
-    firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
+      const userStore = useUserStore()
+      const user = userStore.getUser
 
-    const userStore = useUserStore()
-    const user = userStore.getUser
+      await commenStore.fetchComments(firstEntrySlug.value.slug)
 
-    await commenStore.fetchComments(firstEntrySlug.value.slug)
-
-    const startingNumberOfComments = commenStore.getComments.length
-    const fakeCommentId = localStorage.getItem('id')
-    const deleteComment = shallowMount(commentCard, {
-      global: {
-        mocks: {
-          deleteComment: vi.fn(()=>{
-            commenStore.deleteComment(firstEntrySlug.value.id, fakeCommentId, user.uid)
-          })
+      const startingNumberOfComments = commenStore.getComments.length
+      const fakeCommentId = localStorage.getItem('id')
+      const deleteComment = shallowMount(commentCard, {
+        global: {
+          mocks: {
+            deleteComment: vi.fn(() => {
+              commenStore.deleteComment(firstEntrySlug.value.id, fakeCommentId, user.uid)
+            })
+          }
+        },
+        props: {
+          comments: [],
+          entry: { slug: firstEntrySlug.value.slug }
         }
-      },
-      props: {
-        comments: [],
-        entry: { slug: firstEntrySlug.value.slug }
-      }
+      })
+
+      // Delete fake comment
+      await deleteComment.vm.deleteComment()
+
+      // Test deleted comment
+      await commenStore.fetchComments(firstEntrySlug.value.slug)
+      expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
     })
-
-    // Delete fake comment
-    await deleteComment.vm.deleteComment()
-
-    // Test deleted comment
-    await commenStore.fetchComments(firstEntrySlug.value.slug)
-    expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
-  })
 })
 
 afterAll(async () => {

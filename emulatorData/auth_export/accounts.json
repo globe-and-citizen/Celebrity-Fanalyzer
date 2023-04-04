@@ -1,1 +1,25 @@
-{"kind":"identitytoolkit#DownloadAccountResponse","users":[{"localId":"WCeN1oLBMndoLKzNBCS7RccV9cz1","createdAt":"1674272061172","lastLoginAt":"1674272175765","displayName":"Algae Peach","screenName":"peach_algae","email":"algae.peach.153@example.com","emailVerified":true,"providerUserInfo":[{"providerId":"google.com","rawId":"9630366778512173336414717958000948023939","federatedId":"9630366778512173336414717958000948023939","displayName":"Algae Peach","email":"algae.peach.153@example.com","screenName":"peach_algae"}],"lastRefreshAt":"2023-01-21T03:36:15.765Z"}]}
+{
+  "kind": "identitytoolkit#DownloadAccountResponse",
+  "users": [
+    {
+      "localId": "WCeN1oLBMndoLKzNBCS7RccV9cz1",
+      "createdAt": "1674272061172",
+      "lastLoginAt": "1674272175765",
+      "displayName": "Algae Peach",
+      "screenName": "peach_algae",
+      "email": "algae.peach.153@example.com",
+      "emailVerified": true,
+      "providerUserInfo": [
+        {
+          "providerId": "google.com",
+          "rawId": "9630366778512173336414717958000948023939",
+          "federatedId": "9630366778512173336414717958000948023939",
+          "displayName": "Algae Peach",
+          "email": "algae.peach.153@example.com",
+          "screenName": "peach_algae"
+        }
+      ],
+      "lastRefreshAt": "2023-01-21T03:36:15.765Z"
+    }
+  ]
+}
