@@ -61,7 +61,7 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const pagination = { sortBy: 'date', descending: true, rowsPerPage: 10 }
+const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onDeleteDialog(entry) {
   deleteDialog.value.show = true
