@@ -5,7 +5,7 @@ import { useUserStore } from 'src/stores'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
-    _shares: 0
+    _shares: []
   }),
 
   persist: true,
@@ -15,64 +15,31 @@ export const useShareStore = defineStore('shares', {
   },
 
   actions: {
-    async countPromptShares(promptId) {
-      const sharesCollection = collection(db, 'prompts', promptId, 'shares')
-
-      const snapshot = await getCountFromServer(sharesCollection)
-
-      this._shares = snapshot.data().count
-    },
-
-    async sharePrompt(promptId, socialNetwork) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
-      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp)
-
-      await setDoc(doc(db, 'prompts', promptId, 'shares', docId), {
-        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Timestamp.fromDate(new Date()),
-        sharedOn: socialNetwork
-      })
-
-      this.countPromptShares(promptId)
-    },
-
-    async countEntryShares(entryId) {
-      const sharesCollection = collection(db, 'entries', entryId, 'shares')
-
-      const snapshot = await getCountFromServer(sharesCollection)
-
-      this._shares = snapshot.data().count
-    },
-
-    async shareEntry(entryId, socialNetwork) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
-      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp)
-
-      await setDoc(doc(db, 'entries', entryId, 'shares', docId), {
-        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Timestamp.fromDate(new Date()),
-        sharedOn: socialNetwork
-      })
-
-      this.countEntryShares(entryId)
-    },
-
-    async deleteAllPromptShares(promptId) {
-      const sharesCollection = collection(db, 'prompts', promptId, 'shares')
+    async fetchShares(collectionName, documentId) {
+      const sharesCollection = collection(db, collectionName, documentId, 'shares')
 
       const snapshot = await getDocs(sharesCollection)
 
-      snapshot.forEach(async (doc) => {
-        await deleteDoc(doc.ref)
-      })
+      this._shares = snapshot.docs.map((doc) => doc.data())
     },
 
-    async deleteAllEntryShares(entryId) {
-      const sharesCollection = collection(db, 'entries', entryId, 'shares')
+    async addShare(collectionName, documentId, socialNetwork) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash)
+
+      await setDoc(doc(db, collectionName, documentId, 'shares', docId), {
+        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+        createdAt: Timestamp.fromDate(new Date()),
+        sharedOn: socialNetwork
+      })
+
+      this.fetchShares(collectionName, documentId)
+    },
+
+    async deleteAllShares(collectionName, documentId) {
+      const sharesCollection = collection(db, collectionName, documentId, 'shares')
 
       const snapshot = await getDocs(sharesCollection)
 

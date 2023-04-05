@@ -1,39 +1,38 @@
-import {Timestamp} from 'firebase/firestore'
+import { Timestamp } from 'firebase/firestore'
 
 const ONE_DAY_IN_SECONDS = 86400
 const ONE_WEEK_IN_SECONDS = 604800
 
 export function monthYear(date) {
   const [year, month] = date.split('-')
-  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', {month: 'short'})
+  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
   return `${monthName} ${year}` // Dec 2022
 }
 
 export function monthDay(date) {
   const seconds = date.split('T')[1]
   const dateObj = new Date(seconds * 1000)
-  return dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) // Dec 10
+  return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Dec 10
 }
 
 export function shortMonthDayTime(timestamp) {
   const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
 
   return date
-    .toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false})
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false })
     .split(', ')
     .join(' - ') // Dec 10 - 14:18
 }
 
 export function currentYearMonth() {
-  return new Date().toLocaleDateString('en-US', {year: 'numeric', month: '2-digit'}).split('/').reverse().join('-') // 2022-11
+  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
 }
 
 export function previousYearMonth() {
   const date = new Date()
   date.setMonth(date.getMonth() - 1)
 
-  return date.toLocaleDateString('en-US', {year: 'numeric', month: '2-digit'}).split('/').reverse().join('-') // 2022-10
-
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
 }
 
 export function startEndDay(timeStamp) {
@@ -106,9 +105,9 @@ export const getStats = (reacts, startAt) => {
       let dislikesCount = reacts._dislikes.filter((element) => {
         return element.createdAt >= _calendarWeek[index] && element.createdAt < _calendarWeek[index + 1]
       }).length
-      return {date: item, likes: likesCount, dislikes: dislikesCount}
+      return { date: item, likes: likesCount, dislikes: dislikesCount }
     } else {
-      return {date: item, likes: 0, dislikes: 0}
+      return { date: item, likes: 0, dislikes: 0 }
     }
   })
   const dayStats = _calendarDay.map((item, index) => {
@@ -122,11 +121,11 @@ export const getStats = (reacts, startAt) => {
       let dislikesCount = reacts._dislikes.filter((element) => {
         return element.createdAt >= _calendarDay[index] && element.createdAt < _calendarDay[index + 1]
       }).length
-      return {date: item, likes: likesCount, dislikes: dislikesCount}
+      return { date: item, likes: likesCount, dislikes: dislikesCount }
     } else {
-      return {date: item, likes: 0, dislikes: 0}
+      return { date: item, likes: 0, dislikes: 0 }
     }
   })
 
-  return {weekStats, dayStats}
+  return { weekStats, dayStats }
 }

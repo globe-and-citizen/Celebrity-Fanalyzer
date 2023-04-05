@@ -1,6 +1,6 @@
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
-import { mount, shallowMount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vitest } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
 import ArticleSkeleton from '../ArticleSkeleton.vue'
 
 installQuasar()

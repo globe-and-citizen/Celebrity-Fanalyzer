@@ -1,5 +1,5 @@
 export const formatDayStats = (dayStats) => {
-  const data = dayStats.map((dayStat, index) => {
+  const data = dayStats?.map((dayStat, index) => {
     let end
     let label
     const date = dayStat.date.toDate()
@@ -16,12 +16,12 @@ export const formatDayStats = (dayStats) => {
     }
     return { ...dayStat, label }
   })
-  data.pop()
+  data?.pop()
   return data
 }
 
 export const formatWeekStats = (weekStats) => {
-  const data = weekStats.map((weekStat, index) => {
+  const data = weekStats?.map((weekStat, index) => {
     let end
     let label
     const date = weekStat.date.toDate()
@@ -41,12 +41,12 @@ export const formatWeekStats = (weekStats) => {
     return { ...weekStat, label }
   })
 
-  data.pop()
+  data?.pop()
   return data
 }
 
 export const formatAllStats = (allStats) => {
-  return allStats.map((weekStat) => {
+  return allStats?.map((weekStat) => {
     return { ...weekStat, label: 'All' }
   })
 }

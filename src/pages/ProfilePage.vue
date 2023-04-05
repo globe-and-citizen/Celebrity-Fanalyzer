@@ -1,19 +1,20 @@
 <template>
-  <TheHeader notification-btn title="Profile" />
-  <q-page v-if="userStore.isLoading" class="q-my-xl text-center">
-    <q-spinner color="primary" size="3em" />
-  </q-page>
+  <TheHeader feedbackButton title="Profile" />
+
+  <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
+
   <q-page v-if="!user.uid" class="column content-center flex justify-center">
     <h1 class="text-center text-h4">You are not logged in.</h1>
-    <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()">
+    <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()" data-test="login-button">
       <q-avatar size="sm">
         <q-img src="~assets/google.svg" alt="Google Logo" />
       </q-avatar>
       <span class="q-ml-sm">Sign with Google</span>
     </q-btn>
   </q-page>
+
   <q-page v-else class="q-px-lg">
-    <div class="flex items-center q-py-xl">
+    <div class="flex items-center no-wrap q-py-xl">
       <q-avatar size="5rem" color="teal" text-color="white">
         <q-img :src="user.photoURL" spinner-color="primary" spinner-size="82px">
           <div class="photo">
@@ -26,70 +27,64 @@
           </div>
         </q-img>
       </q-avatar>
-      <div class="column flex q-ml-md text-secondary">
-        <h2 class="q-my-none text-h5 text-bold">{{ user.displayName }}</h2>
-        <p class="q-my-none text-body1">{{ user.bio }}</p>
-      </div>
+      <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
     </div>
-    <q-tabs v-model="tab" active-color="primary">
-      <q-tab name="profile" label="Profile" />
-      <q-tab name="settings" label="Settings" />
+
+    <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
+      <q-tab name="profile" label="Profile" data-test="tab-profile" />
+      <q-tab name="feedback" label="Feedback" data-test="tab-feedback" />
+      <q-tab name="settings" label="Settings" data-test="tab-settings" />
     </q-tabs>
+
     <q-separator />
+
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel class="q-gutter-y-md" name="profile">
-        <q-input v-model="user.displayName" label="Name" />
-        <q-input v-model="user.bio" maxlength="150" label="Bio" />
-        <h3 class="q-mt-lg text-bold text-h5 text-secondary">MetaData</h3>
-        <q-input v-model="user.data1" label="Data 1" />
-        <q-input v-model="user.data2" label="Data 2" />
-        <q-btn class="full-width" color="primary" label="Save" padding="12px" rounded @click="save()" />
+        <ProfileTab />
       </q-tab-panel>
+
+      <q-tab-panel class="q-gutter-y-md" name="feedback">
+        <FeedbackTab />
+      </q-tab-panel>
+
       <q-tab-panel class="q-gutter-y-md" name="settings">
-        <q-input v-model="user.email" disable label="Email" />
-        <q-btn class="full-width" color="secondary" label="Logout" padding="10px" rounded @click="logout()" />
+        <SettingsTab />
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
+import ProfileTab from 'src/components/Profile/ProfileTab.vue'
+import SettingsTab from 'src/components/Profile/SettingsTab.vue'
 import TheHeader from 'src/components/TheHeader.vue'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
-const $q = useQuasar()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
-const tab = ref('profile')
 const newPhoto = ref([])
 const user = ref(userStore.getUser)
+const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
 })
 
 async function googleSignIn() {
-  await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  if (import.meta.env.VITE_MODE === 'E2E') {
+    await userStore.emailSignIn().catch((error) => errorStore.throwError(error))
+  } else {
+    await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+  }
 }
 
 function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(newPhoto.value)
   reader.onload = () => (user.value.photoURL = reader.result)
-}
-
-function save() {
-  userStore
-    .updateProfile(user.value)
-    .then($q.notify({ type: 'info', message: 'Profile successfully updated' }))
-    .catch((error) => errorStore.throwError(error, 'Error updating profile'))
-}
-
-function logout() {
-  userStore.logout().catch((error) => errorStore.throwError(error))
 }
 </script>
 

@@ -1,24 +1,16 @@
 <template>
-  <q-header class="shadow-1">
-    <q-toolbar class="bg-white q-px-lg">
-      <q-toolbar-title>
-        <q-img src="~assets/logo.svg" width="1.7rem" />
-        <span class="q-ml-sm inline row text-secondary">
-          <b>Celebrity</b>
-          Fanalyzer
-        </span>
-      </q-toolbar-title>
-      <q-btn flat icon="notifications" round size="1rem" text-color="secondary" />
-    </q-toolbar>
-  </q-header>
-
-  <!-- *** -->
+  <TheHeader feedbackButton logo :backButton="false" />
 
   <q-page class="q-pa-md">
     <section class="text-center">
-      <h2 class="q-my-sm text-h6">Welcome to Celebrity Fanalyzer!</h2>
+      <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
       <RouterLink to="month">
-        <q-img :src="monthPrompt?.image" spinner-color="primary" style="border: 3px solid #e54757; border-radius: 12px" />
+        <q-img
+          :src="monthPrompt?.image"
+          spinner-color="primary"
+          style="border: 3px solid #e54757; border-radius: 12px"
+          data-test="month-link"
+        />
       </RouterLink>
       <p class="q-my-md text-body1">
         This Month's Prompt:
@@ -27,13 +19,15 @@
           {{ monthPrompt?.title }}
         </RouterLink>
       </p>
-      <article class="q-my-xl text-body1 text-left">
+    </section>
+
+    <!-- *** -->
+
+    <section class="q-my-xl text-body1">
+      <article>
         <h3 class="text-bold text-h6">
           <i>“Celebrity Fanalyzer?”</i>
           &nbsp;
-
-          <!-- *** -->
-
           <span>What’s This All About?</span>
         </h3>
         <p>
@@ -45,6 +39,8 @@
           are where thoughts are shared and discussed.
         </p>
         <p>All submissions, artwork and essays, are originals.</p>
+      </article>
+      <article>
         <h3 class="text-bold text-h6">But Why?!</h3>
         <p>
           Celebrity Fanalyzer is the first iteration of a multi year endeavor to produce an
@@ -86,93 +82,91 @@
         </p>
         <p>This is “why.”</p>
       </article>
+    </section>
 
-      <!-- *** -->
+    <!-- *** -->
 
-      <div>
-        <h3 class="text-bold text-h5">Development Roadmap</h3>
-        <div class="q-pa-md text-body1" style="max-width: 100%">
-          <q-list bordered class="rounded-borders">
-            <q-expansion-item expand-separator icon="stars" label="Build Celebrity Fanalyzer" caption="2022/23">
-              <q-card>
-                <q-card-section>
-                  Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are
-                  particularly interested in how to tweek contributor compensation for participating.
-                </q-card-section>
-              </q-card>
-            </q-expansion-item>
+    <section class="q-my-xl text-body1 text-center" style="max-width: 100%" data-test="roadmap">
+      <h3 class="text-bold text-h5">Development Roadmap</h3>
+      <q-list bordered class="q-ma-md rounded-borders">
+        <q-expansion-item expand-separator icon="stars" label="Build Celebrity Fanalyzer" caption="2022/23">
+          <q-card>
+            <q-card-section>
+              Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are
+              particularly interested in how to tweak contributor compensation for participating.
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-            <q-expansion-item expand-separator icon="language" label="Make it a DAPP" caption="2023">
-              <q-card>
-                <q-card-section>
-                  Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity
-                  Fanalyzer a DAPP (a Distributed APPlication) by connecting it to a blockchain. Anyone with a crypto wallet should be able
-                  to participate in our competitions, give their opinion, and get paid if they contribute meaningfully.
-                </q-card-section>
-              </q-card>
-            </q-expansion-item>
+        <q-expansion-item expand-separator icon="language" label="Make it a DAPP" caption="2023">
+          <q-card>
+            <q-card-section>
+              Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity Fanalyzer
+              a DAPP (a Distributed APPlication) by connecting it to a blockchain. Anyone with a crypto wallet should be able to participate
+              in our competitions, give their opinion, and get paid if they contribute meaningfully.
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-            <q-expansion-item expand-separator icon="code" label="Build Layer 8" caption="2023/24">
-              <q-card>
-                <q-card-section>
-                  Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
-                  development in late 2023 that we call “Layer 8.”
-                </q-card-section>
-              </q-card>
-            </q-expansion-item>
+        <q-expansion-item expand-separator icon="code" label="Build Layer 8" caption="2023/24">
+          <q-card>
+            <q-card-section>
+              Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
+              development in late 2023 that we call “Layer 8.”
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-            <q-expansion-item icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8" caption="2024">
-              <q-card>
-                <q-card-section>
-                  How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
-                  centralized process but this, of course, means only a single perspective is represented. A decentralize model of "better"
-                  is necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast amounts of anonymous
-                  data to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer is to-be-determined.
-                  Give us your thoughts! Give us your feedback!
-                </q-card-section>
-              </q-card>
-            </q-expansion-item>
+        <q-expansion-item icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8" caption="2024">
+          <q-card>
+            <q-card-section>
+              How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
+              centralized process but this, of course, means only a single perspective is represented. A decentralize model of "better" is
+              necessary and this is a hard problem. Once Layer 8 is deployed, Celebrity Fanalyzer will have vast amounts of anonymous data
+              to analyze freely. How to rank (and reward) authors who contribute the "best" work? The answer is to-be-determined. Give us
+              your thoughts! Give us your feedback!
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-            <q-expansion-item icon="rocket_launch" label="Launch Globe & Citizen" caption="2025">
-              <q-card>
-                <q-card-section>
-                  Deep fakes, fake media, toxic hate speech, and a consolidated media industry: this is the reality of the internet today.
-                  How to decentralize control of the media we consume but still provide a quality online service on par with a
-                  <a href="https://moxie.org/2022/01/07/web3-first-impressions.html">centralized one</a>
-                  ? Once Layer 8 is established, the AI ranking algorithm is open sourced, and Celebrity Fanalyzer is a successful DAPP,
-                  it’s finally time to launch Globe & Citizen — our answer to this question. Reach out to us if you’re interested in getting
-                  involved.
-                </q-card-section>
-              </q-card>
-            </q-expansion-item>
-          </q-list>
-        </div>
-      </div>
+        <q-expansion-item icon="rocket_launch" label="Launch Globe & Citizen" caption="2025">
+          <q-card>
+            <q-card-section>
+              Deep fakes, fake media, toxic hate speech, and a consolidated media industry: this is the reality of the internet today. How
+              to decentralize control of the media we consume but still provide a quality online service on par with a
+              <a href="https://moxie.org/2022/01/07/web3-first-impressions.html">centralized one</a>
+              ? Once Layer 8 is established, the AI ranking algorithm is open sourced, and Celebrity Fanalyzer is a successful DAPP, it’s
+              finally time to launch Globe & Citizen — our answer to this question. Reach out to us if you’re interested in getting
+              involved.
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+      </q-list>
+    </section>
 
-      <!-- *** -->
+    <!-- *** -->
 
-      <div>
-        <div class="text-body1">
-          <h3 class="text-bold text-h5">Contact Us!</h3>
-          <p>
-            Want to communicate with the team here at Celebrity Fanalyzer? Contact us through a message on our Discord server: give an
-            opinion, suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you
-            want to get involved in shaping the future of the application, reach out to us via Discord:
-          </p>
-          <q-btn flat round icon="img:/icons/discord.svg" href="https://discord.gg/z4P3UrhhSH" size="xl" target="_blank">
-            <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
-          </q-btn>
-        </div>
-      </div>
+    <section class="q-mt-xl text-body1 text-center">
+      <h3 class="text-bold text-h5">Contact Us!</h3>
+      <p>
+        Want to communicate with the team here at Celebrity Fanalyzer? Contact us through a message on our Discord server: give an opinion,
+        suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you want to get
+        involved in shaping the future of the application, reach out to us via Discord:
+      </p>
+      <q-btn flat href="https://discord.gg/z4P3UrhhSH" icon="img:/icons/discord.svg" round size="xl" target="_blank">
+        <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+      </q-btn>
     </section>
   </q-page>
 </template>
 
 <script setup>
-import { useEntryStore, usePromptStore } from 'src/stores'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)

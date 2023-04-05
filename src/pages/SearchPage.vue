@@ -1,5 +1,5 @@
 <template>
-  <TheHeader isSearch title="Search Archive" v-model="search" />
+  <TheHeader feedbackButton searchInput title="Search Archive" v-model="search" />
   <q-page class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle
@@ -21,7 +21,7 @@
       <ArticleSkeleton />
       <ArticleSkeleton />
     </section>
-    <q-tab-panels animated swipeable v-model="category">
+    <q-tab-panels animated swipeable v-model="category" data-test="prompt-list">
       <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
         <TransitionGroup name="prompt" tag="div">
           <ItemCard

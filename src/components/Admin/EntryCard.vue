@@ -7,10 +7,11 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
-        <q-select :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="entry.author" />
+        <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="entry.author" />
         <q-select
           behavior="menu"
           counter
+          data-test="select-prompt"
           :disable="Boolean(entry.image)"
           :hint="entry.image ? 'Image is attached to this prompt' : ''"
           label="Prompt"
@@ -25,11 +26,12 @@
             </q-item>
           </template>
         </q-select>
-        <q-input counter hide-hint label="Title" maxlength="80" required v-model="entry.title" />
+        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="entry.title" />
         <q-field counter label="Description" maxlength="400" v-model="entry.description">
           <template v-slot:control>
             <q-editor
               class="q-mt-md"
+              data-test="input-description"
               dense
               flat
               min-height="5rem"
@@ -61,6 +63,7 @@
         <q-file
           accept=".jpg, image/*"
           counter
+          data-test="file-image"
           :disable="!entry.prompt"
           :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 1MB'"
           label="Image"
@@ -80,6 +83,7 @@
         <q-btn
           class="full-width q-mt-xl"
           color="primary"
+          data-test="button-submit"
           :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
           :label="id ? 'Edit' : 'Save'"
           rounded
@@ -87,7 +91,6 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="entryStore.isLoading" />
   </q-card>
 </template>
 
@@ -107,23 +110,23 @@ const userStore = useUserStore()
 
 const authorOptions = reactive([])
 const editorRef = ref(null)
-const entry = reactive({})
+const entry = reactive({
+  description: '',
+  image: '',
+  title: ''
+})
 const imageModel = ref([])
 const promptOptions = promptStore.getPrompts.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse()
 
 watchEffect(() => {
   if (props.id) {
-    entry.author = { label: props.author.displayName, value: props.author.uid }
+    entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
-    entry.id = props.id
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
-    entry.description = ''
-    entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
-    entry.image = ''
-    entry.title = ''
+    entry.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
   }
 })
 
@@ -165,6 +168,10 @@ function onPaste(evt) {
 
 async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+
+  if (!props.id) {
+    entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
+  }
 
   if (Object.keys(imageModel.value).length) {
     entryStore.uploadImage(imageModel.value, entry.id).catch((error) => errorStore.throwError(error, 'Image upload failed'))

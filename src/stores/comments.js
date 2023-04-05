@@ -59,9 +59,10 @@ export const useCommentStore = defineStore('comments', {
       comment.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const docId = Date.now() + '-' + (comment.author.id || comment.author)
+      const docId = comment.id ? comment.id : Date.now() + '-' + (comment.author.id || comment.author)
 
       comment.id = docId
+      localStorage.setItem('id', docId)
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
@@ -105,9 +106,11 @@ export const useCommentStore = defineStore('comments', {
       await updateDoc(commentRef, { dislikes: arrayRemove(user) })
 
       const comments = this._comments.map((comment) => {
-        if (comment.id === commentId && !comment.likes.includes(user)) {
+        if (comment.id === commentId && !comment.likes?.includes(user)) {
           comment.likes.push(user)
-          comment.dislikes = comment.dislikes.filter((user) => user !== user)
+          comment.dislikes = comment.dislikes.filter((dislike) => dislike.id !== user.id)
+        } else if (comment.id === commentId && comment.likes?.includes(user)) {
+          comment.likes = comment.likes.filter((like) => like.id !== user.id)
         }
         return comment
       })
@@ -126,9 +129,11 @@ export const useCommentStore = defineStore('comments', {
       await updateDoc(commentRef, { likes: arrayRemove(user) })
 
       const comments = this._comments.map((comment) => {
-        if (comment.id === id && !comment.dislikes.includes(user)) {
+        if (comment.id === id && !comment.dislikes?.includes(user)) {
           comment.dislikes.push(user)
-          comment.likes = comment.likes.filter((user) => user !== user)
+          comment.likes = comment.likes.filter((like) => like.id !== user.id)
+        } else if (comment.id === id && comment.dislikes?.includes(user)) {
+          comment.dislikes = comment.dislikes.filter((dislike) => dislike.id !== user.id)
         }
         return comment
       })
@@ -136,17 +141,23 @@ export const useCommentStore = defineStore('comments', {
       this.$patch({ _comments: comments })
     },
 
-    async deleteComment(entryId, id, userId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
-      const comment = this.getComments.find((comment) => comment.id === id)
+    async deleteComment(entryId, id) {
       const index = this._comments.findIndex((comment) => comment.id === id)
 
       this._isLoading = true
       await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
         .then(() => this._comments.splice(index, 1))
         .finally(() => (this._isLoading = false))
+    },
+
+    async deleteCommentsCollection(collectionName, documentId) {
+      const commentsCollection = collection(db, collectionName, documentId, 'comments')
+
+      const commentsSnapshot = await getDocs(commentsCollection)
+
+      commentsSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
     },
 
     async addReply(entryId, commentId, reply) {
@@ -161,6 +172,7 @@ export const useCommentStore = defineStore('comments', {
       const docId = Date.now() + '-' + (reply.author.id || reply.author)
 
       reply.id = docId
+      reply.id = reply.id ? reply.id : docId
 
       this._isLoading = true
       await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)

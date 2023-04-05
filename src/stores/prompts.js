@@ -15,7 +15,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useEntryStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
@@ -216,6 +216,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async deletePrompt(id) {
       const entryStore = useEntryStore()
+      const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
 
@@ -228,17 +229,20 @@ export const usePromptStore = defineStore('prompts', {
         }
       }
 
-      const deleteImage = deleteObject(ref(storage, `images/prompt-${id}`))
-      const deleteLikes = await likeStore.deleteAllPromptLikes(id)
-      const deletePromptDoc = await deleteDoc(doc(db, 'prompts', id))
-      const deleteShares = await shareStore.deleteAllPromptShares(id)
+      try {
+        const deleteImage = deleteObject(ref(storage, `images/prompt-${id}`))
+        const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
+        const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
+        const deleteShares = shareStore.deleteAllShares('prompts', id)
 
-      Promise.all([deleteLikes, deleteShares, deleteImage, deletePromptDoc])
-        .then(() => {
+        Promise.all([deleteLikes, deleteShares, deleteImage, deletePromptDoc]).then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })
-        .finally(() => (this._isLoading = false))
+      } catch (error) {
+        errorStore.throwError(error)
+      }
+      this._isLoading = false
     },
 
     async uploadImage(file, promptId) {
