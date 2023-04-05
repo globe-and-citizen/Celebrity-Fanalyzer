@@ -22,15 +22,15 @@
   </TheHeader>
   <section class="absolute-center window-width">
     <q-page padding>
-      <q-tabs v-if="userStore.isAdmin" align="justify" v-model="tab" class="text-secondary">
-        <q-tab name="posts" icon="view_list" label="Prompts & Entries" />
-        <q-tab name="users" icon="people" label="Users" />
-        <q-tab name="feedbacks" icon="feedback" label="Feedbacks" />
-        <q-tab name="errors" icon="error" label="Errors" />
+      <q-tabs align="justify" v-model="tab" class="text-secondary">
+        <q-tab v-if="userStore.isAdminOrWriter" name="posts" icon="view_list" label="Prompts & Entries" />
+        <q-tab v-if="userStore.isAdmin" name="users" icon="people" label="Users" />
+        <q-tab v-if="userStore.isAdminOrWriter" name="feedbacks" icon="feedback" label="Feedbacks" />
+        <q-tab v-if="userStore.isAdmin" name="errors" icon="error" label="Errors" />
       </q-tabs>
 
       <q-tab-panels v-model="tab" animated swipeable>
-        <q-tab-panel name="posts">
+        <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
           <ManagePromptsEntries
             :prompts="prompts"
             @openPromptDialog="openPromptDialog($event)"
@@ -42,7 +42,7 @@
           <ManageUsers :users="users" />
         </q-tab-panel>
 
-        <q-tab-panel v-if="userStore.isAdmin || userStore.isWriter" name="feedbacks">
+        <q-tab-panel v-if="userStore.isAdminOrWriter" name="feedbacks">
           <ManageFeedbacks />
         </q-tab-panel>
 
