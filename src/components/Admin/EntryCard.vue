@@ -91,7 +91,6 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="entryStore.isLoading" />
   </q-card>
 </template>
 
