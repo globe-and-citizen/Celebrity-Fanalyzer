@@ -21,7 +21,7 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
+          <q-btn data-test="panel-3-navigator" flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="shares.length" @share="onShare($event)" />
