@@ -107,7 +107,7 @@
               <div v-for="childComment of childComments" class="q-mb-md" :key="childComment.id">
                 <div class="flex items-center">
                   <q-icon v-if="childComment.isAnonymous" name="person" size="1.5rem" />
-                  <q-avatar v-else size="1.5rem">
+                  <q-avatar v-else size="1rem">
                     <q-img :src="childComment.author.photoURL" />
                   </q-avatar>
                   <p class="row q-mb-none q-ml-sm">
@@ -270,10 +270,33 @@ const likeIconClass = computed(() => {
     if (!comment || !comment.likes) {
       return 'bolder-icon-default'
     }
-    // return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
-    return comment.likes.some((likes) => likes.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
-'bolder-icon-default'
-rops.entry)
+    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+  }
+})
+
+const dislikeIconClass = computed(() => {
+  return (comment) => {
+    if (!comment || !comment.dislikes) {
+      return 'bolder-icon-default'
+    }
+
+    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+  }
+})
+
+const replyCounter = (id) => {
+  let count = 0
+  for (const comment of props.comments) {
+    if (id === comment.parentId) {
+      count++
+    }
+  }
+  return count
+}
+
+async function addComment() {
+  await commentStore
+    .addComment(myComment, props.entry)
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)

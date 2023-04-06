@@ -158,7 +158,7 @@ describe('Commenting', async () => {
     cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(1).click({ multiple: true, force: true }).wait(1000)
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click().wait(1000)
+    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click().wait(5000)
   })
 
   it('editing comment', () => {
