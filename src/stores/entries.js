@@ -121,13 +121,11 @@ export const useEntryStore = defineStore('entries', {
       const shareStore = useShareStore()
 
       const promptId = entryId.split('T')[0]
-      const entries = promptStore.getPrompts.find((prompt) => prompt.id === promptId).entries
       const entryRef = doc(db, 'entries', entryId)
-      const entryImage = entries.find((entry) => entry.id === entryId).id
 
       this._isLoading = true
       try {
-        const deleteImage = deleteObject(ref(storage, `images/entry-${entryImage}`))
+        const deleteImage = deleteObject(ref(storage, `images/entry-${entryId}`))
         const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
         const deleteLikes = likeStore.deleteAllLikesDislikes('entries', entryId)
         const deleteShares = shareStore.deleteAllShares('entries', entryId)

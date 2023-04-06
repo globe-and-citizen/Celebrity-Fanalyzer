@@ -91,7 +91,6 @@
         />
       </q-form>
     </q-card-section>
-    <q-inner-loading color="primary" :showing="entryStore.isLoading" />
   </q-card>
 </template>
 
@@ -123,13 +122,11 @@ watchEffect(() => {
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
-    entry.id = props.id
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else {
-    entry.author = userStore.isWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
-    entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
+    entry.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
   }
 })
 
@@ -171,6 +168,10 @@ function onPaste(evt) {
 
 async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+
+  if (!props.id) {
+    entry.id = `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
+  }
 
   if (Object.keys(imageModel.value).length) {
     entryStore.uploadImage(imageModel.value, entry.id).catch((error) => errorStore.throwError(error, 'Image upload failed'))
