@@ -6,48 +6,33 @@ describe('Commenting', async () => {
   beforeEach(() => {
     cy.viewport('iphone-x')
     // Visits the profile page
-    cy.visit('/profile', { timeout: 10000 })
+    cy.visit('/profile')
 
     // Get the login button and click it
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('.q-page > .q-btn').click({ timeout: 10000 }).wait(2000)
+    cy.get('.q-page > .q-btn').click()
 
     // Visits the admin page and wait for 15 seconds
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="main-menu"]').find('a').eq(4).click({ timeout: 10000 }).wait(5000)
+    cy.get('[data-test="main-menu"]').find('a').eq(4).click()
     cy.location('pathname').should('eq', '/admin')
   })
   // const store = useCommentStore()
 
-  it('creating comment ', () => {
-    // default to iphone as "mobile first" should be our montra
-    cy.viewport('iphone-x')
+  it.only('creating comment ', () => {
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
-
+    cy.visit('/2023/02/more-frogs')
     // programmatically change the q-tab-panel to the comments section.
     cy.get('[data-test="panel-3-navigator"]').click()
-
-    // hack to let all the loading happen
+    cy.get('[data-test="comment-loaded"]')
 
     // navigate to the comment input form.
-
     cy.get('[data-test="comment-entry-box"]').type('Javokhir-testing')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(5000) // wait 5 seconds always.
-    // cy.get(':nth-child(20) > :nth-child(1)', { timeout: 100000 }) // give only as much time as necessary, no more, up to 100000
-
-    //If you click too early, there is error -- so you need to wait.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="submit-comment"]').click().wait(5000)
-
-    // console.log(store.isLoading())
-
-    // push enter to submit
-    //cy.get('[data-test="submit-comment"]').click({ timeout: 1000 }) //.wait(2000)
-    // })
+    // Submit the form
+    cy.get('[data-test="submit-comment"]').click()
+    cy.get('.q-notification__message').contains('Comment successfully submitted')
   })
 
   it('like comment', () => {
