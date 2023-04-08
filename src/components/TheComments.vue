@@ -300,7 +300,7 @@ async function addComment() {
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
-      $q.notify({ type: 'positive', message: 'Comment successfully submitted', timeout:10000 })
+      $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }

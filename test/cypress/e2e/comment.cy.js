@@ -19,12 +19,14 @@ describe('Commenting', async () => {
   })
   // const store = useCommentStore()
 
-  it.only('creating comment ', () => {
+  it('creating comment ', () => {
 
     // navigate to a dedicated entry that should always be there.
     cy.visit('/2023/02/more-frogs')
     // programmatically change the q-tab-panel to the comments section.
     cy.get('[data-test="panel-3-navigator"]').click()
+
+    //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
 
     // navigate to the comment input form.
@@ -32,24 +34,26 @@ describe('Commenting', async () => {
 
     // Submit the form
     cy.get('[data-test="submit-comment"]').click()
+
+    //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Comment successfully submitted')
   })
 
-  it('like comment', () => {
+  it.only('like comment', () => {
     // default to iphone as "mobile first" should be our montra
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     // programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(10000)
+    cy.get('[data-test="panel-3-navigator"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing"]').click().wait(5000)
+
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
+
+    cy.get('[data-test="Javokhir-testing"]').click()
     console.log('I am liking')
   })
 
