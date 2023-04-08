@@ -125,24 +125,26 @@ describe('Commenting', async () => {
     cy.get('[data-test="Added-ReplyfillEditReply"]').eq(0).type('Edited-Reply', { force: true })
 
     cy.get('[data-test="Added-ReplyEdited-Reply-submit-reply-edit"]').eq(0).click({ multiple: true, force: true })
+
+    //Check the form is submitted successfully
+    cy.get('.q-notification__message').contains('Comment successfully edited!')
   })
 
   it('deleting reply text', () => {
     cy.viewport('iphone-x')
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000)
+    cy.visit('/2023/02/more-frogs')
+
+    cy.get('[data-test="panel-3-navigator"]').click()
+
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
+
+    cy.get('[data-test="Javokhir-testing-add-reply"]').click()
+
+    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(1).click({ multiple: true, force: true })
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-add-reply"]').click().wait(1000)
-
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(1).click({ multiple: true, force: true }).wait(1000)
-
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click().wait(5000)
+    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click()
   })
 
   it('editing comment', () => {
