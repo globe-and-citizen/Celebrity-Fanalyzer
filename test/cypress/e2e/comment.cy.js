@@ -57,22 +57,21 @@ describe('Commenting', async () => {
     console.log('I am liking')
   })
 
-  it('dislike comment', () => {
+  it.only('dislike comment', () => {
     // default to iphone as "mobile first" should be our montra
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
+    cy.get('[data-test="panel-3-navigator"]').click()
+
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
-
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="dislikeJavokhir-testing"]').click().wait(5000)
+    cy.get('[data-test="dislikeJavokhir-testing"]').click()
   })
 
   it('add reply comment', () => {
