@@ -39,7 +39,7 @@ describe('Commenting', async () => {
     cy.get('.q-notification__message').contains('Comment successfully submitted')
   })
 
-  it.only('like comment', () => {
+  it('like comment', () => {
     // default to iphone as "mobile first" should be our montra
     cy.viewport('iphone-x')
 
@@ -95,37 +95,36 @@ describe('Commenting', async () => {
 
     // submit filled add reply form
     cy.get('[data-test="Javokhir-testing-submit-fill-add-reply"]').click()
+
+    //Check the form is submitted successfully
+    cy.get('.q-notification__message').contains('Reply successfully submitted')
+
   })
 
-  it.only('editing reply text', () => {
+  it('editing reply text', () => {
     // default to iphone as "mobile first" should be our montra
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
+    cy.get('[data-test="panel-3-navigator"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
+
 
     // expand the add reply form
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-add-reply"]').click().wait(1000)
+    cy.get('[data-test="Javokhir-testing-add-reply"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-Reply-open-reply-edit-delete"]').click({ multiple: true, force: true }).wait(1000)
+    cy.get('[data-test="Added-Reply-open-reply-edit-delete"]').click({ multiple: true, force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-Reply-open-reply-edit"]').click().wait(1000)
+    cy.get('[data-test="Added-Reply-open-reply-edit"]').click({ multiple: true, force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="Added-ReplyfillEditReply"]').eq(0).type('Edited-Reply', { force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-submit-reply-edit"]').eq(0).click({ multiple: true, force: true }).wait(5000)
+    cy.get('[data-test="Added-ReplyEdited-Reply-submit-reply-edit"]').eq(0).click({ multiple: true, force: true })
   })
 
   it('deleting reply text', () => {
