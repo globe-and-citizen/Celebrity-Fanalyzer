@@ -19,12 +19,14 @@ describe('Commenting', async () => {
   })
   // const store = useCommentStore()
 
-  it.only('creating comment ', () => {
+  it('creating comment ', () => {
 
     // navigate to a dedicated entry that should always be there.
     cy.visit('/2023/02/more-frogs')
     // programmatically change the q-tab-panel to the comments section.
     cy.get('[data-test="panel-3-navigator"]').click()
+
+    //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
 
     // navigate to the comment input form.
@@ -32,6 +34,8 @@ describe('Commenting', async () => {
 
     // Submit the form
     cy.get('[data-test="submit-comment"]').click()
+
+    //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Comment successfully submitted')
   })
 
@@ -40,16 +44,16 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     // programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(10000)
+    cy.get('[data-test="panel-3-navigator"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing"]').click().wait(5000)
+
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
+
+    cy.get('[data-test="Javokhir-testing"]').click()
     console.log('I am liking')
   })
 
@@ -58,17 +62,16 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
+    cy.get('[data-test="panel-3-navigator"]').click()
+
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
-
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="dislikeJavokhir-testing"]').click().wait(5000)
+    cy.get('[data-test="dislikeJavokhir-testing"]').click()
   })
 
   it('add reply comment', () => {
@@ -76,25 +79,26 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
+    cy.get('[data-test="panel-3-navigator"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
 
     // expand the add reply form
     cy.get('[data-test="Javokhir-testing-add-reply"]').click()
 
     // fill add reply form input
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-fill-add-reply"]').type('Added-Reply').wait(1000)
+    cy.get('[data-test="Javokhir-testing-fill-add-reply"]').type('Added-Reply')
 
     // submit filled add reply form
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-submit-fill-add-reply"]').click().wait(5000)
+    cy.get('[data-test="Javokhir-testing-submit-fill-add-reply"]').click()
+
+    //Check the form is submitted successfully
+    cy.get('.q-notification__message').contains('Reply successfully submitted')
+
   })
 
   it('editing reply text', () => {
@@ -102,48 +106,45 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
+    cy.get('[data-test="panel-3-navigator"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
+
 
     // expand the add reply form
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-add-reply"]').click().wait(1000)
+    cy.get('[data-test="Javokhir-testing-add-reply"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-Reply-open-reply-edit-delete"]').click({ multiple: true, force: true }).wait(1000)
+    cy.get('[data-test="Added-Reply-open-reply-edit-delete"]').click({ multiple: true, force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-Reply-open-reply-edit"]').click().wait(1000)
+    cy.get('[data-test="Added-Reply-open-reply-edit"]').click({ multiple: true, force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="Added-ReplyfillEditReply"]').eq(0).type('Edited-Reply', { force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-submit-reply-edit"]').eq(0).click({ multiple: true, force: true }).wait(5000)
+    cy.get('[data-test="Added-ReplyEdited-Reply-submit-reply-edit"]').eq(0).click({ multiple: true, force: true })
+
+    //Check the form is submitted successfully
+    cy.get('.q-notification__message').contains('Comment successfully edited!')
   })
 
   it('deleting reply text', () => {
     cy.viewport('iphone-x')
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000)
+    cy.visit('/2023/02/more-frogs')
+
+    cy.get('[data-test="panel-3-navigator"]').click()
+
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
+
+    cy.get('[data-test="Javokhir-testing-add-reply"]').click()
+
+    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(1).click({ multiple: true, force: true })
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-add-reply"]').click().wait(1000)
-
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(1).click({ multiple: true, force: true }).wait(1000)
-
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click().wait(5000)
+    cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click()
   })
 
   it('editing comment', () => {
