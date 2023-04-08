@@ -15,11 +15,19 @@
         <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
-          <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="countLikes" @click="like()">
-            <q-tooltip>Like</q-tooltip>
+          <q-btn flat rounded color="green" @click="like()">
+            <img class="q-pr-sm" :src="likeIconClasses ? '/icons/thumbs-down-like-bolder.svg' : '/icons/thumbs-down-like.svg'" alt="" />
+            {{ countLikes }}
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
-            <q-tooltip>Dislike</q-tooltip>
+          <q-btn flat rounded color="red" @click="dislike()">
+            <img
+              class="q-pr-sm"
+              :src="dislikeIconClasses ? '/icons/thumbs-down-dislike-bolder.svg' : '/icons/thumbs-down-dislike.svg'"
+              alt=""
+            />
+            {{ countDislikes }}
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
             <q-tooltip>Comments</q-tooltip>
@@ -87,7 +95,7 @@ import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -100,6 +108,7 @@ const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
+const userStore = useUserStore()
 
 const chartData = ref({})
 const comments = ref([])
@@ -110,8 +119,13 @@ const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
 const count = ref(0)
+const likeIconClasses = ref(false)
+const dislikeIconClasses = ref(false)
+const userId = ref('')
 
 onMounted(async () => {
+  await userStore.fetchUserIp()
+  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
   if (router.currentRoute.value.params.id) {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
@@ -160,6 +174,12 @@ commentStore.$subscribe((_mutation, state) => {
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
+
+  const likedPost = state._likes.find((post) => post.author.id === userId.value)
+  likeIconClasses.value = !!likedPost
+
+  const dislikedPost = state._dislikes.find((post) => post.author.id === userId.value)
+  dislikeIconClasses.value = !!dislikedPost
 
   const { weekStats, dayStats } = getStats(state, entry.value.created)
   const allStats = [

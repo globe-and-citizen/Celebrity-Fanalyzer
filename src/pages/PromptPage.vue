@@ -19,28 +19,18 @@
           </div>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
           <p class="text-body1" v-html="prompt?.description"></p>
-          <q-btn
-            color="green"
-            data-test="like-button"
-            :disable="promptStore.isLoading"
-            flat
-            icon="sentiment_satisfied_alt"
-            :label="countLikes"
-            rounded
-            @click="like()"
-          >
+          <q-btn flat rounded color="green" data-test="like-button" @click="like()">
+            <img class="q-pr-sm" :src="likeIconClasses ? 'icons/thumbs-down-like-bolder.svg' : 'icons/thumbs-down-like.svg'" alt="" />
+            {{ countLikes }}
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn
-            color="red"
-            data-test="dislike-button"
-            :disable="promptStore.isLoading"
-            flat
-            icon="sentiment_very_dissatisfied"
-            :label="countDislikes"
-            rounded
-            @click="dislike()"
-          >
+          <q-btn flat rounded color="red" data-test="dislike-button" @click="dislike()">
+            <img
+              class="q-pr-sm"
+              :src="dislikeIconClasses ? 'icons/thumbs-down-dislike-bolder.svg' : 'icons/thumbs-down-dislike.svg'"
+              alt=""
+            />
+            {{ countDislikes }}
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
@@ -107,7 +97,7 @@ import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 import { getStats, monthYear } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -119,6 +109,7 @@ const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
+const userStore = useUserStore()
 
 const chartData = ref({})
 const countLikes = ref(0)
@@ -127,6 +118,9 @@ const prompt = ref({})
 const shares = ref([])
 const tab = ref('prompt')
 const type = ref('day')
+const likeIconClasses = ref(false)
+const dislikeIconClasses = ref(false)
+const userId = ref('')
 
 function graphData(type) {
   if (type === 'day') {
@@ -139,6 +133,9 @@ function graphData(type) {
 }
 
 onMounted(async () => {
+  await userStore.fetchUserIp()
+  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+
   if (router.currentRoute.value.href === '/month') {
     if (!promptStore.getMonthPrompt) {
       await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
@@ -179,6 +176,12 @@ onMounted(async () => {
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
+
+  const likedPost = state._likes.find((post) => post.author.id === userId.value)
+  likeIconClasses.value = !!likedPost
+
+  const dislikedPost = state._dislikes.find((post) => post.author.id === userId.value)
+  dislikeIconClasses.value = !!dislikedPost
 
   const { weekStats, dayStats } = getStats(state, prompt.value.created)
   const allStats = [
