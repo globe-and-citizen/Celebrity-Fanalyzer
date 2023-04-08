@@ -57,7 +57,7 @@ describe('Commenting', async () => {
     console.log('I am liking')
   })
 
-  it.only('dislike comment', () => {
+  it('dislike comment', () => {
     // default to iphone as "mobile first" should be our montra
     cy.viewport('iphone-x')
 
@@ -79,28 +79,25 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
 
     // navigate to a dedicated entry that should always be there.
-    cy.visit('/2023/02/more-frogs', { timeout: 5000 })
+    cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="panel-3-navigator"]').click().wait(5000)
+    cy.get('[data-test="panel-3-navigator"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000) // wait 10 seconds always.
+    //Will wait all comment will be loaded
+    cy.get('[data-test="comment-loaded"]')
 
     // expand the add reply form
     cy.get('[data-test="Javokhir-testing-add-reply"]').click()
 
     // fill add reply form input
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-fill-add-reply"]').type('Added-Reply').wait(1000)
+    cy.get('[data-test="Javokhir-testing-fill-add-reply"]').type('Added-Reply')
 
     // submit filled add reply form
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.get('[data-test="Javokhir-testing-submit-fill-add-reply"]').click().wait(5000)
+    cy.get('[data-test="Javokhir-testing-submit-fill-add-reply"]').click()
   })
 
-  it('editing reply text', () => {
+  it.only('editing reply text', () => {
     // default to iphone as "mobile first" should be our montra
     cy.viewport('iphone-x')
 
