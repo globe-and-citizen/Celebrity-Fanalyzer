@@ -76,7 +76,7 @@ export const useEntryStore = defineStore('entries', {
         const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
         const prompt = promptStore.getPrompts[index]
 
-        entry.author = userStore.getUserById(entry.author.value)
+        entry.author = userStore.getUserById(entry.author.id)
 
         prompt.entries ??= []
         prompt.entries.push(entry)
