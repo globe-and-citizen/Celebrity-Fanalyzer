@@ -162,9 +162,10 @@
 
 <script setup>
 import TheHeader from 'src/components/TheHeader.vue'
-import { useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
+const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
@@ -174,7 +175,8 @@ onMounted(async () => {
   await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
   monthPrompt.value = promptStore.getMonthPrompt
 
-  await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
+  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 })
 </script>
 
