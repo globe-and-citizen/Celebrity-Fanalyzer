@@ -135,7 +135,7 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchPromptsAndEntries() {
+    async fetchPrompts() {
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
@@ -143,13 +143,7 @@ export const usePromptStore = defineStore('prompts', {
 
           for (const prompt of prompts) {
             prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-            if (prompt.entries) {
-              for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => ({ id: doc.id, ...doc.data() }))
-                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-              }
-            }
+            prompt.entries = prompt.entries?.map((entry) => entry.id)
           }
 
           prompts.reverse()
