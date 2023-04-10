@@ -40,6 +40,7 @@ export const useEntryStore = defineStore('entries', {
 
           for (const entry of entries) {
             entry.author = await getDoc(entry.author).then((doc) => doc.data())
+            entry.prompt = entry.prompt.id
           }
 
           this._entries = []
