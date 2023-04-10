@@ -88,12 +88,9 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 defineEmits(['openPromptDialog', 'openEntryDialog'])
-defineProps({
-  prompts: { type: Array, required: true, default: () => [] }
-})
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -108,8 +105,29 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
+const entries = ref(entryStore.getEntries)
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+const prompts = ref(promptStore.getPrompts)
+
+onMounted(() => {
+  promptStore.fetchPrompts()
+  entryStore.fetchEntries()
+})
+
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+
+  if (entries.value.length) {
+    prompts.value = prompts.value.map((prompt) => ({ ...prompt, entries: entries.value.filter((entry) => entry.prompt === prompt.id) }))
+  }
+})
+
+entryStore.$subscribe((_mutation, state) => {
+  entries.value = state._entries
+
+  prompts.value = prompts.value.map((prompt) => ({ ...prompt, entries: entries.value.filter((entry) => entry.prompt === prompt.id) }))
+})
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true
