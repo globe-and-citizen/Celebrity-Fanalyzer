@@ -21,7 +21,14 @@
           <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
             <q-tooltip>Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
+          <q-btn
+            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
+            flat
+            rounded
+            icon="chat_bubble_outline"
+            :label="count"
+            @click="tab = 'comments'"
+          >
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="shares.length" @share="onShare($event)" />
@@ -73,7 +80,7 @@
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
-      <q-page>
+      <q-page :data-test="!loading ? 'comment-loaded' : 'comment-loading'">
         <TheComments :comments="comments" :entry="entry" />
       </q-page>
     </q-tab-panel>
@@ -110,6 +117,7 @@ const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
 const count = ref(0)
+const loading=ref(true)
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
@@ -141,6 +149,7 @@ onMounted(async () => {
       continue
     }
   }
+  loading.value=false
 })
 
 function graphData(type) {

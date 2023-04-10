@@ -107,10 +107,10 @@ export const useCommentStore = defineStore('comments', {
 
       const comments = this._comments.map((comment) => {
         if (comment.id === commentId && !comment.likes?.includes(user)) {
-          comment.likes.push(user)
-          comment.dislikes = comment.dislikes.filter((dislike) => dislike.id !== user.id)
+          comment.likes?.push(user)
+          comment.dislikes = comment.dislikes?.filter((dislike) => dislike.id !== user.id)
         } else if (comment.id === commentId && comment.likes?.includes(user)) {
-          comment.likes = comment.likes.filter((like) => like.id !== user.id)
+          comment.likes = comment.likes?.filter((like) => like.id !== user.id)
         }
         return comment
       })
@@ -133,7 +133,7 @@ export const useCommentStore = defineStore('comments', {
           comment.dislikes.push(user)
           comment.likes = comment.likes.filter((like) => like.id !== user.id)
         } else if (comment.id === id && comment.dislikes?.includes(user)) {
-          comment.dislikes = comment.dislikes.filter((dislike) => dislike.id !== user.id)
+          comment.dislikes = comment.dislikes?.filter((dislike) => dislike.id !== user.id)
         }
         return comment
       })
