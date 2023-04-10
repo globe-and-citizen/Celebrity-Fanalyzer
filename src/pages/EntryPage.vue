@@ -29,7 +29,14 @@
             {{ countDislikes }}
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
+          <q-btn
+            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
+            flat
+            rounded
+            icon="chat_bubble_outline"
+            :label="count"
+            @click="tab = 'comments'"
+          >
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="shares.length" @share="onShare($event)" />
@@ -81,7 +88,7 @@
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
-      <q-page>
+      <q-page :data-test="!loading ? 'comment-loaded' : 'comment-loading'">
         <TheComments :comments="comments" :entry="entry" />
       </q-page>
     </q-tab-panel>
@@ -122,6 +129,7 @@ const count = ref(0)
 const likeIconClasses = ref(false)
 const dislikeIconClasses = ref(false)
 const userId = ref('')
+const loading=ref(true)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
@@ -155,6 +163,7 @@ onMounted(async () => {
       continue
     }
   }
+  loading.value=false
 })
 
 function graphData(type) {

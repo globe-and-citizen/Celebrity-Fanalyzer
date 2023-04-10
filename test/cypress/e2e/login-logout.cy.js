@@ -11,12 +11,12 @@ describe('Login page', () => {
     })
 
     it('Should navigate between Profiles tabs', () => {
-      cy.getByData('tab-settings', { timeout: 10000 }).click()
+      cy.getByData('tab-settings').click()
       cy.getByData('tab-feedback').click()
       cy.getByData('tab-profile').click()
     })
     it('Logout', () => {
-      cy.getByData('tab-settings', { timeout: 10000 }).click()
+      cy.getByData('tab-settings').click()
       cy.getByData('logout-button').click()
     })
   })
