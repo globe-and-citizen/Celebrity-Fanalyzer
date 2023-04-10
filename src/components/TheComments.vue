@@ -58,29 +58,23 @@
           {{ comment.text }}
         </div>
         <div class="row">
-          <q-btn flat rounded>
-            <span
-              :data-test="comment.text"
-              @click="likeComment(comment.id)"
-              :class="likeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-positive q-pr-sm warning-icon"
-            >
-              sentiment_satisfied
-            </span>
+          <q-btn flat rounded :data-test="comment.text" @click="likeComment(comment.id)">
+            <img
+              class="q-pr-sm"
+              :src="likeIconClass(comment) ? '/icons/thumbs-down-like-bolder.svg' : '/icons/thumbs-down-like.svg'"
+              alt=""
+            />
             <span class="text-body2">
               {{ comment.likes?.length || 0 }}
             </span>
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded>
-            <span
-              :data-test="'dislike' + comment.text"
-              @click="dislikeComment(comment.id)"
-              :class="dislikeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-negative q-pr-sm warning-icon"
-            >
-              sentiment_dissatisfied
-            </span>
+          <q-btn flat rounded :data-test="'dislike' + comment.text" @click="dislikeComment(comment.id)">
+            <img
+              class="q-pr-sm"
+              :src="dislikeIconClass(comment) ? '/icons/thumbs-down-dislike-bolder.svg' : '/icons/thumbs-down-dislike.svg'"
+              alt=""
+            />
             <span class="text-body2">
               {{ comment.dislikes?.length || 0 }}
             </span>
@@ -268,19 +262,19 @@ onMounted(async () => {
 const likeIconClass = computed(() => {
   return (comment) => {
     if (!comment || !comment.likes) {
-      return 'bolder-icon-default'
+      return false
     }
-    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+    return comment.likes.map((item) => item.id).includes(user.value.id) ? true : false
   }
 })
 
 const dislikeIconClass = computed(() => {
   return (comment) => {
     if (!comment || !comment.dislikes) {
-      return 'bolder-icon-default'
+      return false
     }
 
-    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? true : false
   }
 })
 

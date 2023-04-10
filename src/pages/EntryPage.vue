@@ -16,7 +16,11 @@
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
           <q-btn flat rounded color="green" @click="like()">
-            <img class="q-pr-sm" :src="likeIconClasses ? '/icons/thumbs-down-like-bolder.svg' : '/icons/thumbs-down-like.svg'" alt="" />
+            <img
+              class="q-pr-sm"
+              :src="likeIconClasses ? '/icons/thumbs-down-like-bolder.svg' : '/icons/thumbs-down-like.svg'"
+              alt=""
+            />
             {{ countLikes }}
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
@@ -129,7 +133,7 @@ const count = ref(0)
 const likeIconClasses = ref(false)
 const dislikeIconClasses = ref(false)
 const userId = ref('')
-const loading=ref(true)
+const loading = ref(true)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
@@ -163,7 +167,7 @@ onMounted(async () => {
       continue
     }
   }
-  loading.value=false
+  loading.value = false
 })
 
 function graphData(type) {
