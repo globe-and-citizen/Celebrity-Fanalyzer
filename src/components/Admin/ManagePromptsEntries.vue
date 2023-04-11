@@ -113,21 +113,30 @@ const prompts = ref(promptStore.getPrompts)
 onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
+
+  populatePromptsWithEntries()
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 
-  if (entries.value.length) {
-    prompts.value = prompts.value.map((prompt) => ({ ...prompt, entries: entries.value.filter((entry) => entry.prompt === prompt.id) }))
-  }
+  populatePromptsWithEntries()
 })
 
 entryStore.$subscribe((_mutation, state) => {
   entries.value = state._entries
 
-  prompts.value = prompts.value.map((prompt) => ({ ...prompt, entries: entries.value.filter((entry) => entry.prompt === prompt.id) }))
+  populatePromptsWithEntries()
 })
+
+function populatePromptsWithEntries() {
+  if (entries.value.length) {
+    prompts.value = prompts.value.map((prompt) => ({
+      ...prompt,
+      entries: entries.value.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
+    }))
+  }
+}
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true
