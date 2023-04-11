@@ -58,7 +58,7 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :filter="filter" :rows="props.row.entries" @editEntry="$emit('openEntryDialog', $event)" />
+          <TableEntry v-else :filter="filter" :rows="props.row.entries" />
         </q-td>
       </q-tr>
     </template>
@@ -90,7 +90,7 @@ import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
-defineEmits(['openPromptDialog', 'openEntryDialog'])
+defineEmits(['openPromptDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()

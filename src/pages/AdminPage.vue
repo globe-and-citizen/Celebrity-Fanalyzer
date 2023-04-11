@@ -31,7 +31,7 @@
 
       <q-tab-panels v-model="tab" animated swipeable>
         <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
-          <ManagePromptsEntries @openPromptDialog="openPromptDialog($event)" @openEntryDialog="openEntryDialog($event)" />
+          <ManagePromptsEntries @openPromptDialog="openPromptDialog($event)" />
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isAdmin" name="users">
@@ -66,10 +66,9 @@ import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { usePromptStore, useUserStore } from 'src/stores'
+import { useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
-const promptStore = usePromptStore()
 const userStore = useUserStore()
 
 const entry = ref({})
@@ -93,15 +92,8 @@ function openPromptDialog(props) {
   prompt.value.dialog = true
 }
 
-function openEntryDialog(props) {
-  if (props?.id) {
-    entry.value = props
-    entry.value.prompt = promptStore.getPrompts.find((prompt) => prompt.id === props.id.split('T')[0])
-    // TODO: Check why entries are disappearing when I call this function
-    console.log(entry.value)
-  } else {
-    entry.value = {}
-  }
+function openEntryDialog() {
+  entry.value = {}
   entry.value.dialog = true
 }
 </script>

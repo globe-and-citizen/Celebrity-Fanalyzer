@@ -2,11 +2,11 @@
   <q-table :columns="columns" dense flat :filter="filter" hide-bottom hide-header :pagination="pagination" :rows="rows">
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
-        <q-btn color="warning" :disable="promptStore.isLoading" flat icon="edit" round size="sm" @click="$emit('editEntry', props.row)" />
+        <q-btn color="warning" :disable="entryStore.isLoading" flat icon="edit" round size="sm" @click="onEditDialog(props.row)" />
         <q-btn
           color="negative"
           data-test="button-delete-entry"
-          :disable="promptStore.isLoading"
+          :disable="entryStore.isLoading"
           flat
           icon="delete"
           round
@@ -16,6 +16,10 @@
       </td>
     </template>
   </q-table>
+
+  <q-dialog full-width position="bottom" v-model="dialog">
+    <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+  </q-dialog>
 
   <q-dialog v-model="deleteDialog.show">
     <q-card>
@@ -42,8 +46,8 @@ import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { ref } from 'vue'
+import EntryCard from './EntryCard.vue'
 
-defineEmits(['editEntry'])
 defineProps({
   filter: { type: String, required: false, default: '' },
   rows: { type: Array, required: true, default: () => [] }
@@ -61,7 +65,15 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
+const dialog = ref(false)
+const entry = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+
+function onEditDialog(props) {
+  dialog.value = true
+  entry.value = props
+  entry.value.prompt = promptStore.getPrompts.find((prompt) => prompt.id === props.id.split('T')[0])
+}
 
 function onDeleteDialog(entry) {
   deleteDialog.value.show = true
