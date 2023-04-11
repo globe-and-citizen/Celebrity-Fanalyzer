@@ -15,14 +15,24 @@
         <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
-          <q-btn flat rounded color="green" @click="like()">
-            <img class="q-pr-sm" :src="likeIconClasses ? '/icons/thumbs-up-bolder.svg' : '/icons/thumbs-up.svg'" alt="" />
-            {{ countLikes }}
+          <q-btn
+            color="green"
+            flat
+            :icon="likeIconClasses ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+            :label="countLikes"
+            rounded
+            @click="like()"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded color="red" @click="dislike()">
-            <img class="q-pr-sm" :src="dislikeIconClasses ? '/icons/thumbs-down-bolder.svg' : '/icons/thumbs-down.svg'" alt="" />
-            {{ countDislikes }}
+          <q-btn
+            color="red"
+            flat
+            :icon="dislikeIconClasses ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+            :label="countDislikes"
+            rounded
+            @click="dislike()"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
