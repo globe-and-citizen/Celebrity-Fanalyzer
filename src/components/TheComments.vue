@@ -58,32 +58,26 @@
           {{ comment.text }}
         </div>
         <div class="row">
-          <q-btn flat rounded>
-            <span
-              :data-test="comment.text"
-              @click="likeComment(comment.id)"
-              :class="likeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-positive q-pr-sm warning-icon"
-            >
-              sentiment_satisfied
-            </span>
-            <span class="text-body2">
-              {{ comment.likes?.length || 0 }}
-            </span>
+          <q-btn
+            :data-test="'like' + comment.text"
+            flat
+            :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+            :label="comment.likes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="likeComment(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded>
-            <span
-              :data-test="'dislike' + comment.text"
-              @click="dislikeComment(comment.id)"
-              :class="dislikeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-negative q-pr-sm warning-icon"
-            >
-              sentiment_dissatisfied
-            </span>
-            <span class="text-body2">
-              {{ comment.dislikes?.length || 0 }}
-            </span>
+          <q-btn
+            :data-test="'dislike' + comment.text"
+            flat
+            :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+            :label="comment.dislikes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="dislikeComment(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
@@ -92,6 +86,7 @@
             icon="chat_bubble_outline"
             :label="replyCounter(comment.id)"
             rounded
+            size="0.75rem"
             @click="showReplies(comment.id)"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
@@ -267,20 +262,13 @@ onMounted(async () => {
 
 const likeIconClass = computed(() => {
   return (comment) => {
-    if (!comment || !comment.likes) {
-      return 'bolder-icon-default'
-    }
-    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+    return comment.likes ? comment.likes.map((item) => item.id).includes(user.value.id) : false
   }
 })
 
 const dislikeIconClass = computed(() => {
   return (comment) => {
-    if (!comment || !comment.dislikes) {
-      return 'bolder-icon-default'
-    }
-
-    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+    return comment.dislikes ? comment.dislikes.some((dislike) => dislike.id === user.value.id) : false
   }
 })
 
