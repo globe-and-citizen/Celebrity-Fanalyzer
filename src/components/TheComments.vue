@@ -262,20 +262,13 @@ onMounted(async () => {
 
 const likeIconClass = computed(() => {
   return (comment) => {
-    if (!comment || !comment.likes) {
-      return false
-    }
-    return comment.likes.map((item) => item.id).includes(user.value.id) ? true : false
+    return comment.likes ? comment.likes.map((item) => item.id).includes(user.value.id) : false
   }
 })
 
 const dislikeIconClass = computed(() => {
   return (comment) => {
-    if (!comment || !comment.dislikes) {
-      return false
-    }
-
-    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? true : false
+    return comment.dislikes ? comment.dislikes.some((dislike) => dislike.id === user.value.id) : false
   }
 })
 
