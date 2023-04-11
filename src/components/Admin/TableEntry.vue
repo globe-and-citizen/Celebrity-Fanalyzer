@@ -1,18 +1,10 @@
 <template>
-  <q-table :columns="columns" dense flat :filter="filter" hide-bottom hide-header :pagination="pagination" :rows="rows">
+  <q-spinner v-if="entryStore.isLoading" color="primary" size="2em" class="block q-mx-auto q-my-md" />
+  <q-table v-else :columns="columns" dense flat :filter="filter" hide-bottom hide-header :pagination="pagination" :rows="rows">
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
-        <q-btn color="warning" :disable="entryStore.isLoading" flat icon="edit" round size="sm" @click="onEditDialog(props.row)" />
-        <q-btn
-          color="negative"
-          data-test="button-delete-entry"
-          :disable="entryStore.isLoading"
-          flat
-          icon="delete"
-          round
-          size="sm"
-          @click="onDeleteDialog(props.row)"
-        />
+        <q-btn color="warning" flat icon="edit" round size="sm" @click="onEditDialog(props.row)" />
+        <q-btn color="negative" data-test="button-delete-entry" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
       </td>
     </template>
   </q-table>
