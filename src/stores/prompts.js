@@ -154,8 +154,10 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async addPrompt(prompt) {
+    async addPrompt(payload) {
       const userStore = useUserStore()
+
+      const prompt = { ...payload }
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
@@ -170,8 +172,10 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async editPrompt(prompt) {
+    async editPrompt(payload) {
       const userStore = useUserStore()
+
+      const prompt = { ...payload }
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())

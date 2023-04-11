@@ -63,9 +63,11 @@ export const useEntryStore = defineStore('entries', {
       return entry
     },
 
-    async addEntry(entry) {
+    async addEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
+
+      const entry = { ...payload }
 
       const promptId = entry.prompt.value
       const entryRef = doc(db, 'entries', entry.id)
@@ -84,9 +86,11 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = false
     },
 
-    async editEntry(entry) {
+    async editEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
+
+      const entry = { ...payload }
 
       entry.author = doc(db, 'users', entry.author.value)
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
