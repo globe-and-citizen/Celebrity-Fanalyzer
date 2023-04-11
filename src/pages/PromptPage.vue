@@ -20,16 +20,12 @@
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
           <p class="text-body1" v-html="prompt?.description"></p>
           <q-btn flat rounded color="green" data-test="like-button" @click="like()">
-            <img class="q-pr-sm" :src="likeIconClasses ? 'icons/thumbs-down-like-bolder.svg' : 'icons/thumbs-down-like.svg'" alt="" />
+            <img class="q-pr-sm" :src="likeIconClasses ? 'icons/thumbs-up-bolder.svg' : 'icons/thumbs-up.svg'" alt="" />
             {{ countLikes }}
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
           <q-btn flat rounded color="red" data-test="dislike-button" @click="dislike()">
-            <img
-              class="q-pr-sm"
-              :src="dislikeIconClasses ? 'icons/thumbs-down-dislike-bolder.svg' : 'icons/thumbs-down-dislike.svg'"
-              alt=""
-            />
+            <img class="q-pr-sm" :src="dislikeIconClasses ? 'icons/thumbs-down-bolder.svg' : 'icons/thumbs-down.svg'" alt="" />
             {{ countDislikes }}
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>

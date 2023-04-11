@@ -61,7 +61,7 @@
           <q-btn
             :data-test="'like' + comment.text"
             flat
-            :icon="likeIconClass(comment) ? 'img:/icons/thumbs-down-like-bolder.svg' : 'img:/icons/thumbs-down-like.svg'"
+            :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
             :label="comment.likes?.length || 0"
             rounded
             size="0.75rem"
@@ -72,7 +72,7 @@
           <q-btn
             :data-test="'dislike' + comment.text"
             flat
-            :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-dislike-bolder.svg' : 'img:/icons/thumbs-down-dislike.svg'"
+            :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
             :label="comment.dislikes?.length || 0"
             rounded
             size="0.75rem"
