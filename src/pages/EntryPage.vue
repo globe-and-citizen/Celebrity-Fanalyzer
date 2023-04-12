@@ -15,13 +15,34 @@
         <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
-          <q-btn flat rounded color="green" icon="sentiment_satisfied_alt" :label="countLikes" @click="like()">
-            <q-tooltip>Like</q-tooltip>
+          <q-btn
+            color="green"
+            flat
+            :icon="likeIconClasses ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+            :label="countLikes"
+            rounded
+            @click="like()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded color="red" icon="sentiment_very_dissatisfied" :label="countDislikes" @click="dislike()">
-            <q-tooltip>Dislike</q-tooltip>
+          <q-btn
+            color="red"
+            flat
+            :icon="dislikeIconClasses ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+            :label="countDislikes"
+            rounded
+            @click="dislike()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat rounded icon="chat_bubble_outline" :label="count" @click="tab = 'comments'">
+          <q-btn
+            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
+            flat
+            rounded
+            icon="chat_bubble_outline"
+            :label="count"
+            @click="tab = 'comments'"
+          >
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="shares.length" @share="onShare($event)" />
@@ -73,7 +94,7 @@
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
-      <q-page>
+      <q-page :data-test="!loading ? 'comment-loaded' : 'comment-loading'">
         <TheComments :comments="comments" :entry="entry" />
       </q-page>
     </q-tab-panel>
@@ -87,7 +108,7 @@ import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -100,6 +121,7 @@ const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
+const userStore = useUserStore()
 
 const chartData = ref({})
 const comments = ref([])
@@ -110,8 +132,14 @@ const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
 const count = ref(0)
+const likeIconClasses = ref(false)
+const dislikeIconClasses = ref(false)
+const userId = ref('')
+const loading = ref(true)
 
 onMounted(async () => {
+  await userStore.fetchUserIp()
+  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
   if (router.currentRoute.value.params.id) {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
@@ -141,6 +169,7 @@ onMounted(async () => {
       continue
     }
   }
+  loading.value = false
 })
 
 function graphData(type) {
@@ -160,6 +189,12 @@ commentStore.$subscribe((_mutation, state) => {
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
+
+  const likedPost = state._likes.find((post) => post.author.id === userId.value)
+  likeIconClasses.value = !!likedPost
+
+  const dislikedPost = state._dislikes.find((post) => post.author.id === userId.value)
+  dislikeIconClasses.value = !!dislikedPost
 
   const { weekStats, dayStats } = getStats(state, entry.value.created)
   const allStats = [

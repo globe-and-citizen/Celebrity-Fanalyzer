@@ -21,14 +21,15 @@
             dropdown-icon="more_vert"
             flat
             rounded
+            :data-test="comment.text + '-button-dropdown'"
           >
             <q-list>
-              <q-item clickable v-close-popup @click="editInput(comment.id)">
+              <q-item data-test="comment-select-edit" clickable v-close-popup @click="editInput(comment.id)">
                 <q-item-section>
                   <q-item-label>Edit</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteComment(1, comment.id)">
+              <q-item data-test="comment-select-delete" clickable v-close-popup @click="deleteComment(1, comment.id)">
                 <q-item-section>
                   <q-item-label>Delete</q-item-label>
                 </q-item-section>
@@ -38,6 +39,7 @@
         </div>
         <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
           <q-input
+            :data-test="comment.text + '-comment-edit'"
             class="q-px-sm"
             autogrow
             dense
@@ -49,40 +51,44 @@
             standout="bg-secondary text-white"
             v-model="comment.text"
           >
-            <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+            <q-btn data-test="submit-edited-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
           </q-input>
         </q-form>
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
         <div class="row">
-          <q-btn flat rounded>
-            <span
-              @click="likeComment(comment.id)"
-              :class="likeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-positive q-pr-sm warning-icon"
-            >
-              sentiment_satisfied
-            </span>
-            <span class="text-body2">
-              {{ comment.likes?.length || 0 }}
-            </span>
+          <q-btn
+            :data-test="'like' + comment.text"
+            flat
+            :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+            :label="comment.likes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="likeComment(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded>
-            <span
-              @click="dislikeComment(comment.id)"
-              :class="dislikeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-negative q-pr-sm warning-icon"
-            >
-              sentiment_dissatisfied
-            </span>
-            <span class="text-body2">
-              {{ comment.dislikes?.length || 0 }}
-            </span>
+          <q-btn
+            :data-test="'dislike' + comment.text"
+            flat
+            :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+            :label="comment.dislikes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="dislikeComment(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
+          <q-btn
+            :data-test="comment.text + '-add-reply'"
+            flat
+            icon="chat_bubble_outline"
+            :label="replyCounter(comment.id)"
+            rounded
+            size="0.75rem"
+            @click="showReplies(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
         </div>
@@ -96,7 +102,7 @@
               <div v-for="childComment of childComments" class="q-mb-md" :key="childComment.id">
                 <div class="flex items-center">
                   <q-icon v-if="childComment.isAnonymous" name="person" size="1.5rem" />
-                  <q-avatar v-else size="1.5rem">
+                  <q-avatar v-else size="1rem">
                     <q-img :src="childComment.author.photoURL" />
                   </q-avatar>
                   <p class="row q-mb-none q-ml-sm">
@@ -111,14 +117,25 @@
                     dropdown-icon="more_vert"
                     flat
                     rounded
+                    :data-test="childComment.text + '-open-reply-edit-delete'"
                   >
                     <q-list>
-                      <q-item clickable v-close-popup @click="editInput(childComment.id)">
+                      <q-item
+                        :data-test="childComment.text + '-open-reply-edit'"
+                        clickable
+                        v-close-popup
+                        @click="editInput(childComment.id)"
+                      >
                         <q-item-section>
                           <q-item-label>Edit</q-item-label>
                         </q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup @click="deleteComment(comment.id, childComment.id)">
+                      <q-item
+                        :data-test="childComment.text + '-open-reply-delete'"
+                        clickable
+                        v-close-popup
+                        @click="deleteComment(comment.id, childComment.id)"
+                      >
                         <q-item-section>
                           <q-item-label>Delete</q-item-label>
                         </q-item-section>
@@ -132,6 +149,7 @@
                   @submit.prevent="editComment(childComment.id, childComment.text)"
                 >
                   <q-input
+                    :data-test="childComment.text + 'fillEditReply'"
                     autogrow
                     class="q-pb-none"
                     dense
@@ -143,7 +161,16 @@
                     standout="bg-secondary text-white"
                     v-model="childComment.text"
                   >
-                    <q-btn class="cursor-pointer" id="replyInput" color="grey-6" flat icon="send" round type="submit" />
+                    <q-btn
+                      :data-test="childComment.text + '-submit-reply-edit'"
+                      class="cursor-pointer"
+                      id="replyInput"
+                      color="grey-6"
+                      flat
+                      icon="send"
+                      round
+                      type="submit"
+                    />
                   </q-input>
                 </q-form>
                 <div v-else class="q-my-sm text-body2">
@@ -153,6 +180,7 @@
               </div>
               <!-- Ended Child Comment Section -->
               <q-input
+                :data-test="comment.text + '-fill-add-reply'"
                 autogrow
                 dense
                 label="Reply"
@@ -163,7 +191,15 @@
                 standout="bg-secondary text-white"
                 v-model="reply.text"
               >
-                <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+                <q-btn
+                  :data-test="comment.text + '-submit-fill-add-reply'"
+                  class="cursor-pointer"
+                  color="grey-6"
+                  flat
+                  icon="send"
+                  round
+                  type="submit"
+                />
               </q-input>
             </q-form>
           </div>
@@ -174,6 +210,7 @@
   </section>
   <q-form greedy @submit.prevent="addComment">
     <q-input
+      data-test="comment-entry-box"
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
       dense
       label="Comment"
@@ -185,7 +222,7 @@
       style="margin-bottom: 6.7rem"
       v-model="myComment.text"
     >
-      <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+      <q-btn data-test="submit-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
     </q-input>
   </q-form>
 </template>
@@ -225,20 +262,13 @@ onMounted(async () => {
 
 const likeIconClass = computed(() => {
   return (comment) => {
-    if (!comment || !comment.likes) {
-      return 'bolder-icon-default'
-    }
-    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+    return comment.likes ? comment.likes.map((item) => item.id).includes(user.value.id) : false
   }
 })
 
 const dislikeIconClass = computed(() => {
   return (comment) => {
-    if (!comment || !comment.dislikes) {
-      return 'bolder-icon-default'
-    }
-
-    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
+    return comment.dislikes ? comment.dislikes.some((dislike) => dislike.id === user.value.id) : false
   }
 })
 
