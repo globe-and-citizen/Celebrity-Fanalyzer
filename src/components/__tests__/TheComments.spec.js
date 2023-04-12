@@ -4,17 +4,17 @@ import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
-import { mount, shallowMount, config } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi, afterAll } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
+import commentCard from 'src/components/TheComments.vue'
+import { useCommentStore, useEntryStore } from 'src/stores'
 import { useUserStore } from 'src/stores/user'
-import { useCommentStore, usePromptStore } from 'src/stores'
-import commentCard from '../TheComments.vue'
 import { ref } from 'vue'
 
-import { VueRouterMock, createRouterMock, injectRouterMock } from 'vue-router-mock'
+import { createRouterMock, injectRouterMock, VueRouterMock } from 'vue-router-mock'
 config.plugins.VueWrapper.install(VueRouterMock)
 
 installQuasar()
@@ -57,13 +57,13 @@ describe('TheComment Component', () => {
     })
 
     const commenStore = useCommentStore()
-    const promptStore = usePromptStore()
+    const entryStore = useEntryStore()
     const firstEntrySlug = ref({})
 
     // Get slug of first entry,
     // this slug is used for fetching entry and add comment to that entry
-    await promptStore.fetchPromptsAndEntries()
-    firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
+    await entryStore.fetchEntries()
+    firstEntrySlug.value = entryStore.getEntries[0]
 
     // User is coming, it is used for getting userId
     const userStore = useUserStore()
@@ -111,11 +111,11 @@ describe('TheComment Component', () => {
     // SECOND TEST
     it('delete fake comment in here', async () => {
       const commenStore = useCommentStore()
-      const promptStore = usePromptStore()
+      const entryStore = useEntryStore()
       const firstEntrySlug = ref({})
 
-      await promptStore.fetchPromptsAndEntries()
-      firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
+      await entryStore.fetchEntries()
+      firstEntrySlug.value = entryStore.getEntries[0]
 
       const userStore = useUserStore()
       const user = userStore.getUser
