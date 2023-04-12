@@ -59,51 +59,7 @@ export const usePromptStore = defineStore('prompts', {
       }
 
       prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-      if (prompt.entries?.length) {
-        for (const index in prompt.entries) {
-          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-        }
-      }
-
       this._monthPrompt = prompt
-      this._isLoading = false
-    },
-    /**
-     * Fetch prompt By id if it's not exist or reload it if it's exist
-     * @param promptId
-     * @returns {Promise<void>}
-     */
-    async fetchPromptById(id) {
-      this._isLoading = true
-      return await getDoc(doc(db, 'prompts', id))
-        .then(async (doc) => {
-          if (doc.data === undefined) {
-            throw new Error('Document not found.')
-          }
-          const prompt = { id: doc.id, ...doc.data() }
-          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-          if (prompt.entries?.length) {
-            for (const index in prompt.entries) {
-              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-            }
-          }
-
-          return prompt
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
-    async fetchPromptBySlug(slug) {
-      const q = query(collection(db, 'prompts'), where('slug', '==', slug))
-      this._isLoading = true
-      const querySnapshot = await getDocs(q)
-
-      const prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
 
       if (prompt.entries?.length) {
         for (const index in prompt.entries) {
@@ -111,9 +67,8 @@ export const usePromptStore = defineStore('prompts', {
           prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
         }
       }
-      this._isLoading = false
 
-      return prompt
+      this._isLoading = false
     },
 
     async fetchPromptsByYear(year) {
