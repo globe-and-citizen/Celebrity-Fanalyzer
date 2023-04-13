@@ -70,7 +70,7 @@ describe('TheComment Component', () => {
     const user = userStore.getUser
 
     // Getting all comments of first entry
-    await commenStore.fetchComments(firstEntrySlug.value.slug)
+    await commenStore.fetchComments(firstEntry.value.id)
 
     const startingNumberOfComments = commenStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
@@ -101,7 +101,7 @@ describe('TheComment Component', () => {
     await fakeComment.vm.addComment() //Mocked
 
     // 4) Test added fake comment
-    await commenStore.fetchComments(firstEntrySlug.value.slug)
+    await commenStore.fetchComments(firstEntry.value.id)
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5) Edit test
@@ -120,7 +120,7 @@ describe('TheComment Component', () => {
       const userStore = useUserStore()
       const user = userStore.getUser
 
-      await commenStore.fetchComments(firstEntrySlug.value.slug)
+      await commenStore.fetchComments(firstEntry.value.id)
 
       const startingNumberOfComments = commenStore.getComments.length
       const fakeCommentId = localStorage.getItem('id')
@@ -142,7 +142,7 @@ describe('TheComment Component', () => {
       await deleteComment.vm.deleteComment()
 
       // Test deleted comment
-      await commenStore.fetchComments(firstEntrySlug.value.slug)
+      await commenStore.fetchComments(firstEntry.value.id)
       expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
     })
 })
