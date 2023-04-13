@@ -139,7 +139,7 @@ const loading = ref(true)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+  userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
   if (router.currentRoute.value.params.id) {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
