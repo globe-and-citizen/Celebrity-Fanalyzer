@@ -208,6 +208,13 @@
       </div>
     </div>
   </section>
+
+  <div v-else class="q-mt-xl text-center">
+    <q-icon class="q-my-md" color="secondary" name="comment" size="md" />
+    <p class="text-h6">No Comments Yet</p>
+    <p class="text-body1">Be the first to share what you think!</p>
+  </div>
+
   <q-form greedy @submit.prevent="addComment">
     <q-input
       data-test="comment-entry-box"
