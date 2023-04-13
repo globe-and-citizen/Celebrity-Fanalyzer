@@ -58,12 +58,12 @@ describe('TheComment Component', () => {
 
     const commenStore = useCommentStore()
     const entryStore = useEntryStore()
-    const firstEntrySlug = ref({})
+    const firstEntry = ref({})
 
     // Get slug of first entry,
     // this slug is used for fetching entry and add comment to that entry
     await entryStore.fetchEntries()
-    firstEntrySlug.value = entryStore.getEntries[0]
+    firstEntry.value = entryStore.getEntries[0]
 
     // User is coming, it is used for getting userId
     const userStore = useUserStore()
@@ -79,16 +79,16 @@ describe('TheComment Component', () => {
       global: {
         mocks: {
           addComment: vi.fn(() => {
-            commenStore.addComment(fakeComment.vm.myComment, firstEntrySlug.value)
+            commenStore.addComment(fakeComment.vm.myComment, firstEntry.value)
           }),
           editComment: vi.fn(() => {
-            commenStore.editComment(firstEntrySlug.value.id, fakeCommentId, editedComment, user.uid)
+            commenStore.editComment(firstEntry.value.id, fakeCommentId, editedComment, user.uid)
           })
         }
       },
       props: {
         comments: [],
-        entry: { slug: firstEntrySlug.value.slug }
+        entry: { slug: firstEntry.value.slug }
       }
     })
 
@@ -112,10 +112,10 @@ describe('TheComment Component', () => {
     it('delete fake comment in here', async () => {
       const commenStore = useCommentStore()
       const entryStore = useEntryStore()
-      const firstEntrySlug = ref({})
+      const firstEntry = ref({})
 
       await entryStore.fetchEntries()
-      firstEntrySlug.value = entryStore.getEntries[0]
+      firstEntry.value = entryStore.getEntries[0]
 
       const userStore = useUserStore()
       const user = userStore.getUser
@@ -128,13 +128,13 @@ describe('TheComment Component', () => {
         global: {
           mocks: {
             deleteComment: vi.fn(() => {
-              commenStore.deleteComment(firstEntrySlug.value.id, fakeCommentId, user.uid)
+              commenStore.deleteComment(firstEntry.value.id, fakeCommentId, user.uid)
             })
           }
         },
         props: {
           comments: [],
-          entry: { slug: firstEntrySlug.value.slug }
+          entry: { slug: firstEntry.value.slug }
         }
       })
 
