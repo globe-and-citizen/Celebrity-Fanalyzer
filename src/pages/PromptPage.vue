@@ -65,7 +65,6 @@
           </div>
         </section>
         <q-separator inset spaced />
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />
       </q-page>
     </q-tab-panel>
@@ -107,14 +106,15 @@ import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
-import { getStats, monthYear } from 'src/utils/date'
+import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { currentYearMonth, getStats, monthYear, previousYearMonth } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
@@ -122,14 +122,14 @@ const shareStore = useShareStore()
 const userStore = useUserStore()
 
 const chartData = ref({})
-const countLikes = ref(0)
 const countDislikes = ref(0)
+const countLikes = ref(0)
+const dislikeIconClasses = ref(false)
+const likeIconClasses = ref(false)
 const prompt = ref({})
 const shares = ref([])
 const tab = ref('prompt')
-const type = ref('day')
-const likeIconClasses = ref(false)
-const dislikeIconClasses = ref(false)
+const type = ref('all')
 const userId = ref('')
 
 function graphData(type) {
@@ -144,36 +144,24 @@ function graphData(type) {
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+  userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
 
-  if (router.currentRoute.value.href === '/month') {
-    if (!promptStore.getMonthPrompt) {
-      await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
-    }
-    prompt.value = promptStore.getMonthPrompt
+  if (!promptByRoute()) {
+    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   }
-  if (router.currentRoute.value.params.year) {
-    await promptStore
-      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-      .then((res) => (prompt.value = res))
-      .catch((error) => {
-        prompt.value = null
-        errorStore.throwError(error)
-      })
-  }
-  if (router.currentRoute.value.params.slug) {
-    await promptStore
-      .fetchPromptBySlug(router.currentRoute.value.params.slug)
-      .then((res) => (prompt.value = res))
-      .catch((error) => {
-        prompt.value = null
-        errorStore.throwError(error)
-      })
-  }
+
+  prompt.value = promptByRoute()
+
   if (!prompt.value) {
     router.push('/404')
     return
   }
+
+  if (!entryStore.getEntries.length) {
+    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  }
+
+  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
@@ -182,6 +170,25 @@ onMounted(async () => {
     .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
 })
+
+const promptByRoute = () => {
+  const route = router.currentRoute.value
+  const currentMonth = currentYearMonth()
+  const previousMonth = previousYearMonth()
+
+  return promptStore.getPrompts.find((prompt) => {
+    switch (route.href) {
+      case '/month':
+        return [currentMonth, previousMonth].includes(prompt.date)
+      case `/${route.params.year}/${route.params.month}`:
+        return prompt.date === route.params.year + '-' + route.params.month
+      case `/${route.params.slug}`:
+        return prompt.slug === route.params.slug
+      default:
+        return false
+    }
+  })
+}
 
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length

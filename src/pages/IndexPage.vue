@@ -175,8 +175,8 @@ onMounted(async () => {
   await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
   monthPrompt.value = promptStore.getMonthPrompt
 
-  await promptStore.fetchPromptsAndEntries().catch((error) => errorStore.throwError(error))
-  await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
+  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 })
 </script>
 
