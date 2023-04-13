@@ -6,12 +6,10 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc,
-  where
+  updateDoc
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
@@ -31,23 +29,21 @@ export const useCommentStore = defineStore('comments', {
   },
 
   actions: {
-    async fetchComments(slug) {
+    async fetchComments(documentId) {
       this._isLoading = true
-      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
-      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+      await getDocs(collection(db, 'entries', documentId, 'comments'))
+        .then(async (querySnapshot) => {
+          const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-      const c = query(collection(db, 'entries', entry.id, 'comments'))
-      const snap = await getDocs(c)
-      const comments = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          for (const comment of comments) {
+            if (!comment.isAnonymous) {
+              comment.author = await getDoc(comment.author).then((doc) => doc.data())
+            }
+          }
 
-      for (const comment of comments) {
-        if (!comment.isAnonymous) {
-          comment.author = await getDoc(comment.author).then((doc) => doc.data())
-        }
-      }
-      this._isLoading = false
-
-      this._comments = comments
+          this.$patch({ _comments: comments })
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async addComment(comment, entry) {
