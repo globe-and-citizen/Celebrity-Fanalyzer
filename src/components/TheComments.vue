@@ -17,11 +17,11 @@
           <q-btn-dropdown
             v-if="(comment.author?.uid || comment.author) === userId"
             color="secondary"
+            :data-test="comment.text + '-button-dropdown'"
             dense
             dropdown-icon="more_vert"
             flat
             rounded
-            :data-test="comment.text + '-button-dropdown'"
           >
             <q-list>
               <q-item data-test="comment-select-edit" clickable v-close-popup @click="editInput(comment.id)">

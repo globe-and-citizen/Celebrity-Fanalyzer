@@ -38,9 +38,9 @@
           <q-btn
             :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
             flat
-            rounded
             icon="chat_bubble_outline"
             :label="count"
+            rounded
             @click="tab = 'comments'"
           >
             <q-tooltip>Comments</q-tooltip>
