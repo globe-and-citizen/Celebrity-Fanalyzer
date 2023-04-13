@@ -152,7 +152,7 @@ onMounted(async () => {
     return
   }
 
-  await commentStore.fetchComments(entry.value.id).catch((error) => errorStore.throwError(error))
+  await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))

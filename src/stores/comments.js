@@ -29,9 +29,9 @@ export const useCommentStore = defineStore('comments', {
   },
 
   actions: {
-    async fetchComments(documentId) {
+    async fetchComments(collectionName, documentId) {
       this._isLoading = true
-      await getDocs(collection(db, 'entries', documentId, 'comments'))
+      await getDocs(collection(db, collectionName, documentId, 'comments'))
         .then(async (querySnapshot) => {
           const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
@@ -46,7 +46,7 @@ export const useCommentStore = defineStore('comments', {
         .finally(() => (this._isLoading = false))
     },
 
-    async addComment(comment, entry) {
+    async addComment(comment, document) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -61,7 +61,7 @@ export const useCommentStore = defineStore('comments', {
       localStorage.setItem('id', docId)
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', entry.id, 'comments', docId), comment)
+      await setDoc(doc(db, 'entries', document.id, 'comments', docId), comment)
         .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: stateAuthor }] }))
         .finally(() => (this._isLoading = false))
     },
