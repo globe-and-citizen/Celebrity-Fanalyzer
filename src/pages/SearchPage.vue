@@ -35,48 +35,54 @@
       </q-tab-panel>
     </q-tab-panels>
     <TransitionGroup tag="div">
-      <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
+      <TheEntries
+        v-if="search && computedEntries.length > 0"
+        :entries="computedEntries"
+      />
     </TransitionGroup>
   </q-page>
 </template>
 
 <script setup>
-import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
-import ItemCard from 'src/components/ItemCard.vue'
-import TheEntries from 'src/components/TheEntries.vue'
-import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import ArticleSkeleton from "src/components/ArticleSkeleton.vue";
+import ItemCard from "src/components/ItemCard.vue";
+import TheEntries from "src/components/TheEntries.vue";
+import TheHeader from "src/components/TheHeader.vue";
+import { useEntryStore, useErrorStore, usePromptStore } from "src/stores";
+import { computed, onMounted, ref } from "vue";
 
-const entryStore = useEntryStore()
-const errorStore = useErrorStore()
-const promptStore = usePromptStore()
+const entryStore = useEntryStore();
+const errorStore = useErrorStore();
+const promptStore = usePromptStore();
 
-const entries = ref([])
-const categories = ref([])
-const category = ref('All')
-const prompts = ref([])
-const search = ref('')
+const entries = ref([]);
+const categories = ref([]);
+const category = ref("All");
+const prompts = ref([]);
+const search = ref("");
 
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
-    await promptStore.fetchAllPrompts().catch((error) => errorStore.throwError(error))
+    await promptStore.fetchAllPrompts().catch((error) => errorStore.throwError(error));
   }
-  prompts.value = promptStore.getPrompts
+  prompts.value = promptStore.getPrompts;
 
-  const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
-  categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
-  categories.value.unshift({ label: 'All', value: 'All' })
+  const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories);
+  categories.value = [...new Set(categoriesArr)].map((category) => ({
+    label: category,
+    value: category,
+  }));
+  categories.value.unshift({ label: "All", value: "All" });
 
   if (!entryStore.getEntries.length) {
-    await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
+    await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error));
   }
-  entries.value = entryStore.getEntries
-})
+  entries.value = entryStore.getEntries;
+});
 
 promptStore.$subscribe((_mutation, state) => {
-  prompts.value = state._prompts
-})
+  prompts.value = state._prompts;
+});
 
 const computedPrompts = computed(() => {
   return prompts.value.filter(
@@ -84,12 +90,16 @@ const computedPrompts = computed(() => {
       item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
       item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
       item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-      item.categories.some((category) => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
-  )
-})
+      item.categories.some((category) =>
+        category.toLowerCase().includes(search.value.toLocaleLowerCase())
+      )
+  );
+});
 const computedEntries = computed(() => {
-  return entries.value.filter((item) => item?.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
-})
+  return entries.value.filter((item) =>
+    item?.title.toLowerCase().includes(search.value.toLocaleLowerCase())
+  );
+});
 </script>
 
 <style>

@@ -3,7 +3,8 @@
     <div class="col-8">
       <div v-if="item.author" class="flex items-center">
         <q-avatar size="2rem">
-          <q-img :src="item.author.photoURL" />
+          <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />
+          <q-img v-else src="../../public/photo-who-has-not-image.png" />
         </q-avatar>
         <p class="q-mb-none q-ml-sm text-body1">
           {{ item.author.displayName?.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
