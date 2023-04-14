@@ -257,36 +257,23 @@ const inputEdit = ref('')
 const isEditing = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
-const user = ref('')
 const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
-
-  user.value = userStore.getUserRef || userStore.getUserIpHash
+  userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
 })
 
 const likeIconClass = computed(() => {
-  return (comment) => {
-    return comment.likes ? comment.likes.map((item) => item.id).includes(user.value.id) : false
-  }
+  return (comment) => comment.likes.some((like) => like === userId.value)
 })
 
 const dislikeIconClass = computed(() => {
-  return (comment) => {
-    return comment.dislikes ? comment.dislikes.some((dislike) => dislike.id === user.value.id) : false
-  }
+  return (comment) => comment.dislikes.some((dislike) => dislike === userId.value)
 })
 
 const replyCounter = (id) => {
-  let count = 0
-  for (const comment of props.comments) {
-    if (id === comment.parentId) {
-      count++
-    }
-  }
-  return count
+  return props.comments.filter((comment) => comment.parentId === id).length
 }
 
 async function addComment() {
