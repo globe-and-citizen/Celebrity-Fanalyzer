@@ -32,18 +32,21 @@ export const useEntryStore = defineStore('entries', {
   },
 
   actions: {
-    async fetchAllEntries() {
+    async fetchEntries() {
       this._isLoading = true
-      const querySnapshot = await getDocs(collection(db, 'entries'))
-      const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      await getDocs(collection(db, 'entries'))
+        .then(async (querySnapshot) => {
+          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-      for (const entry of entries) {
-        entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      }
+          for (const entry of entries) {
+            entry.author = await getDoc(entry.author).then((doc) => doc.data())
+            entry.prompt = entry.prompt.id
+          }
 
-      this._entries = []
-      this.$patch({ _entries: entries })
-      this._isLoading = false
+          this._entries = []
+          this.$patch({ _entries: entries })
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async fetchEntryBySlug(slug) {
@@ -60,9 +63,11 @@ export const useEntryStore = defineStore('entries', {
       return entry
     },
 
-    async addEntry(entry) {
+    async addEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
+
+      const entry = { ...payload }
 
       const promptId = entry.prompt.value
       const entryRef = doc(db, 'entries', entry.id)
@@ -73,23 +78,19 @@ export const useEntryStore = defineStore('entries', {
 
       this._isLoading = true
       await setDoc(entryRef, entry).then(() => {
-        const index = promptStore.getPrompts.findIndex((prompt) => prompt.id === promptId)
-        const prompt = promptStore.getPrompts[index]
-
         entry.author = userStore.getUserById(entry.author.id)
-
-        prompt.entries ??= []
-        prompt.entries.push(entry)
-        promptStore.$patch({ _prompts: [...promptStore._prompts.slice(0, index), prompt, ...promptStore._prompts.slice(index + 1)] })
+        this.$patch({ _entries: [...this.getEntries, entry] })
       })
 
       await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
       this._isLoading = false
     },
 
-    async editEntry(entry) {
+    async editEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
+
+      const entry = { ...payload }
 
       entry.author = doc(db, 'users', entry.author.value)
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
@@ -100,15 +101,9 @@ export const useEntryStore = defineStore('entries', {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {
-          const prompts = promptStore.getPrompts
-          const promptIndex = prompts.findIndex((prompt) => prompt.id === entry.prompt.id)
-          const prompt = prompts[promptIndex]
-          const entryIndex = prompt.entries.findIndex((e) => e.id === entry.id)
-
           entry.author = userStore.getUserById(entry.author.id)
-          prompt.entries[entryIndex] = { ...entry, author: entry.author }
-          prompts[promptIndex] = prompt
-          promptStore.$patch({ _prompts: prompts })
+          const index = this.getEntries.findIndex((p) => p.id === entry.id)
+          this.$patch({ _entries: [...this._entries.slice(0, index), entry, ...this._entries.slice(index + 1)] })
         })
         .finally(() => (this._isLoading = false))
     },
@@ -117,7 +112,6 @@ export const useEntryStore = defineStore('entries', {
       const commentStore = useCommentStore()
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
-      const promptStore = usePromptStore()
       const shareStore = useShareStore()
 
       const promptId = entryId.split('T')[0]
@@ -133,15 +127,8 @@ export const useEntryStore = defineStore('entries', {
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
         Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares]).then(() => {
-          const prompt = promptStore.getPrompts.find((prompt) => prompt.id === promptId)
-          prompt.entries = prompt.entries.filter((entry) => entry.id !== entryId)
-          promptStore.$patch({
-            _prompts: [
-              ...promptStore._prompts.slice(0, promptStore._prompts.indexOf(prompt)),
-              prompt,
-              ...promptStore._prompts.slice(promptStore._prompts.indexOf(prompt) + 1)
-            ]
-          })
+          const index = this._entries.findIndex((entry) => entry.id === entryId)
+          this._entries.splice(index, 1)
         })
       } catch (error) {
         errorStore.throwError(error)

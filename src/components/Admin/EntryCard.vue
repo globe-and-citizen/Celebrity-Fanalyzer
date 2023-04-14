@@ -86,6 +86,7 @@
           data-test="button-submit"
           :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
           :label="id ? 'Edit' : 'Save'"
+          :loading="entryStore.isLoading"
           rounded
           type="submit"
         />
