@@ -162,10 +162,10 @@
                     v-model="childComment.text"
                   >
                     <q-btn
-                      :data-test="childComment.text + '-submit-reply-edit'"
-                      class="cursor-pointer"
-                      id="replyInput"
                       color="grey-6"
+                      :data-test="childComment.text + '-submit-reply-edit'"
+                      dense
+                      :disable="!childComment.text"
                       flat
                       icon="send"
                       round
@@ -187,14 +187,14 @@
                 lazy-rules
                 :name="comment.id"
                 rounded
-                :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
                 standout="bg-secondary text-white"
                 v-model="reply.text"
               >
                 <q-btn
-                  :data-test="comment.text + '-submit-fill-add-reply'"
-                  class="cursor-pointer"
                   color="grey-6"
+                  :data-test="comment.text + '-submit-fill-add-reply'"
+                  dense
+                  :disable="!reply.text"
                   flat
                   icon="send"
                   round
@@ -217,7 +217,6 @@
 
   <q-form greedy @submit.prevent="addComment">
     <q-input
-      data-test="comment-entry-box"
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
       data-test="comment-main-box"
       dense
@@ -229,16 +228,7 @@
       style="margin-bottom: 6.7rem"
       v-model="myComment.text"
     >
-      <q-btn
-        data-test="submit-comment"
-        class="cursor-pointer"
-        color="grey-6"
-        :disable="!myComment.text"
-        flat
-        icon="send"
-        round
-        type="submit"
-      />
+      <q-btn color="grey-6" data-test="submit-comment" dense :disable="!myComment.text" flat icon="send" round type="submit" />
     </q-input>
   </q-form>
 </template>
@@ -288,7 +278,7 @@ const replyCounter = (id) => {
 
 async function addComment() {
   await commentStore
-    .addComment(myComment, props.data)
+    .addComment(props.collection, myComment, props.data)
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
@@ -320,8 +310,8 @@ async function editComment(commentId, editedComment) {
 
 async function deleteComment(commentParentId, commentId) {
   await commentStore
-    .deleteComment(props.data.id, commentId)
-    .then(() => $q.notify({ type: 'negative', message: 'Comment successfully deleted' }))
+    .deleteComment(props.collection, props.data.id, commentId)
+    .then(() => $q.notify({ type: 'positive', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
   childComments.value = []
@@ -357,7 +347,7 @@ async function showReplies(id) {
 
 async function addReply(commentId) {
   await commentStore
-    .addReply(props.data.id, commentId, reply)
+    .addReply(props.collection, props.data.id, reply)
     .then(() => {
       reply.text = ''
       $q.notify({ type: 'positive', message: 'Reply successfully submitted' })

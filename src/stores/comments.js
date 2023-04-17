@@ -47,7 +47,7 @@ export const useCommentStore = defineStore('comments', {
         .finally(() => (this._isLoading = false))
     },
 
-    async addComment(comment, document) {
+    async addComment(collectionName, comment, document) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -56,13 +56,13 @@ export const useCommentStore = defineStore('comments', {
       comment.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const docId = comment.id || Date.now() + '-' + (comment.author.id || comment.author)
+      const commentId = comment.id || Date.now() + '-' + (comment.author.id || comment.author)
 
-      comment.id = docId
-      localStorage.setItem('id', docId)
+      comment.id = commentId
+      localStorage.setItem('id', commentId)
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', document.id, 'comments', docId), comment)
+      await setDoc(doc(db, collectionName, document.id, 'comments', commentId), comment)
         .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: stateAuthor }] }))
         .finally(() => (this._isLoading = false))
     },
@@ -140,11 +140,11 @@ export const useCommentStore = defineStore('comments', {
       })
     },
 
-    async deleteComment(entryId, id) {
-      const index = this._comments.findIndex((comment) => comment.id === id)
+    async deleteComment(collectionName, documentId, commentId) {
+      const index = this._comments.findIndex((comment) => comment.id === commentId)
 
       this._isLoading = true
-      await deleteDoc(doc(db, 'entries', entryId, 'comments', id))
+      await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId))
         .then(() => this._comments.splice(index, 1))
         .finally(() => (this._isLoading = false))
     },
@@ -159,7 +159,7 @@ export const useCommentStore = defineStore('comments', {
       })
     },
 
-    async addReply(entryId, commentId, reply) {
+    async addReply(collectionName, documentId, reply) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -168,13 +168,13 @@ export const useCommentStore = defineStore('comments', {
       reply.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const docId = Date.now() + '-' + (reply.author.id || reply.author)
+      const commentId = Date.now() + '-' + (reply.author.id || reply.author)
 
-      reply.id = docId
-      reply.id = reply.id || docId
+      reply.id = commentId
+      reply.id = reply.id || commentId
 
       this._isLoading = true
-      await setDoc(doc(db, 'entries', entryId, 'comments', docId), reply)
+      await setDoc(doc(db, collectionName, documentId, 'comments', commentId), reply)
         .then(() => this.$patch({ _comments: [...this._comments, { ...reply, author: stateAuthor }] }))
         .finally(() => (this._isLoading = false))
     }
