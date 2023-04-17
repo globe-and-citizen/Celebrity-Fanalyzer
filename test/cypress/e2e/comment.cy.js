@@ -29,7 +29,7 @@ describe('Commenting', async () => {
     cy.get('[data-test="comment-loaded"]')
 
     // navigate to the comment input form.
-    cy.get('[data-test="comment-entry-box"]').type('Javokhir-testing')
+    cy.get('[data-test="comment-main-box"]').type('Javokhir-testing')
 
     // Submit the form
     cy.get('[data-test="submit-comment"]').click()
@@ -44,7 +44,6 @@ describe('Commenting', async () => {
 
     // programmatically change the q-tab-panel to the comments section.
     cy.get('[data-test="panel-3-navigator"]').click()
-
 
     //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
@@ -88,7 +87,6 @@ describe('Commenting', async () => {
 
     //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Reply successfully submitted')
-
   })
 
   it('editing reply text', () => {

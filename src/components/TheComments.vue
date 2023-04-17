@@ -219,6 +219,7 @@
     <q-input
       data-test="comment-entry-box"
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
+      data-test="comment-main-box"
       dense
       label="Comment"
       lazy-rules
