@@ -224,12 +224,20 @@
       lazy-rules
       required
       rounded
-      :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
       standout="bg-secondary text-white"
       style="margin-bottom: 6.7rem"
       v-model="myComment.text"
     >
-      <q-btn data-test="submit-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+      <q-btn
+        data-test="submit-comment"
+        class="cursor-pointer"
+        color="grey-6"
+        :disable="!myComment.text"
+        flat
+        icon="send"
+        round
+        type="submit"
+      />
     </q-input>
   </q-form>
 </template>
@@ -241,8 +249,9 @@ import { shortMonthDayTime } from 'src/utils/date'
 import { computed, onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
+  collection: { type: String, required: true },
   comments: { type: Array, required: true },
-  entry: { type: Object, required: true }
+  data: { type: Object, required: true }
 })
 
 const $q = useQuasar()
@@ -265,11 +274,11 @@ onMounted(async () => {
 })
 
 const likeIconClass = computed(() => {
-  return (comment) => comment.likes.some((like) => like === userId.value)
+  return (comment) => comment.likes?.some((like) => like === userId.value) || false
 })
 
 const dislikeIconClass = computed(() => {
-  return (comment) => comment.dislikes.some((dislike) => dislike === userId.value)
+  return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
 })
 
 const replyCounter = (id) => {
@@ -278,7 +287,7 @@ const replyCounter = (id) => {
 
 async function addComment() {
   await commentStore
-    .addComment(myComment, props.entry)
+    .addComment(myComment, props.data)
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
@@ -288,11 +297,11 @@ async function addComment() {
 }
 
 function likeComment(commentId) {
-  commentStore.likeComment(props.entry.id, commentId)
+  commentStore.likeComment(props.collection, props.data.id, commentId)
 }
 
 function dislikeComment(commentId) {
-  commentStore.dislikeComment(props.entry.id, commentId)
+  commentStore.dislikeComment(props.collection, props.data.id, commentId)
 }
 
 function editInput(commentId) {
@@ -302,7 +311,7 @@ function editInput(commentId) {
 
 async function editComment(commentId, editedComment) {
   await commentStore
-    .editComment(props.entry.id, commentId, editedComment, userId.value)
+    .editComment(props.data.id, commentId, editedComment, userId.value)
     .then(() => $q.notify({ type: 'info', message: 'Comment successfully edited!' }))
     .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
@@ -310,7 +319,7 @@ async function editComment(commentId, editedComment) {
 
 async function deleteComment(commentParentId, commentId) {
   await commentStore
-    .deleteComment(props.entry.id, commentId)
+    .deleteComment(props.data.id, commentId)
     .then(() => $q.notify({ type: 'negative', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
@@ -322,10 +331,6 @@ async function deleteComment(commentParentId, commentId) {
       continue
     }
   }
-}
-
-async function replyInput(parentId) {
-  reply.parentId = parentId
 }
 
 async function showReplies(id) {
@@ -351,7 +356,7 @@ async function showReplies(id) {
 
 async function addReply(commentId) {
   await commentStore
-    .addReply(props.entry.id, commentId, reply)
+    .addReply(props.data.id, commentId, reply)
     .then(() => {
       reply.text = ''
       $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
@@ -368,19 +373,3 @@ async function addReply(commentId) {
   }
 }
 </script>
-
-<style scoped>
-.bolder-icon-default {
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-}
-
-.bolder-icon {
-  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-}
-
-.warning-icon {
-  font-size: 28px;
-  height: 32px;
-  width: 32px;
-}
-</style>
