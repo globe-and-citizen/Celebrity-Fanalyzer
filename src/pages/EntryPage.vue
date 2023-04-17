@@ -95,7 +95,7 @@
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
       <q-page :data-test="!loading ? 'comment-loaded' : 'comment-loading'">
-        <TheComments :comments="comments" :entry="entry" />
+        <TheComments collection="entries" :comments="comments" :data="entry" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
