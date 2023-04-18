@@ -314,14 +314,7 @@ async function deleteComment(commentParentId, commentId) {
     .then(() => $q.notify({ type: 'positive', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
-  childComments.value = []
-  for (const comment of props.comments) {
-    if (commentParentId === comment.parentId) {
-      childComments.value.push(comment)
-    } else {
-      continue
-    }
-  }
+  childComments.value = props.comments.filter((comment) => commentParentId === comment.parentId)
 }
 
 async function showReplies(id) {
@@ -333,16 +326,9 @@ async function showReplies(id) {
   }
   expanded.value = true
   commentId.value = id
-
   reply.parentId = id
 
-  for (const comment of props.comments) {
-    if (id === comment.parentId) {
-      childComments.value.push(comment)
-    } else {
-      continue
-    }
-  }
+  childComments.value = props.comments.filter((comment) => comment.parentId === id)
 }
 
 async function addReply(commentId) {
@@ -354,13 +340,6 @@ async function addReply(commentId) {
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
 
-  childComments.value = []
-  for (const comment of props.comments) {
-    if (commentId === comment.parentId) {
-      childComments.value.push(comment)
-    } else {
-      continue
-    }
-  }
+  childComments.value = props.comments.filter((comment) => comment.parentId === commentId)
 }
 </script>
