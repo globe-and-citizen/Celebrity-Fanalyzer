@@ -42,7 +42,7 @@
             :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
             flat
             icon="chat_bubble_outline"
-            :label="count"
+            :label="countComments"
             rounded
             size="0.75rem"
             @click="tab = 'comments'"
@@ -98,7 +98,7 @@
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
-      <q-page :data-test="!loading ? 'comment-loaded' : 'comment-loading'">
+      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
         <TheComments collection="entries" :comments="comments" :data="entry" />
       </q-page>
     </q-tab-panel>
@@ -129,17 +129,16 @@ const userStore = useUserStore()
 
 const chartData = ref({})
 const comments = ref([])
-const countLikes = ref(0)
+const countComments = ref(0)
 const countDislikes = ref(0)
+const countLikes = ref(0)
 const entry = ref({})
 const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
-const count = ref(0)
 const likeIconClasses = ref(false)
 const dislikeIconClasses = ref(false)
 const userId = ref('')
-const loading = ref(true)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
@@ -158,6 +157,7 @@ onMounted(async () => {
 
   await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
+  countComments.value = comments.value.filter((comment) => comment.parentId === undefined).length
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
@@ -165,15 +165,6 @@ onMounted(async () => {
     .fetchShares('entries', entry.value.id)
     .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
-
-  for (const comment of comments.value) {
-    if (comment.parentId === undefined) {
-      count.value++
-    } else {
-      continue
-    }
-  }
-  loading.value = false
 })
 
 function graphData(type) {
