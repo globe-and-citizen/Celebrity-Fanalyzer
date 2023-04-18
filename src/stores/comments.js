@@ -96,22 +96,23 @@ export const useCommentStore = defineStore('comments', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
+      const comment = this._comments.find((comment) => comment.id === commentId)
       const commentRef = doc(db, collectionName, documentId, 'comments', commentId)
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
-      const comment = this._comments.find((comment) => comment.id === commentId)
+      const userId = user?.id || user
 
       await updateDoc(commentRef, { likes: arrayUnion(user) }).then(() => {
-        if (!comment.likes?.includes(user.id)) {
+        if (!comment.likes?.includes(userId)) {
           comment.likes ??= []
-          comment.likes.push(user.id)
+          comment.likes.push(userId)
         } else {
-          comment.likes = comment.likes.filter((like) => like !== user.id)
+          comment.likes = comment.likes.filter((like) => like !== userId)
         }
       })
 
       await updateDoc(commentRef, { dislikes: arrayRemove(user) }).then(() => {
-        if (comment.dislikes?.includes(user.id)) {
-          comment.dislikes = comment.dislikes.filter((dislike) => dislike !== user.id)
+        if (comment.dislikes?.includes(userId)) {
+          comment.dislikes = comment.dislikes.filter((dislike) => dislike !== userId)
         }
       })
     },
@@ -120,22 +121,23 @@ export const useCommentStore = defineStore('comments', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
+      const comment = this._comments.find((comment) => comment.id === commentId)
       const commentRef = doc(db, collectionName, documentId, 'comments', commentId)
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
-      const comment = this._comments.find((comment) => comment.id === commentId)
+      const userId = user?.id || user
 
       await updateDoc(commentRef, { dislikes: arrayUnion(user) }).then(() => {
-        if (!comment.dislikes?.includes(user.id)) {
+        if (!comment.dislikes?.includes(userId)) {
           comment.dislikes ??= []
-          comment.dislikes.push(user.id)
+          comment.dislikes.push(userId)
         } else {
-          comment.dislikes = comment.dislikes.filter((dislike) => dislike !== user.id)
+          comment.dislikes = comment.dislikes.filter((dislike) => dislike !== userId)
         }
       })
 
       await updateDoc(commentRef, { likes: arrayRemove(user) }).then(() => {
-        if (comment.likes?.includes(user.id)) {
-          comment.likes = comment.likes.filter((like) => like !== user.id)
+        if (comment.likes?.includes(userId)) {
+          comment.likes = comment.likes.filter((like) => like !== userId)
         }
       })
     },
