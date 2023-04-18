@@ -79,10 +79,10 @@ describe('TheComment Component', () => {
       global: {
         mocks: {
           addComment: vi.fn(() => {
-            commenStore.addComment(fakeComment.vm.myComment, firstEntry.value)
+            commenStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
           }),
           editComment: vi.fn(() => {
-            commenStore.editComment(firstEntry.value.id, fakeCommentId, editedComment, user.uid)
+            commenStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
           })
         }
       },
@@ -128,7 +128,7 @@ describe('TheComment Component', () => {
         global: {
           mocks: {
             deleteComment: vi.fn(() => {
-              commenStore.deleteComment(firstEntry.value.id, fakeCommentId, user.uid)
+              commenStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
             })
           }
         },

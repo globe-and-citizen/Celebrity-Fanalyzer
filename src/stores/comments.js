@@ -67,7 +67,7 @@ export const useCommentStore = defineStore('comments', {
         .finally(() => (this._isLoading = false))
     },
 
-    async editComment(entryId, id, editedComment, userId) {
+    async editComment(collectionName, documentId, id, editedComment, userId) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -79,7 +79,7 @@ export const useCommentStore = defineStore('comments', {
       this._isLoading = true
       if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
         await runTransaction(db, async (transaction) => {
-          transaction.update(doc(db, 'entries', entryId, 'comments', comment.id), { text: editedComment })
+          transaction.update(doc(db, collectionName, documentId, 'comments', comment.id), { text: editedComment })
         })
           .then(() => {
             this.$patch({
