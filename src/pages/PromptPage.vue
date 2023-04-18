@@ -1,12 +1,15 @@
 <template>
-  <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
+  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" data-test="prompt-tab" icon="fiber_manual_record" name="prompt" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <!-- Panel 1: Prompt -->
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="bg-white">
+        <TheHeader feedbackButton title="Prompt Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
           <div class="flex justify-between">
@@ -44,13 +47,15 @@
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
+            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
             flat
-            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
-            icon="img:/icons/discord.svg"
+            icon="chat_bubble_outline"
+            :label="countComments"
             rounded
-            target="_blank"
+            size="0.75rem"
+            @click="tab = 'comments'"
           >
-            <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+            <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="shares?.length" @share="onShare($event)" />
         </section>
@@ -68,7 +73,9 @@
         <TheEntries :entries="prompt?.entries" />
       </q-page>
     </q-tab-panel>
+    <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
+      <TheHeader title="Anthrogram" />
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
@@ -97,6 +104,13 @@
         </section>
       </q-page>
     </q-tab-panel>
+    <!-- Panel 3: Comments -->
+    <q-tab-panel name="comments" class="bg-white">
+      <TheHeader title="Comments" />
+      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
+        <TheComments collection="prompts" :comments="comments" :data="prompt" />
+      </q-page>
+    </q-tab-panel>
   </q-tab-panels>
 </template>
 
@@ -105,8 +119,10 @@ import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
+import TheComments from 'src/components/TheComments.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 import { currentYearMonth, getStats, monthYear, previousYearMonth } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -114,6 +130,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
@@ -122,6 +139,8 @@ const shareStore = useShareStore()
 const userStore = useUserStore()
 
 const chartData = ref({})
+const comments = ref([])
+const countComments = ref(0)
 const countDislikes = ref(0)
 const countLikes = ref(0)
 const dislikeIconClasses = ref(false)
@@ -162,6 +181,10 @@ onMounted(async () => {
   }
 
   prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+
+  await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+  comments.value = commentStore.getComments
+  countComments.value = comments.value.filter((comment) => comment.parentId === undefined).length
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
@@ -231,7 +254,7 @@ function onShare(socialNetwork) {
 <style scoped lang="scss">
 .parallax {
   position: fixed;
-  top: 0;
+  top: 65px;
   z-index: -1;
 }
 
