@@ -35,10 +35,7 @@
       </q-tab-panel>
     </q-tab-panels>
     <TransitionGroup tag="div">
-      <TheEntries
-        v-if="search && computedEntries.length > 0"
-        :entries="computedEntries"
-      />
+      <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
     </TransitionGroup>
   </q-page>
 </template>
