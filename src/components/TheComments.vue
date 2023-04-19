@@ -228,7 +228,7 @@
       style="margin-bottom: 6.7rem"
       v-model="myComment.text"
     >
-      <q-btn color="grey-6" data-test="submit-comment" dense :disable="!myComment.text" flat icon="send" round type="submit" />
+      <q-btn color="grey-6" dense :disable="!myComment.text" flat icon="send" round type="submit" />
     </q-input>
   </q-form>
 </template>
