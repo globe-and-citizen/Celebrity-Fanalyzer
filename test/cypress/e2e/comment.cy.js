@@ -1,3 +1,4 @@
+/* eslint-disable cypress/no-unnecessary-waiting */
 /// <reference types="cypress" />
 
 // Use `cy.dataCy` custom command for more robust tests
@@ -9,11 +10,9 @@ describe('Commenting', async () => {
     cy.visit('/profile')
 
     // Get the login button and click it
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('.q-page > .q-btn').click()
 
     // Visits the admin page and wait for 15 seconds
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="main-menu"]').find('a').eq(4).click()
     cy.location('pathname').should('eq', '/admin')
   })
@@ -48,7 +47,6 @@ describe('Commenting', async () => {
     //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="Javokhir-testing"]').click().wait(5000)
   })
 
@@ -62,7 +60,6 @@ describe('Commenting', async () => {
     //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="dislikeJavokhir-testing"]').click().wait(5000)
   })
 
@@ -126,7 +123,6 @@ describe('Commenting', async () => {
 
     cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(0).click({ multiple: true, force: true })
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click()
   })
 
@@ -135,36 +131,30 @@ describe('Commenting', async () => {
     cy.visit('/2023/02/more-frogs')
 
     //programmatically change the q-tab-panel to the comments section.
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="panel-3-navigator"]').click()
 
     //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="Javokhir-testing-button-dropdown"]').click()
 
     cy.get('[data-test="comment-select-edit"]').click()
 
     cy.get('[data-test="Javokhir-testing-comment-edit"]').type('-EDITED')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="submit-edited-comment"]').click().wait(5000)
   })
 
   it('deleting comment', () => {
     cy.visit('/2023/02/more-frogs')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="panel-3-navigator"]').click()
 
     //Will wait all comment will be loaded
     cy.get('[data-test="comment-loaded"]')
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test="Javokhir-testing-EDITED-button-dropdown"]').click()
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.get('[data-test = "comment-select-delete"]').click().wait(5000)
   })
 })
