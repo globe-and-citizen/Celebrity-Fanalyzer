@@ -213,6 +213,10 @@ const promptByRoute = () => {
   })
 }
 
+commentStore.$subscribe((_mutation, state) => {
+  comments.value = state._comments
+})
+
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
