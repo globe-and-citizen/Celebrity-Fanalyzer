@@ -1,36 +1,39 @@
 <template>
-  <q-tabs active-color="primary" class="tab-selector fixed-bottom bg-white" dense indicator-color="transparent" v-model="tab">
+  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
     <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
-
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
     <q-tab-panel name="entry" style="padding: 0">
       <q-page class="bg-white">
         <TheHeader feedbackButton title="Entry Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
-        <section class="q-pa-md q-mb-xl" style="margin-top: 100%">
+        <section class="q-pa-md" style="margin-top: 100%">
           <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
           <p class="text-body1" v-html="entry.description"></p>
           <q-btn
             color="green"
+            data-test="like-button"
             flat
             :icon="likeIconClasses ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
             :label="countLikes"
             rounded
+            size="0.75rem"
             @click="like()"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
           <q-btn
             color="red"
+            data-test="dislike-button"
             flat
             :icon="dislikeIconClasses ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
             :label="countDislikes"
             rounded
+            size="0.75rem"
             @click="dislike()"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
@@ -38,9 +41,10 @@
           <q-btn
             :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
             flat
-            rounded
             icon="chat_bubble_outline"
-            :label="count"
+            :label="countComments"
+            rounded
+            size="0.75rem"
             @click="tab = 'comments'"
           >
             <q-tooltip>Comments</q-tooltip>
@@ -94,8 +98,8 @@
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
-      <q-page :data-test="!loading ? 'comment-loaded' : 'comment-loading'">
-        <TheComments :comments="comments" :entry="entry" />
+      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
+        <TheComments collection="entries" :comments="comments" :data="entry" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -125,21 +129,20 @@ const userStore = useUserStore()
 
 const chartData = ref({})
 const comments = ref([])
-const countLikes = ref(0)
+const countComments = ref(0)
 const countDislikes = ref(0)
+const countLikes = ref(0)
 const entry = ref({})
 const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
-const count = ref(0)
 const likeIconClasses = ref(false)
 const dislikeIconClasses = ref(false)
 const userId = ref('')
-const loading = ref(true)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
+  userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
   if (router.currentRoute.value.params.id) {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
@@ -152,8 +155,9 @@ onMounted(async () => {
     return
   }
 
-  await commentStore.fetchComments(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
+  await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
+  countComments.value = comments.value.filter((comment) => comment.parentId === undefined).length
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
@@ -161,15 +165,6 @@ onMounted(async () => {
     .fetchShares('entries', entry.value.id)
     .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
-
-  for (const comment of comments.value) {
-    if (comment.parentId === undefined) {
-      count.value++
-    } else {
-      continue
-    }
-  }
-  loading.value = false
 })
 
 function graphData(type) {
