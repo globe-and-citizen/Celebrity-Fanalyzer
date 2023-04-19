@@ -4,7 +4,7 @@
       <div v-if="item.author" class="flex items-center">
         <q-avatar size="2rem">
           <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />
-          <q-img v-else src="../../public/icons/user_raiting_premium_member.svg" class="custom-img" />
+          <q-img v-else src="/icons/user_raiting_premium_member.svg" :ratio="1" width="28px" />
         </q-avatar>
         <p class="q-mb-none q-ml-sm text-body1">
           {{ item.author.displayName?.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
@@ -57,9 +57,3 @@ function goToUrl() {
   router.push(props.link)
 }
 </script>
-<style scoped>
-.custom-img {
-  width: 28px;
-  height: 28px;
-}
-</style>
