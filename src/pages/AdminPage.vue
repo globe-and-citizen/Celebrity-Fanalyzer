@@ -31,7 +31,7 @@
 
       <q-tab-panels v-model="tab" animated swipeable>
         <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
-          <ManagePromptsEntries @openPromptDialog="openPromptDialog($event)" />
+          <ManagePromptsEntries @openPromptDialog="openPromptDialog" @openShowcaseDialog="openShowcaseDialog" />
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isAdmin" name="users">
@@ -55,6 +55,10 @@
     <q-dialog full-width position="bottom" v-model="entry.dialog">
       <EntryCard v-bind="entry" @hideDialog="entry = {}" />
     </q-dialog>
+
+    <q-dialog full-width position="bottom" v-model="showcase.dialog">
+      <h1>Hello World</h1>
+    </q-dialog>
   </section>
 </template>
 
@@ -73,6 +77,7 @@ const userStore = useUserStore()
 
 const entry = ref({})
 const prompt = ref({})
+const showcase = ref({})
 const tab = ref('posts')
 const users = ref([])
 
@@ -86,6 +91,11 @@ userStore.$subscribe((_mutation, state) => {
     return user
   })
 })
+
+function openShowcaseDialog(props) {
+  showcase.value = props?.id ? props : {}
+  showcase.value.dialog = true
+}
 
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}
