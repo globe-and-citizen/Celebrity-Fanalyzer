@@ -34,16 +34,6 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">
           <q-btn
-            color="accent"
-            data-test="button-showcase"
-            :disable="promptStore.isLoading"
-            flat
-            icon="collections"
-            round
-            size="sm"
-            @click="$emit('openShowcaseDialog', props.row)"
-          />
-          <q-btn
             color="warning"
             data-test="button-edit"
             :disable="promptStore.isLoading"
@@ -100,7 +90,7 @@ import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
-defineEmits(['openPromptDialog', 'openShowcaseDialog'])
+defineEmits(['openPromptDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
