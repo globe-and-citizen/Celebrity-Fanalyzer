@@ -110,7 +110,7 @@
           </q-card-section>
         </q-step>
         <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Showcasing Art">
-          <ShowcaseCard />
+          <ShowcaseCard v-model:arts="prompt.showcase.arts" v-model:artist="prompt.showcase.artist" />
         </q-step>
         <template v-slot:navigation>
           <q-stepper-navigation class="q-gutter-md">
@@ -138,15 +138,16 @@
 <script setup>
 import { date, useQuasar } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
-import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const storageStore = useStorageStore()
 const userStore = useUserStore()
 
 const authorOptions = reactive([])
@@ -156,6 +157,7 @@ const imageModel = ref([])
 const prompt = reactive({
   description: '',
   image: '',
+  showcase: { arts: [], artist: {} },
   title: ''
 })
 const step = ref(1)
@@ -168,6 +170,7 @@ watchEffect(() => {
     prompt.description = props.description
     prompt.id = props.id
     prompt.image = props.image
+    prompt.showcase = props.showcase || { arts: [], artist: {} }
     prompt.title = props.title
   } else {
     prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
@@ -225,7 +228,24 @@ async function onSubmit() {
   }
 
   if (Object.keys(imageModel.value).length) {
-    promptStore.uploadImage(imageModel.value, prompt.date).catch((error) => errorStore.throwError(error))
+    promptStore
+      .uploadImage(imageModel.value, prompt.date)
+      .then((res) => (prompt.image = res))
+      .catch((error) => errorStore.throwError(error))
+  }
+
+  if (prompt.showcase.artist.photo) {
+    await storageStore
+      .uploadArtistPhoto(prompt.showcase.artist.photo, prompt.date)
+      .then((res) => (prompt.showcase.artist.photo = res))
+      .catch((error) => errorStore.throwError(error))
+  }
+
+  if (prompt.showcase.arts.length) {
+    await storageStore
+      .uploadArts(prompt.showcase.arts, prompt.date)
+      .then((res) => (prompt.showcase.arts = res))
+      .catch((error) => errorStore.throwError(error))
   }
 
   if (props.id) {
