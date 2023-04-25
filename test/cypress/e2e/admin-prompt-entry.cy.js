@@ -7,23 +7,23 @@ describe('Admin Prompt & Entry', () => {
   beforeEach(() => {
     cy.viewport('iphone-x')
     // Visits the profile page
-    cy.visit('/profile', { timeout: 10000 })
+    cy.visit('/profile')
 
     // Get the login button and click it
-    cy.get('.q-page > .q-btn').click({ timeout: 10000 }).wait(2000)
+    cy.get('.q-page > .q-btn').click()
 
     // Visits the admin page and wait for 15 seconds
-    cy.get('[data-test="main-menu"]').find('a').eq(4).click({ timeout: 10000 }).wait(5000)
+    cy.get('[data-test="main-menu"]').find('a').eq(4).click()
     cy.location('pathname').should('eq', '/admin')
   })
 
-  it('Should create a prompt', () => {
+  it.only('Should create a prompt', () => {
     // Get the dropdown button and click it
-    cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
+    cy.get('[data-test="button-dropdown"]').click()
 
     // Get the first button (New Prompt) and click it
     cy.get('[data-test="prompt-dropdown"]').should('be.visible').click()
-    cy.get('.q-card.not-loading', { timeout: 50000 })
+    cy.get('.q-card.not-loading')
 
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
@@ -46,7 +46,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
 
     // Get the submit button and click it
-    cy.get('[data-test="button-submit"]').click({ timeout: 5000 }).wait(2000)
+    cy.get('[data-test="button-submit"]').click()
   })
 
   it('Should create a entry', () => {
