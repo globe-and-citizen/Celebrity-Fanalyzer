@@ -60,7 +60,7 @@
           <ShareComponent :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
-        <ShowcaseArt :art="prompt?.art" />
+        <ShowcaseArt v-if="prompt?.showcase" :showcase="prompt.showcase" />
         <q-separator inset spaced />
         <section v-if="prompt?.author" class="flex items-center no-wrap q-pa-md">
           <q-avatar size="6rem">
