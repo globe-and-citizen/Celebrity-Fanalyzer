@@ -17,7 +17,7 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', '/admin')
   })
 
-  it.only('Should create a prompt', () => {
+  it('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="button-dropdown"]').click()
 
@@ -46,7 +46,11 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
 
     // Get the submit button and click it
-    cy.get('[data-test="button-submit"]').click()
+    cy.get('[data-test="button-submit"] > .q-btn__content').click()
+    // cy.get('[data-test="button-submit"]').click()
+
+    //Check the Prompt is submitted successfully
+    cy.get('.q-notification__message').contains('Prompt successfully submitted')
   })
 
   it('Should create a entry', () => {
