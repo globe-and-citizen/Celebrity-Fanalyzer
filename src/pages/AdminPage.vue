@@ -15,7 +15,8 @@
                 :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'prompt-dropdown'">
           <q-item-section>New Prompt</q-item-section>
         </q-item>
-        <q-item clickable @click="openEntryDialog()" data-test="entry-dropdown">
+        <q-item clickable @click="openEntryDialog()"
+                :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'entry-dropdown'">
           <q-item-section>New Entry</q-item-section>
         </q-item>
       </q-list>

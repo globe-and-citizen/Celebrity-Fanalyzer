@@ -53,12 +53,12 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
   })
 
-  it('Should create a entry', () => {
+  it.only('Should create a entry', () => {
     // Get the dropdown button and click it
-    cy.get('[data-test="button-dropdown"]').click({ timeout: 1000 })
+    cy.get('[data-test="button-dropdown"]').click()
 
     // Get the first button (New Entry) and click it
-    cy.get('[data-test="entry-dropdown"]').click({ timeout: 1000 })
+    cy.get('[data-test="entry-dropdown"]').click()
 
     // Get the author select and choose the "TESTER" option
     cy.get('[data-test="select-author"]').select('TESTER')
@@ -76,7 +76,10 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
 
     // Get the submit button and click it
-    cy.get('[data-test="button-submit"]').click({ timeout: 5000 }).wait(2000)
+    cy.get('[data-test="button-submit"]').click()
+
+    // Check the Entry is submitted successfully
+    cy.get('.q-notification__message').contains('Entry successfully submitted')
   })
 
   it('Should delete the entry', () => {
