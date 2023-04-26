@@ -16,7 +16,7 @@
     <q-carousel-slide v-for="(art, index) in showcase?.arts" :key="index" :name="index">
       <q-img class="rounded-borders" :src="art" />
     </q-carousel-slide>
-    <q-carousel-slide :name="5">
+    <q-carousel-slide :name="showcase?.arts.length + 1">
       <q-card flat>
         <q-card-section class="row" style="white-space: pre-line">
           <q-img class="col-6 rounded-borders" :src="showcase.artist.photo" />
