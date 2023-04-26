@@ -82,7 +82,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Entry successfully submitted')
   })
 
-  it.only('Should delete the entry', () => {
+  it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
     cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
 
@@ -114,9 +114,11 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
 
     // Get the delete button and click it
-    cy.get('[data-test="button-delete-prompt"]').click({ timeout: 1000 })
+    cy.get('[data-test="button-delete-prompt"]').click()
 
     // Get the confirm button and click it
-    cy.get('[data-test="confirm-delete-prompt"]').click({ timeout: 1000 })
+    cy.get('[data-test="confirm-delete-prompt"]').click()
+    // Wait the notification
+    cy.get('.q-notification__message').contains('Prompt successfully deleted')
   })
 })
