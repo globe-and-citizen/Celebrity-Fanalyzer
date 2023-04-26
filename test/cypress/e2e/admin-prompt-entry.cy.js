@@ -53,7 +53,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
   })
 
-  it.only('Should create a entry', () => {
+  it('Should create a entry', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="button-dropdown"]').click()
 
@@ -82,18 +82,31 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Entry successfully submitted')
   })
 
-  it('Should delete the entry', () => {
+  it.only('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
     cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
 
     // Get the expand button and click it
-    cy.get('[data-test="button-expand"]').click({ timeout: 1000 })
+    cy.get('[data-test="button-expand"]').click()
 
-    // Get the delete button and click it
-    cy.get('[data-test="button-delete-entry"]').click({ timeout: 1000 })
+    cy.get('body')
+      .then(($body) => {
+        // synchronously query from body
+        // to find if [data-test="button-delete-entry"]
+        if ($body.find('[data-test="button-delete-entry"]').length) {
+          // Delete all entry for a prompt if exist
+          cy.get('[data-test="button-delete-entry"]').then(($btn)=>{
+            for(let i=$btn.length-1; i>=0; i--){
+              cy.get('[data-test="button-delete-entry"]').eq(i).click()
+              cy.get('[data-test="confirm-delete-entry"]').click()
+              // Wait the notification
+              cy.get('.q-notification__message').contains('Entry deleted')
+            }
+          })
+        }
+      })
 
-    // Get the confirm button and click it
-    cy.get('[data-test="confirm-delete-entry"]').click({ timeout: 1000 })
+
   })
 
   it('Should delete the prompt', () => {

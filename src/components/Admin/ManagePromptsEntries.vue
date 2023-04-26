@@ -12,7 +12,8 @@
     title="Manage Prompts & Entries"
   >
     <template v-slot:top-right>
-      <q-input data-test="input-search" debounce="300" dense placeholder="Search" v-model="filter">
+      <q-input debounce="300" dense placeholder="Search" v-model="filter"
+               :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'input-search'">
         <template v-slot:append>
           <q-icon name="search" />
         </template>
