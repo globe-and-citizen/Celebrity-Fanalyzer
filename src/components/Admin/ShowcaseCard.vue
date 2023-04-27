@@ -77,19 +77,15 @@ function removeArt(file) {
 </script>
 
 <style lang="scss" scoped>
-.artImg {
-  transition: all 0.3s ease-in-out;
-}
 .trashIcon {
   position: absolute;
   right: 15px;
   top: -5px;
   visibility: hidden;
-  z-index: 1000;
+  z-index: 1;
 }
 
 .artImg:hover .trashIcon {
   visibility: visible;
-  z-index: 1;
 }
 </style>
