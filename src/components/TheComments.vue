@@ -149,7 +149,7 @@
                   @submit.prevent="editComment(childComment.id, childComment.text)"
                 >
                   <q-input
-                    :data-test="childComment.text + 'fillEditReply'"
+                    :data-test="childComment.text + '-fillEditReply'"
                     autogrow
                     class="q-pb-none"
                     dense
