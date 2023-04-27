@@ -157,7 +157,7 @@ const imageModel = ref([])
 const prompt = reactive({
   description: '',
   image: '',
-  showcase: { arts: [], artist: {} },
+  showcase: { arts: [], artist: { info: '', photo: [''] } },
   title: ''
 })
 const step = ref(1)
@@ -170,7 +170,7 @@ watchEffect(() => {
     prompt.description = props.description
     prompt.id = props.id
     prompt.image = props.image
-    prompt.showcase = props.showcase || { arts: [], artist: {} }
+    prompt.showcase = props.showcase
     prompt.title = props.title
   } else {
     prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
