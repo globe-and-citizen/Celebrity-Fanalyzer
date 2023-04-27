@@ -22,7 +22,6 @@ export const useStorageStore = defineStore('storage', {
 
         getDownloadURL(storageRef).then((url) => arts.push(url))
       }
-      console.log(arts)
 
       return arts
     }
