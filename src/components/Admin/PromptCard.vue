@@ -234,14 +234,14 @@ async function onSubmit() {
       .catch((error) => errorStore.throwError(error))
   }
 
-  if (prompt.showcase.artist.photo) {
+  if (prompt.showcase.artist.photo instanceof File) {
     await storageStore
       .uploadArtistPhoto(prompt.showcase.artist.photo, prompt.date)
       .then((res) => (prompt.showcase.artist.photo = res))
       .catch((error) => errorStore.throwError(error))
   }
 
-  if (prompt.showcase.arts.length) {
+  if (prompt.showcase.arts[0] instanceof File) {
     await storageStore
       .uploadArts(prompt.showcase.arts, prompt.date)
       .then((res) => (prompt.showcase.arts = res))
