@@ -3,7 +3,7 @@
     <q-file class="hidden" multiple ref="artsFileRef" v-model="modelArts" @update:model-value="addArts" />
     <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
     <div class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
-      <q-spinner v-if="storageStore.isLoading" class="q-mx-auto" color="primary" size="3em" />
+      <q-spinner v-if="storageStore.isLoading && !modelArts.length" class="q-mx-auto" color="primary" size="3em" />
       <div v-for="(art, index) in modelArts" class="artImg col-grow q-mx-xs relative-position" :key="index">
         <q-img class="rounded-borders" fit="contain" :src="art" style="max-height: 10rem" />
         <q-btn class="trashIcon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" />
@@ -55,17 +55,11 @@ async function addArts(files) {
 }
 
 function removeArt(file) {
-  if (file instanceof File) {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      const index = modelArts.value.indexOf(reader.result)
-      modelArts.value.splice(index, 1)
-    }
-  } else {
-    const index = modelArts.value.indexOf(file)
-    modelArts.value.splice(index, 1)
-  }
+  const index = modelArts.value.indexOf(file)
+  storageStore
+    .deleteFile(`${props.date}-art-${index}`)
+    .then(() => modelArts.value.splice(index, 1))
+    .catch((error) => errorStore.throwError(error))
   emit('update:arts', modelArts.value)
 }
 
