@@ -12,16 +12,8 @@ export const useStorageStore = defineStore('storage', {
   },
 
   actions: {
-    async uploadArtistPhoto(file, filename) {
-      const storageRef = ref(storage, `images/prompt-${filename}-artist`)
-
-      await uploadBytes(storageRef, file)
-
-      return getDownloadURL(storageRef).then((url) => url)
-    },
-
-    async uploadArts(index, file, filename) {
-      const storageRef = ref(storage, `images/prompt-${filename}-art-${index}`)
+    async uploadFile(file, filename) {
+      const storageRef = ref(storage, `images/prompt-${filename}`)
 
       this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))

@@ -47,7 +47,7 @@ async function addArts(files) {
   modelArts.value = []
   for (let index in files) {
     await storageStore
-      .uploadArts(index, files[index], props.date)
+      .uploadFile(files[index], `${props.date}-art-${index}`)
       .then((url) => modelArts.value.push(url))
       .catch((error) => errorStore.throwError(error))
   }
@@ -72,7 +72,7 @@ function removeArt(file) {
 async function addArtistPhoto(files) {
   modelArtistPhoto.value = []
   await storageStore
-    .uploadArtistPhoto('artist', files[0], props.date)
+    .uploadFile(files[0], `${props.date}-artist`)
     .then((url) => modelArtistPhoto.value.push(url))
     .catch((error) => errorStore.throwError(error))
   emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value[0] })
