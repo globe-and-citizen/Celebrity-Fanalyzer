@@ -1,7 +1,7 @@
 <template>
   <section class="text-center">
     <q-file class="hidden" multiple ref="artsFileRef" v-model="modelArts" @update:model-value="addArts" />
-    <q-btn flat icon="add_circle_outline" label="Upload Arts" rounded @click="onUploadArts" />
+    <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
     <div class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
       <div v-for="(art, index) in modelArts" class="artImg col-grow relative-position" :key="index">
         <q-img fit="contain" :src="art" style="max-height: 10rem" />
