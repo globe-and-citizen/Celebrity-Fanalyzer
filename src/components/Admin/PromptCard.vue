@@ -116,7 +116,7 @@
           <q-stepper-navigation class="q-gutter-md">
             <q-btn flat rounded label="Cancel" v-close-popup />
             <q-btn v-if="step > 1" color="primary" flat label="Back" rounded @click="$refs.stepper.previous()" />
-            <q-btn v-if="step < 2" color="primary" flat label="Next to Arts" rounded @click="$refs.stepper.next()" />
+            <q-btn v-if="step < 2" color="primary" flat label="Next to Art" rounded @click="$refs.stepper.next()" />
             <q-btn
               color="primary"
               data-test="button-submit"
