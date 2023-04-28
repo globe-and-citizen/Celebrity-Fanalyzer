@@ -14,7 +14,7 @@
     v-model="slide"
   >
     <q-carousel-slide v-for="(art, index) in showcase?.arts" :key="index" :name="index">
-      <q-img class="rounded-borders" :src="art" />
+      <q-img class="rounded-borders" fit="contain" :src="art" style="max-height: 20rem" />
     </q-carousel-slide>
     <q-carousel-slide :name="showcase?.arts.length + 1">
       <q-card flat>
