@@ -89,22 +89,24 @@ describe('Admin Prompt & Entry', () => {
     // Get the expand button and click it
     cy.get('[data-test="button-expand"]').click()
 
-    cy.get('body')
-      .then(($body) => {
-        // synchronously query from body
-        // to find if [data-test="button-delete-entry"]
-        if ($body.find('[data-test="button-delete-entry"]').length) {
-          // Delete all entry for a prompt if exist
-          cy.get('[data-test="button-delete-entry"]').then(($btn)=>{
-            for(let i=$btn.length-1; i>=0; i--){
-              cy.get('[data-test="button-delete-entry"]').eq(i).click()
-              cy.get('[data-test="confirm-delete-entry"]').click()
-              // Wait the notification
-              cy.get('.q-notification__message').contains('Entry deleted')
-            }
-          })
-        }
-      })
+    // Delete all entry in a prompt and left one
+    cy.get('[data-test="button-delete-entry"]').then(($btn)=>{
+      for(let i=$btn.length-1; i>0; i--){
+        cy.get('[data-test="button-delete-entry"]').eq(i).click({force:true})
+        cy.get('[data-test="confirm-delete-entry"]').click()
+        // Wait the notification
+        cy.get('.q-notification__message').contains('Entry deleted')
+        cy.wait(5000)
+      }
+    })
+    cy.wait(5000)
+
+    // Delete the last one
+    cy.get('[data-test="button-delete-entry"]').eq(0).click({force:true})
+    cy.get('[data-test="confirm-delete-entry"]').click()
+    // Wait the notification
+    cy.get('.q-notification__message').contains('Entry deleted')
+    cy.wait(5000)
 
 
   })
