@@ -110,7 +110,7 @@
           </q-card-section>
         </q-step>
         <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Showcasing Art">
-          <ShowcaseCard v-model:arts="prompt.showcase.arts" v-model:artist="prompt.showcase.artist" />
+          <ShowcaseCard :date="prompt.date" v-model:arts="prompt.showcase.arts" v-model:artist="prompt.showcase.artist" />
         </q-step>
         <template v-slot:navigation>
           <q-stepper-navigation class="q-gutter-md">
@@ -230,20 +230,6 @@ async function onSubmit() {
     promptStore
       .uploadImage(imageModel.value, prompt.date)
       .then((res) => (prompt.image = res))
-      .catch((error) => errorStore.throwError(error))
-  }
-
-  if (prompt.showcase.artist.photo instanceof File) {
-    await storageStore
-      .uploadArtistPhoto(prompt.showcase.artist.photo, prompt.date)
-      .then((res) => (prompt.showcase.artist.photo = res))
-      .catch((error) => errorStore.throwError(error))
-  }
-
-  if (prompt.showcase.arts[0] instanceof File) {
-    await storageStore
-      .uploadArts(prompt.showcase.arts, prompt.date)
-      .then((res) => (prompt.showcase.arts = res))
       .catch((error) => errorStore.throwError(error))
   }
 

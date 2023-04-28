@@ -3,6 +3,7 @@
     <q-file class="hidden" multiple ref="artsFileRef" v-model="modelArts" @update:model-value="addArts" />
     <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
     <div class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
+      <q-spinner v-if="storageStore.isLoading" class="q-mx-auto" color="primary" size="3em" />
       <div v-for="(art, index) in modelArts" class="artImg col-grow relative-position" :key="index">
         <q-img fit="contain" :src="art" style="max-height: 10rem" />
         <q-btn class="trashIcon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" />
@@ -19,10 +20,14 @@
 </template>
 
 <script setup>
+import { useErrorStore, useStorageStore } from 'src/stores'
 import { ref } from 'vue'
 
-const props = defineProps(['arts', 'artist'])
+const props = defineProps(['arts', 'artist', 'date'])
 const emit = defineEmits(['update:arts', 'update:artist'])
+
+const errorStore = useErrorStore()
+const storageStore = useStorageStore()
 
 const artsFileRef = ref(null)
 const artistFileRef = ref(null)
@@ -38,26 +43,15 @@ function onUploadArtist() {
   artistFileRef.value.pickFiles()
 }
 
-function addArtistPhoto(files) {
-  modelArtistPhoto.value = []
-  const reader = new FileReader()
-  reader.readAsDataURL(files[0])
-  reader.onload = () => modelArtistPhoto.value.push(reader.result)
-  emit('update:artist', { ...props.artist, photo: files[0] })
-}
-
-function addArtistInfo() {
-  emit('update:artist', { ...props.artist, info: modelArtistInfo.value })
-}
-
-function addArts(files) {
+async function addArts(files) {
   modelArts.value = []
-  for (const file of files) {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => modelArts.value.push(reader.result)
+  for (let index in files) {
+    await storageStore
+      .uploadArts(index, files[index], props.date)
+      .then((url) => modelArts.value.push(url))
+      .catch((error) => errorStore.throwError(error))
   }
-  emit('update:arts', files)
+  emit('update:arts', modelArts.value)
 }
 
 function removeArt(file) {
@@ -73,6 +67,19 @@ function removeArt(file) {
     modelArts.value.splice(index, 1)
   }
   emit('update:arts', modelArts.value)
+}
+
+async function addArtistPhoto(files) {
+  modelArtistPhoto.value = []
+  await storageStore
+    .uploadArtistPhoto('artist', files[0], props.date)
+    .then((url) => modelArtistPhoto.value.push(url))
+    .catch((error) => errorStore.throwError(error))
+  emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value[0] })
+}
+
+function addArtistInfo() {
+  emit('update:artist', { ...props.artist, info: modelArtistInfo.value })
 }
 </script>
 

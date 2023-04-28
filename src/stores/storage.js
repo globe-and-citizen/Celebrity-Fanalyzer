@@ -3,6 +3,14 @@ import { defineStore } from 'pinia'
 import { storage } from 'src/firebase'
 
 export const useStorageStore = defineStore('storage', {
+  state: () => ({
+    _isLoading: false
+  }),
+
+  getters: {
+    isLoading: (state) => state._isLoading
+  },
+
   actions: {
     async uploadArtistPhoto(file, filename) {
       const storageRef = ref(storage, `images/prompt-${filename}-artist`)
@@ -12,18 +20,13 @@ export const useStorageStore = defineStore('storage', {
       return getDownloadURL(storageRef).then((url) => url)
     },
 
-    async uploadArts(files, filename) {
-      const arts = []
+    async uploadArts(index, file, filename) {
+      const storageRef = ref(storage, `images/prompt-${filename}-art-${index}`)
 
-      for (let index in files) {
-        const storageRef = ref(storage, `images/prompt-${filename}-art-${index}`)
+      this._isLoading = true
+      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
-        await uploadBytes(storageRef, files[index])
-
-        getDownloadURL(storageRef).then((url) => arts.push(url))
-      }
-
-      return arts
+      return getDownloadURL(storageRef).then((url) => url)
     }
   }
 })
