@@ -109,19 +109,17 @@
             </div>
           </q-card-section>
         </q-step>
-        <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Showcasing Art">
+        <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
           <ShowcaseCard :date="prompt.date" v-model:arts="prompt.showcase.arts" v-model:artist="prompt.showcase.artist" />
         </q-step>
         <template v-slot:navigation>
-          <q-stepper-navigation class="q-gutter-md">
+          <q-stepper-navigation class="flex justify-end q-gutter-md">
             <q-btn flat rounded label="Cancel" v-close-popup />
-            <q-btn v-if="step > 1" color="primary" flat label="Back" rounded @click="$refs.stepper.previous()" />
-            <q-btn v-if="step < 2" color="primary" flat label="Next to Art" rounded @click="$refs.stepper.next()" />
             <q-btn
               color="primary"
               data-test="button-submit"
               :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
-              :label="id ? 'Edit' : 'Save'"
+              :label="id ? 'Save Edits' : 'Submit Prompts'"
               rounded
               type="submit"
             />
