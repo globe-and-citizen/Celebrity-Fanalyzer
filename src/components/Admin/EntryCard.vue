@@ -85,7 +85,7 @@
           color="primary"
           data-test="button-submit"
           :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
-          :label="id ? 'Edit' : 'Save'"
+          :label="id ? 'Save Edits' : 'Submit Entry'"
           :loading="entryStore.isLoading"
           rounded
           type="submit"
