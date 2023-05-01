@@ -119,7 +119,7 @@
               color="primary"
               data-test="button-submit"
               :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
-              :label="id ? 'Save Edits' : 'Submit Prompts'"
+              :label="id ? 'Save Edits' : 'Submit Prompt'"
               rounded
               type="submit"
             />
