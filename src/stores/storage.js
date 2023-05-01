@@ -12,9 +12,8 @@ export const useStorageStore = defineStore('storage', {
   },
 
   actions: {
-    // TODO: Refactor this to be more generic (prompts, entries and users)
-    async uploadFile(file, filename) {
-      const storageRef = ref(storage, `images/prompt-${filename}`)
+    async uploadFile(file, filePathAndName) {
+      const storageRef = ref(storage, filePathAndName)
 
       this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
@@ -22,8 +21,8 @@ export const useStorageStore = defineStore('storage', {
       return getDownloadURL(storageRef).then((url) => url)
     },
 
-    async deleteFile(filename) {
-      const storageRef = ref(storage, `images/prompt-${filename}`)
+    async deleteFile(filePathAndName) {
+      const storageRef = ref(storage, filePathAndName)
 
       this._isLoading = true
       await deleteObject(storageRef).finally(() => (this._isLoading = false))

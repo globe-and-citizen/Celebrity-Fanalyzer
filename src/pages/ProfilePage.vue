@@ -15,16 +15,18 @@
 
   <q-page v-else class="q-px-lg">
     <div class="flex items-center no-wrap q-py-xl">
-      <q-avatar size="5rem" color="teal" text-color="white">
-        <q-img :src="user.photoURL" spinner-color="primary" spinner-size="82px">
+      <q-avatar size="5rem" text-color="white">
+        <q-spinner v-if="storageStore.isLoading" color="primary" size="3rem" />
+        <q-img v-else :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
           <div class="photo">
-            <q-icon class="q-mx-auto" color="grey-6" name="upload" size="xs" />
+            <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
             <q-file
               accept="image/*"
               borderless
-              class="absolute-bottom"
+              class="absolute-bottom cursor-pointer"
               dense
-              max-file-size="1048487"
+              max-file-size="5242880"
+              style="height: 5rem"
               v-model="newPhoto"
               @rejected="onRejected"
               @update:model-value="uploadPhoto"
@@ -69,13 +71,14 @@ import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
 import ProfileTab from 'src/components/Profile/ProfileTab.vue'
 import SettingsTab from 'src/components/Profile/SettingsTab.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useErrorStore, useUserStore } from 'src/stores'
+import { useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
 const errorStore = useErrorStore()
+const storageStore = useStorageStore()
 const userStore = useUserStore()
 
-const newPhoto = ref([])
+const newPhoto = ref(null)
 const user = ref(userStore.getUser)
 const tab = ref(userStore.getProfileTab)
 
@@ -92,24 +95,21 @@ async function googleSignIn() {
 }
 
 function onRejected() {
-  Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 1MB.' })
+  Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 
-function uploadPhoto() {
-  const reader = new FileReader()
-  reader.readAsDataURL(newPhoto.value)
-  reader.onload = () => (user.value.photoURL = reader.result)
+async function uploadPhoto() {
+  await storageStore
+    .uploadFile(newPhoto.value, `users/${userStore.getUser.uid}`)
+    .then((url) => (user.value.photoURL = url))
+    .catch((error) => errorStore.throwError(error))
 }
 </script>
 
 <style scoped lang="scss">
 .photo {
   background-color: transparent;
-  bottom: 0;
-  height: 25%;
-  padding: 0;
-  position: absolute;
-  text-align: center;
+  height: 100%;
   transition: all 0.3s;
   width: 100%;
 
