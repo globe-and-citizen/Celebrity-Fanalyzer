@@ -33,7 +33,7 @@
 
       <q-tab-panels v-model="tab" animated swipeable>
         <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
-          <ManagePromptsEntries @openPromptDialog="openPromptDialog($event)" />
+          <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isAdmin" name="users">

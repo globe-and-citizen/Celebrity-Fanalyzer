@@ -9,6 +9,7 @@ import { useLikeStore } from './likes'
 import { usePromptStore } from './prompts'
 import { useShareStore } from './shares'
 import { useStatStore } from './stats'
+import { useStorageStore } from './storage'
 import { useUserStore } from './user'
 /*
  * If not building with SSR mode, you can
@@ -39,5 +40,6 @@ export {
   usePromptStore,
   useShareStore,
   useStatStore,
+  useStorageStore,
   useUserStore
 }

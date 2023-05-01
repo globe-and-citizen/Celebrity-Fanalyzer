@@ -186,7 +186,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
-      return getDownloadURL(ref(storage, storageRef))
+      return getDownloadURL(storageRef).then((url) => url)
     }
   }
 })

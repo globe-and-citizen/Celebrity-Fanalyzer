@@ -60,6 +60,8 @@
           <ShareComponent :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
+        <ShowcaseArt v-if="prompt?.showcase" :showcase="prompt.showcase" />
+        <q-separator inset spaced />
         <section v-if="prompt?.author" class="flex items-center no-wrap q-pa-md">
           <q-avatar size="6rem">
             <q-img :src="prompt.author.photoURL" />
@@ -118,6 +120,7 @@
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
+import ShowcaseArt from 'src/components/Posts/ShowcaseArt.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheEntries from 'src/components/TheEntries.vue'
