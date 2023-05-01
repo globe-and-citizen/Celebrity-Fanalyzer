@@ -33,12 +33,22 @@ export const useLikeStore = defineStore('likes', {
       await userStore.fetchUserIp()
 
       const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-      const like = {
-        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Timestamp.fromDate(new Date())
+
+      const likesRef = doc(db, collectionName, documentId, 'likes', docId)
+      const likesSnap = await getDoc(likesRef)
+
+      if (likesSnap.exists()) {
+        await deleteDoc(likesRef)
+        this._likes.pop()
+      } else {
+        const like = {
+          author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+          createdAt: Timestamp.fromDate(new Date())
+        }
+
+        await setDoc(likesRef, like).then(() => this._likes.push(like))
       }
 
-      await setDoc(doc(db, collectionName, documentId, 'likes', docId), like).then(() => this._likes.push(like))
 
       const dislikesRef = doc(db, collectionName, documentId, 'dislikes', docId)
       const dislikesSnap = await getDoc(dislikesRef)
@@ -56,13 +66,21 @@ export const useLikeStore = defineStore('likes', {
       await userStore.fetchUserIp()
 
       const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-      const dislike = {
-        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Timestamp.fromDate(new Date())
+
+      const dislikesRef = doc(db, collectionName, documentId, 'dislikes', docId)
+      const dislikesSnap = await getDoc(dislikesRef)
+
+      if (dislikesSnap.exists()) {
+        await deleteDoc(dislikesRef)
+        this._dislikes.pop()
+      } else {
+        const dislike = {
+          author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+          createdAt: Timestamp.fromDate(new Date())
+        }
+
+        await setDoc(dislikesRef, dislike).then(() => this._dislikes.push(dislike))
       }
-
-      await setDoc(doc(db, collectionName, documentId, 'dislikes', docId), dislike).then(() => this._dislikes.push(dislike))
-
       const likesRef = doc(db, collectionName, documentId, 'likes', docId)
       const likesSnap = await getDoc(likesRef)
 

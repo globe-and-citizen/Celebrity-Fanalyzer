@@ -1,12 +1,15 @@
 <template>
-  <q-tabs active-color="primary" class="tab-selector fixed-bottom" dense indicator-color="transparent" v-model="tab">
+  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" data-test="prompt-tab" icon="fiber_manual_record" name="prompt" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+    <!-- Panel 1: Prompt -->
     <q-tab-panel name="prompt" style="padding: 0">
       <q-page class="bg-white">
+        <TheHeader feedbackButton title="Prompt Page" />
         <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="prompt?.image" />
         <section class="q-pa-md" style="margin-top: 100%">
           <div class="flex justify-between">
@@ -22,11 +25,11 @@
           <q-btn
             color="green"
             data-test="like-button"
-            :disable="promptStore.isLoading"
             flat
-            icon="sentiment_satisfied_alt"
+            :icon="likeIconClasses ? 'img:icons/thumbs-up-bolder.svg' : 'img:icons/thumbs-up.svg'"
             :label="countLikes"
             rounded
+            size="0.75rem"
             @click="like()"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
@@ -34,26 +37,30 @@
           <q-btn
             color="red"
             data-test="dislike-button"
-            :disable="promptStore.isLoading"
             flat
-            icon="sentiment_very_dissatisfied"
+            :icon="dislikeIconClasses ? 'img:icons/thumbs-down-bolder.svg' : 'img:icons/thumbs-down.svg'"
             :label="countDislikes"
             rounded
+            size="0.75rem"
             @click="dislike()"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
+            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
             flat
-            href="https://discord.com/channels/1034461422962360380/1040994839610806343"
-            icon="img:/icons/discord.svg"
+            icon="chat_bubble_outline"
+            :label="countComments"
             rounded
-            target="_blank"
+            size="0.75rem"
+            @click="tab = 'comments'"
           >
-            <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+            <q-tooltip>Comments</q-tooltip>
           </q-btn>
           <ShareComponent :label="shares?.length" @share="onShare($event)" />
         </section>
+        <q-separator inset spaced />
+        <ShowcaseArt v-if="prompt?.showcase" :showcase="prompt.showcase" />
         <q-separator inset spaced />
         <section v-if="prompt?.author" class="flex items-center no-wrap q-pa-md">
           <q-avatar size="6rem">
@@ -65,11 +72,12 @@
           </div>
         </section>
         <q-separator inset spaced />
-        <q-linear-progress v-if="promptStore.isLoading" color="primary" class="q-mt-sm" indeterminate />
         <TheEntries :entries="prompt?.entries" />
       </q-page>
     </q-tab-panel>
+    <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
+      <TheHeader title="Anthrogram" />
       <q-page>
         <section>
           <h1 class="q-mt-none text-bold text-h5">{{ prompt?.title }}</h1>
@@ -98,6 +106,13 @@
         </section>
       </q-page>
     </q-tab-panel>
+    <!-- Panel 3: Comments -->
+    <q-tab-panel name="comments" class="bg-white">
+      <TheHeader title="Comments" />
+      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
+        <TheComments collection="prompts" :comments="comments" :data="prompt" />
+      </q-page>
+    </q-tab-panel>
   </q-tab-panels>
 </template>
 
@@ -105,28 +120,39 @@
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
+import ShowcaseArt from 'src/components/Posts/ShowcaseArt.vue'
 import ShareComponent from 'src/components/ShareComponent.vue'
+import TheComments from 'src/components/TheComments.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import { useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
-import { getStats, monthYear } from 'src/utils/date'
+import TheHeader from 'src/components/TheHeader.vue'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { currentYearMonth, getStats, monthYear, previousYearMonth } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const commentStore = useCommentStore()
+const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
+const userStore = useUserStore()
 
 const chartData = ref({})
-const countLikes = ref(0)
+const comments = ref([])
+const countComments = ref(0)
 const countDislikes = ref(0)
+const countLikes = ref(0)
+const dislikeIconClasses = ref(false)
+const likeIconClasses = ref(false)
 const prompt = ref({})
 const shares = ref([])
 const tab = ref('prompt')
-const type = ref('day')
+const type = ref('all')
+const userId = ref('')
 
 function graphData(type) {
   if (type === 'day') {
@@ -139,34 +165,29 @@ function graphData(type) {
 }
 
 onMounted(async () => {
-  if (router.currentRoute.value.href === '/month') {
-    if (!promptStore.getMonthPrompt) {
-      await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
-    }
-    prompt.value = promptStore.getMonthPrompt
+  await userStore.fetchUserIp()
+  userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
+
+  if (!promptByRoute()) {
+    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   }
-  if (router.currentRoute.value.params.year) {
-    await promptStore
-      .fetchPromptById(`${router.currentRoute.value.params.year}-${router.currentRoute.value.params.month}`)
-      .then((res) => (prompt.value = res))
-      .catch((error) => {
-        prompt.value = null
-        errorStore.throwError(error)
-      })
-  }
-  if (router.currentRoute.value.params.slug) {
-    await promptStore
-      .fetchPromptBySlug(router.currentRoute.value.params.slug)
-      .then((res) => (prompt.value = res))
-      .catch((error) => {
-        prompt.value = null
-        errorStore.throwError(error)
-      })
-  }
+
+  prompt.value = promptByRoute()
+
   if (!prompt.value) {
     router.push('/404')
     return
   }
+
+  if (!entryStore.getEntries.length) {
+    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  }
+
+  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+
+  await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+  comments.value = commentStore.getComments
+  countComments.value = comments.value.filter((comment) => comment.parentId === undefined).length
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
@@ -176,9 +197,38 @@ onMounted(async () => {
     .catch((error) => errorStore.throwError(error))
 })
 
+const promptByRoute = () => {
+  const route = router.currentRoute.value
+  const currentMonth = currentYearMonth()
+  const previousMonth = previousYearMonth()
+
+  return promptStore.getPrompts.find((prompt) => {
+    switch (route.href) {
+      case '/month':
+        return [currentMonth, previousMonth].includes(prompt.date)
+      case `/${route.params.year}/${route.params.month}`:
+        return prompt.date === route.params.year + '-' + route.params.month
+      case `/${route.params.slug}`:
+        return prompt.slug === route.params.slug
+      default:
+        return false
+    }
+  })
+}
+
+commentStore.$subscribe((_mutation, state) => {
+  comments.value = state._comments
+})
+
 likeStore.$subscribe((_mutation, state) => {
   countLikes.value = state._likes.length
   countDislikes.value = state._dislikes.length
+
+  const likedPost = state._likes.find((post) => post.author.id === userId.value)
+  likeIconClasses.value = !!likedPost
+
+  const dislikedPost = state._dislikes.find((post) => post.author.id === userId.value)
+  dislikeIconClasses.value = !!dislikedPost
 
   const { weekStats, dayStats } = getStats(state, prompt.value.created)
   const allStats = [
@@ -211,7 +261,7 @@ function onShare(socialNetwork) {
 <style scoped lang="scss">
 .parallax {
   position: fixed;
-  top: 0;
+  top: 65px;
   z-index: -1;
 }
 

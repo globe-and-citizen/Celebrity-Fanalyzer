@@ -17,18 +17,19 @@
           <q-btn-dropdown
             v-if="(comment.author?.uid || comment.author) === userId"
             color="secondary"
+            :data-test="comment.text + '-button-dropdown'"
             dense
             dropdown-icon="more_vert"
             flat
             rounded
           >
             <q-list>
-              <q-item clickable v-close-popup @click="editInput(comment.id)">
+              <q-item data-test="comment-select-edit" clickable v-close-popup @click="editInput(comment.id)">
                 <q-item-section>
                   <q-item-label>Edit</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteComment(1, comment.id)">
+              <q-item data-test="comment-select-delete" clickable v-close-popup @click="deleteComment(1, comment.id)">
                 <q-item-section>
                   <q-item-label>Delete</q-item-label>
                 </q-item-section>
@@ -38,6 +39,7 @@
         </div>
         <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
           <q-input
+            :data-test="comment.text + '-comment-edit'"
             class="q-px-sm"
             autogrow
             dense
@@ -49,40 +51,44 @@
             standout="bg-secondary text-white"
             v-model="comment.text"
           >
-            <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+            <q-btn data-test="submit-edited-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
           </q-input>
         </q-form>
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
         <div class="row">
-          <q-btn flat rounded>
-            <span
-              @click="likeComment(comment.id)"
-              :class="likeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-positive q-pr-sm warning-icon"
-            >
-              sentiment_satisfied
-            </span>
-            <span class="text-body2">
-              {{ comment.likes?.length || 0 }}
-            </span>
+          <q-btn
+            :data-test="'like' + comment.text"
+            flat
+            :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+            :label="comment.likes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="likeComment(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
           </q-btn>
-          <q-btn flat rounded>
-            <span
-              @click="dislikeComment(comment.id)"
-              :class="dislikeIconClass(comment)"
-              class="cursor-pointer material-symbols-outlined text-negative q-pr-sm warning-icon"
-            >
-              sentiment_dissatisfied
-            </span>
-            <span class="text-body2">
-              {{ comment.dislikes?.length || 0 }}
-            </span>
+          <q-btn
+            :data-test="'dislike' + comment.text"
+            flat
+            :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+            :label="comment.dislikes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="dislikeComment(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
-          <q-btn flat icon="chat_bubble_outline" :label="replyCounter(comment.id)" rounded @click="showReplies(comment.id)">
+          <q-btn
+            :data-test="comment.text + '-add-reply'"
+            flat
+            icon="chat_bubble_outline"
+            :label="replyCounter(comment.id)"
+            rounded
+            size="0.75rem"
+            @click="showReplies(comment.id)"
+          >
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
         </div>
@@ -96,7 +102,7 @@
               <div v-for="childComment of childComments" class="q-mb-md" :key="childComment.id">
                 <div class="flex items-center">
                   <q-icon v-if="childComment.isAnonymous" name="person" size="1.5rem" />
-                  <q-avatar v-else size="1.5rem">
+                  <q-avatar v-else size="1rem">
                     <q-img :src="childComment.author.photoURL" />
                   </q-avatar>
                   <p class="row q-mb-none q-ml-sm">
@@ -111,14 +117,25 @@
                     dropdown-icon="more_vert"
                     flat
                     rounded
+                    :data-test="childComment.text + '-open-reply-edit-delete'"
                   >
                     <q-list>
-                      <q-item clickable v-close-popup @click="editInput(childComment.id)">
+                      <q-item
+                        :data-test="childComment.text + '-open-reply-edit'"
+                        clickable
+                        v-close-popup
+                        @click="editInput(childComment.id)"
+                      >
                         <q-item-section>
                           <q-item-label>Edit</q-item-label>
                         </q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup @click="deleteComment(comment.id, childComment.id)">
+                      <q-item
+                        :data-test="childComment.text + '-open-reply-delete'"
+                        clickable
+                        v-close-popup
+                        @click="deleteComment(comment.id, childComment.id)"
+                      >
                         <q-item-section>
                           <q-item-label>Delete</q-item-label>
                         </q-item-section>
@@ -132,6 +149,7 @@
                   @submit.prevent="editComment(childComment.id, childComment.text)"
                 >
                   <q-input
+                    :data-test="childComment.text + '-fillEditReply'"
                     autogrow
                     class="q-pb-none"
                     dense
@@ -143,7 +161,16 @@
                     standout="bg-secondary text-white"
                     v-model="childComment.text"
                   >
-                    <q-btn class="cursor-pointer" id="replyInput" color="grey-6" flat icon="send" round type="submit" />
+                    <q-btn
+                      color="grey-6"
+                      :data-test="childComment.text + '-submit-reply-edit'"
+                      dense
+                      :disable="!childComment.text"
+                      flat
+                      icon="send"
+                      round
+                      type="submit"
+                    />
                   </q-input>
                 </q-form>
                 <div v-else class="q-my-sm text-body2">
@@ -153,17 +180,26 @@
               </div>
               <!-- Ended Child Comment Section -->
               <q-input
+                :data-test="comment.text + '-fill-add-reply'"
                 autogrow
                 dense
                 label="Reply"
                 lazy-rules
                 :name="comment.id"
                 rounded
-                :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
                 standout="bg-secondary text-white"
                 v-model="reply.text"
               >
-                <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+                <q-btn
+                  color="grey-6"
+                  :data-test="comment.text + '-submit-fill-add-reply'"
+                  dense
+                  :disable="!reply.text"
+                  flat
+                  icon="send"
+                  round
+                  type="submit"
+                />
               </q-input>
             </q-form>
           </div>
@@ -172,20 +208,27 @@
       </div>
     </div>
   </section>
+
+  <div v-else class="q-mt-xl text-center">
+    <q-icon class="q-my-md" color="secondary" name="comment" size="md" />
+    <p class="text-h6">No Comments Yet</p>
+    <p class="text-body1">Be the first to share what you think!</p>
+  </div>
+
   <q-form greedy @submit.prevent="addComment">
     <q-input
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
+      data-test="comment-main-box"
       dense
       label="Comment"
       lazy-rules
       required
       rounded
-      :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
       standout="bg-secondary text-white"
       style="margin-bottom: 6.7rem"
       v-model="myComment.text"
     >
-      <q-btn class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+      <q-btn color="grey-6" dense :disable="!myComment.text" flat icon="send" round type="submit" />
     </q-input>
   </q-form>
 </template>
@@ -197,8 +240,9 @@ import { shortMonthDayTime } from 'src/utils/date'
 import { computed, onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
+  collection: { type: String, required: true },
   comments: { type: Array, required: true },
-  entry: { type: Object, required: true }
+  data: { type: Object, required: true }
 })
 
 const $q = useQuasar()
@@ -213,48 +257,28 @@ const inputEdit = ref('')
 const isEditing = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
-const user = ref('')
 const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-  userId.value = userStore.getUserRef?.id || userStore.getUserIpHash
-
-  user.value = userStore.getUserRef || userStore.getUserIpHash
+  userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
 })
 
 const likeIconClass = computed(() => {
-  return (comment) => {
-    if (!comment || !comment.likes) {
-      return 'bolder-icon-default'
-    }
-    return comment.likes.map((item) => item.id).includes(user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
-  }
+  return (comment) => comment.likes?.some((like) => like === userId.value) || false
 })
 
 const dislikeIconClass = computed(() => {
-  return (comment) => {
-    if (!comment || !comment.dislikes) {
-      return 'bolder-icon-default'
-    }
-
-    return comment.dislikes.some((dislike) => dislike.id === user.value.id) ? 'bolder-icon' : 'bolder-icon-default'
-  }
+  return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
 })
 
 const replyCounter = (id) => {
-  let count = 0
-  for (const comment of props.comments) {
-    if (id === comment.parentId) {
-      count++
-    }
-  }
-  return count
+  return props.comments.filter((comment) => comment.parentId === id).length
 }
 
 async function addComment() {
   await commentStore
-    .addComment(myComment, props.entry)
+    .addComment(props.collection, myComment, props.data)
     .then(() => {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
@@ -264,11 +288,11 @@ async function addComment() {
 }
 
 function likeComment(commentId) {
-  commentStore.likeComment(props.entry.id, commentId)
+  commentStore.likeComment(props.collection, props.data.id, commentId)
 }
 
 function dislikeComment(commentId) {
-  commentStore.dislikeComment(props.entry.id, commentId)
+  commentStore.dislikeComment(props.collection, props.data.id, commentId)
 }
 
 function editInput(commentId) {
@@ -278,7 +302,7 @@ function editInput(commentId) {
 
 async function editComment(commentId, editedComment) {
   await commentStore
-    .editComment(props.entry.id, commentId, editedComment, userId.value)
+    .editComment(props.collection, props.data.id, commentId, editedComment, userId.value)
     .then(() => $q.notify({ type: 'info', message: 'Comment successfully edited!' }))
     .catch(() => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
@@ -286,22 +310,11 @@ async function editComment(commentId, editedComment) {
 
 async function deleteComment(commentParentId, commentId) {
   await commentStore
-    .deleteComment(props.entry.id, commentId)
-    .then(() => $q.notify({ type: 'negative', message: 'Comment successfully deleted' }))
+    .deleteComment(props.collection, props.data.id, commentId)
+    .then(() => $q.notify({ type: 'positive', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
-  childComments.value = []
-  for (const comment of props.comments) {
-    if (commentParentId === comment.parentId) {
-      childComments.value.push(comment)
-    } else {
-      continue
-    }
-  }
-}
-
-async function replyInput(parentId) {
-  reply.parentId = parentId
+  childComments.value = props.comments.filter((comment) => commentParentId === comment.parentId)
 }
 
 async function showReplies(id) {
@@ -313,50 +326,20 @@ async function showReplies(id) {
   }
   expanded.value = true
   commentId.value = id
-
   reply.parentId = id
 
-  for (const comment of props.comments) {
-    if (id === comment.parentId) {
-      childComments.value.push(comment)
-    } else {
-      continue
-    }
-  }
+  childComments.value = props.comments.filter((comment) => comment.parentId === id)
 }
 
 async function addReply(commentId) {
   await commentStore
-    .addReply(props.entry.id, commentId, reply)
+    .addReply(props.collection, props.data.id, reply)
     .then(() => {
       reply.text = ''
       $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
 
-  childComments.value = []
-  for (const comment of props.comments) {
-    if (commentId === comment.parentId) {
-      childComments.value.push(comment)
-    } else {
-      continue
-    }
-  }
+  childComments.value = props.comments.filter((comment) => comment.parentId === commentId)
 }
 </script>
-
-<style scoped>
-.bolder-icon-default {
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-}
-
-.bolder-icon {
-  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 32;
-}
-
-.warning-icon {
-  font-size: 28px;
-  height: 32px;
-  width: 32px;
-}
-</style>

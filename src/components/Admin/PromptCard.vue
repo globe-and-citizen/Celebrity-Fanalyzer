@@ -1,35 +1,35 @@
 <template>
-  <q-card :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
-    <q-card-section class="row items-baseline no-wrap">
-      <h2 class="q-my-none text-h6">{{ id ? 'Edit Prompt' : 'New Prompt' }}</h2>
-      <span>&nbsp; for &nbsp;</span>
-      <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date" data-test="date">
-        <template v-slot:append>
-          <q-icon name="event" class="cursor-pointer" data-test="date-picker">
-            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date
-                default-view="Months"
-                emit-immediately
-                :key="dataKey"
-                mask="YYYY-MM"
-                minimal
-                v-model="prompt.date"
-                years-in-month-view
-                @update:model-value="onUpdateMonth"
-              >
-                <div class="row items-center justify-end">
-                  <q-btn v-close-popup label="Close" color="primary" flat />
-                </div>
-              </q-date>
-            </q-popup-proxy>
-          </q-icon>
-        </template>
-      </q-input>
-      <q-space />
-      <q-btn flat round icon="close" v-close-popup />
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-      <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
+  <q-card class="q-mt-none" :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
+    <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
+      <!-- <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
+        <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'"> -->
+      <q-card-section>
+        <div class="row items-baseline no-wrap">
+          <h2 class="q-my-none text-h6">Competition</h2>
+          <span>&nbsp; for &nbsp;</span>
+          <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date" data-test="date">
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer" data-test="date-picker">
+                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                  <q-date
+                    default-view="Months"
+                    emit-immediately
+                    :key="dataKey"
+                    mask="YYYY-MM"
+                    minimal
+                    v-model="prompt.date"
+                    years-in-month-view
+                    @update:model-value="onUpdateMonth"
+                  >
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="Close" color="primary" flat />
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+        </div>
         <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="prompt.author" />
         <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
         <q-field counter label="Description" maxlength="400" v-model="prompt.description">
@@ -101,32 +101,46 @@
         <div class="text-center">
           <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
         </div>
+      </q-card-section>
+      <!-- </q-step>
+        <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
+          <ShowcaseCard :date="prompt.date" v-model:arts="prompt.showcase.arts" v-model:artist="prompt.showcase.artist" />
+        </q-step>
+        <template v-slot:navigation>
+          <q-stepper-navigation class="flex justify-end q-gutter-md">
+          </q-stepper-navigation>
+        </template>
+      </q-stepper> -->
+      <q-card-actions class="flex justify-end q-gutter-md">
+        <q-btn flat rounded label="Cancel" v-close-popup />
         <q-btn
-          class="full-width q-mt-xl"
           color="primary"
           data-test="button-submit"
           :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
-          :label="id ? 'Edit' : 'Save'"
+          :label="id ? 'Save Edits' : 'Submit Prompt'"
           rounded
           type="submit"
         />
-      </q-form>
-    </q-card-section>
+      </q-card-actions>
+    </q-form>
+
     <q-inner-loading color="primary" :showing="promptStore.isLoading" />
   </q-card>
 </template>
 
 <script setup>
 import { date, useQuasar } from 'quasar'
-import { useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
+import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'slug', 'title'])
+const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const storageStore = useStorageStore()
 const userStore = useUserStore()
 
 const authorOptions = reactive([])
@@ -136,8 +150,10 @@ const imageModel = ref([])
 const prompt = reactive({
   description: '',
   image: '',
+  showcase: { arts: [], artist: { info: '', photo: [''] } },
   title: ''
 })
+const step = ref(1)
 
 watchEffect(() => {
   if (props.id) {
@@ -147,6 +163,7 @@ watchEffect(() => {
     prompt.description = props.description
     prompt.id = props.id
     prompt.image = props.image
+    prompt.showcase = props.showcase
     prompt.title = props.title
   } else {
     prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
@@ -204,7 +221,10 @@ async function onSubmit() {
   }
 
   if (Object.keys(imageModel.value).length) {
-    promptStore.uploadImage(imageModel.value, prompt.date).catch((error) => errorStore.throwError(error))
+    promptStore
+      .uploadImage(imageModel.value, prompt.date)
+      .then((res) => (prompt.image = res))
+      .catch((error) => errorStore.throwError(error))
   }
 
   if (props.id) {

@@ -19,7 +19,16 @@
         <q-img :src="user.photoURL" spinner-color="primary" spinner-size="82px">
           <div class="photo">
             <q-icon class="q-mx-auto" color="grey-6" name="upload" size="xs" />
-            <q-file accept="image/*" borderless class="absolute-bottom" dense v-model="newPhoto" @update:model-value="uploadPhoto()">
+            <q-file
+              accept="image/*"
+              borderless
+              class="absolute-bottom"
+              dense
+              max-file-size="1048487"
+              v-model="newPhoto"
+              @rejected="onRejected"
+              @update:model-value="uploadPhoto"
+            >
               <template v-slot:file>
                 <q-chip class="hidden" />
               </template>
@@ -55,6 +64,7 @@
 </template>
 
 <script setup>
+import { Notify } from 'quasar'
 import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
 import ProfileTab from 'src/components/Profile/ProfileTab.vue'
 import SettingsTab from 'src/components/Profile/SettingsTab.vue'
@@ -79,6 +89,10 @@ async function googleSignIn() {
   } else {
     await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
   }
+}
+
+function onRejected() {
+  Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 1MB.' })
 }
 
 function uploadPhoto() {

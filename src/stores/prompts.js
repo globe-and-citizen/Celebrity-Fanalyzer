@@ -35,24 +35,6 @@ export const usePromptStore = defineStore('prompts', {
   },
 
   actions: {
-    async fetchAllPrompts() {
-      this._isLoading = true
-      await getDocs(collection(db, 'prompts'))
-        .then(async (querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-          for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-          }
-
-          prompts.reverse()
-
-          this._prompts = []
-          this.$patch({ _prompts: prompts })
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
     /**
      * Fetch the current month prompt and set the value in the store :
      * Checking if we have a data in the store.
@@ -71,57 +53,13 @@ export const usePromptStore = defineStore('prompts', {
       if (docSnap.exists()) {
         prompt = docSnap.data()
       } else {
-        await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))).then(async (querySnapshot) => {
+        await getDocs(query(collection(db, 'prompts'), orderBy('date', 'desc'), limit(1))).then(async (querySnapshot) => {
           prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         })
       }
 
       prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-      if (prompt.entries?.length) {
-        for (const index in prompt.entries) {
-          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-        }
-      }
-
       this._monthPrompt = prompt
-      this._isLoading = false
-    },
-    /**
-     * Fetch prompt By id if it's not exist or reload it if it's exist
-     * @param promptId
-     * @returns {Promise<void>}
-     */
-    async fetchPromptById(id) {
-      this._isLoading = true
-      return await getDoc(doc(db, 'prompts', id))
-        .then(async (doc) => {
-          if (doc.data === undefined) {
-            throw new Error('Document not found.')
-          }
-          const prompt = { id: doc.id, ...doc.data() }
-          prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-          if (prompt.entries?.length) {
-            for (const index in prompt.entries) {
-              prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-              prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-            }
-          }
-
-          return prompt
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
-    async fetchPromptBySlug(slug) {
-      const q = query(collection(db, 'prompts'), where('slug', '==', slug))
-      this._isLoading = true
-      const querySnapshot = await getDocs(q)
-
-      const prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
 
       if (prompt.entries?.length) {
         for (const index in prompt.entries) {
@@ -129,9 +67,8 @@ export const usePromptStore = defineStore('prompts', {
           prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
         }
       }
-      this._isLoading = false
 
-      return prompt
+      this._isLoading = false
     },
 
     async fetchPromptsByYear(year) {
@@ -153,7 +90,7 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchPromptsAndEntries() {
+    async fetchPrompts() {
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then(async (querySnapshot) => {
@@ -161,13 +98,7 @@ export const usePromptStore = defineStore('prompts', {
 
           for (const prompt of prompts) {
             prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-
-            if (prompt.entries) {
-              for (const index in prompt.entries) {
-                prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => ({ id: doc.id, ...doc.data() }))
-                prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-              }
-            }
+            prompt.entries = prompt.entries?.map((entry) => entry.id)
           }
 
           prompts.reverse()
@@ -178,8 +109,10 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async addPrompt(prompt) {
+    async addPrompt(payload) {
       const userStore = useUserStore()
+
+      const prompt = { ...payload }
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
@@ -194,8 +127,10 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async editPrompt(prompt) {
+    async editPrompt(payload) {
       const userStore = useUserStore()
+
+      const prompt = { ...payload }
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
@@ -251,7 +186,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
 
-      return getDownloadURL(ref(storage, storageRef))
+      return getDownloadURL(storageRef).then((url) => url)
     }
   }
 })

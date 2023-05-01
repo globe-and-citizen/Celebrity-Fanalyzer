@@ -12,7 +12,8 @@
     title="Manage Prompts & Entries"
   >
     <template v-slot:top-right>
-      <q-input data-test="input-search" debounce="300" dense placeholder="Search" v-model="filter">
+      <q-input debounce="300" dense placeholder="Search" v-model="filter"
+               :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'input-search'">
         <template v-slot:append>
           <q-icon name="search" />
         </template>
@@ -58,7 +59,7 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :filter="filter" :rows="props.row.entries" @editEntry="$emit('openEntryDialog', $event)" />
+          <TableEntry v-else :filter="filter" :rows="props.row.entries" />
         </q-td>
       </q-tr>
     </template>
@@ -88,12 +89,9 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
-defineEmits(['openPromptDialog', 'openEntryDialog'])
-defineProps({
-  prompts: { type: Array, required: true, default: () => [] }
-})
+defineEmits(['openPromptDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -108,8 +106,38 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
+const entries = ref(entryStore.getEntries)
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+const prompts = ref(promptStore.getPrompts)
+
+onMounted(() => {
+  promptStore.fetchPrompts()
+  entryStore.fetchEntries()
+
+  populatePromptsWithEntries()
+})
+
+promptStore.$subscribe((_mutation, state) => {
+  prompts.value = state._prompts
+
+  populatePromptsWithEntries()
+})
+
+entryStore.$subscribe((_mutation, state) => {
+  entries.value = state._entries
+
+  populatePromptsWithEntries()
+})
+
+function populatePromptsWithEntries() {
+  if (entries.value.length) {
+    prompts.value = prompts.value.map((prompt) => ({
+      ...prompt,
+      entries: entries.value.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
+    }))
+  }
+}
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true

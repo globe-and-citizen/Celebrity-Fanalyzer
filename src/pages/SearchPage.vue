@@ -15,7 +15,7 @@
       />
     </q-scroll-area>
     <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="!promptStore.getPrompts.length && promptStore.isLoading">
+    <section v-if="!prompts.length && promptStore.isLoading">
       <ArticleSkeleton />
       <ArticleSkeleton />
       <ArticleSkeleton />
@@ -45,50 +45,44 @@ import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
-const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
-const entries = ref([])
-const categories = ref([])
+const entries = ref(entryStore.getEntries)
+const categories = ref([{ label: 'All', value: 'All' }])
 const category = ref('All')
-const prompts = ref([])
+const prompts = ref(promptStore.getPrompts)
 const search = ref('')
 
 onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchAllPrompts().catch((error) => errorStore.throwError(error))
-  }
+  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   prompts.value = promptStore.getPrompts
 
-  const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
-  categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
-  categories.value.unshift({ label: 'All', value: 'All' })
-
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchAllEntries().catch((error) => errorStore.throwError(error))
-  }
+  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
   entries.value = entryStore.getEntries
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
+
+  const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
+  categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
+  categories.value.unshift({ label: 'All', value: 'All' })
 })
 
 const computedPrompts = computed(() => {
-  return prompts.value.filter(
-    (item) =>
-      item.title.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-      item.description.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-      item.author.displayName.toLowerCase().includes(search.value.toLocaleLowerCase()) ||
-      item.categories.some((category) => category.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return promptStore.getPrompts.filter((item) =>
+    [item.title, item.description, item.author.displayName, ...item.categories].some((str) =>
+      str.toLowerCase().includes(search.value.toLowerCase())
+    )
   )
 })
+
 const computedEntries = computed(() => {
-  return entries.value.filter((item) => item?.title.toLowerCase().includes(search.value.toLocaleLowerCase()))
+  return entries.value.filter((item) => item?.title?.toLowerCase().includes(search.value.toLocaleLowerCase())) || []
 })
 </script>
 

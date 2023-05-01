@@ -4,17 +4,17 @@ import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
 import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
-import { mount, shallowMount, config } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi, afterAll } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
+import commentCard from 'src/components/TheComments.vue'
+import { useCommentStore, useEntryStore } from 'src/stores'
 import { useUserStore } from 'src/stores/user'
-import { useCommentStore, usePromptStore } from 'src/stores'
-import commentCard from '../TheComments.vue'
 import { ref } from 'vue'
 
-import { VueRouterMock, createRouterMock, injectRouterMock } from 'vue-router-mock'
+import { createRouterMock, injectRouterMock, VueRouterMock } from 'vue-router-mock'
 config.plugins.VueWrapper.install(VueRouterMock)
 
 installQuasar()
@@ -57,20 +57,20 @@ describe('TheComment Component', () => {
     })
 
     const commenStore = useCommentStore()
-    const promptStore = usePromptStore()
-    const firstEntrySlug = ref({})
+    const entryStore = useEntryStore()
+    const firstEntry = ref({})
 
     // Get slug of first entry,
     // this slug is used for fetching entry and add comment to that entry
-    await promptStore.fetchPromptsAndEntries()
-    firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
+    await entryStore.fetchEntries()
+    firstEntry.value = entryStore.getEntries[0]
 
     // User is coming, it is used for getting userId
     const userStore = useUserStore()
     const user = userStore.getUser
 
     // Getting all comments of first entry
-    await commenStore.fetchComments(firstEntrySlug.value.slug)
+    await commenStore.fetchComments('entries', firstEntry.value.id)
 
     const startingNumberOfComments = commenStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
@@ -79,16 +79,16 @@ describe('TheComment Component', () => {
       global: {
         mocks: {
           addComment: vi.fn(() => {
-            commenStore.addComment(fakeComment.vm.myComment, firstEntrySlug.value)
+            commenStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
           }),
           editComment: vi.fn(() => {
-            commenStore.editComment(firstEntrySlug.value.id, fakeCommentId, editedComment, user.uid)
+            commenStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
           })
         }
       },
       props: {
         comments: [],
-        entry: { slug: firstEntrySlug.value.slug }
+        entry: { slug: firstEntry.value.slug }
       }
     })
 
@@ -101,7 +101,7 @@ describe('TheComment Component', () => {
     await fakeComment.vm.addComment() //Mocked
 
     // 4) Test added fake comment
-    await commenStore.fetchComments(firstEntrySlug.value.slug)
+    await commenStore.fetchComments('entries', firstEntry.value.id)
     expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5) Edit test
@@ -111,16 +111,16 @@ describe('TheComment Component', () => {
     // SECOND TEST
     it('delete fake comment in here', async () => {
       const commenStore = useCommentStore()
-      const promptStore = usePromptStore()
-      const firstEntrySlug = ref({})
+      const entryStore = useEntryStore()
+      const firstEntry = ref({})
 
-      await promptStore.fetchPromptsAndEntries()
-      firstEntrySlug.value = promptStore.getPrompts[0].entries[0]
+      await entryStore.fetchEntries()
+      firstEntry.value = entryStore.getEntries[0]
 
       const userStore = useUserStore()
       const user = userStore.getUser
 
-      await commenStore.fetchComments(firstEntrySlug.value.slug)
+      await commenStore.fetchComments('entries', firstEntry.value.id)
 
       const startingNumberOfComments = commenStore.getComments.length
       const fakeCommentId = localStorage.getItem('id')
@@ -128,13 +128,13 @@ describe('TheComment Component', () => {
         global: {
           mocks: {
             deleteComment: vi.fn(() => {
-              commenStore.deleteComment(firstEntrySlug.value.id, fakeCommentId, user.uid)
+              commenStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
             })
           }
         },
         props: {
           comments: [],
-          entry: { slug: firstEntrySlug.value.slug }
+          entry: { slug: firstEntry.value.slug }
         }
       })
 
@@ -142,7 +142,7 @@ describe('TheComment Component', () => {
       await deleteComment.vm.deleteComment()
 
       // Test deleted comment
-      await commenStore.fetchComments(firstEntrySlug.value.slug)
+      await commenStore.fetchComments('entries', firstEntry.value.id)
       expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
     })
 })
