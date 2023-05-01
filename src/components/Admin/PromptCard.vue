@@ -154,7 +154,7 @@ const imageModel = ref([])
 const prompt = reactive({
   description: '',
   image: '',
-  showcase: { arts: [], artist: { info: '', photo: [''] } },
+  showcase: { arts: [], artist: { info: '', photo: '' } },
   title: ''
 })
 const step = ref(1)
