@@ -14,14 +14,7 @@
     <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
     <div class="items-center no-wrap q-my-md q-pa-md rounded-borders row shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
-      <q-img
-        v-else
-        class="q-mr-md rounded-borders"
-        fit="contain"
-        :src="modelArtistPhoto"
-        style="max-height: 15rem; max-width: 50%"
-        spinner-color="primary"
-      />
+      <q-img v-else class="artist-img q-mr-md rounded-borders" fit="contain" :src="modelArtistPhoto" spinner-color="primary" />
       <q-input autogrow class="col-grow" label="Artist info" v-model="modelArtistInfo" @update:model-value="addArtistInfo" />
     </div>
   </section>
@@ -97,5 +90,10 @@ function addArtistInfo() {
 
 .art-img:hover .trash-icon {
   visibility: visible;
+}
+
+.artist-img {
+  max-height: 12rem;
+  max-width: 50%;
 }
 </style>
