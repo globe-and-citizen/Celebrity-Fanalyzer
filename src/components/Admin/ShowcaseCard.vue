@@ -2,11 +2,11 @@
   <section class="text-center">
     <q-file class="hidden" multiple ref="artsFileRef" v-model="modelFileArt" @update:model-value="addArts" />
     <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
-    <div class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
+    <div class="items-center justify-around q-my-md q-pa-md rounded-borders row shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArts.length" class="q-mx-auto" color="primary" size="3em" />
-      <div v-for="(art, index) in modelArts" class="artImg col-grow q-ma-xs relative-position" :key="index">
+      <div v-for="(art, index) in modelArts" class="art-img q-ma-xs relative-position" :key="index">
         <q-img class="rounded-borders" fit="cover" :ratio="1" :src="art" style="width: 10rem" />
-        <q-btn class="trashIcon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" />
+        <q-btn class="trash-icon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" />
       </div>
     </div>
 
@@ -87,15 +87,15 @@ function addArtistInfo() {
 </script>
 
 <style lang="scss" scoped>
-.trashIcon {
+.trash-icon {
   position: absolute;
-  right: -10px;
-  top: -10px;
+  right: -5px;
+  top: -5px;
   visibility: hidden;
   z-index: 1;
 }
 
-.artImg:hover .trashIcon {
+.art-img:hover .trash-icon {
   visibility: visible;
 }
 </style>
