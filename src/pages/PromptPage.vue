@@ -114,6 +114,8 @@
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
+  <!-- This button is used for e2e cypress testing -->
+  <q-btn class="hidden" clickable @click="sendData()" data-test="send-Data-Entry">Cypress testing</q-btn>
 </template>
 
 <script setup>
@@ -255,6 +257,14 @@ async function dislike() {
 
 function onShare(socialNetwork) {
   shareStore.addShare('prompts', prompt.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
+}
+
+async function sendData() {
+  if (!entryStore.getEntries.length) {
+    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  }
+  const entrySlug = entryStore.getEntries[0].slug
+  router.push(entrySlug)
 }
 </script>
 
