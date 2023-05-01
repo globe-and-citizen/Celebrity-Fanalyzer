@@ -1,5 +1,19 @@
 # Celebrity Fanalyzer
 
+<p align="center">
+<a href="https://livrolog.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Flivrolog.com" /></a>
+<img alt="GitHub Release" src="https://img.shields.io/github/v/release/globe-and-citizen/Celebrity-Fanalyzer">
+<img alt="GitHub License" src="https://img.shields.io/github/license/globe-and-citizen/Celebrity-Fanalyzer" />
+<img alt="Repository Size" src="https://img.shields.io/github/repo-size/globe-and-citizen/Celebrity-Fanalyzer" />
+<img alt="GitHub Commit Activity" src="https://img.shields.io/github/commit-activity/m/globe-and-citizen/Celebrity-Fanalyzer" />
+<br />
+<img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/firebase" />
+<img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/pinia" />
+<img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/quasar" />
+<img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/vue" />
+<img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/vue-router" />
+</p>
+
 ## Purpose
 
 Celebrity Fanalyzer is the initial testing ground for an online news media platform called “Globe & Citizen.” The purpose of this pilot project is to expose unknown unknowns in the product development lifecycle, user experience, and software architecture. It is also to test functionality.
