@@ -53,7 +53,7 @@ export const usePromptStore = defineStore('prompts', {
       if (docSnap.exists()) {
         prompt = docSnap.data()
       } else {
-        await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1))).then(async (querySnapshot) => {
+        await getDocs(query(collection(db, 'prompts'), orderBy('date', 'desc'), limit(1))).then(async (querySnapshot) => {
           prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         })
       }
