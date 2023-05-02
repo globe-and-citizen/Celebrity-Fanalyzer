@@ -24,7 +24,7 @@
 import { useErrorStore, useStorageStore } from 'src/stores'
 import { ref } from 'vue'
 
-const props = defineProps(['arts', 'artist', 'date'])
+const props = defineProps(['arts', 'artist', 'collectionName', 'date'])
 const emit = defineEmits(['update:arts', 'update:artist'])
 
 const errorStore = useErrorStore()
@@ -49,7 +49,7 @@ function onUploadArtist() {
 async function addArts(files) {
   for (let index in files) {
     await storageStore
-      .uploadFile(files[index], `images/prompt-${props.date}-art-${index}`)
+      .uploadFile(files[index], `images/${props.collectionName}-${props.date}-art-${index}`)
       .then((url) => modelArts.value.push(url))
       .catch((error) => errorStore.throwError(error))
   }
@@ -59,7 +59,7 @@ async function addArts(files) {
 function removeArt(file) {
   const index = modelArts.value.indexOf(file)
   storageStore
-    .deleteFile(`images/prompt-${props.date}-art-${index}`)
+    .deleteFile(`images/${props.collectionName}-${props.date}-art-${index}`)
     .then(() => modelArts.value.splice(index, 1))
     .catch((error) => errorStore.throwError(error))
   emit('update:arts', modelArts.value)
@@ -68,7 +68,7 @@ function removeArt(file) {
 async function addArtistPhoto(files) {
   modelArtistPhoto.value = ''
   await storageStore
-    .uploadFile(files[0], `images/prompt-${props.date}-artist`)
+    .uploadFile(files[0], `images/${props.collectionName}-${props.date}-artist`)
     .then((url) => (modelArtistPhoto.value = url))
     .catch((error) => errorStore.throwError(error))
   emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value[0] })

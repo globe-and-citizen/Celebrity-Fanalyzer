@@ -110,7 +110,12 @@
           </q-card-section>
         </q-step>
         <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
-          <ShowcaseCard :date="prompt.date" v-model:arts="prompt.showcase.arts" v-model:artist="prompt.showcase.artist" />
+          <ShowcaseCard
+            collectionName="prompt"
+            :date="prompt.date"
+            v-model:arts="prompt.showcase.arts"
+            v-model:artist="prompt.showcase.artist"
+          />
         </q-step>
         <template v-slot:navigation>
           <q-stepper-navigation class="flex justify-end q-gutter-md">
