@@ -57,9 +57,10 @@ async function addArts(files) {
 }
 
 function removeArt(file) {
+  const artNum = file.match(/art-(\d+)/)[1]
   const index = modelArts.value.indexOf(file)
   storageStore
-    .deleteFile(`images/${props.collectionName}-${props.date}-art-${index}`)
+    .deleteFile(`images/${props.collectionName}-${props.date}-art-${artNum}`)
     .then(() => modelArts.value.splice(index, 1))
     .catch((error) => errorStore.throwError(error))
   emit('update:arts', modelArts.value)
