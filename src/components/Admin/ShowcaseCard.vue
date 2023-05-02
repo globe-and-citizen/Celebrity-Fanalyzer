@@ -32,7 +32,7 @@ const storageStore = useStorageStore()
 
 const artsFileRef = ref(null)
 const artistFileRef = ref(null)
-const modelArts = ref(props.arts)
+const modelArts = ref(props.arts || [])
 const modelArtistInfo = ref(props.artist.info)
 const modelArtistPhoto = ref(props.artist.photo)
 const modelFileArt = ref(null)
