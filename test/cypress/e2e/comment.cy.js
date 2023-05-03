@@ -29,7 +29,7 @@ entryValues.forEach((entry) => {
       cy.get('[data-test="comment-loaded"]')
     })
 
-    it.only('creating comment ', () => {
+    it('creating comment ', () => {
       // navigate to the comment input form.
       cy.get('[data-test="comment-main-box"]').type('Cypress-testing{enter}')
 
