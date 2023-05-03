@@ -136,6 +136,10 @@
             </div>
             <div v-else>
                 <!-- Started Child Comment section -->
+                <div v-if="childComments" class="text-center">
+                  <p class="text-h6">No Replied Comments Yet</p>
+                  <p class="text-body2">Be the first to share what you think!</p>
+                </div>
                 <div
                   v-for="(childComment, index) of childComments"
                   class="q-mb-md"
