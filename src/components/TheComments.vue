@@ -120,10 +120,10 @@
             :data-test="comment.text + '-add-reply'"
             flat
             icon="chat_bubble_outline"
-            :label="replyCounter(comment.id, comment.text)"
+            :label="replyCounter(comment.id)"
             rounded
             size="0.75rem"
-            @click="showReplies(comment.id)"
+            @click="showReplies(comment.id, comment.text, (comment.author.displayName || 'Anonymous'))"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
@@ -226,30 +226,6 @@
                   <q-separator spaced v-if="index !== (childComments.length-1)" />
                 </div>
                 <!-- Ended Child Comment Section -->
-              <!-- <q-form greedy @submit.prevent="addReply(comment.id)">
-                <q-input
-                  :data-test="comment.text + '-fill-add-reply'"
-                  autogrow
-                  dense
-                  label="Reply"
-                  lazy-rules
-                  :name="comment.id"
-                  rounded
-                  standout="bg-secondary text-white"
-                  v-model="reply.text"
-                >
-                  <q-btn
-                    color="grey-6"
-                    :data-test="comment.text + '-submit-fill-add-reply'"
-                    dense
-                    :disable="!reply.text"
-                    flat
-                    icon="send"
-                    round
-                    type="submit"
-                  />
-                </q-input>
-              </q-form> -->
             </div>
           </div>
         </q-slide-transition>
@@ -264,12 +240,12 @@
     <p class="text-body1">Be the first to share what you think!</p>
   </div>
 
-  <q-form greedy @submit.prevent="expanded ? addReply(commentId) : addComment">
+  <q-form greedy @submit.prevent="expanded ? addReply(commentId) : addComment()">
     <q-input
-    class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
-    :data-test="expanded ? (commentText + '-fill-add-reply') : 'comment-main-box'"
-    :autogrow="expanded"
-    dense
+      class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
+      :data-test="expanded ? (commentText + '-fill-add-reply') : 'comment-main-box'"
+      :autogrow="expanded"
+      dense
       :label="expanded ? 'Reply' : 'Comment'"
       lazy-rules
       :required="!expanded"
@@ -277,9 +253,19 @@
       rounded
       standout="bg-secondary text-white"
       style="margin-bottom: 6.7rem"
-      v-model="reply.text"
-      >
-      <div v-show="expanded">reply to Javokhir</div>
+      v-model="commentValue"
+    >
+    <div v-show="expanded" class="replyTop">
+      <p>Replying to <span class="text-bold">{{ displayName }}</span></p>
+      <q-btn
+        @click="showReplies(commentId)"
+        icon="close"
+        round
+        flat
+        dense
+        size="sm"
+      ></q-btn>
+    </div>
       <q-btn
         :data-test="expanded ? commentText + '-submit-fill-add-reply' : ''"
         color="grey-6"
@@ -314,6 +300,7 @@ const userStore = useUserStore();
 const childComments = ref([]);
 const commentId = ref("");
 const commentText = ref("");
+const displayName = ref("");
 const expanded = ref(false);
 const inputEdit = ref("");
 const isEditing = ref(false);
@@ -339,13 +326,13 @@ const dislikeIconClass = computed(() => {
 
 const commentValue = computed({
   get() {
-    return expanded.value ? reply.value.text : myComment.value.text;
+    return expanded.value ? reply.text : myComment.text;
   },
   set(value) {
     if (expanded.value) {
-      reply.value.text = value;
+      reply.text = value;
     } else {
-      myComment.value.text = value;
+      myComment.text = value;
     }
   }
 });
@@ -356,9 +343,11 @@ const replyCounter = (id) => {
 };
 
 async function addComment() {
+  console.log("ADDCOMMENT");
   await commentStore
     .addComment(props.collection, myComment, props.data)
     .then(() => {
+      console.log(myComment.text);
       myComment.text = "";
       window.scrollTo(0, document.body.scrollHeight);
       $q.notify({ type: "positive", message: "Comment successfully submitted" });
@@ -398,7 +387,7 @@ async function deleteComment(commentParentId, commentId) {
   );
 }
 
-async function showReplies(id, text) {
+async function showReplies(id, text, name) {
   childComments.value = [];
   if (commentId.value === id) {
     expanded.value = false;
@@ -408,6 +397,7 @@ async function showReplies(id, text) {
   expanded.value = true;
   commentId.value = id;
   commentText.value = text
+  displayName.value = name
   reply.parentId = id;
 
   childComments.value = props.comments.filter((comment) => comment.parentId === id);
@@ -427,3 +417,19 @@ async function addReply(commentId) {
   );
 }
 </script>
+
+<style scoped>
+.replyTop{
+  position: absolute;
+  display: flex;
+  width: 100%;
+  border-radius: 10px 10px 10px 10px;
+  height: 30px;
+  top: -30px;
+  padding: 5px 10px;
+  color: white;
+  font-size: 12px;
+  justify-content: space-between;
+  background-color: #5e6775;
+}
+</style>
