@@ -11,11 +11,14 @@ entryValues.forEach((entry) => {
       cy.visit('/profile')
       cy.get('[data-test="login-button"]').click().wait(3000)
 
+      cy.visit('/month').wait(3000)
       // Visits the prompt of the month
       if (entry) {
-        cy.visit('/2023/02/more-frogs').wait(10000)
-      } else {
-        cy.visit('/month').wait(10000)
+        if (cy.visit('/2022/11/applications')) {
+          cy.visit('/2022/11/applications')
+        } else {
+          cy.visit('/2022/11/-diane-m-m-daryl-mccormack-unshaken-we-ve-heard')
+        }
       }
 
       // Programmatically change the q-tab-panel to the comments section
