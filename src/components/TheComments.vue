@@ -242,6 +242,7 @@
 
   <q-form greedy @submit.prevent="expanded ? addReply(commentId) : addComment()">
     <q-input
+      ref="inputField"
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
       :data-test="expanded ? (commentText + '-fill-add-reply') : 'comment-main-box'"
       :autogrow="expanded"
@@ -255,17 +256,17 @@
       style="margin-bottom: 6.7rem"
       v-model="commentValue"
     >
-    <div v-show="expanded" class="replyTop">
-      <p>Replying to <span class="text-bold">{{ displayName }}</span></p>
-      <q-btn
-        @click="showReplies(commentId)"
-        icon="close"
-        round
-        flat
-        dense
-        size="sm"
-      ></q-btn>
-    </div>
+      <div v-show="expanded" class="replyTop">
+        <p>Replying to <span class="text-bold">{{ displayName }}</span></p>
+        <q-btn
+          @click="showReplies(commentId)"
+          icon="close"
+          round
+          flat
+          dense
+          size="sm"
+        ></q-btn>
+      </div>
       <q-btn
         :data-test="expanded ? commentText + '-submit-fill-add-reply' : ''"
         color="grey-6"
@@ -284,7 +285,7 @@
 import { useQuasar } from "quasar";
 import { useCommentStore, useErrorStore, useUserStore } from "src/stores";
 import { shortMonthDayTime } from "src/utils/date";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, nextTick, watch } from "vue";
 
 const props = defineProps({
   collection: { type: String, required: true },
@@ -307,6 +308,7 @@ const isEditing = ref(false);
 const myComment = reactive({});
 const reply = reactive({});
 const userId = ref("");
+const inputField = ref()
 
 onMounted(async () => {
   await userStore.fetchUserIp();
@@ -401,6 +403,9 @@ async function showReplies(id, text, name) {
   reply.parentId = id;
 
   childComments.value = props.comments.filter((comment) => comment.parentId === id);
+
+  await nextTick();
+  inputField.value.focus()
 }
 
 async function addReply(commentId) {
@@ -409,7 +414,10 @@ async function addReply(commentId) {
     .then(() => {
       reply.text = "";
       $q.notify({ type: "positive", message: "Reply successfully submitted" });
+      expanded.value = false;
     })
+    await nextTick();
+    inputField.value.blur()
     .catch((error) => errorStore.throwError(error, "Reply submission failed!"));
 
   childComments.value = props.comments.filter(
