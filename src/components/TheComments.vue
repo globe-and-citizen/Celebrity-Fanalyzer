@@ -412,9 +412,11 @@ async function showReplies(id, text, name) {
   childComments.value = [];
   if (commentId.value === id) {
     expanded.value = false;
-    expandedReply.value = false;
     commentId.value = "";
-    return;
+    expandedReply.value = false;
+    inputField.value.blur()
+    childComments.value = props.comments.filter((comment) => comment.parentId === id);
+    return
   }
   expanded.value = true;
   expandedReply.value = true;
