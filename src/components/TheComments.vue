@@ -119,7 +119,7 @@
           <q-btn
             :data-test="comment.text + '-add-reply'"
             flat
-            icon="chat_bubble_outline"
+            icon="img:/icons/arrow-reply-svgrepo-com.svg"
             :label="replyCounter(comment.id)"
             rounded
             size="0.75rem"
@@ -240,23 +240,22 @@
     <p class="text-body1">Be the first to share what you think!</p>
   </div>
 
-  <q-form greedy @submit.prevent="expanded ? addReply(commentId) : addComment()">
+  <q-form greedy @submit.prevent="expandedReply ? addReply(commentId) : addComment()">
     <q-input
       ref="inputField"
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
-      :data-test="expanded ? (commentText + '-fill-add-reply') : 'comment-main-box'"
-      :autogrow="expanded"
+      :data-test="expandedReply ? (commentText + '-fill-add-reply') : 'comment-main-box'"
       dense
-      :label="expanded ? 'Reply' : 'Comment'"
+      :label="expandedReply ? 'Reply' : 'Comment'"
       lazy-rules
-      :required="!expanded"
-      :name="expanded ? commentId : ''"
+      :required="!expandedReply"
+      :name="expandedReply ? commentId : ''"
       rounded
       standout="bg-secondary text-white"
       style="margin-bottom: 6.7rem"
       v-model="commentValue"
     >
-      <div v-show="expanded" class="replyTop">
+      <div v-show="expandedReply" class="replyTop">
         <p>Replying to <span class="text-bold">{{ displayName }}</span></p>
         <q-btn
           @click="showReplies(commentId)"
@@ -268,10 +267,10 @@
         ></q-btn>
       </div>
       <q-btn
-        :data-test="expanded ? commentText + '-submit-fill-add-reply' : ''"
+        :data-test="expandedReply ? commentText + '-submit-fill-add-reply' : ''"
         color="grey-6"
         dense
-        :disable="expanded ? !reply.text : !myComment.text"
+        :disable="expandedReply ? !reply.text : !myComment.text"
         flat
         icon="send"
         round
@@ -285,7 +284,7 @@
 import { useQuasar } from "quasar";
 import { useCommentStore, useErrorStore, useUserStore } from "src/stores";
 import { shortMonthDayTime } from "src/utils/date";
-import { computed, onMounted, reactive, ref, nextTick, watch } from "vue";
+import { computed, onMounted, reactive, ref, nextTick, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   collection: { type: String, required: true },
@@ -303,6 +302,7 @@ const commentId = ref("");
 const commentText = ref("");
 const displayName = ref("");
 const expanded = ref(false);
+const expandedReply = ref(false);
 const inputEdit = ref("");
 const isEditing = ref(false);
 const myComment = reactive({});
@@ -315,7 +315,22 @@ onMounted(async () => {
   userId.value = userStore.isAuthenticated
     ? userStore.getUserRef?.id
     : userStore.getUserIpHash;
+
+  window.addEventListener('keydown', handleKeydown)
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
+
+function handleKeydown(event) {
+  if (event.key === 'Escape' || event.key === 'Esc') {
+    expanded.value = false;
+    commentId.value = "";
+    expandedReply.value = false;
+    inputField.value.blur()
+  }
+}
 
 const likeIconClass = computed(() => {
   return (comment) => comment.likes?.some((like) => like === userId.value) || false;
@@ -393,10 +408,12 @@ async function showReplies(id, text, name) {
   childComments.value = [];
   if (commentId.value === id) {
     expanded.value = false;
+    expandedReply.value = false;
     commentId.value = "";
     return;
   }
   expanded.value = true;
+  expandedReply.value = true;
   commentId.value = id;
   commentText.value = text
   displayName.value = name
@@ -414,11 +431,11 @@ async function addReply(commentId) {
     .then(() => {
       reply.text = "";
       $q.notify({ type: "positive", message: "Reply successfully submitted" });
-      expanded.value = false;
+      expandedReply.value = false;
     })
+    .catch((error) => errorStore.throwError(error, "Reply submission failed!"));
     await nextTick();
     inputField.value.blur()
-    .catch((error) => errorStore.throwError(error, "Reply submission failed!"));
 
   childComments.value = props.comments.filter(
     (comment) => comment.parentId === commentId
