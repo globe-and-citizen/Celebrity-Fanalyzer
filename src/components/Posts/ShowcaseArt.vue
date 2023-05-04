@@ -7,19 +7,17 @@
       :key="index"
       :ratio="1"
       :src="art"
-      width="8rem"
+      width="6.5rem"
       @click="slide = index"
     />
+    <q-img img-class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
   <q-dialog position="top" v-model="openDialog">
     <q-carousel
       animated
       control-color="primary"
-      height="50vh"
-      navigation-active-icon="radio_button_checked"
-      navigation-icon="radio_button_unchecked"
-      navigation
+      height="auto"
       style="width: 50rem; max-width: 90vw"
       swipeable
       transition-prev="jump-right"
@@ -29,7 +27,7 @@
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
         <q-img class="rounded-borders" fit="contain" :src="art" />
       </q-carousel-slide>
-      <q-carousel-slide class="q-pa-none row" :name="showcase?.arts.length + 1">
+      <q-carousel-slide class="q-pa-none row" :name="showcase?.arts.length">
         <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
         <p class="col-sm-6 col-xs-12 flex items-center q-pa-md" style="white-space: pre-line">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
@@ -38,14 +36,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 
-defineProps({
+const props = defineProps({
   showcase: { type: Object, required: true, default: () => {} }
 })
 
 const openDialog = ref(false)
 const slide = ref(0)
+
+function handleKeyPress(e) {
+  const event = window.event ? window.event : e
+  if (event.keyCode === 37 && slide.value > 0) slide.value--
+  if (event.keyCode === 39 && slide.value < props.showcase.arts.length) slide.value++
+}
+
+watchEffect(() => {
+  if (openDialog.value) {
+    document.addEventListener('keyup', handleKeyPress)
+  } else {
+    document.removeEventListener('keyup', handleKeyPress)
+  }
+})
 </script>
 
 <style>
