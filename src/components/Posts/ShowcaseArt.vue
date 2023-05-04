@@ -23,6 +23,7 @@
       transition-prev="jump-right"
       transition-next="jump-left"
       v-model="slide"
+      ref="carouselRef"
     >
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
         <q-img class="rounded-borders" fit="contain" :src="art" />
@@ -42,6 +43,7 @@ const props = defineProps({
   showcase: { type: Object, required: true, default: () => {} }
 })
 
+const carouselRef = ref(null)
 const openDialog = ref(false)
 const slide = ref(0)
 
@@ -49,8 +51,8 @@ document.addEventListener('keyup', handleKeyPress)
 
 function handleKeyPress(e) {
   const event = (window.event ??= e)
-  if (event.key === 'ArrowLeft' && slide.value > 0) slide.value--
-  if (event.key === 'ArrowRight' && slide.value < props.showcase.arts.length) slide.value++
+  if (event.key === 'ArrowLeft') carouselRef.value.previous()
+  if (event.key === 'ArrowRight') carouselRef.value.next()
 }
 
 onUnmounted(() => {
