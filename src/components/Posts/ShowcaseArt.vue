@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue'
+import { onUnmounted, ref } from 'vue'
 
 const props = defineProps({
   showcase: { type: Object, required: true, default: () => {} }
@@ -45,18 +45,16 @@ const props = defineProps({
 const openDialog = ref(false)
 const slide = ref(0)
 
+document.addEventListener('keyup', handleKeyPress)
+
 function handleKeyPress(e) {
-  const event = window.event ? window.event : e
-  if (event.keyCode === 37 && slide.value > 0) slide.value--
-  if (event.keyCode === 39 && slide.value < props.showcase.arts.length) slide.value++
+  const event = (window.event ??= e)
+  if (event.key === 'ArrowLeft' && slide.value > 0) slide.value--
+  if (event.key === 'ArrowRight' && slide.value < props.showcase.arts.length) slide.value++
 }
 
-watchEffect(() => {
-  if (openDialog.value) {
-    document.addEventListener('keyup', handleKeyPress)
-  } else {
-    document.removeEventListener('keyup', handleKeyPress)
-  }
+onUnmounted(() => {
+  document.removeEventListener('keyup', handleKeyPress)
 })
 </script>
 
