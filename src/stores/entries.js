@@ -32,14 +32,16 @@ export const useEntryStore = defineStore('entries', {
   },
 
   actions: {
-    async fetchEntries() {
+    fetchEntries() {
+      const userStore = useUserStore()
+
       this._isLoading = true
-      await getDocs(collection(db, 'entries'))
+      getDocs(collection(db, 'entries'))
         .then(async (querySnapshot) => {
           const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const entry of entries) {
-            entry.author = await getDoc(entry.author).then((doc) => doc.data())
+            entry.author = userStore.getUserById(entry.author.id)
             entry.prompt = entry.prompt.id
           }
 
