@@ -109,7 +109,7 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async addPrompt(payload) {
+    addPrompt(payload) {
       const userStore = useUserStore()
 
       const prompt = { ...payload }
@@ -119,7 +119,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.id = prompt.date
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.id), prompt)
+      setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
           prompt.author = userStore.getUserById(prompt.author.id)
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
@@ -127,7 +127,7 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
-    async editPrompt(payload) {
+    editPrompt(payload) {
       const userStore = useUserStore()
 
       const prompt = { ...payload }
@@ -136,7 +136,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, async (transaction) => {
+      runTransaction(db, (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
       })
         .then(() => {

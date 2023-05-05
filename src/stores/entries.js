@@ -63,7 +63,7 @@ export const useEntryStore = defineStore('entries', {
       return entry
     },
 
-    async addEntry(payload) {
+    addEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -77,16 +77,16 @@ export const useEntryStore = defineStore('entries', {
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await setDoc(entryRef, entry).then(() => {
+      setDoc(entryRef, entry).then(() => {
         entry.author = userStore.getUserById(entry.author.id)
         this.$patch({ _entries: [...this.getEntries, entry] })
       })
 
-      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
+      updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
       this._isLoading = false
     },
 
-    async editEntry(payload) {
+    editEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -97,7 +97,7 @@ export const useEntryStore = defineStore('entries', {
       entry.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, async (transaction) => {
+      runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {
