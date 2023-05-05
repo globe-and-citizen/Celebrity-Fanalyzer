@@ -2,7 +2,7 @@
   <div class="q-gutter-xs q-pa-md text-center" @click="openDialog = true">
     <q-img
       v-for="(art, index) in showcase?.arts"
-      img-class="art-img"
+      class="art-img"
       fit="cover"
       :key="index"
       :ratio="1"
@@ -10,7 +10,7 @@
       width="6.5rem"
       @click="slide = index"
     />
-    <q-img img-class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
+    <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
   <q-dialog position="top" v-model="openDialog">
@@ -60,7 +60,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style>
+<style lang="scss" scoped>
 .art-img {
   cursor: pointer;
   filter: grayscale(100%);
