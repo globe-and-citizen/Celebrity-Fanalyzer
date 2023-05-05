@@ -72,7 +72,7 @@ async function addArtistPhoto(files) {
     .uploadFile(files[0], `images/${props.collectionName}-${props.date}-artist`)
     .then((url) => (modelArtistPhoto.value = url))
     .catch((error) => errorStore.throwError(error))
-  emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value[0] })
+  emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
 }
 
 function addArtistInfo() {
