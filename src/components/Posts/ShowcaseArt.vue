@@ -39,7 +39,7 @@
 <script setup>
 import { onUnmounted, ref } from 'vue'
 
-const props = defineProps({
+defineProps({
   showcase: { type: Object, required: true, default: () => {} }
 })
 
