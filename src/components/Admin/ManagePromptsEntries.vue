@@ -12,8 +12,13 @@
     title="Manage Prompts & Entries"
   >
     <template v-slot:top-right>
-      <q-input debounce="300" dense placeholder="Search" v-model="filter"
-               :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'input-search'">
+      <q-input
+        :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'input-search'"
+        debounce="300"
+        dense
+        placeholder="Search"
+        v-model="filter"
+      >
         <template v-slot:append>
           <q-icon name="search" />
         </template>
@@ -89,7 +94,7 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 
 defineEmits(['openPromptDialog'])
 
@@ -114,30 +119,22 @@ const prompts = ref(promptStore.getPrompts)
 onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
-
-  populatePromptsWithEntries()
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
-
-  populatePromptsWithEntries()
 })
 
 entryStore.$subscribe((_mutation, state) => {
   entries.value = state._entries
-
-  populatePromptsWithEntries()
 })
 
-function populatePromptsWithEntries() {
-  if (entries.value.length) {
-    prompts.value = prompts.value.map((prompt) => ({
-      ...prompt,
-      entries: entries.value.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
-    }))
-  }
-}
+watchEffect(() => {
+  prompts.value = prompts.value.map((prompt) => ({
+    ...prompt,
+    entries: entries.value?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id)) || []
+  }))
+})
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true
