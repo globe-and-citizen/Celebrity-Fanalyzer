@@ -28,7 +28,8 @@ describe('Admin Prompt & Entry', () => {
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
     cy.get('.q-date__view > :nth-child(13)').click()
-    cy.get('span.block').eq(14).click()
+    cy.get('[data-test="close"]').click()
+    // cy.get('span.block').eq(14).click()
 
     // Get the author select and choose the first option
     cy.get('[data-test="select-author"]').select('TESTER')
