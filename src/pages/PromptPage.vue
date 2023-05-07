@@ -24,7 +24,7 @@
           <p class="text-body1" v-html="prompt?.description"></p>
           <q-btn
             color="green"
-            data-test="like-button"
+            :data-test="(!likeStore._isLoading && likeStore._isLoaded) ? 'like-button':'' "
             flat
             :icon="likeIconClasses ? 'img:icons/thumbs-up-bolder.svg' : 'img:icons/thumbs-up.svg'"
             :label="countLikes"
@@ -36,7 +36,7 @@
           </q-btn>
           <q-btn
             color="red"
-            data-test="dislike-button"
+            :data-test="(!likeStore._isLoading && likeStore._isLoaded) ? 'dislike-button':'' "
             flat
             :icon="dislikeIconClasses ? 'img:icons/thumbs-down-bolder.svg' : 'img:icons/thumbs-down.svg'"
             :label="countDislikes"

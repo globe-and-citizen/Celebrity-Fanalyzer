@@ -6,7 +6,9 @@ import { useUserStore } from 'src/stores'
 export const useLikeStore = defineStore('likes', {
   state: () => ({
     _likes: [],
-    _dislikes: []
+    _dislikes: [],
+    _isLoading:false,
+    _isLoaded:false
   }),
 
   persist: true,
@@ -18,6 +20,7 @@ export const useLikeStore = defineStore('likes', {
 
   actions: {
     async getAllLikesDislikes(collectionName, documentId) {
+      this._isLoading=true
       const likesCollection = collection(db, collectionName, documentId, 'likes')
       const dislikesCollection = collection(db, collectionName, documentId, 'dislikes')
 
@@ -26,6 +29,9 @@ export const useLikeStore = defineStore('likes', {
 
       this._likes = likesSnapshot.docs.map((doc) => doc.data())
       this._dislikes = dislikesSnapshot.docs.map((doc) => doc.data())
+
+      this._isLoading=false
+      this._isLoaded=true
     },
 
     async addLike(collectionName, documentId) {
