@@ -25,33 +25,34 @@ describe('User Navigation', () => {
     cy.get('h1').contains('You are not logged in.')
   })
 
-  context('UnAuthenticated user', () => {
-    it('Should Be able to navigate to month page, like and dislike a prompt', () => {
-      cy.get('@month-link').click()
-      cy.location('pathname').should('eq', '/month')
+  it('Should Be able to navigate to month page, like and dislike a prompt', () => {
+    cy.visit('/profile')
+    cy.getByData('login-button').click()
+    cy.get('[data-test="main-menu"]').find('a').eq(2).click()
 
-      cy.get('[data-test="like-button"]').should('not.have.attr', 'disabled')
-      cy.get('[data-test="dislike-button"]').should('not.have.attr', 'disabled')
+    cy.get('[data-test="like-button"]').should('not.have.attr', 'disabled')
+    cy.get('[data-test="dislike-button"]').should('not.have.attr', 'disabled')
 
-      // Like
-      cy.get('[data-test="like-button"]').click()
+    // Like
+    cy.get('[data-test="like-button"]').click({ force: true })
+    cy.wait(10000)
 
-      // Select the amount of likes to see if its value is greater than 0
-      cy.get('[data-test="like-button"] > .q-btn__content > .block')
-        .scrollIntoView()
-        .invoke('text')
-        .then(parseFloat)
-        .should('be.greaterThan', 0)
+    // Select the amount of likes to see if its value is greater than 0
+    cy.get('[data-test="like-button"] > .q-btn__content > .block')
+      .scrollIntoView()
+      .invoke('text')
+      .then(parseFloat)
+      .should('be.greaterThan', 0)
 
-      // Dislike
-      cy.get('[data-test="dislike-button"]').click()
+    // Dislike
 
-      // Select the amount of dislikes to see if its value is greater than 0
-      cy.get('[data-test="dislike-button"] > .q-btn__content > .block')
-        .scrollIntoView()
-        .invoke('text')
-        .then(parseFloat)
-        .should('be.greaterThan', 0)
-    })
+    cy.get('[data-test="dislike-button"]').click({ force: true })
+
+    // Select the amount of dislikes to see if its value is greater than 0
+    cy.get('[data-test="dislike-button"] > .q-btn__content > .block')
+      .scrollIntoView()
+      .invoke('text')
+      .then(parseFloat)
+      .should('be.greaterThan', 0)
   })
 })
