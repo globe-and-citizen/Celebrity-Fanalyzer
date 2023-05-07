@@ -8,7 +8,7 @@
     "build": "quasar build --mode pwa",
     "dev": "quasar dev --mode pwa",
     "dev:test": "cross-env VITE_RELEASE_STAGE=testing quasar dev --mode pwa",
-    "dev:e2e": "cross-env VITE_MODE=E2E quasar dev --mode pwa",
+    "dev:e2e": "cross-env NODE_ENV=test VITE_MODE=E2E quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
     "test": "vitest",
@@ -40,6 +40,7 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
+    "@cypress/code-coverage": "^3.10.4",
     "@pinia/testing": "^0.0.15",
     "@quasar/app-vite": "^1.2.2",
     "@quasar/quasar-app-extension-testing-e2e-cypress": "^5.1.0",
