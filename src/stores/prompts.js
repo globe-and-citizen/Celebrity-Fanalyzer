@@ -91,13 +91,15 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async fetchPrompts() {
+      const userStore = useUserStore()
+
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
-        .then(async (querySnapshot) => {
+        .then((querySnapshot) => {
           const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            prompt.author = userStore.getUserById(prompt.author.id)
             prompt.entries = prompt.entries?.map((entry) => entry.id)
           }
 
@@ -136,7 +138,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, async (transaction) => {
+      await runTransaction(db, (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
       })
         .then(() => {
