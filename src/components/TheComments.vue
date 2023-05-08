@@ -119,7 +119,7 @@
           <q-btn
             :data-test="comment.text + '-add-reply'"
             flat
-            icon="img:/icons/arrow-reply-svgrepo-com.svg"
+            icon="img:/icons/arrow-reply.svg"
             :label="replyCounter(comment.id)"
             rounded
             size="0.75rem"
@@ -364,7 +364,6 @@ const replyCounter = (id) => {
 };
 
 async function addComment() {
-  console.log("ADDCOMMENT");
   await commentStore
     .addComment(props.collection, myComment, props.data)
     .then(() => {
