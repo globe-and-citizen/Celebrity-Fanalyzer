@@ -3,8 +3,8 @@
     <q-card class="fixed-center" style="width: 30rem; max-width: 90vw">
       <q-form greedy @submit="googleSignIn">
         <q-card-section>
-          <q-input label="Email" required v-model="email" />
-          <q-input label="Password" required type="password" v-model="password" />
+          <q-input label="Email" lazy-rules required :rules="[(val, rules) => rules.email(val) || 'Not a valid email']" v-model="email" />
+          <q-input label="Password" lazy-rules required :rules="[(val) => /^.{6,}$/.test(val) || 'Invalid Password']" v-model="password" />
         </q-card-section>
         <q-card-actions align="center" class="column">
           <q-btn color="primary" label="Sign" @click="sign" />
