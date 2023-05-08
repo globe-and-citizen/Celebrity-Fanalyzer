@@ -11,12 +11,10 @@
       transition-hide="jump-up"
     >
       <q-list style="min-width: 100px">
-        <q-item clickable @click="openPromptDialog()"
-                :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'prompt-dropdown'">
+        <q-item clickable @click="openPromptDialog()" :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'">
           <q-item-section>New Prompt</q-item-section>
         </q-item>
-        <q-item clickable @click="openEntryDialog()"
-                :data-test="(promptStore.isLoading || entryStore.isLoading) ? '' : 'entry-dropdown'">
+        <q-item clickable @click="openEntryDialog()" :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'">
           <q-item-section>New Entry</q-item-section>
         </q-item>
       </q-list>
@@ -68,7 +66,7 @@ import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import {useEntryStore, useErrorStore, usePromptStore, useUserStore} from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const userStore = useUserStore()

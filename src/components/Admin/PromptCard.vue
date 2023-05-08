@@ -22,7 +22,7 @@
                     @update:model-value="onUpdateMonth"
                   >
                     <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat data-test="close"/>
+                      <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
                     </div>
                   </q-date>
                 </q-popup-proxy>
