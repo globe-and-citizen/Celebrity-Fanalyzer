@@ -9,16 +9,16 @@ jobs:
   cypress-run:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
+      - name: 🛫 Checkout
         uses: actions/checkout@v3
 
-      - name: Set up NodeJS 18.14.0
+      - name: 🏗 Set up NodeJS 18.14.0
         uses: actions/setup-node@v3
         with:
           node-version: 18.14.0
           cache: 'npm'
 
-      - name: Cypress run
+      - name: 💻 Cypress run
         uses: cypress-io/github-action@v5
         with:
           start: npm run dev:e2e
@@ -33,3 +33,6 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           # pass GitHub token to detect new build vs re-run build
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ✅ Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
