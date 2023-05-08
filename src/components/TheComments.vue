@@ -137,7 +137,7 @@
             <div v-else>
                 <!-- Started Child Comment section -->
                 <div v-if="childComments.length <= 0" class="text-center">
-                  <p class="text-h6">No Replied Comments Yet</p>
+                  <p class="text-h6">No Replies Yet</p>
                   <p class="text-body2">Be the first to share what you think!</p>
                 </div>
                 <div
