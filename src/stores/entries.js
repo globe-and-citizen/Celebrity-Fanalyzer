@@ -32,12 +32,12 @@ export const useEntryStore = defineStore('entries', {
   },
 
   actions: {
-    fetchEntries() {
+    async fetchEntries() {
       const userStore = useUserStore()
 
       this._isLoading = true
-      getDocs(collection(db, 'entries'))
-        .then(async (querySnapshot) => {
+      await getDocs(collection(db, 'entries'))
+        .then((querySnapshot) => {
           const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const entry of entries) {
@@ -65,7 +65,7 @@ export const useEntryStore = defineStore('entries', {
       return entry
     },
 
-    addEntry(payload) {
+    async addEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -79,16 +79,16 @@ export const useEntryStore = defineStore('entries', {
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      setDoc(entryRef, entry).then(() => {
+      await setDoc(entryRef, entry).then(() => {
         entry.author = userStore.getUserById(entry.author.id)
         this.$patch({ _entries: [...this.getEntries, entry] })
       })
 
-      updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
+      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
       this._isLoading = false
     },
 
-    editEntry(payload) {
+    async editEntry(payload) {
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -99,7 +99,7 @@ export const useEntryStore = defineStore('entries', {
       entry.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      runTransaction(db, async (transaction) => {
+      await runTransaction(db, (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {
