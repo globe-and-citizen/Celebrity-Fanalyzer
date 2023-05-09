@@ -69,12 +69,10 @@ export const useUserStore = defineStore('user', {
     },
 
     async emailSignUp(user) {
-      const userStore = useUserStore()
-
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), user).then(() => this.fetchProfile(userCredential.user))
+          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.displayName, email: user.email })
         })
         .finally(() => (this._isLoading = false))
     },
