@@ -2,13 +2,14 @@
   <q-page>
     <q-card class="fixed-center" style="width: 25rem; max-width: 90vw">
       <q-tabs class="text-primary" v-model="tab">
-        <q-tab label="Sign In" name="signin" />
-        <q-tab label="Sign Up" name="signup" />
+        <q-tab data-test="signin-tab" label="Sign In" name="signin" />
+        <q-tab data-test="signup-tab" label="Sign Up" name="signup" />
       </q-tabs>
 
       <q-form class="q-pa-md text-center" greedy @submit="emailSign">
         <q-input
           v-if="tab === 'signup'"
+          data-test="name-field"
           hide-hint
           :hint="nameHint"
           label="Name"
@@ -17,8 +18,9 @@
           :rules="nameRules"
           v-model="user.name"
         />
-        <q-input label="Email" lazy-rules required :rules="emailRules" v-model="user.email" />
+        <q-input data-test="email-field" label="Email" lazy-rules required :rules="emailRules" v-model="user.email" />
         <q-input
+          data-test="password-field"
           label="Password"
           hide-hint
           :hint="passwordHint"
@@ -28,13 +30,13 @@
           type="password"
           v-model="user.password"
         />
-        <q-btn color="primary" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
+        <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
 
       <q-separator inset spaced />
 
       <div class="q-my-sm text-center">
-        <q-btn class="q-my-md" data-test="login-button" rounded type="submit" @click="googleSign">
+        <q-btn class="q-my-md" data-test="google-button" rounded type="submit" @click="googleSign">
           <q-avatar size="sm">
             <q-img alt="Google Logo" src="~assets/google.svg" />
           </q-avatar>

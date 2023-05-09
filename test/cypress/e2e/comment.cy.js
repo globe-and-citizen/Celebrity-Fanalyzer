@@ -9,7 +9,7 @@ entryValues.forEach((entry) => {
     beforeEach(() => {
       cy.viewport('iphone-x')
       cy.visit('/profile')
-      cy.get('[data-test="login-button"]').click().wait(3000)
+      cy.get('[data-test="google-button"]').click().wait(3000)
 
       cy.visit('/month').wait(3000)
       // Visits the prompt of the month
