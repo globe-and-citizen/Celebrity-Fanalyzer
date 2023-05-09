@@ -319,7 +319,6 @@ async function addComment() {
   await commentStore
     .addComment(props.collection, myComment, props.data)
     .then(() => {
-      console.log(myComment.text)
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })

@@ -60,7 +60,6 @@ export const useCommentStore = defineStore('comments', {
 
       comment.id = commentId
       localStorage.setItem('id', commentId)
-      console.log("ID", commentId);
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, document.id, 'comments', commentId), comment)
