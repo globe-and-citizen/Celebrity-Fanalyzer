@@ -56,7 +56,7 @@ export const useCommentStore = defineStore('comments', {
       comment.isAnonymous = !userStore.isAuthenticated
 
       const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const commentId = comment.id || Date.now() + '-' + (comment.author.id || comment.author)
+      const commentId = Date.now() + '-' + (comment.author.id || comment.author)
 
       comment.id = commentId
       localStorage.setItem('id', commentId)
