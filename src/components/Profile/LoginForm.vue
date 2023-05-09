@@ -11,22 +11,29 @@
           v-if="tab === 'signup'"
           data-test="name-field"
           hide-hint
-          :hint="nameHint"
+          :hint="'At least 2 characters'"
           label="Name"
           lazy-rules
           required
-          :rules="nameRules"
+          :rules="[(val) => /^.{2,}$/.test(val) || 'Invalid Name']"
           v-model="user.name"
         />
-        <q-input data-test="email-field" label="Email" lazy-rules required :rules="emailRules" v-model="user.email" />
+        <q-input
+          data-test="email-field"
+          label="Email"
+          lazy-rules
+          required
+          :rules="[(val, rules) => rules.email(val) || 'Invalid Email']"
+          v-model="user.email"
+        />
         <q-input
           data-test="password-field"
           label="Password"
           hide-hint
-          :hint="passwordHint"
+          :hint="'At least 6 characters'"
           lazy-rules
           required
-          :rules="passwordRules"
+          :rules="[(val) => /^.{6,}$/.test(val) || 'Invalid Password']"
           type="password"
           v-model="user.password"
         />
@@ -56,13 +63,6 @@ const userStore = useUserStore()
 
 const user = ref({ email: '', name: '', password: '' })
 const tab = ref('signin')
-
-const nameHint = 'At least 2 characters'
-const passwordHint = 'At least 6 characters'
-
-const emailRules = [(val, rules) => rules.email(val) || 'Invalid Email']
-const nameRules = [(val) => /^.{2,}$/.test(val) || 'Invalid Name']
-const passwordRules = [(val) => /^.{6,}$/.test(val) || 'Invalid Password']
 
 async function emailSign() {
   if (import.meta.env.VITE_MODE === 'E2E') {
