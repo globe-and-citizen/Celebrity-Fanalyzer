@@ -65,11 +65,6 @@ const user = ref({ email: '', name: '', password: '' })
 const tab = ref('signin')
 
 async function emailSign() {
-  if (import.meta.env.VITE_MODE === 'E2E') {
-    user.value.email = 'test@test.com'
-    user.value.password = '12345678'
-  }
-
   if (tab.value === 'signin') {
     await userStore.emailSignIn(user.value).catch((error) => errorStore.throwError(error))
   }

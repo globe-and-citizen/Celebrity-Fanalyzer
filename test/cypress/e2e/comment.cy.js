@@ -9,7 +9,11 @@ entryValues.forEach((entry) => {
     beforeEach(() => {
       cy.viewport('iphone-x')
       cy.visit('/profile')
-      cy.get('[data-test="google-button"]').click().wait(3000)
+
+      // Fill the email and password fields and click the sign in button
+      cy.get('[data-test="email-field"]').type('test@test.com')
+      cy.get('[data-test="password-field"]').type('12345678')
+      cy.get('[data-test="sign-button"]').click()
 
       cy.visit('/month').wait(3000)
       // Visits the prompt of the month

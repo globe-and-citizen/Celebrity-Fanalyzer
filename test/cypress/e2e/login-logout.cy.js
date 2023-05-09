@@ -7,7 +7,11 @@ describe('Login page', () => {
     beforeEach(() => {
       cy.viewport('iphone-x')
       cy.visit('/profile')
-      cy.getByData('login-button').click()
+
+      // Fill the email and password fields and click the sign in button
+      cy.get('[data-test="email-field"]').type('test@test.com')
+      cy.get('[data-test="password-field"]').type('12345678')
+      cy.get('[data-test="sign-button"]').click()
     })
 
     it('Should navigate between Profiles tabs', () => {

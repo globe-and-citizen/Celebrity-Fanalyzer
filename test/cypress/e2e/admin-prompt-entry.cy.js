@@ -9,8 +9,10 @@ describe('Admin Prompt & Entry', () => {
     // Visits the profile page
     cy.visit('/profile')
 
-    // Get the login button and click it
-    cy.get('.q-page > .q-btn').click()
+    // Fill the email and password fields and click the sign in button
+    cy.get('[data-test="email-field"]').type('test@test.com')
+    cy.get('[data-test="password-field"]').type('12345678')
+    cy.get('[data-test="sign-button"]').click()
 
     // Visits the admin page and wait for 15 seconds
     cy.get('[data-test="main-menu"]').find('a').eq(4).click()
@@ -90,9 +92,9 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="button-expand"]').click()
 
     // Delete all entry in a prompt and left one
-    cy.get('[data-test="button-delete-entry"]').then(($btn)=>{
-      for(let i=$btn.length-1; i>0; i--){
-        cy.get('[data-test="button-delete-entry"]').eq(i).click({force:true})
+    cy.get('[data-test="button-delete-entry"]').then(($btn) => {
+      for (let i = $btn.length - 1; i > 0; i--) {
+        cy.get('[data-test="button-delete-entry"]').eq(i).click({ force: true })
         cy.get('[data-test="confirm-delete-entry"]').click()
         // Wait the notification
         cy.get('.q-notification__message').contains('Entry deleted')
@@ -102,13 +104,11 @@ describe('Admin Prompt & Entry', () => {
     cy.wait(5000)
 
     // Delete the last one
-    cy.get('[data-test="button-delete-entry"]').eq(0).click({force:true})
+    cy.get('[data-test="button-delete-entry"]').eq(0).click({ force: true })
     cy.get('[data-test="confirm-delete-entry"]').click()
     // Wait the notification
     cy.get('.q-notification__message').contains('Entry deleted')
     cy.wait(5000)
-
-
   })
 
   it('Should delete the prompt', () => {
