@@ -1,6 +1,13 @@
 <template>
-  <q-page>
-    <q-card class="fixed-center" style="width: 25rem; max-width: 90vw">
+  <q-page style="padding-top: 5vh">
+    <transition appear enter-active-class="animated slideInDown">
+      <h6 v-if="userStore.getUser.isAnonymous" class="q-my-md text-center">
+        Welcome! You are now an anonymous user.
+        <br />
+        Sign up anytime with your email or Google account.
+      </h6>
+    </transition>
+    <q-card class="q-mx-auto" style="width: 25rem; max-width: 90vw">
       <q-tabs class="text-primary" v-model="tab">
         <q-tab data-test="signin-tab" label="Sign In" name="signin" />
         <q-tab data-test="signup-tab" label="Sign Up" name="signup" />
@@ -43,7 +50,14 @@
       <q-separator inset />
 
       <div class="column items-center q-gutter-md q-py-md">
-        <q-btn data-test="anonymous-button" icon="img:src/assets/anonymous.svg" label="Sign as Anonymous" rounded @click="anonymousSign" />
+        <q-btn
+          data-test="anonymous-button"
+          :disable="userStore.getUser.isAnonymous"
+          icon="img:src/assets/anonymous.svg"
+          :label="userStore.getUser.isAnonymous ? 'Signed Anonymously' : 'Sign as Anonymous'"
+          rounded
+          @click="anonymousSign"
+        />
         <q-btn data-test="google-button" icon="img:src/assets/google.svg" label="Sign with Google" rounded @click="googleSign" />
       </div>
     </q-card>

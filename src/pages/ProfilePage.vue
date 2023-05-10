@@ -3,7 +3,7 @@
 
   <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 
-  <LoginForm v-if="!user.uid" />
+  <LoginForm v-if="!user.uid || user.isAnonymous" />
 
   <q-page v-else class="q-px-lg">
     <div class="flex items-center no-wrap q-py-xl">
