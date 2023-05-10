@@ -76,8 +76,4 @@ async function anonymousSign() {
 async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
-
-async function sign() {
-  console.log('sign')
-}
 </script>
