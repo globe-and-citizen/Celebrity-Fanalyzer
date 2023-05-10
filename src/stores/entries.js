@@ -33,13 +33,15 @@ export const useEntryStore = defineStore('entries', {
 
   actions: {
     async fetchEntries() {
+      const userStore = useUserStore()
+
       this._isLoading = true
       await getDocs(collection(db, 'entries'))
-        .then(async (querySnapshot) => {
+        .then((querySnapshot) => {
           const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const entry of entries) {
-            entry.author = await getDoc(entry.author).then((doc) => doc.data())
+            entry.author = userStore.getUserById(entry.author.id)
             entry.prompt = entry.prompt.id
           }
 
@@ -97,7 +99,7 @@ export const useEntryStore = defineStore('entries', {
       entry.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, async (transaction) => {
+      await runTransaction(db, (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {

@@ -2,13 +2,16 @@
   <section v-if="comments.length" class="q-pa-md" style="margin-bottom: 4rem">
     <div v-for="comment of comments" class="q-mb-md" :key="comment.id">
       <div v-if="comment.parentId === undefined">
+        <!-- Parent comment author info and edit delete dropdown items -->
         <div class="flex items-center">
           <q-icon v-if="comment.isAnonymous" name="person" size="2rem" />
           <q-avatar v-else size="2rem">
             <q-img :src="comment.author.photoURL" />
           </q-avatar>
           <p class="column q-mb-none q-ml-sm">
-            <span class="text-body2">{{ comment.author.displayName || 'Anonymous' }}</span>
+            <span class="text-body2">
+              {{ comment.author.displayName || 'Anonymous' }}
+            </span>
             <span class="text-body2 text-secondary">
               {{ shortMonthDayTime(comment.created) }}
             </span>
@@ -37,6 +40,7 @@
             </q-list>
           </q-btn-dropdown>
         </div>
+        <!-- Parent comment editing -->
         <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
           <q-input
             :data-test="comment.text + '-comment-edit'"
@@ -54,9 +58,11 @@
             <q-btn data-test="submit-edited-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
           </q-input>
         </q-form>
+        <!-- Parent comment -->
         <div v-else class="q-my-sm text-body2">
           {{ comment.text }}
         </div>
+        <!-- Parent Like, Dislike, Reply buttons -->
         <div class="row">
           <q-btn
             :data-test="'like' + comment.text"
@@ -83,23 +89,28 @@
           <q-btn
             :data-test="comment.text + '-add-reply'"
             flat
-            icon="chat_bubble_outline"
+            icon="img:/icons/arrow-reply.svg"
             :label="replyCounter(comment.id)"
             rounded
             size="0.75rem"
-            @click="showReplies(comment.id)"
+            @click="showReplies(comment.id, comment.text, comment.author.displayName || 'Anonymous')"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
         </div>
+        <!-- Child comment section, managing child-->
         <q-slide-transition>
           <div class="q-px-md q-mt-md" v-show="expanded && comment.id === commentId">
             <div v-if="commentStore.isLoading" class="text-center">
               <q-spinner color="primary" size="3em" />
             </div>
-            <q-form v-else greedy @submit.prevent="addReply(comment.id)">
+            <div v-else>
               <!-- Started Child Comment section -->
-              <div v-for="childComment of childComments" class="q-mb-md" :key="childComment.id">
+              <div v-if="childComments.length <= 0" class="text-center">
+                <p class="text-h6">No Replies Yet</p>
+                <p class="text-body2">Be the first to share what you think!</p>
+              </div>
+              <div v-for="(childComment, index) of childComments" class="q-mb-md" :key="childComment.id">
                 <div class="flex items-center">
                   <q-icon v-if="childComment.isAnonymous" name="person" size="1.5rem" />
                   <q-avatar v-else size="1rem">
@@ -176,32 +187,10 @@
                 <div v-else class="q-my-sm text-body2">
                   {{ childComment.text }}
                 </div>
-                <q-separator spaced />
+                <q-separator spaced v-if="index !== childComments.length - 1" />
               </div>
               <!-- Ended Child Comment Section -->
-              <q-input
-                :data-test="comment.text + '-fill-add-reply'"
-                autogrow
-                dense
-                label="Reply"
-                lazy-rules
-                :name="comment.id"
-                rounded
-                standout="bg-secondary text-white"
-                v-model="reply.text"
-              >
-                <q-btn
-                  color="grey-6"
-                  :data-test="comment.text + '-submit-fill-add-reply'"
-                  dense
-                  :disable="!reply.text"
-                  flat
-                  icon="send"
-                  round
-                  type="submit"
-                />
-              </q-input>
-            </q-form>
+            </div>
           </div>
         </q-slide-transition>
         <q-separator spaced />
@@ -215,20 +204,38 @@
     <p class="text-body1">Be the first to share what you think!</p>
   </div>
 
-  <q-form greedy @submit.prevent="addComment">
+  <q-form greedy @submit.prevent="expandedReply ? addReply(commentId) : addComment()">
     <q-input
+      ref="inputField"
       class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
-      data-test="comment-main-box"
+      :data-test="expandedReply ? commentText + '-fill-add-reply' : 'comment-main-box'"
       dense
-      label="Comment"
+      :label="expandedReply ? 'Reply' : 'Comment'"
       lazy-rules
-      required
+      :required="!expandedReply"
+      :name="expandedReply ? commentId : ''"
       rounded
       standout="bg-secondary text-white"
       style="margin-bottom: 6.7rem"
-      v-model="myComment.text"
+      v-model="commentValue"
     >
-      <q-btn color="grey-6" dense :disable="!myComment.text" flat icon="send" round type="submit" />
+      <div v-show="expandedReply" class="replyTop">
+        <p>
+          Replying to
+          <span class="text-bold">{{ displayName }}</span>
+        </p>
+        <q-btn @click="showReplies(commentId)" icon="close" round flat dense size="sm"></q-btn>
+      </div>
+      <q-btn
+        :data-test="expandedReply ? commentText + '-submit-fill-add-reply' : ''"
+        color="grey-6"
+        dense
+        :disable="expandedReply ? !reply.text : !myComment.text"
+        flat
+        icon="send"
+        round
+        type="submit"
+      />
     </q-input>
   </q-form>
 </template>
@@ -237,7 +244,7 @@
 import { useQuasar } from 'quasar'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, nextTick, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   collection: { type: String, required: true },
@@ -252,17 +259,36 @@ const userStore = useUserStore()
 
 const childComments = ref([])
 const commentId = ref('')
+const commentText = ref('')
+const displayName = ref('')
 const expanded = ref(false)
+const expandedReply = ref(false)
 const inputEdit = ref('')
 const isEditing = ref(false)
 const myComment = reactive({})
 const reply = reactive({})
 const userId = ref('')
+const inputField = ref()
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
+
+  window.addEventListener('keydown', handleKeydown)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
+function handleKeydown(event) {
+  if (event.key === 'Escape' || event.key === 'Esc') {
+    expanded.value = false
+    commentId.value = ''
+    expandedReply.value = false
+    inputField.value.blur()
+  }
+}
 
 const likeIconClass = computed(() => {
   return (comment) => comment.likes?.some((like) => like === userId.value) || false
@@ -270,6 +296,19 @@ const likeIconClass = computed(() => {
 
 const dislikeIconClass = computed(() => {
   return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
+})
+
+const commentValue = computed({
+  get() {
+    return expanded.value ? reply.text : myComment.text
+  },
+  set(value) {
+    if (expanded.value) {
+      reply.text = value
+    } else {
+      myComment.text = value
+    }
+  }
 })
 
 const replyCounter = (id) => {
@@ -317,18 +356,27 @@ async function deleteComment(commentParentId, commentId) {
   childComments.value = props.comments.filter((comment) => commentParentId === comment.parentId)
 }
 
-async function showReplies(id) {
+async function showReplies(id, text, name) {
   childComments.value = []
   if (commentId.value === id) {
     expanded.value = false
     commentId.value = ''
+    expandedReply.value = false
+    inputField.value.blur()
+    childComments.value = props.comments.filter((comment) => comment.parentId === id)
     return
   }
   expanded.value = true
+  expandedReply.value = true
   commentId.value = id
+  commentText.value = text
+  displayName.value = name
   reply.parentId = id
 
   childComments.value = props.comments.filter((comment) => comment.parentId === id)
+
+  await nextTick()
+  inputField.value.focus()
 }
 
 async function addReply(commentId) {
@@ -337,9 +385,28 @@ async function addReply(commentId) {
     .then(() => {
       reply.text = ''
       $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
+      expandedReply.value = false
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
+  await nextTick()
+  inputField.value.blur()
 
   childComments.value = props.comments.filter((comment) => comment.parentId === commentId)
 }
 </script>
+
+<style scoped>
+.replyTop {
+  position: absolute;
+  display: flex;
+  width: 100%;
+  border-radius: 10px 10px 10px 10px;
+  height: 30px;
+  top: -30px;
+  padding: 5px 10px;
+  color: white;
+  font-size: 12px;
+  justify-content: space-between;
+  background-color: #5e6775;
+}
+</style>
