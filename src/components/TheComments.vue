@@ -4,7 +4,7 @@
       <div v-if="comment.parentId === undefined">
         <!-- Parent comment author info and edit delete dropdown items -->
         <div class="flex items-center">
-          <q-icon v-if="comment.isAnonymous" name="person" size="2rem" />
+          <q-icon v-if="comment.isAnonymous || comment.author.isAnonymous" name="img:src/assets/anonymous.svg" size="2rem" />
           <q-avatar v-else size="2rem">
             <q-img :src="comment.author.photoURL" />
           </q-avatar>
