@@ -40,15 +40,10 @@
         <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
 
-      <q-separator inset spaced />
+      <q-separator inset />
 
-      <div class="q-my-sm text-center">
-        <q-btn class="q-my-md" data-test="google-button" rounded type="submit" @click="googleSign">
-          <q-avatar size="sm">
-            <q-img alt="Google Logo" src="~assets/google.svg" />
-          </q-avatar>
-          <span class="q-ml-sm">Sign with Google</span>
-        </q-btn>
+      <div class="column items-center q-gutter-md q-py-md">
+        <q-btn data-test="google-button" icon="img:src/assets/google.svg" label="Sign with Google" rounded @click="googleSign" />
       </div>
     </q-card>
   </q-page>
