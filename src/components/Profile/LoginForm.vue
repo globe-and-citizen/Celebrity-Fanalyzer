@@ -69,6 +69,10 @@ async function emailSign() {
   }
 }
 
+async function anonymousSign() {
+  await userStore.anonymousSignIn().catch((error) => errorStore.throwError(error))
+}
+
 async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }

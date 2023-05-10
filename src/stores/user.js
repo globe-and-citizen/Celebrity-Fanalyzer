@@ -2,6 +2,8 @@ import {
   createUserWithEmailAndPassword,
   getAdditionalUserInfo,
   GoogleAuthProvider,
+  onAuthStateChanged,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut
@@ -86,6 +88,15 @@ export const useUserStore = defineStore('user', {
           })
         })
         .finally(() => (this._isLoading = false))
+    },
+
+    async anonymousSignIn() {
+      this._isLoading = true
+      await signInAnonymously(auth)
+        .catch((error) => console.error(error))
+        .finally(() => (this._isLoading = false))
+
+      onAuthStateChanged(auth, (user) => (this._user = user))
     },
 
     async googleSignIn() {
