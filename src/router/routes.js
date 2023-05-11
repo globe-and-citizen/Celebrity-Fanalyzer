@@ -30,10 +30,6 @@ const routes = [
         component: () => import('pages/EntryPage.vue')
       },
       {
-        path: ':year(\\d{4})',
-        component: () => import('pages/YearArchivePage.vue')
-      },
-      {
         path: 'profile',
         component: () => import('pages/ProfilePage.vue')
       },
