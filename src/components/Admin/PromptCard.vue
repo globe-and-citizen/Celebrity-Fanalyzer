@@ -230,9 +230,9 @@ async function onSubmit() {
   }
 
   if (Object.keys(imageModel.value).length) {
-    promptStore
-      .uploadImage(imageModel.value, prompt.date)
-      .then((res) => (prompt.image = res))
+    await storageStore
+      .uploadFile(imageModel.value, `images/prompt-${prompt.date}`)
+      .then((url) => (prompt.image = url))
       .catch((error) => errorStore.throwError(error))
   }
 
