@@ -136,15 +136,6 @@ export const useEntryStore = defineStore('entries', {
         errorStore.throwError(error)
       }
       this._isLoading = false
-    },
-
-    async uploadImage(file, entryId) {
-      const storageRef = ref(storage, `images/entry-${entryId}`)
-
-      this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
-      return getDownloadURL(ref(storage, storageRef))
     }
   }
 })
