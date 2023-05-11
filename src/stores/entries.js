@@ -99,7 +99,7 @@ export const useEntryStore = defineStore('entries', {
       entry.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, (transaction) => {
+      await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {
