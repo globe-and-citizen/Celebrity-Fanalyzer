@@ -93,6 +93,10 @@ export const usePromptStore = defineStore('prompts', {
     async fetchPrompts() {
       const userStore = useUserStore()
 
+      if (!userStore.getUsers.length) {
+        await userStore.fetchUsers()
+      }
+
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
         .then((querySnapshot) => {

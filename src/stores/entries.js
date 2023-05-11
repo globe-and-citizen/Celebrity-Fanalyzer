@@ -35,6 +35,10 @@ export const useEntryStore = defineStore('entries', {
     async fetchEntries() {
       const userStore = useUserStore()
 
+      if (!userStore.getUsers.length) {
+        await userStore.fetchUsers()
+      }
+
       this._isLoading = true
       await getDocs(collection(db, 'entries'))
         .then((querySnapshot) => {
