@@ -76,9 +76,9 @@
               counter
               data-test="file-image"
               hide-hint
-              hint="Max size is 1MB"
+              hint="Max size is 5MB"
               label="Image"
-              :max-total-size="1048487"
+              :max-total-size="5242880"
               :required="!id"
               v-model="imageModel"
               @rejected="onRejected()"
@@ -197,7 +197,7 @@ function uploadPhoto() {
 }
 
 function onRejected() {
-  $q.notify({ type: 'negative', message: 'Image did not pass validation constraints' })
+  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 
 function onPaste(evt) {
