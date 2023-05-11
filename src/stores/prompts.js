@@ -138,7 +138,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, (transaction) => {
+      await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
       })
         .then(() => {
@@ -180,15 +180,6 @@ export const usePromptStore = defineStore('prompts', {
         errorStore.throwError(error)
       }
       this._isLoading = false
-    },
-
-    async uploadImage(file, promptId) {
-      const storageRef = ref(storage, `images/prompt-${promptId}`)
-
-      this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
-      return getDownloadURL(storageRef).then((url) => url)
     }
   }
 })
