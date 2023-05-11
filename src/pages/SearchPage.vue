@@ -1,5 +1,5 @@
 <template>
-  <TheHeader feedbackButton searchInput title="Search Archive" v-model="search" />
+  <TheHeader feedbackButton searchInput :title="`${router.currentRoute.value.params.year} Search Archive`" v-model="search" />
   <q-page class="q-pa-md">
     <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
       <q-btn-toggle
@@ -8,7 +8,7 @@
         color="white"
         no-caps
         no-wrap
-        :options="categories"
+        :options="computedCategories"
         rounded
         text-color="secondary"
         unelevated
@@ -22,7 +22,7 @@
       <ArticleSkeleton />
     </section>
     <q-tab-panels animated swipeable v-model="category" data-test="prompt-list">
-      <q-tab-panel v-for="(categ, i) in categories" :key="i" :name="categ.value">
+      <q-tab-panel v-for="(categ, i) in computedCategories" :key="i" :name="categ.value">
         <TransitionGroup name="prompt" tag="div">
           <ItemCard
             v-for="prompt in computedPrompts"
@@ -47,42 +47,57 @@ import TheEntries from 'src/components/TheEntries.vue'
 import TheHeader from 'src/components/TheHeader.vue'
 import { useEntryStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 
 const entries = ref(entryStore.getEntries)
-const categories = ref([{ label: 'All', value: 'All' }])
 const category = ref('All')
 const prompts = ref(promptStore.getPrompts)
+const router = useRouter()
 const search = ref('')
 
-onMounted(async () => {
-  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-  prompts.value = promptStore.getPrompts
-
-  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  entries.value = entryStore.getEntries
+onMounted(() => {
+  promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+  entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 
-  const categoriesArr = promptStore.getPrompts.flatMap((prompt) => prompt.categories)
-  categories.value = [...new Set(categoriesArr)].map((category) => ({ label: category, value: category }))
-  categories.value.unshift({ label: 'All', value: 'All' })
+  if (router.currentRoute.value.params.year) {
+    prompts.value = prompts.value.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
+  }
+})
+
+entryStore.$subscribe((_mutation, state) => {
+  entries.value = state._entries
+
+  if (router.currentRoute.value.params.year) {
+    entries.value = entries.value.filter((entry) => entry.id.split('-')[0] === router.currentRoute.value.params.year)
+  }
+})
+
+const computedCategories = computed(() => {
+  const allPromptCategories = computedPrompts.value.flatMap(({ categories }) => categories)
+  const uniqueCategories = Array.from(new Set(allPromptCategories), (category) => ({ label: category, value: category }))
+  const allCategory = { label: 'All', value: 'All' }
+  return [allCategory, ...uniqueCategories]
 })
 
 const computedPrompts = computed(() => {
-  return promptStore.getPrompts.filter((item) =>
-    [item.title, item.description, item.author.displayName, ...item.categories].some((str) =>
-      str.toLowerCase().includes(search.value.toLowerCase())
+  return prompts.value.filter((item) =>
+    [item.title, item.description, item.author?.displayName, ...item.categories].some((str) =>
+      str?.toLowerCase().includes(search.value.toLowerCase())
     )
   )
 })
 
 const computedEntries = computed(() => {
-  return entries.value.filter((item) => item?.title?.toLowerCase().includes(search.value.toLocaleLowerCase())) || []
+  return entries.value.filter((item) =>
+    [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
+  )
 })
 </script>
 
