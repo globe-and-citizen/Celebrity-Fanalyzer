@@ -28,7 +28,8 @@ describe('Admin Prompt & Entry', () => {
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
     cy.get('.q-date__view > :nth-child(13)').click()
-    cy.get('span.block').eq(14).click()
+    cy.get('[data-test="close"]').click()
+    // cy.get('span.block').eq(14).click()
 
     // Get the author select and choose the first option
     cy.get('[data-test="select-author"]').select('TESTER')
@@ -90,9 +91,9 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="button-expand"]').click()
 
     // Delete all entry in a prompt and left one
-    cy.get('[data-test="button-delete-entry"]').then(($btn)=>{
-      for(let i=$btn.length-1; i>0; i--){
-        cy.get('[data-test="button-delete-entry"]').eq(i).click({force:true})
+    cy.get('[data-test="button-delete-entry"]').then(($btn) => {
+      for (let i = $btn.length - 1; i > 0; i--) {
+        cy.get('[data-test="button-delete-entry"]').eq(i).click({ force: true })
         cy.get('[data-test="confirm-delete-entry"]').click()
         // Wait the notification
         cy.get('.q-notification__message').contains('Entry deleted')
@@ -102,13 +103,11 @@ describe('Admin Prompt & Entry', () => {
     cy.wait(5000)
 
     // Delete the last one
-    cy.get('[data-test="button-delete-entry"]').eq(0).click({force:true})
+    cy.get('[data-test="button-delete-entry"]').eq(0).click({ force: true })
     cy.get('[data-test="confirm-delete-entry"]').click()
     // Wait the notification
     cy.get('.q-notification__message').contains('Entry deleted')
     cy.wait(5000)
-
-
   })
 
   it('Should delete the prompt', () => {
