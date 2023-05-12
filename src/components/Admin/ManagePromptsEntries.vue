@@ -13,11 +13,11 @@
   >
     <template v-slot:top-right>
       <q-input
+        :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'input-search'"
         debounce="300"
         dense
         placeholder="Search"
         v-model="filter"
-        :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'input-search'"
       >
         <template v-slot:append>
           <q-icon name="search" />
@@ -94,7 +94,7 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 
 defineEmits(['openPromptDialog'])
 
@@ -106,7 +106,7 @@ const promptStore = usePromptStore()
 const columns = [
   {},
   { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
-  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author.displayName, sortable: true },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   {}
 ]
@@ -119,30 +119,22 @@ const prompts = ref(promptStore.getPrompts)
 onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
-
-  populatePromptsWithEntries()
 })
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
-
-  populatePromptsWithEntries()
 })
 
 entryStore.$subscribe((_mutation, state) => {
   entries.value = state._entries
-
-  populatePromptsWithEntries()
 })
 
-function populatePromptsWithEntries() {
-  if (entries.value.length) {
-    prompts.value = prompts.value.map((prompt) => ({
-      ...prompt,
-      entries: entries.value.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
-    }))
-  }
-}
+watchEffect(() => {
+  prompts.value = prompts.value.map((prompt) => ({
+    ...prompt,
+    entries: entries.value?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id)) || []
+  }))
+})
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true

@@ -65,9 +65,9 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 1MB'"
+          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 5MB'"
           label="Image"
-          :max-total-size="1048487"
+          :max-total-size="5242880"
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
@@ -97,7 +97,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -107,6 +107,7 @@ const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const storageStore = useStorageStore()
 const userStore = useUserStore()
 
 const authorOptions = reactive([])
@@ -170,7 +171,10 @@ async function onSubmit() {
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
 
   if (Object.keys(imageModel.value).length) {
-    entryStore.uploadImage(imageModel.value, entry.id).catch((error) => errorStore.throwError(error, 'Image upload failed'))
+    storageStore
+      .uploadFile(imageModel.value, `images/entry-${entry.id}`)
+      .then((url) => (entry.image = url))
+      .catch((error) => errorStore.throwError(error, 'Image upload failed'))
   }
 
   if (props.id) {

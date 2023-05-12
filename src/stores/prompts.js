@@ -91,13 +91,15 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async fetchPrompts() {
+      const userStore = useUserStore()
+
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
-        .then(async (querySnapshot) => {
+        .then((querySnapshot) => {
           const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            prompt.author = userStore.getUserById(prompt.author.id)
             prompt.entries = prompt.entries?.map((entry) => entry.id)
           }
 
@@ -178,15 +180,6 @@ export const usePromptStore = defineStore('prompts', {
         errorStore.throwError(error)
       }
       this._isLoading = false
-    },
-
-    async uploadImage(file, promptId) {
-      const storageRef = ref(storage, `images/prompt-${promptId}`)
-
-      this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
-      return getDownloadURL(storageRef).then((url) => url)
     }
   }
 })
