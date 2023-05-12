@@ -57,7 +57,7 @@
           >
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shares?.length" @share="onShare($event)" />
+          <ShareComponent :loaded="shareIsLoaded && !shareIsLoading" :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
         <ShowcaseArt v-if="prompt?.showcase" :showcase="prompt.showcase" />
@@ -153,6 +153,8 @@ const shares = ref([])
 const tab = ref('prompt')
 const type = ref('all')
 const userId = ref('')
+const shareIsLoading=ref(false)
+const shareIsLoaded=ref(false)
 
 function graphData(type) {
   if (type === 'day') {
@@ -191,10 +193,15 @@ onMounted(async () => {
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
+  shareIsLoading.value=true
   await shareStore
     .fetchShares('prompts', prompt.value.id)
     .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
+    .finally(()=>{
+      shareIsLoading.value=false
+      shareIsLoaded.value=true
+    })
 })
 
 const promptByRoute = () => {
