@@ -45,11 +45,12 @@ import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
 import ItemCard from 'src/components/ItemCard.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useEntryStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const entries = ref(entryStore.getEntries)
