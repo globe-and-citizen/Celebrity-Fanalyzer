@@ -86,6 +86,7 @@ async function emailSign() {
 
 async function anonymousSign() {
   await userStore.anonymousSignIn().catch((error) => errorStore.throwError(error))
+  window.location.reload()
 }
 
 async function googleSign() {
