@@ -24,7 +24,7 @@
           <p class="text-body1" v-html="prompt?.description"></p>
           <q-btn
             color="green"
-            data-test="like-button"
+            :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
             flat
             :icon="likeIconClasses ? 'img:icons/thumbs-up-bolder.svg' : 'img:icons/thumbs-up.svg'"
             :label="countLikes"
@@ -36,7 +36,7 @@
           </q-btn>
           <q-btn
             color="red"
-            data-test="dislike-button"
+            :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
             flat
             :icon="dislikeIconClasses ? 'img:icons/thumbs-down-bolder.svg' : 'img:icons/thumbs-down.svg'"
             :label="countDislikes"
@@ -57,7 +57,7 @@
           >
             <q-tooltip>Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shares?.length" @share="onShare($event)" />
+          <ShareComponent :loaded="shareIsLoaded && !shareIsLoading" :label="shares?.length" @share="onShare($event)" />
         </section>
         <q-separator inset spaced />
         <ShowcaseArt v-if="prompt?.showcase" :showcase="prompt.showcase" />
@@ -153,6 +153,8 @@ const shares = ref([])
 const tab = ref('prompt')
 const type = ref('all')
 const userId = ref('')
+const shareIsLoading=ref(false)
+const shareIsLoaded=ref(false)
 
 function graphData(type) {
   if (type === 'day') {
@@ -191,10 +193,15 @@ onMounted(async () => {
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
+  shareIsLoading.value=true
   await shareStore
     .fetchShares('prompts', prompt.value.id)
     .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
+    .finally(()=>{
+      shareIsLoading.value=false
+      shareIsLoaded.value=true
+    })
 })
 
 const promptByRoute = () => {

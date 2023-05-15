@@ -8,7 +8,7 @@ import {
   signInWithPopup,
   signOut
 } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
@@ -46,6 +46,16 @@ export const useUserStore = defineStore('user', {
     async fetchUsers() {
       this._isLoading = true
       await getDocs(collection(db, 'users'))
+        .then((querySnapshot) => {
+          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+          this.$patch({ _users: users })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async fetchAdminsAndWriters() {
+      this._isLoading = true
+      await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('population', '==', 'Writer'))))
         .then((querySnapshot) => {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })

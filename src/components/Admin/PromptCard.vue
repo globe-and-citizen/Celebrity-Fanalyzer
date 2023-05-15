@@ -22,7 +22,7 @@
                         @update:model-value="onUpdateMonth"
                       >
                         <div class="row items-center justify-end">
-                          <q-btn v-close-popup label="Close" color="primary" flat />
+                          <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
                         </div>
                       </q-date>
                     </q-popup-proxy>
@@ -76,9 +76,9 @@
               counter
               data-test="file-image"
               hide-hint
-              hint="Max size is 1MB"
+              hint="Max size is 5MB"
               label="Image"
-              :max-total-size="1048487"
+              :max-total-size="5242880"
               :required="!id"
               v-model="imageModel"
               @rejected="onRejected()"
@@ -197,7 +197,7 @@ function uploadPhoto() {
 }
 
 function onRejected() {
-  $q.notify({ type: 'negative', message: 'Image did not pass validation constraints' })
+  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 
 function onPaste(evt) {
@@ -230,9 +230,9 @@ async function onSubmit() {
   }
 
   if (Object.keys(imageModel.value).length) {
-    promptStore
-      .uploadImage(imageModel.value, prompt.date)
-      .then((res) => (prompt.image = res))
+    await storageStore
+      .uploadFile(imageModel.value, `images/prompt-${prompt.date}`)
+      .then((url) => (prompt.image = url))
       .catch((error) => errorStore.throwError(error))
   }
 

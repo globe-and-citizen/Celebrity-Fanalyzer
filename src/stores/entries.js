@@ -35,6 +35,10 @@ export const useEntryStore = defineStore('entries', {
     async fetchEntries() {
       const userStore = useUserStore()
 
+      if (!userStore.getUsers.length) {
+        await userStore.fetchAdminsAndWriters()
+      }
+
       this._isLoading = true
       await getDocs(collection(db, 'entries'))
         .then((querySnapshot) => {
@@ -99,7 +103,7 @@ export const useEntryStore = defineStore('entries', {
       entry.updated = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await runTransaction(db, (transaction) => {
+      await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
         .then(() => {
@@ -136,15 +140,6 @@ export const useEntryStore = defineStore('entries', {
         errorStore.throwError(error)
       }
       this._isLoading = false
-    },
-
-    async uploadImage(file, entryId) {
-      const storageRef = ref(storage, `images/entry-${entryId}`)
-
-      this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
-      return getDownloadURL(ref(storage, storageRef))
     }
   }
 })
