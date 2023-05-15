@@ -75,7 +75,7 @@ export const usePromptStore = defineStore('prompts', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers.length) {
-        await userStore.fetchUsers()
+        await userStore.fetchAdminsAndWriters()
       }
 
       this._isLoading = true
