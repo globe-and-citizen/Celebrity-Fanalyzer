@@ -91,6 +91,8 @@ export const useUserStore = defineStore('user', {
     },
 
     async emailSignIn(user) {
+      this.$reset()
+      LocalStorage.remove('user')
       this._isLoading = true
       await signInWithEmailAndPassword(auth, user.email, user.password)
         .then(async (result) => {
@@ -111,6 +113,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async googleSignIn() {
+      this.$reset()
       const provider = new GoogleAuthProvider()
 
       this._isLoading = true
@@ -154,9 +157,8 @@ export const useUserStore = defineStore('user', {
     },
 
     logout() {
-      const userStore = useUserStore()
       signOut(auth).then(() => {
-        userStore.$reset()
+        this.$reset()
         LocalStorage.remove('user')
         this.router.go(0)
       })
