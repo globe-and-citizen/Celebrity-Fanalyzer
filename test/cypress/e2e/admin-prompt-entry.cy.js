@@ -9,8 +9,10 @@ describe('Admin Prompt & Entry', () => {
     // Visits the profile page
     cy.visit('/profile')
 
-    // Get the login button and click it
-    cy.get('.q-page > .q-btn').click()
+    // Fill the email and password fields and click the sign in button
+    cy.get('[data-test="email-field"]').type('test@test.com')
+    cy.get('[data-test="password-field"]').type('12345678')
+    cy.get('[data-test="sign-button"]').click()
 
     // Visits the admin page and wait for 15 seconds
     cy.get('[data-test="main-menu"]').find('a').eq(4).click()
