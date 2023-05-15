@@ -74,21 +74,22 @@ export const useCommentStore = defineStore('comments', {
       const comment = this.getComments.find((comment) => comment.id === id)
       const index = this._comments.findIndex((comment) => comment.id === id)
 
-      comment.updated = Timestamp.fromDate(new Date())
-
-      this._isLoading = true
-      if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
-        await runTransaction(db, async (transaction) => {
-          transaction.update(doc(db, collectionName, documentId, 'comments', comment.id), { text: editedComment })
-        })
-          .then(() => {
-            this.$patch({
-              _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
-            })
+      if (comment) {
+        comment.updated = Timestamp.fromDate(new Date())
+        this._isLoading = true
+        if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
+          await runTransaction(db, async (transaction) => {
+            transaction.update(doc(db, collectionName, documentId, 'comments', comment.id), { text: editedComment })
           })
-          .finally(() => (this._isLoading = false))
-      } else {
-        throw new Error(error)
+            .then(() => {
+              this.$patch({
+                _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
+              })
+            })
+            .finally(() => (this._isLoading = false))
+        } else {
+          throw new Error(error)
+        }
       }
     },
 
