@@ -38,6 +38,7 @@ export const useUserStore = defineStore('user', {
     getWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Writer'),
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isAdminOrWriter: (getters) => getters.getUser.role === 'Admin' || getters.getUser.role === 'Writer',
+    isAnonymous: (getters) => getters.getUser.isAnonymous,
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading,
     isWriter: (getters) => getters.getUser.role === 'Writer'
