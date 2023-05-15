@@ -17,6 +17,7 @@ describe('User Navigation', () => {
   })
 
   it('Should display properly and navigate between pages', () => {
+    cy.visit('/profile')
     cy.get('[data-test="main-menu"]').find('a').eq(1).click()
     cy.location('pathname').should('eq', '/search')
 
@@ -39,7 +40,6 @@ describe('User Navigation', () => {
 
     // Select the amount of likes to see if its value is greater than 0
     cy.get('[data-test="like-button"] > .q-btn__content > .block')
-      .scrollIntoView()
       .invoke('text')
       .then(parseFloat)
       .should('be.greaterThan', 0)
@@ -50,7 +50,6 @@ describe('User Navigation', () => {
 
     // Select the amount of dislikes to see if its value is greater than 0
     cy.get('[data-test="dislike-button"] > .q-btn__content > .block')
-      .scrollIntoView()
       .invoke('text')
       .then(parseFloat)
       .should('be.greaterThan', 0)
