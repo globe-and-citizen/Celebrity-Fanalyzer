@@ -5,7 +5,7 @@
 
 describe('Admin Prompt & Entry', () => {
   beforeEach(() => {
-    cy.viewport('iphone-x')
+    cy.viewport('macbook-16')
     // Visits the profile page
     cy.visit('/profile')
 
@@ -32,7 +32,7 @@ describe('Admin Prompt & Entry', () => {
     // cy.get('span.block').eq(14).click()
 
     // Get the author select and choose the first option
-    cy.get('[data-test="select-author"]').select('TESTER')
+    cy.get('[data-test="select-author"]').select('Cypress Tester')
 
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type('Hello World!')
@@ -62,7 +62,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="entry-dropdown"]').click()
 
     // Get the author select and choose the "TESTER" option
-    cy.get('[data-test="select-author"]').select('TESTER')
+    cy.get('[data-test="select-author"]').select('Cypress Tester')
 
     // Get the prompt select and choose the "Hello World!" option
     cy.get('[data-test="select-prompt"]').select('Hello World!')
@@ -85,7 +85,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
+    cy.get('[data-test="input-search"]').type('tester').wait(1000)
 
     // Get the expand button and click it
     cy.get('[data-test="button-expand"]').click()
@@ -112,7 +112,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the prompt', () => {
     // Get the second button (Delete Prompt) and click it
-    cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(1000)
 
     // Get the delete button and click it
     cy.get('[data-test="button-delete-prompt"]').click()
