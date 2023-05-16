@@ -8,62 +8,7 @@
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
     <q-tab-panel name="entry" style="padding: 0">
-      <q-page class="bg-white">
-        <TheHeader feedbackButton title="Entry Page" />
-        <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="entry?.image" />
-        <section class="q-pa-md" style="margin-top: 100%">
-          <h1 class="q-mt-none text-bold text-h5">{{ entry.title }}</h1>
-          <p class="text-body1" v-html="entry.description"></p>
-          <q-btn
-            color="green"
-            data-test="like-button"
-            flat
-            :icon="likeIconClasses ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
-            :label="countLikes"
-            rounded
-            size="0.75rem"
-            @click="like()"
-          >
-            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-          </q-btn>
-          <q-btn
-            color="red"
-            data-test="dislike-button"
-            flat
-            :icon="dislikeIconClasses ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
-            :label="countDislikes"
-            rounded
-            size="0.75rem"
-            @click="dislike()"
-          >
-            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-          </q-btn>
-          <q-btn
-            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
-            flat
-            icon="chat_bubble_outline"
-            :label="countComments"
-            rounded
-            size="0.75rem"
-            @click="tab = 'comments'"
-          >
-            <q-tooltip>Comments</q-tooltip>
-          </q-btn>
-          <ShareComponent :label="shares.length" @share="onShare($event)" />
-        </section>
-        <q-separator inset spaced />
-        <section v-if="entry.author" class="flex items-center no-wrap q-pa-md">
-          <q-avatar size="6rem">
-            <q-img :src="entry.author.photoURL" />
-          </q-avatar>
-          <div class="q-ml-md">
-            <p class="text-body1 text-bold">{{ entry.author.displayName }}</p>
-            <p class="q-mb-none" style="white-space: pre-line">{{ entry.author.bio }}</p>
-          </div>
-        </section>
-        <q-separator inset spaced />
-        <div class="q-my-xl"></div>
-      </q-page>
+      <ThePost collectionName="entries" :post="entry" title="Entry Page" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
@@ -109,8 +54,8 @@
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
-import ShareComponent from 'src/components/Posts/ShareComponent.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
+import ThePost from 'src/components/Posts/ThePost.vue'
 import TheHeader from 'src/components/TheHeader.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
@@ -129,20 +74,12 @@ const userStore = useUserStore()
 
 const chartData = ref({})
 const comments = ref([])
-const countComments = ref(0)
-const countDislikes = ref(0)
-const countLikes = ref(0)
 const entry = ref({})
 const shares = ref([])
 const tab = ref('entry')
 const type = ref('day')
-const likeIconClasses = ref(false)
-const dislikeIconClasses = ref(false)
-const userId = ref('')
 
 onMounted(async () => {
-  await userStore.fetchUserIp()
-  userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
   if (router.currentRoute.value.params.id) {
     await entryStore
       .fetchEntryBySlug(router.currentRoute.value.href)
@@ -157,7 +94,6 @@ onMounted(async () => {
 
   await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
-  countComments.value = comments.value.filter((comment) => comment.parentId === undefined).length
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
@@ -182,15 +118,6 @@ commentStore.$subscribe((_mutation, state) => {
 })
 
 likeStore.$subscribe((_mutation, state) => {
-  countLikes.value = state._likes.length
-  countDislikes.value = state._dislikes.length
-
-  const likedPost = state._likes.find((post) => post.author.id === userId.value)
-  likeIconClasses.value = !!likedPost
-
-  const dislikedPost = state._dislikes.find((post) => post.author.id === userId.value)
-  dislikeIconClasses.value = !!dislikedPost
-
   const { weekStats, dayStats } = getStats(state, entry.value.created)
   const allStats = [
     {
@@ -205,18 +132,6 @@ likeStore.$subscribe((_mutation, state) => {
 shareStore.$subscribe((_mutation, state) => {
   shares.value = state._shares
 })
-
-async function like() {
-  await likeStore.addLike('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-}
-
-async function dislike() {
-  await likeStore.addDislike('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-}
-
-function onShare(socialNetwork) {
-  shareStore.addShare('entries', entry.value.id, socialNetwork).catch((error) => errorStore.throwError(error))
-}
 </script>
 
 <style scoped lang="scss">
