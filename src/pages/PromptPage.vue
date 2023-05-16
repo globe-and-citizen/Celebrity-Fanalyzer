@@ -120,8 +120,8 @@
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
+import ShareComponent from 'src/components/Posts/ShareComponent.vue'
 import ShowcaseArt from 'src/components/Posts/ShowcaseArt.vue'
-import ShareComponent from 'src/components/ShareComponent.vue'
 import TheComments from 'src/components/TheComments.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import TheHeader from 'src/components/TheHeader.vue'
@@ -153,8 +153,8 @@ const shares = ref([])
 const tab = ref('prompt')
 const type = ref('all')
 const userId = ref('')
-const shareIsLoading=ref(false)
-const shareIsLoaded=ref(false)
+const shareIsLoading = ref(false)
+const shareIsLoaded = ref(false)
 
 function graphData(type) {
   if (type === 'day') {
@@ -193,14 +193,14 @@ onMounted(async () => {
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
-  shareIsLoading.value=true
+  shareIsLoading.value = true
   await shareStore
     .fetchShares('prompts', prompt.value.id)
     .then(() => (shares.value = shareStore.getShares))
     .catch((error) => errorStore.throwError(error))
-    .finally(()=>{
-      shareIsLoading.value=false
-      shareIsLoaded.value=true
+    .finally(() => {
+      shareIsLoading.value = false
+      shareIsLoaded.value = true
     })
 })
 
