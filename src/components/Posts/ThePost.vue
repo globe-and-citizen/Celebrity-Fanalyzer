@@ -17,7 +17,7 @@
         color="green"
         :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
         flat
-        :icon="isLiked ? 'img:icons/thumbs-up-bolder.svg' : 'img:icons/thumbs-up.svg'"
+        :icon="isLiked ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
         :label="countLikes"
         rounded
         size="0.75rem"
@@ -29,7 +29,7 @@
         color="red"
         :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
         flat
-        :icon="isDisliked ? 'img:icons/thumbs-down-bolder.svg' : 'img:icons/thumbs-down.svg'"
+        :icon="isDisliked ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
         :label="countDislikes"
         rounded
         size="0.75rem"
