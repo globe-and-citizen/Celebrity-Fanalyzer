@@ -83,7 +83,6 @@ const prompt = ref({})
 const shares = ref([])
 const tab = ref('prompt')
 const type = ref('all')
-const userId = ref('')
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
@@ -98,9 +97,6 @@ function graphData(type) {
 }
 
 onMounted(async () => {
-  await userStore.fetchUserIp()
-  userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
-
   if (!promptByRoute()) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   }
