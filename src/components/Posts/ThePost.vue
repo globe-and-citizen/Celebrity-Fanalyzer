@@ -50,7 +50,6 @@
       </q-btn>
       <ShareComponent :loaded="shareIsLoaded && !shareIsLoading" :label="countShares" @share="share($event)" />
     </section>
-    <q-separator inset spaced />
     <ShowcaseArt v-if="post?.showcase" :showcase="post.showcase" />
     <q-separator inset spaced />
     <section v-if="post?.author" class="flex items-center no-wrap q-pa-md">
