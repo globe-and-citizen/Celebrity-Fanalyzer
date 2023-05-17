@@ -89,8 +89,6 @@ const countShares = ref(shareStore.getShares.length)
 const isDisliked = ref(false)
 const isLiked = ref(false)
 const userId = ref('')
-// const shareIsLoading = ref(false)
-// const shareIsLoaded = ref(false)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
