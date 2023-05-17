@@ -27,7 +27,7 @@ describe('User Navigation', () => {
 
   it('Should Be able to navigate to month page, like and dislike a prompt', () => {
     cy.visit('/profile')
-    cy.getByData('anonymous-button').click()
+    // cy.getByData('anonymous-button').click()
     cy.get('[href="/month"]').click()
 
     cy.get('[data-test="like-button"]').should('not.have.attr', 'disabled')
