@@ -118,6 +118,7 @@ commentStore.$subscribe((_mutation, state) => {
 })
 
 likeStore.$subscribe((_mutation, state) => {
+  if (!entry.value.created) return
   const { weekStats, dayStats } = getStats(state, entry.value.created)
   const allStats = [
     {
