@@ -1,5 +1,5 @@
 <template>
-  <q-btn :data-test="loaded? 'share-button': ''" flat rounded icon="share" :label="label" @click="onShare()">
+  <q-btn data-test="share-button" flat rounded icon="share" :label="label" @click="onShare()">
     <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
   </q-btn>
 </template>
@@ -10,7 +10,7 @@ import { copyToClipboard, useQuasar } from 'quasar'
 const $q = useQuasar()
 
 const emit = defineEmits(['share'])
-defineProps(['label', 'loaded'])
+defineProps(['label'])
 
 function onShare() {
   $q.bottomSheet({

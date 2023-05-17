@@ -48,7 +48,7 @@
       >
         <q-tooltip>Comments</q-tooltip>
       </q-btn>
-      <ShareComponent :loaded="shareIsLoaded && !shareIsLoading" :label="countShares" @share="share($event)" />
+      <ShareComponent :label="countShares" @share="share($event)" />
     </section>
     <ShowcaseArt v-if="post?.showcase" :showcase="post.showcase" />
     <q-separator inset spaced />
@@ -89,8 +89,8 @@ const countShares = ref(shareStore.getShares.length)
 const isDisliked = ref(false)
 const isLiked = ref(false)
 const userId = ref('')
-const shareIsLoading = ref(false)
-const shareIsLoaded = ref(false)
+// const shareIsLoading = ref(false)
+// const shareIsLoaded = ref(false)
 
 onMounted(async () => {
   await userStore.fetchUserIp()
