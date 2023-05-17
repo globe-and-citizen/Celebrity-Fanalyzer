@@ -60,7 +60,7 @@ import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/TheEntries.vue'
 import TheHeader from 'src/components/TheHeader.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, getStats, previousYearMonth } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
 import { onMounted, ref } from 'vue'
@@ -74,7 +74,6 @@ const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
-const userStore = useUserStore()
 
 const chartData = ref({})
 const comments = ref([])
@@ -155,6 +154,7 @@ commentStore.$subscribe((_mutation, state) => {
 })
 
 likeStore.$subscribe((_mutation, state) => {
+  if (!prompt.value.created) return
   const { weekStats, dayStats } = getStats(state, prompt.value.created)
   const allStats = [
     {
