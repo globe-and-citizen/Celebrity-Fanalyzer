@@ -45,7 +45,6 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 const comments = ref([])
-const countComments = ref(0)
 const prompt = ref({})
 const tab = ref('prompt')
 const shareIsLoading = ref(false)
@@ -71,7 +70,6 @@ onMounted(async () => {
 
   await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
   comments.value = commentStore.getComments
-  countComments.value = comments.value.filter((comment) => comment.parentId === undefined).length
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
