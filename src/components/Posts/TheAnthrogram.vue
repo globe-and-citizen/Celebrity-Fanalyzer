@@ -70,6 +70,8 @@ shareStore.$subscribe((_mutation, state) => {
 })
 
 function graphData(type) {
+  if (!chartData.value) return []
+
   if (type === 'day') {
     return formatDayStats(chartData.value.dayStats)
   }
