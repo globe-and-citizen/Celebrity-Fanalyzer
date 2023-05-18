@@ -17,10 +17,7 @@
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
-      <TheHeader title="Comments" />
-      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
-        <TheComments collection="prompts" :comments="comments" :data="prompt" />
-      </q-page>
+      <TheComments collectionName="prompts" :post="prompt" />
     </q-tab-panel>
   </q-tab-panels>
 </template>
@@ -30,7 +27,6 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/TheEntries.vue'
-import TheHeader from 'src/components/TheHeader.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
@@ -44,7 +40,7 @@ const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
-const comments = ref([])
+
 const prompt = ref({})
 const tab = ref('prompt')
 const shareIsLoading = ref(false)
@@ -69,7 +65,6 @@ onMounted(async () => {
   prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
 
   await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-  comments.value = commentStore.getComments
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
@@ -101,10 +96,6 @@ const promptByRoute = () => {
     }
   })
 }
-
-commentStore.$subscribe((_mutation, state) => {
-  comments.value = state._comments
-})
 </script>
 
 <style scoped lang="scss">
