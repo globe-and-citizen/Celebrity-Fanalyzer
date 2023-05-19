@@ -9,7 +9,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import commentCard from 'src/components/TheComments.vue'
+import commentCard from 'src/components/Posts/TheComments.vue'
 import { useCommentStore, useEntryStore } from 'src/stores'
 import { useUserStore } from 'src/stores/user'
 import { ref } from 'vue'

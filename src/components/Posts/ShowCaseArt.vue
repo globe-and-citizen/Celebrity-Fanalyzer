@@ -1,4 +1,5 @@
 <template>
+  <q-separator spaced inset />
   <div class="q-gutter-xs q-pa-md text-center" @click="openDialog = true">
     <q-img
       v-for="(art, index) in showcase?.arts"

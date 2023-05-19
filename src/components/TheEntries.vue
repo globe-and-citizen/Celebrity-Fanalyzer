@@ -1,5 +1,5 @@
 <template>
-  <section class="q-pa-md">
+  <section class="bg-white q-mb-xl q-pa-md">
     <h2 class="q-my-auto text-bold text-h5">Entries</h2>
     <q-separator />
     <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" />
