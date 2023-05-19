@@ -1,11 +1,16 @@
 /* eslint-disable cypress/no-unnecessary-waiting */
 /// <reference types="cypress" />
 // Use `cy.dataCy` custom command for more robust tests
+
 describe('Commenting', async () => {
   beforeEach(() => {
     cy.viewport('iphone-x')
     cy.visit('/profile')
-    cy.get('[data-test="login-button"]').click().wait(3000)
+
+    // Fill the email and password fields and click the sign in button
+    cy.get('[data-test="email-field"]').type('test@test.com')
+    cy.get('[data-test="password-field"]').type('12345678')
+    cy.get('[data-test="sign-button"]').click().wait(3000)
 
     // Visits the prompt of the month
     cy.visit('/month').wait(3000)
