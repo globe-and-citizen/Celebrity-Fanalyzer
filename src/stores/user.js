@@ -1,4 +1,11 @@
-import { getAdditionalUserInfo, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth'
+import {
+  createUserWithEmailAndPassword,
+  getAdditionalUserInfo,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut
+} from 'firebase/auth'
 import { collection, doc, getDoc, getDocs, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
@@ -29,6 +36,7 @@ export const useUserStore = defineStore('user', {
     getWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Writer'),
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isAdminOrWriter: (getters) => getters.getUser.role === 'Admin' || getters.getUser.role === 'Writer',
+    isAnonymous: (getters) => getters.getUser.isAnonymous,
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading,
     isWriter: (getters) => getters.getUser.role === 'Writer'
@@ -71,17 +79,21 @@ export const useUserStore = defineStore('user', {
         })
     },
 
-    async emailSignIn() {
+    async emailSignUp(user) {
       this._isLoading = true
-      await signInWithEmailAndPassword(auth, 'test@test.com', '12345678')
+      await createUserWithEmailAndPassword(auth, user.email, user.password)
+        .then(async (userCredential) => {
+          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.displayName, email: user.email })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async emailSignIn(user) {
+      this.$reset()
+      LocalStorage.remove('user')
+      this._isLoading = true
+      await signInWithEmailAndPassword(auth, user.email, user.password)
         .then(async (result) => {
-          const isNewUser = getAdditionalUserInfo(result)?.isNewUser
-          const { email, displayName, photoURL, uid } = result.user
-
-          if (isNewUser) {
-            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
-          }
-
           await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
             this.$patch({ _user: { uid: document.id, ...document.data() } })
           })
@@ -89,7 +101,17 @@ export const useUserStore = defineStore('user', {
         .finally(() => (this._isLoading = false))
     },
 
+    // async anonymousSignIn() {
+    //   this._isLoading = true
+    //   await signInAnonymously(auth)
+    //     .catch((error) => console.error(error))
+    //     .finally(() => (this._isLoading = false))
+
+    //   onAuthStateChanged(auth, (user) => (this._user = user))
+    // },
+
     async googleSignIn() {
+      this.$reset()
       const provider = new GoogleAuthProvider()
 
       this._isLoading = true
@@ -133,9 +155,8 @@ export const useUserStore = defineStore('user', {
     },
 
     logout() {
-      const userStore = useUserStore()
       signOut(auth).then(() => {
-        userStore.$reset()
+        this.$reset()
         LocalStorage.remove('user')
         this.router.go(0)
       })

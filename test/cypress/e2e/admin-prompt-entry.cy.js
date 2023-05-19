@@ -1,3 +1,4 @@
+/* eslint-disable cypress/unsafe-to-chain-command */
 /* eslint-disable cypress/no-unnecessary-waiting */
 /// <reference types="cypress" />
 // Use `cy.dataCy` custom command for more robust tests
@@ -5,15 +6,17 @@
 
 describe('Admin Prompt & Entry', () => {
   beforeEach(() => {
-    cy.viewport('iphone-x')
+    cy.viewport('macbook-16')
     // Visits the profile page
     cy.visit('/profile')
 
-    // Get the login button and click it
-    cy.get('.q-page > .q-btn').click()
+    // Fill the email and password fields and click the sign in button
+    cy.get('[data-test="email-field"]').type('test@test.com')
+    cy.get('[data-test="password-field"]').type('12345678')
+    cy.get('[data-test="sign-button"]').click()
 
-    // Visits the admin page and wait for 15 seconds
-    cy.get('[data-test="main-menu"]').find('a').eq(4).click()
+    // Visits the Admin Page
+    cy.get('[href="/admin"]').click()
     cy.location('pathname').should('eq', '/admin')
   })
 
@@ -27,12 +30,9 @@ describe('Admin Prompt & Entry', () => {
 
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
-    cy.get('.q-date__view > :nth-child(13)').click()
+    cy.get('.q-date__view > .no-wrap > :nth-child(1) > .q-btn > .q-btn__content').click()
+    cy.get('.q-date__view > :nth-child(2)').click()
     cy.get('[data-test="close"]').click()
-    // cy.get('span.block').eq(14).click()
-
-    // Get the author select and choose the first option
-    cy.get('[data-test="select-author"]').select('TESTER')
 
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type('Hello World!')
@@ -56,13 +56,10 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should create a entry', () => {
     // Get the dropdown button and click it
-    cy.get('[data-test="button-dropdown"]').click()
+    cy.get('[data-test="button-dropdown"]').click().wait(4000)
 
     // Get the first button (New Entry) and click it
     cy.get('[data-test="entry-dropdown"]').click()
-
-    // Get the author select and choose the "TESTER" option
-    cy.get('[data-test="select-author"]').select('TESTER')
 
     // Get the prompt select and choose the "Hello World!" option
     cy.get('[data-test="select-prompt"]').select('Hello World!')
@@ -85,7 +82,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
+    cy.get('[data-test="input-search"]').type('tester').wait(1000)
 
     // Get the expand button and click it
     cy.get('[data-test="button-expand"]').click()
@@ -97,22 +94,22 @@ describe('Admin Prompt & Entry', () => {
         cy.get('[data-test="confirm-delete-entry"]').click()
         // Wait the notification
         cy.get('.q-notification__message').contains('Entry deleted')
-        cy.wait(5000)
+        cy.wait(4000)
       }
     })
-    cy.wait(5000)
+    cy.wait(4000)
 
     // Delete the last one
     cy.get('[data-test="button-delete-entry"]').eq(0).click({ force: true })
     cy.get('[data-test="confirm-delete-entry"]').click()
     // Wait the notification
     cy.get('.q-notification__message').contains('Entry deleted')
-    cy.wait(5000)
+    cy.wait(4000)
   })
 
   it('Should delete the prompt', () => {
     // Get the second button (Delete Prompt) and click it
-    cy.get('[data-test="input-search"]').type('TESTER').wait(1000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(1000)
 
     // Get the delete button and click it
     cy.get('[data-test="button-delete-prompt"]').click()

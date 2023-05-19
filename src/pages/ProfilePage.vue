@@ -3,15 +3,7 @@
 
   <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 
-  <q-page v-if="!user.uid" class="column content-center flex justify-center">
-    <h1 class="text-center text-h4">You are not logged in.</h1>
-    <q-btn class="btn-google q-mt-md" rounded @click="googleSignIn()" data-test="login-button">
-      <q-avatar size="sm">
-        <q-img src="~assets/google.svg" alt="Google Logo" />
-      </q-avatar>
-      <span class="q-ml-sm">Sign with Google</span>
-    </q-btn>
-  </q-page>
+  <LoginForm v-if="!user.uid || user.isAnonymous" />
 
   <q-page v-else class="q-px-lg">
     <div class="flex items-center no-wrap q-py-xl">
@@ -68,6 +60,7 @@
 <script setup>
 import { Notify } from 'quasar'
 import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
+import LoginForm from 'src/components/Profile/LoginForm.vue'
 import ProfileTab from 'src/components/Profile/ProfileTab.vue'
 import SettingsTab from 'src/components/Profile/SettingsTab.vue'
 import TheHeader from 'src/components/TheHeader.vue'
@@ -85,14 +78,6 @@ const tab = ref(userStore.getProfileTab)
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
 })
-
-async function googleSignIn() {
-  if (import.meta.env.VITE_MODE === 'E2E') {
-    await userStore.emailSignIn().catch((error) => errorStore.throwError(error))
-  } else {
-    await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
-  }
-}
 
 function onRejected() {
   Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
