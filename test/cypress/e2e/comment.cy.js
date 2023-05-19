@@ -10,7 +10,7 @@ describe('Commenting', async () => {
     // Fill the email and password fields and click the sign in button
     cy.get('[data-test="email-field"]').type('test@test.com')
     cy.get('[data-test="password-field"]').type('12345678')
-    cy.get('[data-test="sign-button"]').click()
+    cy.get('[data-test="sign-button"]').click().wait(3000)
 
     // Visits the prompt of the month
     cy.visit('/month').wait(3000)
