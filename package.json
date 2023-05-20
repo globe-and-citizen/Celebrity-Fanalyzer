@@ -13,6 +13,7 @@
     "lint": "eslint --ext .js,.vue ./",
     "test": "vitest",
     "test:unit:coverage": "vitest run --coverage",
+    "coverage": "cd coverage/lcov-report && open index.html",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
     "cy:test": "start-server-and-test dev http://localhost:9200 cy:run",
