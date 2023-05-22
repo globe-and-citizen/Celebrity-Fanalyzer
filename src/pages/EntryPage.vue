@@ -18,7 +18,7 @@
     <q-tab-panel name="comments" class="bg-white">
       <TheHeader title="Comments" />
       <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
-        <TheComments collection="entries" :comments="comments" :data="entry" />
+        <TheComments collectionName="entries" :post="entry" />
       </q-page>
     </q-tab-panel>
   </q-tab-panels>
@@ -41,7 +41,6 @@ const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 
-const comments = ref([])
 const entry = ref({})
 const tab = ref('entry')
 
@@ -59,15 +58,10 @@ onMounted(async () => {
   }
 
   await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-  comments.value = commentStore.getComments
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
   await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-})
-
-commentStore.$subscribe((_mutation, state) => {
-  comments.value = state._comments
 })
 </script>
 

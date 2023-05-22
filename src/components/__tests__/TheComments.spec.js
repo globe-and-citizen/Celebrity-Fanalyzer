@@ -84,8 +84,8 @@ describe('TheComment Component', () => {
         }
       },
       props: {
-        comments: [],
-        entry: { slug: firstEntry.value.slug }
+        collectionName: 'entries',
+        post: firstEntry.value
       }
     })
 
@@ -130,8 +130,8 @@ describe('TheComment Component', () => {
           }
         },
         props: {
-          comments: [],
-          entry: { slug: firstEntry.value.slug }
+          collectionName: 'entries',
+          post: firstEntry.value
         }
       })
 
