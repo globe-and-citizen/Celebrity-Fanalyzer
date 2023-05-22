@@ -3,7 +3,6 @@ import { getAdditionalUserInfo, GoogleAuthProvider, signInWithCredential } from 
 import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
-import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
@@ -11,8 +10,6 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import MainMenu from 'src/components/MainMenu.vue'
 import { useUserStore } from 'src/stores/user'
-
-installQuasar()
 
 describe('Main Menu Component', () => {
   beforeEach(async () => {

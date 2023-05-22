@@ -3,7 +3,6 @@ import { getAdditionalUserInfo, GoogleAuthProvider, signInWithCredential } from 
 import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
-import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
 import { config, shallowMount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -16,8 +15,6 @@ import { ref } from 'vue'
 
 import { createRouterMock, injectRouterMock, VueRouterMock } from 'vue-router-mock'
 config.plugins.VueWrapper.install(VueRouterMock)
-
-installQuasar()
 
 describe('TheComment Component', () => {
   const router = createRouterMock({
