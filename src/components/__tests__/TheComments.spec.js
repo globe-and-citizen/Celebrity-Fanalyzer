@@ -53,7 +53,7 @@ describe('TheComment Component', () => {
       }
     })
 
-    const commenStore = useCommentStore()
+    const commentStore = useCommentStore()
     const entryStore = useEntryStore()
     const firstEntry = ref({})
 
@@ -67,19 +67,19 @@ describe('TheComment Component', () => {
     const user = userStore.getUser
 
     // Getting all comments of first entry
-    await commenStore.fetchComments('entries', firstEntry.value.id)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
 
-    const startingNumberOfComments = commenStore.getComments.length
+    const startingNumberOfComments = commentStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
 
     const fakeComment = shallowMount(commentCard, {
       global: {
         mocks: {
           addComment: vi.fn(() => {
-            commenStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
+            commentStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
           }),
           editComment: vi.fn(() => {
-            commenStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
+            commentStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
           })
         }
       },
@@ -98,8 +98,8 @@ describe('TheComment Component', () => {
     await fakeComment.vm.addComment() //Mocked
 
     // 4) Test added fake comment
-    await commenStore.fetchComments('entries', firstEntry.value.id)
-    expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+    expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5) Edit test
     await fakeComment.vm.editComment()
@@ -107,7 +107,7 @@ describe('TheComment Component', () => {
   }),
     // SECOND TEST
     it('delete fake comment in here', async () => {
-      const commenStore = useCommentStore()
+      const commentStore = useCommentStore()
       const entryStore = useEntryStore()
       const firstEntry = ref({})
 
@@ -117,15 +117,15 @@ describe('TheComment Component', () => {
       const userStore = useUserStore()
       const user = userStore.getUser
 
-      await commenStore.fetchComments('entries', firstEntry.value.id)
+      await commentStore.fetchComments('entries', firstEntry.value.id)
 
-      const startingNumberOfComments = commenStore.getComments.length
+      const startingNumberOfComments = commentStore.getComments.length
       const fakeCommentId = localStorage.getItem('id')
       const deleteComment = shallowMount(commentCard, {
         global: {
           mocks: {
             deleteComment: vi.fn(() => {
-              commenStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
+              commentStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
             })
           }
         },
@@ -139,8 +139,8 @@ describe('TheComment Component', () => {
       await deleteComment.vm.deleteComment()
 
       // Test deleted comment
-      await commenStore.fetchComments('entries', firstEntry.value.id)
-      expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
+      await commentStore.fetchComments('entries', firstEntry.value.id)
+      expect(commentStore.getComments.length).toBe(startingNumberOfComments - 1)
     })
 })
 
