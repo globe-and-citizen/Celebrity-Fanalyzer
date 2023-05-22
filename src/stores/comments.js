@@ -30,21 +30,22 @@ export const useCommentStore = defineStore('comments', {
 
   actions: {
     async fetchComments(collectionName, documentId) {
-      this._isLoading = true
-      await getDocs(collection(db, collectionName, documentId, 'comments'))
-        .then(async (querySnapshot) => {
-          const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const userStore = useUserStore()
 
-          for (const comment of comments) {
-            if (!comment.isAnonymous) {
-              comment.author = await getDoc(comment.author).then((doc) => doc.data())
-            }
-            comment.likes = comment.likes?.map((like) => like.id || like)
-            comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+      this._isLoading = true
+      onSnapshot(collection(db, collectionName, documentId, 'comments'), (querySnapshot) => {
+        const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+        for (const comment of comments) {
+          if (!comment.isAnonymous) {
+            comment.author = userStore.getUserById(comment.author.id)
           }
-          this.$patch({ _comments: comments })
-        })
-        .finally(() => (this._isLoading = false))
+          comment.likes = comment.likes?.map((like) => like.id || like)
+          comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+        }
+        this.$patch({ _comments: comments })
+      })
+      this._isLoading = false
     },
 
     async addComment(collectionName, comment, document) {
