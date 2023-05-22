@@ -8,7 +8,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import commentCard from 'src/components/Posts/TheComments.vue'
+import TheComments from 'src/components/Posts/TheComments.vue'
 import { useCommentStore, useEntryStore } from 'src/stores'
 import { useUserStore } from 'src/stores/user'
 import { ref } from 'vue'
@@ -72,7 +72,7 @@ describe('TheComment Component', () => {
     const startingNumberOfComments = commentStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
 
-    const fakeComment = shallowMount(commentCard, {
+    const fakeComment = shallowMount(TheComments, {
       global: {
         mocks: {
           addComment: vi.fn(() => {
@@ -121,7 +121,7 @@ describe('TheComment Component', () => {
 
       const startingNumberOfComments = commentStore.getComments.length
       const fakeCommentId = localStorage.getItem('id')
-      const deleteComment = shallowMount(commentCard, {
+      const deleteComment = shallowMount(TheComments, {
         global: {
           mocks: {
             deleteComment: vi.fn(() => {
