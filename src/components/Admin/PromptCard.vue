@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import { date, useQuasar } from 'quasar'
+import { useQuasar } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
@@ -177,7 +177,7 @@ watchEffect(() => {
   } else {
     prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
-    prompt.date = date.formatDate(Date.now(), 'YYYY-MM')
+    prompt.date = null
   }
 })
 
