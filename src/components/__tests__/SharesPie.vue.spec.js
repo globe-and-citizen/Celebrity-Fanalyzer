@@ -1,19 +1,17 @@
-// Third Party Imports
-import { auth } from '../../firebase'
-import { signInWithCredential, GoogleAuthProvider } from 'firebase/auth'
+// Firebase
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { doc } from 'firebase/firestore'
-import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
-import { describe, expect, it, beforeEach } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { db } from 'src/firebase'
-import { shallowMount } from '@vue/test-utils'
+import { auth, db } from 'src/firebase'
 
-// Celebrity Fanalyzer Components
+//Testing Frameworks
+import { shallowMount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
+
+// Necessary Components
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import { useShareStore } from 'src/stores/shares.js'
 import { useUserStore } from 'src/stores/user.js'
-
-installQuasar()
 
 describe('Mounting Pie Graph', () => {
   // Top Level Variables
