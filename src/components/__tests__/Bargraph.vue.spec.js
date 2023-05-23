@@ -1,12 +1,9 @@
 //Testing Frameworks
-import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
 import { describe, expect, it } from 'vitest'
 
 // Necessary Components
 import { shallowMount } from '@vue/test-utils'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
-
-installQuasar()
 
 describe('Mounting Bar Graph', () => {
   it('should be able to mount the LikesBar', async () => {
