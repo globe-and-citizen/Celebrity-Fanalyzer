@@ -19,9 +19,9 @@
         narrow-indicator
         v-model="type"
       >
-        <q-tab name="day" label="Days" />
-        <q-tab name="week" label="Week" />
         <q-tab name="all" label="All" />
+        <q-tab name="week" label="Week" />
+        <q-tab name="day" label="Days" />
       </q-tabs>
       <LikesBar :data="graphData(type)" />
       <SharesPie :data="shares" :interval="type" />
