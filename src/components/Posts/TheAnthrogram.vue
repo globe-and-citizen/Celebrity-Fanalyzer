@@ -3,13 +3,6 @@
     <TheHeader title="Anthrogram" />
     <section>
       <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
-      <div v-if="post?.author" class="flex no-wrap items-center q-mb-xl">
-        <q-avatar size="4rem">
-          <img :src="post.author.photoURL" alt="" />
-        </q-avatar>
-        <p class="q-mb-none q-ml-md text-h6 text-weight-light">{{ post.author.displayName }}</p>
-      </div>
-
       <q-tabs
         active-color="primary"
         align="justify"
