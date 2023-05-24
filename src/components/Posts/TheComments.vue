@@ -1,5 +1,5 @@
 <template>
-  <TheHeader title="Comments" />
+  <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
     <section v-if="comments.length" class="q-pa-md" style="margin-bottom: 4rem">
       <q-list v-for="comment of comments" dense :key="comment.id">
