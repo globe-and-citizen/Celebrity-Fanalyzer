@@ -1,24 +1,26 @@
 <template>
   <TheHeader :subtitle="post?.title" title="Anthrogram" />
-  <q-page>
-    <section class="q-py-md">
-      <q-tabs
-        active-color="primary"
-        align="justify"
-        class="text-grey q-mb-xl"
-        dense
-        indicator-color="primary"
-        narrow-indicator
-        v-model="type"
-      >
-        <q-tab name="all" label="All" />
-        <q-tab name="week" label="Week" />
-        <q-tab name="day" label="Days" />
-      </q-tabs>
-      <LikesBar :data="graphData(type)" />
-      <SharesPie :data="shares" :interval="type" />
-    </section>
-  </q-page>
+  <q-page-container>
+    <q-page>
+      <section class="q-py-md">
+        <q-tabs
+          active-color="primary"
+          align="justify"
+          class="text-grey q-mb-xl"
+          dense
+          indicator-color="primary"
+          narrow-indicator
+          v-model="type"
+        >
+          <q-tab name="all" label="All" />
+          <q-tab name="week" label="Week" />
+          <q-tab name="day" label="Days" />
+        </q-tabs>
+        <LikesBar :data="graphData(type)" />
+        <SharesPie :data="shares" :interval="type" />
+      </section>
+    </q-page>
+  </q-page-container>
 </template>
 
 <script setup>

@@ -1,43 +1,45 @@
 <template>
   <TheHeader feedbackButton searchInput :title="`${router.currentRoute.value.params.year} Search Archive`" v-model="search" />
-  <q-page class="q-pa-md">
-    <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
-      <q-btn-toggle
-        v-model="category"
-        class="q-my-sm"
-        color="white"
-        no-caps
-        no-wrap
-        :options="computedCategories"
-        rounded
-        text-color="secondary"
-        unelevated
-      />
-    </q-scroll-area>
-    <q-separator class="q-mb-none q-mt-xs" />
-    <section v-if="!prompts.length && promptStore.isLoading">
-      <ArticleSkeleton />
-      <ArticleSkeleton />
-      <ArticleSkeleton />
-      <ArticleSkeleton />
-    </section>
-    <q-tab-panels animated swipeable v-model="category" data-test="prompt-list">
-      <q-tab-panel v-for="(categ, i) in computedCategories" :key="i" :name="categ.value">
-        <TransitionGroup name="prompt" tag="div">
-          <ItemCard
-            v-for="prompt in computedPrompts"
-            :item="prompt"
-            :key="prompt?.id"
-            :link="prompt?.slug"
-            v-show="prompt?.categories.includes(categ.value) || category === 'All'"
-          />
-        </TransitionGroup>
-      </q-tab-panel>
-    </q-tab-panels>
-    <TransitionGroup tag="div">
-      <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
-    </TransitionGroup>
-  </q-page>
+  <q-page-container>
+    <q-page class="q-pa-md">
+      <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
+        <q-btn-toggle
+          v-model="category"
+          class="q-my-sm"
+          color="white"
+          no-caps
+          no-wrap
+          :options="computedCategories"
+          rounded
+          text-color="secondary"
+          unelevated
+        />
+      </q-scroll-area>
+      <q-separator class="q-mb-none q-mt-xs" />
+      <section v-if="!prompts.length && promptStore.isLoading">
+        <ArticleSkeleton />
+        <ArticleSkeleton />
+        <ArticleSkeleton />
+        <ArticleSkeleton />
+      </section>
+      <q-tab-panels animated swipeable v-model="category" data-test="prompt-list">
+        <q-tab-panel v-for="(categ, i) in computedCategories" :key="i" :name="categ.value">
+          <TransitionGroup name="prompt" tag="div">
+            <ItemCard
+              v-for="prompt in computedPrompts"
+              :item="prompt"
+              :key="prompt?.id"
+              :link="prompt?.slug"
+              v-show="prompt?.categories.includes(categ.value) || category === 'All'"
+            />
+          </TransitionGroup>
+        </q-tab-panel>
+      </q-tab-panels>
+      <TransitionGroup tag="div">
+        <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
+      </TransitionGroup>
+    </q-page>
+  </q-page-container>
 </template>
 
 <script setup>
