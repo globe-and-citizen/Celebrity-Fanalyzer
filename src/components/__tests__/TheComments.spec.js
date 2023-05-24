@@ -1,6 +1,6 @@
 //Firebase
-import { getAdditionalUserInfo, GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
-import { auth, db } from 'src/firebase'
+//import { signInWithEmailAndPassword } from 'firebase/auth'
+//import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
 import { config, shallowMount } from '@vue/test-utils'
@@ -27,24 +27,21 @@ describe('TheComment Component', () => {
     setActivePinia(createPinia())
     injectRouterMock(router)
     const userStore = useUserStore()
-    const userString = '{"sub": "WCeN1oLBMndoLKzNBCS7RccV9cz1?", "email": "algae.peach.153@example.com", "email_verified": true}'
-    const credential = GoogleAuthProvider.credential(userString)
-    const result = await signInWithCredential(auth, credential)
-    const isNewUser = getAdditionalUserInfo(result)?.isNewUser
-    const { email, displayName, photoURL, uid } = result.user
-
-    if (isNewUser) {
-      try {
-        await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
-      } catch (e) {
-        console.error('TheComments.spec.js Error: ', e)
+    try {
+      let userObj = {
+        email: import.meta.env.VITE_TEST_USER,
+        password: import.meta.env.VITE_TEST_PASSWORD
       }
+      await userStore.emailSignIn(userObj)
+    } catch (error) {
+      const errorCode = error.code
+      const errorMessage = error.message
+      console.log(errorCode, errorMessage)
     }
-    await userStore.testing_loadUserProfile(result.user)
   })
 
   // FIRST TEST
-  it('create fake comment in here', async () => {
+  it('Creates fake comment in here', async () => {
     global.fetch = vi.fn(async () => {
       return {
         text: () => {
@@ -53,33 +50,25 @@ describe('TheComment Component', () => {
       }
     })
 
-    const commentStore = useCommentStore()
+    // Step 1: Get user data and entry data to shallow mount "TheComments" component.
+    const userStore = useUserStore()
+    const user = userStore.getUser
     const entryStore = useEntryStore()
     const firstEntry = ref({})
-
-    // Get slug of first entry,
-    // this slug is used for fetching entry and add comment to that entry
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
 
-    // User is coming, it is used for getting userId
-    const userStore = useUserStore()
-    const user = userStore.getUser
-
-    // Getting all comments of first entry
-    await commentStore.fetchComments('entries', firstEntry.value.id)
-
-    const startingNumberOfComments = commentStore.getComments.length
-    const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
-
-    const fakeComment = shallowMount(TheComments, {
+    const componentShallowMount = shallowMount(TheComments, {
       global: {
         mocks: {
           addComment: vi.fn(() => {
-            commentStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
+            commentStore.addComment('entries', componentShallowMount.vm.myComment, firstEntry.value)
           }),
           editComment: vi.fn(() => {
-            commentStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
+            commentStore.editComment('entries', firstEntry.value.id, componentShallowMount.vm.commentId, editedComment, user.uid)
+          }),
+          deleteComment: vi.fn(() => {
+            commentStore.deleteComment('entries', firstEntry.value.id, componentShallowMount.vm.commentId)
           })
         }
       },
@@ -89,59 +78,98 @@ describe('TheComment Component', () => {
       }
     })
 
-    fakeComment.vm.myComment.text = 'test my comment'
-    fakeComment.vm.myComment.id = fakeCommentId
-
-    const editedComment = 'Edited fake comment!'
-
-    // 3) Adding fake comment
-    await fakeComment.vm.addComment() //Mocked
-
-    // 4) Test added fake comment
+    // Step 2: Check the starting number of comments.
+    const commentStore = useCommentStore()
     await commentStore.fetchComments('entries', firstEntry.value.id)
+
+    await new Promise((res, rej) => {
+      //Because the realtime updates invoke a separate listener, 150ms must be given for this listener to work.
+      setTimeout(() => {
+        res()
+      }, 150)
+    })
+
+    const startingNumberOfComments = commentStore.getComments.length
+
+    // 3) Add a fake comment & test it was added successfully
+    componentShallowMount.vm.myComment.text = 'test my comment'
+    await componentShallowMount.vm.addComment() //Mocked
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+    await new Promise((res, rej) => {
+      //Once again, we must await the realtime listener to run.
+      setTimeout(() => {
+        res()
+      }, 1000)
+    })
     expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
 
-    // 5) Edit test
-    await fakeComment.vm.editComment()
-    expect(editedComment).toBe('Edited fake comment!')
-  }),
-    // SECOND TEST
-    it('delete fake comment in here', async () => {
-      const commentStore = useCommentStore()
-      const entryStore = useEntryStore()
-      const firstEntry = ref({})
+    // Delete fake comment
+    //Tomorrows labour: I will need to get the commentId and likely manually set it on the componentShallowMount.
 
-      await entryStore.fetchEntries()
-      firstEntry.value = entryStore.getEntries[0]
+    console.log('is this anythign? : ', componentShallowMount.vm.commentId)
+    await componentShallowMount.vm.deleteComment()
 
-      const userStore = useUserStore()
-      const user = userStore.getUser
-
-      await commentStore.fetchComments('entries', firstEntry.value.id)
-
-      const startingNumberOfComments = commentStore.getComments.length
-      const fakeCommentId = localStorage.getItem('id')
-      const deleteComment = shallowMount(TheComments, {
-        global: {
-          mocks: {
-            deleteComment: vi.fn(() => {
-              commentStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
-            })
-          }
-        },
-        props: {
-          collectionName: 'entries',
-          post: firstEntry.value
-        }
-      })
-
-      // Delete fake comment
-      await deleteComment.vm.deleteComment()
-
-      // Test deleted comment
-      await commentStore.fetchComments('entries', firstEntry.value.id)
-      expect(commentStore.getComments.length).toBe(startingNumberOfComments - 1)
+    // Test deleted comment
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+    await new Promise((res, rej) => {
+      //Once again, we must await the realtime listener to run.
+      setTimeout(() => {
+        res()
+      }, 1000)
     })
+    expect(commentStore.getComments.length).toBe(startingNumberOfComments - 1)
+  })
+  // SECOND TEST
+  // it('Deletes the fake comment added in the first test', async () => {
+  //   const commentStore = useCommentStore()
+  //   const entryStore = useEntryStore()
+  //   const firstEntry = ref({})
+
+  //   await entryStore.fetchEntries()
+  //   firstEntry.value = entryStore.getEntries[0]
+
+  //   const userStore = useUserStore()
+  //   const user = userStore.getUser
+
+  //   await commentStore.fetchComments('entries', firstEntry.value.id)
+  //   await new Promise((res, rej) => {
+  //     //Once again, we must await the realtime listener to run.
+  //     setTimeout(() => {
+  //       res()
+  //     }, 150)
+  //   })
+  //   const startingNumberOfComments = commentStore.getComments.length
+
+  //   /** */
+  //   const fakeCommentId = localStorage.getItem('id')
+  //   console.log(fakeCommentId, startingNumberOfComments)
+  //   const deleteComment = shallowMount(TheComments, {
+  //     global: {
+  //       mocks: {
+  //         deleteComment: vi.fn(() => {
+  //           commentStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
+  //         })
+  //       }
+  //     },
+  //     props: {
+  //       collectionName: 'entries',
+  //       post: firstEntry.value
+  //     }
+  //   })
+
+  //   // Delete fake comment
+  //   await deleteComment.vm.deleteComment()
+
+  //   // Test deleted comment
+  //   await commentStore.fetchComments('entries', firstEntry.value.id)
+  //   await new Promise((res, rej) => {
+  //     //Once again, we must await the realtime listener to run.
+  //     setTimeout(() => {
+  //       res()
+  //     }, 150)
+  //   })
+  //   expect(commentStore.getComments.length).toBe(startingNumberOfComments - 1)
+  // })
 })
 
 afterAll(async () => {
