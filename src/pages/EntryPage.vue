@@ -16,10 +16,7 @@
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
-      <TheHeader title="Comments" />
-      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
-        <TheComments collectionName="entries" :post="entry" />
-      </q-page>
+      <TheComments collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
 </template>

@@ -20,8 +20,8 @@
       </q-list>
     </q-btn-dropdown>
   </TheHeader>
-  <section class="absolute-center window-width">
-    <q-page padding>
+  <q-page-container>
+    <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs align="justify" v-model="tab" class="text-secondary">
         <q-tab v-if="userStore.isAdminOrWriter" name="posts" icon="view_list" label="Prompts & Entries" />
         <q-tab v-if="userStore.isAdmin" name="users" icon="people" label="Users" />
@@ -46,16 +46,16 @@
           <ManageErrors />
         </q-tab-panel>
       </q-tab-panels>
+
+      <q-dialog full-width position="bottom" v-model="prompt.dialog">
+        <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
+      </q-dialog>
+
+      <q-dialog full-width position="bottom" v-model="entry.dialog">
+        <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+      </q-dialog>
     </q-page>
-
-    <q-dialog full-width position="bottom" v-model="prompt.dialog">
-      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
-    </q-dialog>
-
-    <q-dialog full-width position="bottom" v-model="entry.dialog">
-      <EntryCard v-bind="entry" @hideDialog="entry = {}" />
-    </q-dialog>
-  </section>
+  </q-page-container>
 </template>
 
 <script setup>
