@@ -3,58 +3,60 @@
 
   <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 
-  <LoginForm v-if="!user.uid || user.isAnonymous" />
+  <q-page-container>
+    <LoginForm v-if="!user.uid || user.isAnonymous" />
 
-  <q-page v-else class="q-px-lg">
-    <div class="flex items-center no-wrap q-py-xl">
-      <q-avatar size="5rem" text-color="white">
-        <q-spinner v-if="storageStore.isLoading" color="primary" size="3rem" />
-        <q-img v-else :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
-          <div class="photo">
-            <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
-            <q-file
-              accept="image/*"
-              borderless
-              class="absolute-bottom cursor-pointer"
-              dense
-              max-file-size="5242880"
-              style="height: 5rem"
-              v-model="newPhoto"
-              @rejected="onRejected"
-              @update:model-value="uploadPhoto"
-            >
-              <template v-slot:file>
-                <q-chip class="hidden" />
-              </template>
-            </q-file>
-          </div>
-        </q-img>
-      </q-avatar>
-      <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
-    </div>
+    <q-page v-else class="q-px-lg">
+      <div class="flex items-center no-wrap q-py-xl">
+        <q-avatar size="5rem" text-color="white">
+          <q-spinner v-if="storageStore.isLoading" color="primary" size="3rem" />
+          <q-img v-else :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
+            <div class="photo">
+              <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
+              <q-file
+                accept="image/*"
+                borderless
+                class="absolute-bottom cursor-pointer"
+                dense
+                max-file-size="5242880"
+                style="height: 5rem"
+                v-model="newPhoto"
+                @rejected="onRejected"
+                @update:model-value="uploadPhoto"
+              >
+                <template v-slot:file>
+                  <q-chip class="hidden" />
+                </template>
+              </q-file>
+            </div>
+          </q-img>
+        </q-avatar>
+        <h2 class="q-ml-md text-secondary text-h5 text-bold">{{ user.displayName }}</h2>
+      </div>
 
-    <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
-      <q-tab name="profile" label="Profile" data-test="tab-profile" />
-      <q-tab name="feedback" label="Feedback" data-test="tab-feedback" />
-      <q-tab name="settings" label="Settings" data-test="tab-settings" />
-    </q-tabs>
+      <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
+        <q-tab name="profile" label="Profile" data-test="tab-profile" />
+        <q-tab name="feedback" label="Feedback" data-test="tab-feedback" />
+        <q-tab name="settings" label="Settings" data-test="tab-settings" />
+      </q-tabs>
 
-    <q-separator />
+      <q-separator />
 
-    <q-tab-panels v-model="tab" animated>
-      <q-tab-panel class="q-gutter-y-md" name="profile">
-        <ProfileTab />
-      </q-tab-panel>
+      <q-tab-panels v-model="tab" animated>
+        <q-tab-panel class="q-gutter-y-md" name="profile">
+          <ProfileTab />
+        </q-tab-panel>
 
-      <q-tab-panel class="q-gutter-y-md" name="feedback">
-        <FeedbackTab />
-      </q-tab-panel>
+        <q-tab-panel class="q-gutter-y-md" name="feedback">
+          <FeedbackTab />
+        </q-tab-panel>
 
-      <q-tab-panel class="q-gutter-y-md" name="settings">
-        <SettingsTab />
-      </q-tab-panel>
-    </q-tab-panels>
-  </q-page>
+        <q-tab-panel class="q-gutter-y-md" name="settings">
+          <SettingsTab />
+        </q-tab-panel>
+      </q-tab-panels>
+    </q-page>
+  </q-page-container>
 </template>
 
 <script setup>

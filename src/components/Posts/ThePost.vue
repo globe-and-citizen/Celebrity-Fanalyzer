@@ -1,68 +1,70 @@
 <template>
-  <q-page class="bg-white">
-    <TheHeader feedbackButton :title="title" />
-    <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
-    <section class="q-pa-md" style="margin-top: 100%">
-      <div class="flex justify-between">
-        <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
-        <div>
-          <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
-            {{ category }}
-          </q-badge>
+  <q-page-container>
+    <q-page class="bg-white">
+      <TheHeader feedbackButton :title="title" />
+      <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
+      <section class="q-pa-md" style="margin-top: 100%">
+        <div class="flex justify-between">
+          <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
+          <div>
+            <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
+              {{ category }}
+            </q-badge>
+          </div>
         </div>
-      </div>
-      <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
-      <p class="text-body1" v-html="post?.description"></p>
-      <q-btn
-        color="green"
-        :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
-        flat
-        :icon="isLiked ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
-        :label="countLikes"
-        rounded
-        size="0.75rem"
-        @click="like()"
-      >
-        <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-      </q-btn>
-      <q-btn
-        color="red"
-        :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
-        flat
-        :icon="isDisliked ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
-        :label="countDislikes"
-        rounded
-        size="0.75rem"
-        @click="dislike()"
-      >
-        <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-      </q-btn>
-      <q-btn
-        :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
-        flat
-        icon="chat_bubble_outline"
-        :label="countComments"
-        rounded
-        size="0.75rem"
-        @click="$emit('clickComments')"
-      >
-        <q-tooltip>Comments</q-tooltip>
-      </q-btn>
-      <ShareComponent :label="countShares" @share="share($event)" />
-    </section>
-    <ShowcaseArt v-if="post?.showcase" :showcase="post.showcase" />
-    <q-separator inset spaced />
-    <section v-if="post?.author" class="flex items-center no-wrap q-pa-md">
-      <q-avatar size="6rem">
-        <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
-      </q-avatar>
-      <div class="q-ml-md">
-        <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
-        <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
-      </div>
-    </section>
-    <q-separator inset />
-  </q-page>
+        <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
+        <p class="text-body1" v-html="post?.description"></p>
+        <q-btn
+          color="green"
+          :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
+          flat
+          :icon="isLiked ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+          :label="countLikes"
+          rounded
+          size="0.75rem"
+          @click="like()"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+        </q-btn>
+        <q-btn
+          color="red"
+          :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
+          flat
+          :icon="isDisliked ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+          :label="countDislikes"
+          rounded
+          size="0.75rem"
+          @click="dislike()"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+        </q-btn>
+        <q-btn
+          :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
+          flat
+          icon="chat_bubble_outline"
+          :label="countComments"
+          rounded
+          size="0.75rem"
+          @click="$emit('clickComments')"
+        >
+          <q-tooltip>Comments</q-tooltip>
+        </q-btn>
+        <ShareComponent :label="countShares" @share="share($event)" />
+      </section>
+      <ShowcaseArt v-if="post?.showcase" :showcase="post.showcase" />
+      <q-separator inset spaced />
+      <section v-if="post?.author" class="flex items-center no-wrap q-pa-md">
+        <q-avatar size="6rem">
+          <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
+        </q-avatar>
+        <div class="q-ml-md">
+          <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
+          <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
+        </div>
+      </section>
+      <q-separator inset />
+    </q-page>
+  </q-page-container>
 </template>
 
 <script setup>
