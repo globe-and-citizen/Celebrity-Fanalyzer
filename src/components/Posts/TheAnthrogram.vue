@@ -1,8 +1,7 @@
 <template>
   <q-page>
-    <TheHeader title="Anthrogram" />
-    <section>
-      <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
+    <TheHeader :subtitle="post?.title" title="Anthrogram" />
+    <section class="q-mt-md">
       <q-tabs
         active-color="primary"
         align="justify"
