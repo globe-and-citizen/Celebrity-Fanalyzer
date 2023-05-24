@@ -1,15 +1,7 @@
 <template>
+  <TheHeader :subtitle="post?.title" title="Anthrogram" />
   <q-page>
-    <TheHeader title="Anthrogram" />
-    <section>
-      <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
-      <div v-if="post?.author" class="flex no-wrap items-center q-mb-xl">
-        <q-avatar size="4rem">
-          <img :src="post.author.photoURL" alt="" />
-        </q-avatar>
-        <p class="q-mb-none q-ml-md text-h6 text-weight-light">{{ post.author.displayName }}</p>
-      </div>
-
+    <section class="q-py-md">
       <q-tabs
         active-color="primary"
         align="justify"
@@ -19,9 +11,9 @@
         narrow-indicator
         v-model="type"
       >
-        <q-tab name="day" label="Days" />
-        <q-tab name="week" label="Week" />
         <q-tab name="all" label="All" />
+        <q-tab name="week" label="Week" />
+        <q-tab name="day" label="Days" />
       </q-tabs>
       <LikesBar :data="graphData(type)" />
       <SharesPie :data="shares" :interval="type" />

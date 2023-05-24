@@ -11,6 +11,7 @@
       <q-toolbar-title>
         <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
         <b class="text-secondary">{{ title }}</b>
+        <span class="float-right text-secondary">{{ subtitle }}</span>
       </q-toolbar-title>
       <q-btn v-if="feedbackButton" flat icon="feedback" round size="1rem" text-color="secondary" @click="goToFeedback" />
       <slot />
@@ -45,6 +46,7 @@ defineProps({
   modelValue: { required: false },
   feedbackButton: { type: Boolean, required: false, default: false },
   searchInput: { type: Boolean, required: false, default: false },
+  subtitle: { type: String, required: false },
   title: { type: String, required: false }
 })
 
