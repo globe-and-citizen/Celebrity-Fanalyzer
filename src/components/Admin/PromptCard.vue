@@ -125,6 +125,7 @@
               data-test="button-submit"
               :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
               :label="id ? 'Save Edits' : 'Submit Prompt'"
+              :loading="promptStore.isLoading"
               rounded
               type="submit"
             />
@@ -132,8 +133,6 @@
         </template>
       </q-stepper>
     </q-form>
-
-    <q-inner-loading color="primary" :showing="promptStore.isLoading" />
   </q-card>
 </template>
 
