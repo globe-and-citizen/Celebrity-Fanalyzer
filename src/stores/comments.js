@@ -4,8 +4,8 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
+  onSnapshot,
   runTransaction,
   setDoc,
   Timestamp,
@@ -30,21 +30,22 @@ export const useCommentStore = defineStore('comments', {
 
   actions: {
     async fetchComments(collectionName, documentId) {
-      this._isLoading = true
-      await getDocs(collection(db, collectionName, documentId, 'comments'))
-        .then(async (querySnapshot) => {
-          const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const userStore = useUserStore()
 
-          for (const comment of comments) {
-            if (!comment.isAnonymous) {
-              comment.author = await getDoc(comment.author).then((doc) => doc.data())
-            }
-            comment.likes = comment.likes?.map((like) => like.id || like)
-            comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+      this._isLoading = true
+      onSnapshot(collection(db, collectionName, documentId, 'comments'), (querySnapshot) => {
+        const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+        for (const comment of comments) {
+          if (!comment.isAnonymous) {
+            comment.author = userStore.getUserById(comment.author.id)
           }
-          this.$patch({ _comments: comments })
-        })
-        .finally(() => (this._isLoading = false))
+          comment.likes = comment.likes?.map((like) => like.id || like)
+          comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+        }
+        this.$patch({ _comments: comments })
+      })
+      this._isLoading = false
     },
 
     async addComment(collectionName, comment, document) {
@@ -53,18 +54,11 @@ export const useCommentStore = defineStore('comments', {
 
       comment.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       comment.created = Timestamp.fromDate(new Date())
+      comment.id = Date.now() + '-' + (comment.author.id || comment.author)
       comment.isAnonymous = !userStore.isAuthenticated
 
-      const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const commentId = Date.now() + '-' + (comment.author.id || comment.author)
-
-      comment.id = commentId
-      localStorage.setItem('id', commentId)
-
       this._isLoading = true
-      await setDoc(doc(db, collectionName, document.id, 'comments', commentId), comment)
-        .then(() => this.$patch({ _comments: [...this._comments, { ...comment, author: stateAuthor }] }))
-        .finally(() => (this._isLoading = false))
+      await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
     },
 
     async editComment(collectionName, documentId, id, editedComment, userId) {
@@ -80,13 +74,7 @@ export const useCommentStore = defineStore('comments', {
         if (index !== -1 && userId === (comment.author?.uid || comment.author)) {
           await runTransaction(db, async (transaction) => {
             transaction.update(doc(db, collectionName, documentId, 'comments', comment.id), { text: editedComment })
-          })
-            .then(() => {
-              this.$patch({
-                _comments: [...this._comments.slice(0, index), { ...this._comments[index], ...comment }, ...this._comments.slice(index + 1)]
-              })
-            })
-            .finally(() => (this._isLoading = false))
+          }).finally(() => (this._isLoading = false))
         } else {
           throw new Error(error)
         }
@@ -102,20 +90,15 @@ export const useCommentStore = defineStore('comments', {
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       const userId = user?.id || user
 
-      await updateDoc(commentRef, { likes: arrayUnion(user) }).then(() => {
-        if (!comment.likes?.includes(userId)) {
-          comment.likes ??= []
-          comment.likes.push(userId)
-        } else {
-          comment.likes = comment.likes.filter((like) => like !== userId)
-        }
-      })
+      if (!comment.likes?.includes(userId)) {
+        await updateDoc(commentRef, { likes: arrayUnion(user) })
+      } else {
+        await updateDoc(commentRef, { likes: arrayRemove(user) })
+      }
 
-      await updateDoc(commentRef, { dislikes: arrayRemove(user) }).then(() => {
-        if (comment.dislikes?.includes(userId)) {
-          comment.dislikes = comment.dislikes.filter((dislike) => dislike !== userId)
-        }
-      })
+      if (comment.dislikes?.includes(userId)) {
+        await updateDoc(commentRef, { dislikes: arrayRemove(user) })
+      }
     },
 
     async dislikeComment(collectionName, documentId, commentId) {
@@ -127,29 +110,20 @@ export const useCommentStore = defineStore('comments', {
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       const userId = user?.id || user
 
-      await updateDoc(commentRef, { dislikes: arrayUnion(user) }).then(() => {
-        if (!comment.dislikes?.includes(userId)) {
-          comment.dislikes ??= []
-          comment.dislikes.push(userId)
-        } else {
-          comment.dislikes = comment.dislikes.filter((dislike) => dislike !== userId)
-        }
-      })
+      if (!comment.dislikes?.includes(userId)) {
+        await updateDoc(commentRef, { dislikes: arrayUnion(user) })
+      } else {
+        await updateDoc(commentRef, { dislikes: arrayRemove(user) })
+      }
 
-      await updateDoc(commentRef, { likes: arrayRemove(user) }).then(() => {
-        if (comment.likes?.includes(userId)) {
-          comment.likes = comment.likes.filter((like) => like !== userId)
-        }
-      })
+      if (comment.likes?.includes(userId)) {
+        await updateDoc(commentRef, { likes: arrayRemove(user) })
+      }
     },
 
     async deleteComment(collectionName, documentId, commentId) {
-      const index = this._comments.findIndex((comment) => comment.id === commentId)
-
       this._isLoading = true
-      await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId))
-        .then(() => this._comments.splice(index, 1))
-        .finally(() => (this._isLoading = false))
+      await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId)).finally(() => (this._isLoading = false))
     },
 
     async deleteCommentsCollection(collectionName, documentId) {
@@ -168,18 +142,11 @@ export const useCommentStore = defineStore('comments', {
 
       reply.author = userStore.getUserRef || userStore.getUserIpHash
       reply.created = Timestamp.fromDate(new Date())
+      reply.id ??= Date.now() + '-' + (reply.author.id || reply.author)
       reply.isAnonymous = !userStore.isAuthenticated
 
-      const stateAuthor = Object.keys(userStore.getUser).length ? userStore.getUser : userStore.getUserIpHash
-      const commentId = Date.now() + '-' + (reply.author.id || reply.author)
-
-      reply.id = commentId
-      reply.id = reply.id || commentId
-
       this._isLoading = true
-      await setDoc(doc(db, collectionName, documentId, 'comments', commentId), reply)
-        .then(() => this.$patch({ _comments: [...this._comments, { ...reply, author: stateAuthor }] }))
-        .finally(() => (this._isLoading = false))
+      await setDoc(doc(db, collectionName, documentId, 'comments', reply.id), reply).finally(() => (this._isLoading = false))
     }
   }
 })
