@@ -1,5 +1,5 @@
 <template>
-  <q-page-container>
+  <q-page-container style="padding-bottom: 0">
     <q-page class="bg-white">
       <TheHeader feedbackButton :title="title" />
       <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
