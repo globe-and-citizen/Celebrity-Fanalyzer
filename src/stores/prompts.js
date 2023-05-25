@@ -146,8 +146,8 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       if (relatedEntries.length) {
-        for (const entry of relatedEntries) {
-          await entryStore.deleteEntry(entry.id)
+        for (const entryId of relatedEntries) {
+          await entryStore.deleteEntry(entryId)
         }
       }
 
