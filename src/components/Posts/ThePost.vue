@@ -51,7 +51,7 @@
         </q-btn>
         <ShareComponent :label="countShares" @share="share($event)" />
       </section>
-      <ShowcaseArt v-if="post?.showcase" :showcase="post.showcase" />
+      <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset spaced />
       <section v-if="post?.author" class="flex items-center no-wrap q-pa-md">
         <q-avatar size="6rem">
