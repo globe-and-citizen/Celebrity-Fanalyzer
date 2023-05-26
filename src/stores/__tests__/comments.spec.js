@@ -7,8 +7,19 @@ import { useCommentStore, useEntryStore, useUserStore, usePromptStore } from 'sr
 import { ref, reactive } from 'vue'
 
 describe('Comments Store', () => {
+  setActivePinia(createPinia())
+  const entryStore = useEntryStore()
+  const commentStore = useCommentStore()
+
   beforeEach(async () => {
-    setActivePinia(createPinia())
+    // In the store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
+    global.fetch = vi.fn(async () => {
+      return {
+        text: () => {
+          return '255.255.255.255'
+        }
+      }
+    })
 
     // Login the test@test.com user
     const userStore = useUserStore()
@@ -26,23 +37,13 @@ describe('Comments Store', () => {
   })
 
   it('Create and then delete a fake comment in here', async () => {
-    // In the store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
-    global.fetch = vi.fn(async () => {
-      return {
-        text: () => {
-          return '255.255.255.255'
-        }
-      }
-    })
-
     // 1) Retrieve an entry to comment on.
-    const entryStore = useEntryStore()
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
 
     // Step 2: Check the starting number of comments.
-    const commentStore = useCommentStore()
+
     await commentStore.fetchComments('entries', firstEntry.value.id)
 
     await new Promise((res, rej) => {
