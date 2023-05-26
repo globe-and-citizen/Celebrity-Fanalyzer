@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useCommentStore, useEntryStore, useUserStore, usePromptStore } from 'src/stores'
 import { ref, reactive } from 'vue'
 
-describe('Comments Store', async () => {
+describe('Prompt Store', async () => {
   // By declaring the various stores within the "describe" block,
   // you can avoid redeclaring the stores within each "it" block.
   setActivePinia(createPinia())
