@@ -7,7 +7,16 @@
             <div class="row items-baseline no-wrap">
               <h2 class="q-my-none text-h6">Competition</h2>
               <span>&nbsp; for &nbsp;</span>
-              <q-input borderless dense :disable="Boolean(id)" readonly style="max-width: 5.5rem" v-model="prompt.date" data-test="date">
+              <q-input
+                borderless
+                dense
+                :disable="Boolean(id)"
+                readonly
+                :rules="[(val) => val?.length > 0 || 'Date is required']"
+                style="max-width: 5.5rem"
+                v-model="prompt.date"
+                data-test="date"
+              >
                 <template v-slot:append>
                   <q-icon name="event" class="cursor-pointer" data-test="date-picker">
                     <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -17,6 +26,7 @@
                         :key="dataKey"
                         mask="YYYY-MM"
                         minimal
+                        :options="(date) => date >= '2023/11/01'"
                         v-model="prompt.date"
                         years-in-month-view
                         @update:model-value="onUpdateMonth"
@@ -140,6 +150,7 @@
 import { useQuasar } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
+import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -176,7 +187,7 @@ watchEffect(() => {
   } else {
     prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
-    prompt.date = null
+    prompt.date = currentYearMonth()
   }
 })
 
