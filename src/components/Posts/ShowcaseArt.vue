@@ -19,12 +19,12 @@
       animated
       control-color="primary"
       height="auto"
-      style="width: 50rem; max-width: 90vw"
+      ref="carouselRef"
+      style="max-height: 100%; max-width: 90vw; width: 50rem"
       swipeable
       transition-prev="jump-right"
       transition-next="jump-left"
       v-model="slide"
-      ref="carouselRef"
     >
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
         <q-img class="rounded-borders" fit="contain" :src="art" />
