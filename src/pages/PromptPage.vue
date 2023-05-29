@@ -4,7 +4,7 @@
     <q-tab content-class="q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!Object.keys(prompt).length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!Object.keys(prompt)?.length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="prompt" style="padding: 0">
@@ -83,18 +83,20 @@ const promptByRoute = () => {
   const currentMonth = currentYearMonth()
   const previousMonth = previousYearMonth()
 
-  return promptStore.getPrompts.find((prompt) => {
-    switch (route.href) {
-      case '/month':
-        return [currentMonth, previousMonth].includes(prompt.date)
-      case `/${route.params.year}/${route.params.month}`:
-        return prompt.date === route.params.year + '-' + route.params.month
-      case `/${route.params.slug}`:
-        return prompt.slug === route.params.slug
-      default:
-        return false
-    }
-  })
+  return (
+    promptStore.getPrompts.find((prompt) => {
+      switch (route.href) {
+        case '/month':
+          return [currentMonth, previousMonth].includes(prompt.date)
+        case `/${route.params.year}/${route.params.month}`:
+          return prompt.date === route.params.year + '-' + route.params.month
+        case `/${route.params.slug}`:
+          return prompt.slug === route.params.slug
+        default:
+          return false
+      }
+    }) || promptStore.getPrompts[0]
+  )
 }
 </script>
 
