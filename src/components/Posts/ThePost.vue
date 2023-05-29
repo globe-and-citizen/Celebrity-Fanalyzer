@@ -18,8 +18,8 @@
           color="green"
           :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
           flat
-          :icon="isLiked ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
-          :label="countLikes"
+          :icon="likes.find((post) => post.author.id === userId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+          :label="likes.length"
           rounded
           size="0.75rem"
           @click="like()"
@@ -30,8 +30,8 @@
           color="red"
           :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
           flat
-          :icon="isDisliked ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
-          :label="countDislikes"
+          :icon="dislikes.find((post) => post.author.id === userId) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+          :label="dislikes.length"
           rounded
           size="0.75rem"
           @click="dislike()"
@@ -42,14 +42,14 @@
           :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
           flat
           icon="chat_bubble_outline"
-          :label="countComments"
+          :label="comments.length"
           rounded
           size="0.75rem"
           @click="$emit('clickComments')"
         >
           <q-tooltip>Comments</q-tooltip>
         </q-btn>
-        <ShareComponent :label="countShares" @share="share($event)" />
+        <ShareComponent :label="shares.length" @share="share($event)" />
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset spaced />
@@ -84,12 +84,10 @@ const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 
-const countComments = ref(commentStore.getComments.length)
-const countDislikes = ref(likeStore.getDislikes.length)
-const countLikes = ref(likeStore.getLikes.length)
-const countShares = ref(shareStore.getShares.length)
-const isDisliked = ref(false)
-const isLiked = ref(false)
+const comments = ref(commentStore.getComments)
+const dislikes = ref(likeStore.getDislikes)
+const likes = ref(likeStore.getLikes)
+const shares = ref(shareStore.getShares)
 const userId = ref('')
 
 onMounted(async () => {
@@ -98,19 +96,16 @@ onMounted(async () => {
 })
 
 commentStore.$subscribe((_mutation, state) => {
-  countComments.value = state._comments.length
+  comments.value = state._comments
 })
 
 likeStore.$subscribe((_mutation, state) => {
-  countLikes.value = state._likes.length
-  countDislikes.value = state._dislikes.length
-
-  isLiked.value = Boolean(state._likes.find((post) => post.author.id === userId.value))
-  isDisliked.value = Boolean(state._dislikes.find((post) => post.author.id === userId.value))
+  likes.value = state._likes
+  dislikes.value = state._dislikes
 })
 
 shareStore.$subscribe((_mutation, state) => {
-  countShares.value = state._shares.length
+  shares.value = state._shares
 })
 
 async function like() {
