@@ -14,7 +14,7 @@
     <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
-  <q-dialog position="top" v-model="openDialog">
+  <q-dialog position="top" v-model="openDialog" @before-show="beforeShow" @show="show" @before-hide="beforeHide" @hide="hide">
     <q-carousel
       animated
       control-color="primary"
@@ -46,6 +46,7 @@ defineProps({
 
 const carouselRef = ref(null)
 const openDialog = ref(false)
+const scrollPosition = ref(0)
 const slide = ref(0)
 
 document.addEventListener('keyup', handleKeyPress)
@@ -54,6 +55,25 @@ function handleKeyPress(e) {
   const event = (window.event ??= e)
   if (event.key === 'ArrowLeft') carouselRef.value.previous()
   if (event.key === 'ArrowRight') carouselRef.value.next()
+}
+
+function beforeShow() {
+  scrollPosition.value = window.scrollY
+  window.scrollTo({ left: 0, top: scrollPosition.value, behavior: 'auto' })
+  console.log('before-show', window.scrollY)
+}
+
+function show() {
+  window.scrollY = scrollPosition.value
+  console.log('show', window.scrollY)
+}
+
+function beforeHide() {
+  console.log('before-hide', window.scrollY)
+}
+
+function hide() {
+  console.log('hide', window.scrollY)
 }
 
 onUnmounted(() => {
