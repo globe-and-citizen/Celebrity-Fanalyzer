@@ -65,7 +65,7 @@ import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
 import LoginForm from 'src/components/Profile/LoginForm.vue'
 import ProfileTab from 'src/components/Profile/ProfileTab.vue'
 import SettingsTab from 'src/components/Profile/SettingsTab.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 

@@ -65,7 +65,7 @@ import ManageFeedbacks from 'src/components/Admin/ManageFeedbacks.vue'
 import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 

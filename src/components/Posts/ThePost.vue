@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'

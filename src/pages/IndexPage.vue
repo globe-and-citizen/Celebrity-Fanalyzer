@@ -52,23 +52,23 @@
             An
             <span class="text-italic">anthroscope</span>
             , like any scope (e.g., telescope, microscope, oscilloscope, etc.), is designed to give its users the capacity to view something
-            with new perspective. In the case of this application, the specimen under investigation is society and that new perspective is the
-            distribution and variety of opinions held within it. The prefix “anthro” being borrowed from the Greek word “anthropo” meaning
-            human.
+            with new perspective. In the case of this application, the specimen under investigation is society and that new perspective is
+            the distribution and variety of opinions held within it. The prefix “anthro” being borrowed from the Greek word “anthropo”
+            meaning human.
           </p>
           <p>
-            To function as intended, Celebrity Fanalyzer will use modern statistics, artificial intelligence, and big data to produce visuals
-            reflecting the opinion scape of any particular topic. The team collectively refers to these visuals as anthrograms. Anthrograms
-            should, if done properly, make obvious the inherent biases of any
+            To function as intended, Celebrity Fanalyzer will use modern statistics, artificial intelligence, and big data to produce
+            visuals reflecting the opinion scape of any particular topic. The team collectively refers to these visuals as anthrograms.
+            Anthrograms should, if done properly, make obvious the inherent biases of any
             <span class="text-bold">one</span>
             opinion and, from this new perspective, a user should be able to infer their own truth.
           </p>
           <p>
-            Celebrity Fanalyzer cannot produce anthrograms in its current form. To do this, a technological solution which scrubs user data of
-            all identifiers, is necessary. In fact, Celebrity Fanalyzer is one of few applications THAT DOES NOT WANT YOUR PERSONAL DATA.
+            Celebrity Fanalyzer cannot produce anthrograms in its current form. To do this, a technological solution which scrubs user data
+            of all identifiers, is necessary. In fact, Celebrity Fanalyzer is one of few applications THAT DOES NOT WANT YOUR PERSONAL DATA.
             Ultimately, our goal is to launch the application behind a custom built anonymizing reverse proxy we call “Layer 8.” Once
-            launched, this specialized server will scrub all personally identifying information from incoming traffic and thereby ireversibly
-            separate a user's
+            launched, this specialized server will scrub all personally identifying information from incoming traffic and thereby
+            ireversibly separate a user's
             <i>online</i>
             identity from their
             <i>true</i>
@@ -76,10 +76,10 @@
           </p>
           <p>
             Following the launch and debugging of Layer 8, Celebrity Fanalyzer is to be recast as a general news website entitled “Globe &
-            Citizen.” Though following approximately the same mechanics as Celebrity Fanalyzer, Globe & Citizen is to be an anthroscope in the
-            fullest sense: by coming preconfigured to receive only anonymized user data, it will immediately produce anthrograms that users
-            will hopefully find both insightful and beautiful. Globe & Citizen, unlike Celebrity Fanalyzer, will deal with topics such as
-            climate change, inflation, COVID vaccines, and much more because, for obvious reasons, the Internet needs an anthroscope.
+            Citizen.” Though following approximately the same mechanics as Celebrity Fanalyzer, Globe & Citizen is to be an anthroscope in
+            the fullest sense: by coming preconfigured to receive only anonymized user data, it will immediately produce anthrograms that
+            users will hopefully find both insightful and beautiful. Globe & Citizen, unlike Celebrity Fanalyzer, will deal with topics such
+            as climate change, inflation, COVID vaccines, and much more because, for obvious reasons, the Internet needs an anthroscope.
           </p>
           <p>This is “why.”</p>
         </article>
@@ -102,9 +102,9 @@
           <q-expansion-item expand-separator icon="language" label="Make it a DAPP" caption="2023">
             <q-card>
               <q-card-section>
-                Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity Fanalyzer
-                a DAPP (a Distributed APPlication) by connecting it to a blockchain. Anyone with a crypto wallet should be able to participate
-                in our competitions, give their opinion, and get paid if they contribute meaningfully.
+                Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity
+                Fanalyzer a DAPP (a Distributed APPlication) by connecting it to a blockchain. Anyone with a crypto wallet should be able to
+                participate in our competitions, give their opinion, and get paid if they contribute meaningfully.
               </q-card-section>
             </q-card>
           </q-expansion-item>
@@ -150,9 +150,9 @@
       <section class="q-mt-xl text-body1 text-center">
         <h3 class="text-bold text-h5">Contact Us!</h3>
         <p>
-          Want to communicate with the team here at Celebrity Fanalyzer? Contact us through a message on our Discord server: give an opinion,
-          suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you want to get
-          involved in shaping the future of the application, reach out to us via Discord:
+          Want to communicate with the team here at Celebrity Fanalyzer? Contact us through a message on our Discord server: give an
+          opinion, suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you want
+          to get involved in shaping the future of the application, reach out to us via Discord:
         </p>
         <q-btn flat href="https://discord.gg/z4P3UrhhSH" icon="img:/icons/discord.svg" round size="xl" target="_blank">
           <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
@@ -163,7 +163,7 @@
 </template>
 
 <script setup>
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 

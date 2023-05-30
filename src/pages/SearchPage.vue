@@ -43,10 +43,10 @@
 </template>
 
 <script setup>
-import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
-import ItemCard from 'src/components/ItemCard.vue'
-import TheEntries from 'src/components/TheEntries.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import ArticleSkeleton from 'src/components/shared/ArticleSkeleton.vue'
+import ItemCard from 'src/components/shared/ItemCard.vue'
+import TheEntries from 'src/components/shared/TheEntries.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'

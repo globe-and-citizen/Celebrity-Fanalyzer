@@ -26,7 +26,7 @@
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
-import TheEntries from 'src/components/TheEntries.vue'
+import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 import { onMounted, ref } from 'vue'

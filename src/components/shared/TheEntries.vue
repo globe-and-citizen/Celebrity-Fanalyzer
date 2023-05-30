@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import ItemCard from 'src/components/ItemCard.vue'
+import ItemCard from 'src/components/shared/ItemCard.vue'
 import { useEntryStore } from 'src/stores'
 
 const props = defineProps(['entries'])

@@ -240,7 +240,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'

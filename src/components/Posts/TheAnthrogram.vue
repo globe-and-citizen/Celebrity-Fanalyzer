@@ -27,7 +27,7 @@
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useLikeStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
 import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
