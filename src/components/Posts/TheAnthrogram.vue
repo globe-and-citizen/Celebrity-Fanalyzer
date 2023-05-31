@@ -30,7 +30,7 @@ import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useLikeStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
-import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
+import { formatAllStats, formatStats } from 'src/utils/stats'
 import { ref } from 'vue'
 
 const props = defineProps(['post'])
@@ -47,8 +47,8 @@ const updateChartData = () => {
   const allStats = [
     {
       date: Timestamp.fromDate(new Date()),
-      likes: likeStore.$state._likes.length,
-      dislikes: likeStore.$state._dislikes.length
+      likes: likeStore.getLikes.length,
+      dislikes: likeStore.getDislikes.length
     }
   ]
   return { weekStats, dayStats, allStats }
@@ -67,10 +67,10 @@ function graphData(type) {
   if (!chartData.value) return []
 
   if (type === 'day') {
-    return formatDayStats(chartData.value.dayStats)
+    return formatStats(chartData.value.dayStats, 'day')
   }
   if (type === 'week') {
-    return formatWeekStats(chartData.value.weekStats)
+    return formatStats(chartData.value.weekStats, 'week')
   }
   return formatAllStats(chartData.value.allStats)
 }
