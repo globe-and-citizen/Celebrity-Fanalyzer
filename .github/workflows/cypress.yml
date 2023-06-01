@@ -1,8 +1,6 @@
 name: Cypress End-to-End Tests
 
 on:
-  push:
-    branches: [develop]
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
