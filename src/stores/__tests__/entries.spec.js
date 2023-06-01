@@ -19,7 +19,7 @@ describe('Entry Store', async () => {
   const storageStore = useStorageStore()
 
   //Load and image to use
-  var bitmap = fs.readFileSync('src\\stores\\__tests__\\PHMM2.png')
+  var bitmap = fs.readFileSync('src/assets/cypress.jpg')
 
   /* Login test@test.com:
    * If you will be using only a logged in user to run the tests,

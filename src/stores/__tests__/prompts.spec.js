@@ -16,7 +16,8 @@ describe('Prompt Store', async () => {
   const storageStore = useStorageStore()
 
   //Load an image to use
-  var bitmap = fs.readFileSync('src\\stores\\__tests__\\PHMM2.png')
+  var bitmap = fs.readFileSync('src/assets/cypress.jpg')
+  console.log('a node buffer: ', bitmap)
 
   /* Login test@test.com:
    * If you will be using only a logged in user to run the tests,
@@ -59,6 +60,8 @@ describe('Prompt Store', async () => {
     const fakeDate = '1991-01'
     let user = userStore.getUser
     let imgAddress
+
+    //const aBuffer = Buffer.from('A fake picture', 'utf-8')
     imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
 
     const fakePrompt = {
