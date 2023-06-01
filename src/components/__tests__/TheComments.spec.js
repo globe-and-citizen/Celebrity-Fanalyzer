@@ -3,21 +3,18 @@ import { getAdditionalUserInfo, GoogleAuthProvider, signInWithCredential } from 
 import { auth, db } from 'src/firebase'
 
 //Testing Frameworks
-import { installQuasar } from '@quasar/quasar-app-extension-testing-unit-vitest'
 import { config, shallowMount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import commentCard from 'src/components/TheComments.vue'
+import TheComments from 'src/components/Posts/TheComments.vue'
 import { useCommentStore, useEntryStore } from 'src/stores'
 import { useUserStore } from 'src/stores/user'
 import { ref } from 'vue'
 
 import { createRouterMock, injectRouterMock, VueRouterMock } from 'vue-router-mock'
 config.plugins.VueWrapper.install(VueRouterMock)
-
-installQuasar()
 
 describe('TheComment Component', () => {
   const router = createRouterMock({
@@ -56,7 +53,7 @@ describe('TheComment Component', () => {
       }
     })
 
-    const commenStore = useCommentStore()
+    const commentStore = useCommentStore()
     const entryStore = useEntryStore()
     const firstEntry = ref({})
 
@@ -70,25 +67,25 @@ describe('TheComment Component', () => {
     const user = userStore.getUser
 
     // Getting all comments of first entry
-    await commenStore.fetchComments('entries', firstEntry.value.id)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
 
-    const startingNumberOfComments = commenStore.getComments.length
+    const startingNumberOfComments = commentStore.getComments.length
     const fakeCommentId = `${2000 + Math.round(Math.random() * 100)}-01`
 
-    const fakeComment = shallowMount(commentCard, {
+    const fakeComment = shallowMount(TheComments, {
       global: {
         mocks: {
           addComment: vi.fn(() => {
-            commenStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
+            commentStore.addComment('entries', fakeComment.vm.myComment, firstEntry.value)
           }),
           editComment: vi.fn(() => {
-            commenStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
+            commentStore.editComment('entries', firstEntry.value.id, fakeCommentId, editedComment, user.uid)
           })
         }
       },
       props: {
-        comments: [],
-        entry: { slug: firstEntry.value.slug }
+        collectionName: 'entries',
+        post: firstEntry.value
       }
     })
 
@@ -101,8 +98,8 @@ describe('TheComment Component', () => {
     await fakeComment.vm.addComment() //Mocked
 
     // 4) Test added fake comment
-    await commenStore.fetchComments('entries', firstEntry.value.id)
-    expect(commenStore.getComments.length).toBe(startingNumberOfComments + 1)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+    expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5) Edit test
     await fakeComment.vm.editComment()
@@ -110,7 +107,7 @@ describe('TheComment Component', () => {
   }),
     // SECOND TEST
     it('delete fake comment in here', async () => {
-      const commenStore = useCommentStore()
+      const commentStore = useCommentStore()
       const entryStore = useEntryStore()
       const firstEntry = ref({})
 
@@ -120,21 +117,21 @@ describe('TheComment Component', () => {
       const userStore = useUserStore()
       const user = userStore.getUser
 
-      await commenStore.fetchComments('entries', firstEntry.value.id)
+      await commentStore.fetchComments('entries', firstEntry.value.id)
 
-      const startingNumberOfComments = commenStore.getComments.length
+      const startingNumberOfComments = commentStore.getComments.length
       const fakeCommentId = localStorage.getItem('id')
-      const deleteComment = shallowMount(commentCard, {
+      const deleteComment = shallowMount(TheComments, {
         global: {
           mocks: {
             deleteComment: vi.fn(() => {
-              commenStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
+              commentStore.deleteComment('entries', firstEntry.value.id, fakeCommentId, user.uid)
             })
           }
         },
         props: {
-          comments: [],
-          entry: { slug: firstEntry.value.slug }
+          collectionName: 'entries',
+          post: firstEntry.value
         }
       })
 
@@ -142,8 +139,8 @@ describe('TheComment Component', () => {
       await deleteComment.vm.deleteComment()
 
       // Test deleted comment
-      await commenStore.fetchComments('entries', firstEntry.value.id)
-      expect(commenStore.getComments.length).toBe(startingNumberOfComments - 1)
+      await commentStore.fetchComments('entries', firstEntry.value.id)
+      expect(commentStore.getComments.length).toBe(startingNumberOfComments - 1)
     })
 })
 

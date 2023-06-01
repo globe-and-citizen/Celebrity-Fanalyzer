@@ -15,7 +15,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
@@ -71,33 +71,20 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = false
     },
 
-    async fetchPromptsByYear(year) {
-      const q = query(collection(db, 'prompts'), where('date', '>=', `${year}-01-01`), where('date', '<=', `${year}-12-31`))
-
-      this._isLoading = true
-      return await getDocs(q)
-        .then(async (querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-          for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-          }
-
-          prompts.reverse()
-
-          return prompts
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
     async fetchPrompts() {
+      const userStore = useUserStore()
+
+      if (!userStore.getUsers.length) {
+        await userStore.fetchAdminsAndWriters()
+      }
+
       this._isLoading = true
       await getDocs(collection(db, 'prompts'))
-        .then(async (querySnapshot) => {
+        .then((querySnapshot) => {
           const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const prompt of prompts) {
-            prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
+            prompt.author = userStore.getUserById(prompt.author.id)
             prompt.entries = prompt.entries?.map((entry) => entry.id)
           }
 
@@ -150,6 +137,7 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async deletePrompt(id) {
+      const commentStore = useCommentStore()
       const entryStore = useEntryStore()
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
@@ -159,18 +147,19 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       if (relatedEntries.length) {
-        for (const entry of relatedEntries) {
-          await entryStore.deleteEntry(entry.id)
+        for (const entryId of relatedEntries) {
+          await entryStore.deleteEntry(entryId)
         }
       }
 
       try {
         const deleteImage = deleteObject(ref(storage, `images/prompt-${id}`))
+        const deleteComments = commentStore.deleteCommentsCollection('prompts', id)
         const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
 
-        Promise.all([deleteLikes, deleteShares, deleteImage, deletePromptDoc]).then(() => {
+        Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc]).then(() => {
           const index = this._prompts.findIndex((prompt) => prompt.id === id)
           this._prompts.splice(index, 1)
         })
@@ -178,15 +167,6 @@ export const usePromptStore = defineStore('prompts', {
         errorStore.throwError(error)
       }
       this._isLoading = false
-    },
-
-    async uploadImage(file, promptId) {
-      const storageRef = ref(storage, `images/prompt-${promptId}`)
-
-      this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
-      return getDownloadURL(storageRef).then((url) => url)
     }
   }
 })

@@ -1,15 +1,13 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+    <router-view />
 
     <MainMenu />
   </q-layout>
 </template>
 
 <script setup>
-import MainMenu from 'src/components/MainMenu.vue'
+import MainMenu from './MainMenu.vue'
 </script>
 
 <style>

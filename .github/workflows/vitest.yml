@@ -8,20 +8,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci:
+  vitest:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: 🛫 Checkout
         uses: actions/checkout@v3
 
-      - name: Set up NodeJS 18.14.0
+      - name: 🏗 Set up NodeJS 18.14.0
         uses: actions/setup-node@v3
         with:
           node-version: 18.14.0
           cache: 'npm'
 
-      - name: Start Emulators and Run Vitests
+      - name: 💻 Run Vitest
         env:
           VITE_RELEASE_STAGE: testing
         run: |

@@ -12,9 +12,7 @@ import VChart from 'vue-echarts'
 
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
 
-const props = defineProps({
-  data: { type: Array, required: true }
-})
+const props = defineProps(['data'])
 
 const likes = ref(0)
 const dislikes = ref(0)
@@ -31,7 +29,7 @@ function compute() {
     },
     xAxis: {
       type: 'category',
-      data: props.data?.map((item) => item.label)
+      data: props.data.map((item) => item.label)
     },
     yAxis: {
       type: 'value'
@@ -41,14 +39,14 @@ function compute() {
         name: 'Likes',
         type: 'bar',
         stack: 'Total',
-        data: props.data?.map((item) => item.likes),
+        data: props.data.map((item) => item.likes),
         color: '#48982a'
       },
       {
         name: 'Dislikes',
         type: 'bar',
         stack: 'Total',
-        data: props.data?.map((item) => -item.dislikes),
+        data: props.data.map((item) => -item.dislikes),
         color: '#ea3423'
       }
     ]
@@ -56,8 +54,10 @@ function compute() {
 }
 
 watchEffect(() => {
-  likes.value = props.data?.reduce((acc, item) => acc + item.likes, 0)
-  dislikes.value = props.data?.reduce((acc, item) => acc + item.dislikes, 0)
+  if (!props.data) return
+
+  likes.value = props.data.reduce((acc, item) => acc + item.likes, 0)
+  dislikes.value = props.data.reduce((acc, item) => acc + item.dislikes, 0)
 
   compute()
 })

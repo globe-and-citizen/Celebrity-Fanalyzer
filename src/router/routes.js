@@ -10,7 +10,7 @@ const routes = [
         component: () => import('pages/IndexPage.vue')
       },
       {
-        path: 'search',
+        path: 'search|:year(\\d{4})',
         component: () => import('pages/SearchPage.vue')
       },
       {
@@ -28,10 +28,6 @@ const routes = [
       {
         path: ':year(\\d{4})/:month(\\d{2})/:id',
         component: () => import('pages/EntryPage.vue')
-      },
-      {
-        path: ':year(\\d{4})',
-        component: () => import('pages/YearArchivePage.vue')
       },
       {
         path: 'profile',
