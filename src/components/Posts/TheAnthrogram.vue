@@ -1,42 +1,36 @@
 <template>
-  <q-page>
-    <TheHeader title="Anthrogram" />
-    <section>
-      <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
-      <div v-if="post?.author" class="flex no-wrap items-center q-mb-xl">
-        <q-avatar size="4rem">
-          <img :src="post.author.photoURL" alt="" />
-        </q-avatar>
-        <p class="q-mb-none q-ml-md text-h6 text-weight-light">{{ post.author.displayName }}</p>
-      </div>
-
-      <q-tabs
-        active-color="primary"
-        align="justify"
-        class="text-grey q-mb-xl"
-        dense
-        indicator-color="primary"
-        narrow-indicator
-        v-model="type"
-      >
-        <q-tab name="day" label="Days" />
-        <q-tab name="week" label="Week" />
-        <q-tab name="all" label="All" />
-      </q-tabs>
-      <LikesBar :data="graphData(type)" />
-      <SharesPie :data="shares" :interval="type" />
-    </section>
-  </q-page>
+  <TheHeader :subtitle="post?.title" title="Anthrogram" />
+  <q-page-container>
+    <q-page>
+      <section class="q-py-md">
+        <q-tabs
+          active-color="primary"
+          align="justify"
+          class="text-grey q-mb-xl"
+          dense
+          indicator-color="primary"
+          narrow-indicator
+          v-model="type"
+        >
+          <q-tab name="all" label="All" />
+          <q-tab name="week" label="Week" />
+          <q-tab name="day" label="Days" />
+        </q-tabs>
+        <LikesBar :data="graphData(type)" />
+        <SharesPie :data="shares" :interval="type" />
+      </section>
+    </q-page>
+  </q-page-container>
 </template>
 
 <script setup>
 import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useLikeStore, useShareStore } from 'src/stores'
 import { getStats } from 'src/utils/date'
-import { formatAllStats, formatDayStats, formatWeekStats } from 'src/utils/stats'
+import { formatAllStats, formatStats } from 'src/utils/stats'
 import { ref } from 'vue'
 
 const props = defineProps(['post'])
@@ -53,8 +47,8 @@ const updateChartData = () => {
   const allStats = [
     {
       date: Timestamp.fromDate(new Date()),
-      likes: likeStore.$state._likes.length,
-      dislikes: likeStore.$state._dislikes.length
+      likes: likeStore.getLikes.length,
+      dislikes: likeStore.getDislikes.length
     }
   ]
   return { weekStats, dayStats, allStats }
@@ -73,10 +67,10 @@ function graphData(type) {
   if (!chartData.value) return []
 
   if (type === 'day') {
-    return formatDayStats(chartData.value.dayStats)
+    return formatStats(chartData.value.dayStats, 'day')
   }
   if (type === 'week') {
-    return formatWeekStats(chartData.value.weekStats)
+    return formatStats(chartData.value.weekStats, 'week')
   }
   return formatAllStats(chartData.value.allStats)
 }

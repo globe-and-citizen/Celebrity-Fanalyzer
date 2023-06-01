@@ -171,7 +171,7 @@ async function onSubmit() {
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
 
   if (Object.keys(imageModel.value).length) {
-    storageStore
+    await storageStore
       .uploadFile(imageModel.value, `images/entry-${entry.id}`)
       .then((url) => (entry.image = url))
       .catch((error) => errorStore.throwError(error, 'Image upload failed'))

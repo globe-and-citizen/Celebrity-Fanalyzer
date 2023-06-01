@@ -16,10 +16,7 @@
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
-      <TheHeader title="Comments" />
-      <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
-        <TheComments collectionName="entries" :post="entry" />
-      </q-page>
+      <TheComments collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
 </template>
@@ -28,7 +25,7 @@
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'

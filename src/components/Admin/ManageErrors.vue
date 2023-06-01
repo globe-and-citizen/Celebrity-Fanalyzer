@@ -1,6 +1,5 @@
 <template>
   <q-table
-    class="fixed q-px-lg"
     :columns="columns"
     flat
     hide-bottom
