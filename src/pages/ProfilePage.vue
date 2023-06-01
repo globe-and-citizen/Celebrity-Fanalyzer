@@ -79,6 +79,7 @@ const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
+  tab.value = state._profileTab
 })
 
 function onRejected() {
