@@ -3,8 +3,9 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import { useCommentStore, useEntryStore, useUserStore, usePromptStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useUserStore, usePromptStore, useStorageStore } from 'src/stores'
 import { ref, reactive } from 'vue'
+import fs from 'fs'
 
 describe('Prompt Store', async () => {
   // By declaring the various stores within the "describe" block,
@@ -12,6 +13,10 @@ describe('Prompt Store', async () => {
   setActivePinia(createPinia())
   const userStore = useUserStore()
   const promptStore = usePromptStore()
+  const storageStore = useStorageStore()
+
+  //Load an image to use
+  var bitmap = fs.readFileSync('src\\stores\\__tests__\\PHMM2.png')
 
   /* Login test@test.com:
    * If you will be using only a logged in user to run the tests,
@@ -49,18 +54,20 @@ describe('Prompt Store', async () => {
     // Step 2: Check the starting number of comments.
     let prompts = promptStore.getPrompts
     const startingNumberOfPrompts = prompts.length
-    console.log(prompts[0])
 
     // 3) Add a fake prompt & test it was added successfully added
+    const fakeDate = '1991-01'
     let user = userStore.getUser
+    let imgAddress
+    imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
+
     const fakePrompt = {
       author: { label: user.displayName, value: user.uid },
       categories: ['1_CategoryFake', '2_CategoryFake', '3_CategoryFake'],
-      date: '1999-01',
+      date: fakeDate,
       description: 'Let it be known: THIS is my fake entry!',
-      id: '1999-01',
-      image:
-        'https://firebasestorage.googleapis.com/v0/b/celebrityfanalizer.appspot.com/o/images%2Fprompt-2023-02?alt=media&token=cef5a936-5a3d-447c-85d4-6e28449064f6',
+      id: fakeDate,
+      image: imgAddress,
       showcase: null,
       title: 'This Be A Fake Prompt',
       created: null
@@ -70,7 +77,7 @@ describe('Prompt Store', async () => {
     await promptStore.fetchPrompts()
     let expandedPrompts = promptStore.getPrompts
     let newNumberOfPrompts = expandedPrompts.length
-    expect(startingNumberOfPrompts).toBe(newNumberOfPrompts - 1)
+    expect(newNumberOfPrompts).toBe(startingNumberOfPrompts + 1)
 
     // 4) Edit the fake prompt
 
