@@ -2,7 +2,7 @@
   <q-header class="bg-white" elevated reveal>
     <q-toolbar>
       <q-toolbar-title v-if="logo">
-        <q-img src="~assets/logo.svg" width="1.7rem" />
+        <q-img src="logo.svg" width="1.7rem" />
         <span class="q-ml-sm inline row text-secondary">
           <b>Celebrity</b>
           Fanalyzer

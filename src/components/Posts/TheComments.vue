@@ -9,7 +9,7 @@
             <q-item class="q-px-none">
               <q-item-section avatar>
                 <q-avatar>
-                  <q-img :src="comment.isAnonymous ? 'src/assets/anonymous.svg' : comment.author.photoURL" />
+                  <q-img :src="comment.isAnonymous ? '/icons/anonymous.svg' : comment.author.photoURL" />
                 </q-avatar>
               </q-item-section>
               <q-item-section>
