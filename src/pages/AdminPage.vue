@@ -29,7 +29,7 @@
         <q-tab v-if="userStore.isAdmin" name="errors" icon="error" label="Errors" />
       </q-tabs>
 
-      <q-tab-panels v-model="tab" animated swipeable>
+      <q-tab-panels animated style="padding-bottom: 2rem" swipeable v-model="tab">
         <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
           <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
         </q-tab-panel>
