@@ -59,7 +59,7 @@
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset spaced />
-      <section v-if="post?.author" class="flex items-center no-wrap q-pa-md">
+      <section v-if="post?.author" class="flex items-center no-wrap q-pa-md" @click="openProfile">
         <q-avatar size="6rem">
           <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
         </q-avatar>
@@ -78,11 +78,14 @@ import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 
 const props = defineProps(['collectionName', 'post', 'title'])
 defineEmits(['clickComments'])
+
+const router = useRouter()
 
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
@@ -107,6 +110,10 @@ async function dislike() {
 
 async function share(socialNetwork) {
   await shareStore.addShare(props.collectionName, props.post.id, socialNetwork).catch((error) => errorStore.throwError(error))
+}
+
+function openProfile() {
+  router.push(`fan/${props.post.author.username}`)
 }
 </script>
 
