@@ -24,10 +24,4 @@ if (import.meta.env.VITE_RELEASE_STAGE === 'production') {
   getAnalytics(app)
 }
 
-if (import.meta.env.VITE_RELEASE_STAGE === 'testing') {
-  // connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
-  // connectFirestoreEmulator(db, 'localhost', 8080)
-  // connectStorageEmulator(storage, 'localhost', 9199)
-}
-
 export { auth, db, storage }
