@@ -41,6 +41,7 @@ export const useUserStore = defineStore('user', {
     isLoading: (state) => state._isLoading,
     isWriter: (getters) => getters.getUser.role === 'Writer'
   },
+
   actions: {
     async fetchUsers() {
       this._isLoading = true
@@ -127,6 +128,16 @@ export const useUserStore = defineStore('user', {
           await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
             this.$patch({ _user: { uid: document.id, ...document.data() } })
           })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async checkUsernameAvailability(username) {
+      this._isLoading = true
+      return await getDocs(query(collection(db, 'users'), where('uid', '!=', this.getUser.uid)))
+        .then((querySnapshot) => {
+          const usernames = querySnapshot.docs.map((document) => document.data().username)
+          return usernames.some((name) => name?.toLowerCase() === username?.toLowerCase())
         })
         .finally(() => (this._isLoading = false))
     },
