@@ -4,6 +4,12 @@
     <q-input debounce="400" label="Username" :prefix="origin" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username" />
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
+    <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
+    <q-input debounce="400" label="Facebook" prefix="https://facebook.com/" v-model.trim="user.facebook" />
+    <q-input debounce="400" label="Linkedin" prefix="https://linkedin.com/in/" v-model.trim="user.linkedin" />
+    <q-input debounce="400" label="Telegram" prefix="https://telegram.com/" v-model.trim="user.telegram" />
+    <q-input debounce="400" label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
+
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
     <q-input label="Data 2" v-model="user.data2" />
