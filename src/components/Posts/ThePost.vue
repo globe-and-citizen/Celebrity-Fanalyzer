@@ -59,7 +59,7 @@
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset spaced />
-      <section v-if="post?.author" class="flex items-center no-wrap q-pa-md" @click="openProfile">
+      <section v-if="post?.author" class="cursor-pointer flex items-center no-wrap q-pa-md" @click="openProfile">
         <q-avatar size="6rem">
           <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
         </q-avatar>
