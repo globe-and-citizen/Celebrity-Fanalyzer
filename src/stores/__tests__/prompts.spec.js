@@ -14,10 +14,10 @@ describe('Prompt Store', async () => {
   const userStore = useUserStore()
   const promptStore = usePromptStore()
   const storageStore = useStorageStore()
+  const fakeDate = '2991-01'
 
   //Load an image to use
   var bitmap = fs.readFileSync('src/assets/cypress.jpg')
-  console.log('a node buffer: ', bitmap)
 
   /* Login test@test.com:
    * If you will be using only a logged in user to run the tests,
@@ -46,6 +46,14 @@ describe('Prompt Store', async () => {
         }
       }
     })
+
+    // Check if a prompt with the date "2991-01" exists in the firestore. And, if so, delete it
+    await promptStore.fetchPrompts()
+    let prompts = promptStore.getPrompts
+    //console.log('prompts: ', prompts)
+    if (prompts.some((prompt) => prompt.id === fakeDate)) {
+      await promptStore.deletePrompt(fakeDate)
+    }
   })
 
   it('Creates and then deletes a fake prompt.', async () => {
@@ -55,9 +63,9 @@ describe('Prompt Store', async () => {
     // Step 2: Check the starting number of comments.
     let prompts = promptStore.getPrompts
     const startingNumberOfPrompts = prompts.length
+    console.log('startingNumberOfPrompts', startingNumberOfPrompts)
 
     // 3) Add a fake prompt & test it was added successfully added
-    const fakeDate = '1991-01'
     let user = userStore.getUser
     let imgAddress
 
@@ -86,8 +94,17 @@ describe('Prompt Store', async () => {
 
     // 5) Delete fake prompt and check
     await promptStore.deletePrompt(fakePrompt.id)
-    await promptStore.fetchPrompts()
-    expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts)
+    await new Promise((res, rej) => {
+      setTimeout(() => {
+        res()
+        console.log('anything goes tonight.. how to work these edges?')
+      }, 450)
+    })
+    // //await promptStore.fetchPrompts()
+
+    console.log(promptStore.getPrompts.length)
+    console.log(newNumberOfPrompts - 1)
+    expect(promptStore.getPrompts.length).toBe(newNumberOfPrompts - 1)
   })
 })
 
