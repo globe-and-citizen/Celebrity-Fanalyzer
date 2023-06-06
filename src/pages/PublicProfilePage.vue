@@ -2,60 +2,38 @@
   <TheHeader v-if="user?.uid" feedbackButton :title="user.role + ' Profile'" />
   <q-page-container>
     <q-page v-if="user?.uid">
-      <q-card>
+      <q-card flat>
         <q-card-section class="flex items-center no-wrap q-gutter-x-md">
           <q-avatar size="7rem">
             <q-img :src="user.photoURL" />
           </q-avatar>
           <h5 class="q-my-none">{{ user.displayName }}</h5>
           <div class="col-grow text-right">
-            <q-btn
-              v-if="user.facebook"
-              flat
-              :href="`https://facebook.com/${user.facebook}`"
-              icon="img:/icons/facebook.svg"
-              round
-              target="_blank"
-            />
-            <q-btn
-              v-if="user.instagram"
-              flat
-              :href="`https://instagram.com/${user.instagram}`"
-              icon="img:/icons/instagram.svg"
-              round
-              target="_blank"
-            />
-            <q-btn
-              v-if="user.linkedin"
-              flat
-              :href="`https://linkedin.com/in/${user.linkedin}`"
-              icon="img:/icons/linkedin.svg"
-              round
-              target="_blank"
-            />
-            <q-btn
-              v-if="user.telegram"
-              flat
-              :href="`https://telegram.com/${user.telegram}`"
-              icon="img:/icons/telegram.svg"
-              round
-              target="_blank"
-            />
-            <q-btn
-              v-if="user.twitter"
-              flat
-              :href="`https://twitter.com/${user.twitter}`"
-              icon="img:/icons/twitter.svg"
-              round
-              target="_blank"
-            />
+            <span v-for="(socialNetwork, index) in socialNetworks" :key="index">
+              <q-btn
+                v-if="user[socialNetwork.name]"
+                flat
+                :href="socialNetwork.link + user[socialNetwork.name]"
+                :icon="`img:/icons/${socialNetwork.name}.svg`"
+                round
+                target="_blank"
+              />
+            </span>
           </div>
         </q-card-section>
         <q-card-section>
-          <p class="text-body1" style="white-space: pre-line">{{ user.bio }}</p>
+          <p class="q-mb-none text-body1" style="white-space: pre-line">{{ user.bio }}</p>
         </q-card-section>
+        <q-separator spaced inset />
         <q-card-section>
-          <b>- Prompts/Entries will be here...</b>
+          <div class="justify-center row">
+            <div v-for="post in computedPosts" class="col-sm-4 col-xs-6 q-px-xs" :key="post.id">
+              <q-img class="rounded-borders" height="12rem" :ratio="1" :src="post.image" />
+              <p class="q-mb-none text-caption">{{ dayMonthYear(post.created) }} &bullet; {{ post.title }}</p>
+              <span v-html="post.description.substring(0, 30)"></span>
+              <span v-if="post.description.length > 30">...</span>
+            </div>
+          </div>
         </q-card-section>
       </q-card>
     </q-page>
@@ -64,14 +42,28 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { dayMonthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+const entryStore = useEntryStore()
+const errorStore = useErrorStore()
+const promptStore = usePromptStore()
 const userStore = useUserStore()
 
+const computedPosts = ref()
 const user = ref({})
+
+const socialNetworks = [
+  { name: 'facebook', link: 'https://facebook.com/' },
+  { name: 'instagram', link: 'https://instagram.com/' },
+  { name: 'linkedin', link: 'https://linkedin.com/in/' },
+  { name: 'telegram', link: 'https://web.telegram.org/a/#' },
+  { name: 'twitter', link: 'https://twitter.com/' }
+]
 
 onMounted(async () => {
   if (!userStore.getUsers.length) {
@@ -84,6 +76,17 @@ onMounted(async () => {
     router.push('/')
   }
 
-  console.log(user.value)
+  if (!promptStore.getPrompts.length) {
+    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+  }
+  const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author.uid === user.value.uid)
+
+  if (!entryStore.getEntries.length) {
+    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  }
+  const filteredEntries = entryStore.getEntries.filter((entry) => entry.author.uid === user.value.uid)
+
+  computedPosts.value = [...filteredPrompts, ...filteredEntries].sort((a, b) => b.date - a.date)
+  console.log(computedPosts.value)
 })
 </script>
