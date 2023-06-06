@@ -74,6 +74,7 @@ onMounted(async () => {
 
   if (!user.value) {
     router.push('/')
+    return
   }
 
   if (!promptStore.getPrompts.length) {
