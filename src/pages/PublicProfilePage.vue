@@ -70,7 +70,7 @@ onMounted(async () => {
     await userStore.fetchUsers()
   }
 
-  user.value = userStore.getUsers.find((user) => user.username === router.currentRoute.value.params.username)
+  user.value = userStore.getUsers.find((user) => [user.username, user.uid].includes(router.currentRoute.value.params.username))
 
   if (!user.value) {
     router.push('/')
@@ -88,6 +88,5 @@ onMounted(async () => {
   const filteredEntries = entryStore.getEntries.filter((entry) => entry.author.uid === user.value.uid)
 
   computedPosts.value = [...filteredPrompts, ...filteredEntries].sort((a, b) => b.date - a.date)
-  console.log(computedPosts.value)
 })
 </script>

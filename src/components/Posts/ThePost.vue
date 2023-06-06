@@ -113,7 +113,7 @@ async function share(socialNetwork) {
 }
 
 function openProfile() {
-  router.push(`fan/${props.post.author.username}`)
+  router.push(`fan/${props.post.author.username || props.post.author.uid}`)
 }
 </script>
 
