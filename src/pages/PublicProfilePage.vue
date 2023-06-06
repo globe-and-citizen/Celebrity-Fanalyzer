@@ -3,12 +3,14 @@
   <q-page-container>
     <q-page v-if="user?.uid">
       <q-card flat>
-        <q-card-section class="flex items-center no-wrap q-gutter-x-md">
-          <q-avatar size="7rem">
-            <q-img :src="user.photoURL" />
-          </q-avatar>
-          <h5 class="q-my-none">{{ user.displayName }}</h5>
-          <div class="col-grow text-right">
+        <q-card-section class="flex items-center">
+          <div class="flex items-center q-gutter-x-md">
+            <q-avatar size="7rem">
+              <q-img :src="user.photoURL" />
+            </q-avatar>
+            <h5 class="q-my-none">{{ user.displayName }}</h5>
+          </div>
+          <div class="col text-right">
             <span v-for="(socialNetwork, index) in socialNetworks" :key="index">
               <q-btn
                 v-if="user[socialNetwork.name]"
