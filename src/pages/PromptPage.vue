@@ -91,7 +91,7 @@ const promptByRoute = () => {
         case `/${route.params.year}/${route.params.month}`:
           return prompt.date === route.params.year + '-' + route.params.month
         case `/${route.params.slug}`:
-          return prompt.slug === route.params.slug
+          return [route.params.slug, route.path].includes(prompt.slug)
         default:
           return false
       }
