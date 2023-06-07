@@ -68,11 +68,7 @@ const socialNetworks = [
 ]
 
 onMounted(async () => {
-  if (!userStore.getUsers.length) {
-    await userStore.fetchUsers()
-  }
-
-  user.value = userStore.getUsers.find((user) => [user.username, user.uid].includes(router.currentRoute.value.params.username))
+  await userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then((res) => (user.value = res))
 
   if (!user.value) {
     router.push('/')

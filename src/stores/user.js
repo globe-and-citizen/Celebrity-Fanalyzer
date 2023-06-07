@@ -53,6 +53,13 @@ export const useUserStore = defineStore('user', {
         .finally(() => (this._isLoading = false))
     },
 
+    async getUserByUidOrUsername(id) {
+      this._isLoading = true
+      return await getDocs(query(collection(db, 'users'), or(where('uid', '==', id), where('username', '==', id))))
+        .then((querySnapshot) => querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))[0])
+        .finally(() => (this._isLoading = false))
+    },
+
     async fetchAdminsAndWriters() {
       this._isLoading = true
       await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('population', '==', 'Writer'))))
