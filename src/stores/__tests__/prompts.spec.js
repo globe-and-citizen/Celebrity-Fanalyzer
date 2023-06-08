@@ -3,8 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import { useCommentStore, useEntryStore, useUserStore, usePromptStore, useStorageStore } from 'src/stores'
-import { ref, reactive } from 'vue'
+import { useUserStore, usePromptStore, useStorageStore } from 'src/stores'
 import fs from 'fs'
 
 describe('Prompt Store', async () => {
@@ -63,14 +62,10 @@ describe('Prompt Store', async () => {
     // Step 2: Check the starting number of comments.
     let prompts = promptStore.getPrompts
     const startingNumberOfPrompts = prompts.length
-    console.log('startingNumberOfPrompts', startingNumberOfPrompts)
 
     // 3) Add a fake prompt & test it was added successfully added
     let user = userStore.getUser
-    let imgAddress
-
-    //const aBuffer = Buffer.from('A fake picture', 'utf-8')
-    imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
+    let imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
 
     const fakePrompt = {
       author: { label: user.displayName, value: user.uid },
@@ -85,7 +80,7 @@ describe('Prompt Store', async () => {
     }
 
     await promptStore.addPrompt(fakePrompt)
-    await promptStore.fetchPrompts()
+    //await promptStore.fetchPrompts()
     let expandedPrompts = promptStore.getPrompts
     let newNumberOfPrompts = expandedPrompts.length
     expect(newNumberOfPrompts).toBe(startingNumberOfPrompts + 1)
@@ -94,17 +89,8 @@ describe('Prompt Store', async () => {
 
     // 5) Delete fake prompt and check
     await promptStore.deletePrompt(fakePrompt.id)
-    await new Promise((res, rej) => {
-      setTimeout(() => {
-        res()
-        console.log('anything goes tonight.. how to work these edges?')
-      }, 450)
-    })
-    // //await promptStore.fetchPrompts()
-
-    console.log(promptStore.getPrompts.length)
-    console.log(newNumberOfPrompts - 1)
-    expect(promptStore.getPrompts.length).toBe(newNumberOfPrompts - 1)
+    const numberOfPromptsAfterDeletion = promptStore.getPrompts.length
+    expect(numberOfPromptsAfterDeletion).toBe(newNumberOfPrompts - 1)
   })
 })
 
