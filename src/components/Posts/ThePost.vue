@@ -59,7 +59,11 @@
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset spaced />
-      <section v-if="post?.author" class="cursor-pointer flex items-center no-wrap q-pa-md" @click="openProfile">
+      <section
+        v-if="post?.author"
+        class="cursor-pointer flex items-center no-wrap q-pa-md"
+        @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
+      >
         <q-avatar size="6rem">
           <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
         </q-avatar>
@@ -110,10 +114,6 @@ async function dislike() {
 
 async function share(socialNetwork) {
   await shareStore.addShare(props.collectionName, props.post.id, socialNetwork).catch((error) => errorStore.throwError(error))
-}
-
-function openProfile() {
-  router.push(`/fan/${props.post.author.username || props.post.author.uid}`)
 }
 </script>
 

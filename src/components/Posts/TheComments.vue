@@ -9,7 +9,13 @@
             <q-item class="q-px-none">
               <q-item-section avatar>
                 <q-avatar>
-                  <q-img :src="comment.isAnonymous ? '/icons/anonymous.svg' : comment.author.photoURL" />
+                  <q-img v-if="comment.isAnonymous" src="/icons/anonymous.svg" />
+                  <q-img
+                    v-else
+                    class="cursor-pointer"
+                    :src="comment.author.photoURL"
+                    @click="router.push(`/fan/${comment.author.username || comment.author.uid}`)"
+                  />
                 </q-avatar>
               </q-item-section>
               <q-item-section>
@@ -244,6 +250,7 @@ import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   collectionName: { type: String, required: true },
@@ -251,6 +258,7 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
+const router = useRouter()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
