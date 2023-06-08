@@ -68,6 +68,7 @@ describe('Comments Store', () => {
         res()
       }, 1000)
     })
+    console.log({startingNumberOfComments, newOne: commentStore.getComments.length })
     expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5): Delete fake comment. Start by retrieving it.
@@ -81,7 +82,7 @@ describe('Comments Store', () => {
       //Once again, we must await the realtime listener to run.
       setTimeout(() => {
         res()
-      }, 150)
+      }, 1500)
     })
 
     expect(commentStore.getComments.length).toBe(startingNumberOfComments)
