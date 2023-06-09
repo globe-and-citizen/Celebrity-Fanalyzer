@@ -58,7 +58,7 @@
         <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
-      <q-separator inset spaced />
+      <q-separator inset />
       <section
         v-if="post?.author"
         class="cursor-pointer flex items-center no-wrap q-pa-md"
