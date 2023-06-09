@@ -62,6 +62,7 @@
       <section
         v-if="post?.author"
         class="cursor-pointer flex items-center no-wrap q-pa-md"
+        data-test="author-section"
         @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
       >
         <q-avatar size="6rem">

@@ -28,7 +28,7 @@
         </q-card-section>
         <q-separator spaced inset />
         <q-card-section class="justify-center row">
-          <div v-for="post in computedPosts" class="col-sm-4 col-xs-6" :key="post.id" @click="goToUrl(post.slug)">
+          <div v-for="post in computedPosts" class="col-sm-4 col-xs-6" data-test="posts-section" :key="post.id" @click="goToUrl(post.slug)">
             <div class="cursor-pointer q-mx-xs">
               <q-img class="rounded-borders" height="12rem" :ratio="1" :src="post.image" />
               <p class="q-mb-none text-caption">{{ dayMonthYear(post.created) }} &bullet; {{ post.title }}</p>
