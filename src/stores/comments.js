@@ -122,8 +122,17 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(collectionName, documentId, commentId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
       this._isLoading = true
-      await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId)).finally(() => (this._isLoading = false))
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, collectionName, documentId, 'comments', commentId), {
+          author: userStore.getUserIpHash,
+          isAnonymous: true,
+          text: 'Comment Deleted'
+        })
+      }).finally(() => (this._isLoading = false))
     },
 
     async deleteCommentsCollection(collectionName, documentId) {
