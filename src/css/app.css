@@ -22,3 +22,7 @@ html {
 .q-toolbar {
   min-height: 4rem;
 }
+
+.q-field__prefix {
+  padding-right: 0;
+}
