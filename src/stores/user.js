@@ -41,6 +41,7 @@ export const useUserStore = defineStore('user', {
     isLoading: (state) => state._isLoading,
     isWriter: (getters) => getters.getUser.role === 'Writer'
   },
+
   actions: {
     async fetchUsers() {
       this._isLoading = true
@@ -49,6 +50,13 @@ export const useUserStore = defineStore('user', {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })
         })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async getUserByUidOrUsername(id) {
+      this._isLoading = true
+      return await getDocs(query(collection(db, 'users'), or(where('uid', '==', id), where('username', '==', id))))
+        .then((querySnapshot) => querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))[0])
         .finally(() => (this._isLoading = false))
     },
 
@@ -127,6 +135,16 @@ export const useUserStore = defineStore('user', {
           await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
             this.$patch({ _user: { uid: document.id, ...document.data() } })
           })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async checkUsernameAvailability(username) {
+      this._isLoading = true
+      return await getDocs(query(collection(db, 'users'), where('uid', '!=', this.getUser.uid)))
+        .then((querySnapshot) => {
+          const usernames = querySnapshot.docs.map((document) => document.data().username)
+          return usernames.some((name) => name?.toLowerCase() === username?.toLowerCase())
         })
         .finally(() => (this._isLoading = false))
     },

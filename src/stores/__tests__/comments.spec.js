@@ -3,8 +3,17 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import { useCommentStore, useEntryStore, useUserStore, usePromptStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { ref, reactive } from 'vue'
+
+// Snapshot Listener Helper -- A Shameless Hack
+async function letSnapshotListenerRun(delay) {
+  return new Promise((res, rej) => {
+    setTimeout(() => {
+      res()
+    }, delay)
+  })
+}
 
 describe('Comments Store', () => {
   setActivePinia(createPinia())
@@ -12,7 +21,7 @@ describe('Comments Store', () => {
   const commentStore = useCommentStore()
 
   beforeEach(async () => {
-    // In the store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
+    // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
     global.fetch = vi.fn(async () => {
       return {
         text: () => {
@@ -37,54 +46,32 @@ describe('Comments Store', () => {
   })
 
   it('Create and then delete a fake comment in here', async () => {
-    // 1) Retrieve an entry to comment on.
+    // Step 1: Retrieve an entry to comment on.
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
 
     // Step 2: Check the starting number of comments.
-
     await commentStore.fetchComments('entries', firstEntry.value.id)
-
-    await new Promise((res, rej) => {
-      //Because the realtime updates invoke a separate listener, 150ms must be given for this listener to work.
-      setTimeout(() => {
-        res()
-      }, 150)
-    })
-
+    await letSnapshotListenerRun(500)
     const startingNumberOfComments = commentStore.getComments.length
 
     // 3) Add a fake comment & test it was added successfully added
-    let myComment = reactive({})
-    myComment.text = "sup. I'm here to rock N test"
+    let myComment = reactive({ text: "sup. I'm here to rock N test" })
     await commentStore.addComment('entries', myComment, firstEntry.value)
 
     // 4) Test to see that the number of comments has increased by one
-    await commentStore.fetchComments('entries', firstEntry.value.id)
-    await new Promise((res, rej) => {
-      //Once again, we must await the realtime listener to run.
-      setTimeout(() => {
-        res()
-      }, 1000)
-    })
-    console.log({startingNumberOfComments, newOne: commentStore.getComments.length })
+    await commentStore.fetchComments('entries', firstEntry.value.id) // ADD LISTENER
+
     expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5): Delete fake comment. Start by retrieving it.
     const comments = commentStore.getComments
     const commentsOrdered = comments.sort((a, b) => b.created - a.created)
     commentStore.deleteComment('entries', firstEntry.value.id, commentsOrdered[0].id)
+    await letSnapshotListenerRun(500)
 
     // 6) Check to see that the comments has reduced back to the original value.
-    await commentStore.fetchComments('entries', firstEntry.value.id)
-    await new Promise((res, rej) => {
-      //Once again, we must await the realtime listener to run.
-      setTimeout(() => {
-        res()
-      }, 1500)
-    })
-
     expect(commentStore.getComments.length).toBe(startingNumberOfComments)
   })
 })

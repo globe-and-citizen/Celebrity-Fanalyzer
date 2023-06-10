@@ -24,6 +24,12 @@ export function shortMonthDayTime(timestamp) {
     .join(' - ') // Dec 10 - 14:18
 }
 
+export function dayMonthYear(timestamp) {
+  const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
+
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) // 10 Dec, 2022
+}
+
 export function currentYearMonth() {
   return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
 }
