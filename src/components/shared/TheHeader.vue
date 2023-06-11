@@ -1,14 +1,14 @@
 <template>
   <q-header class="bg-white" elevated reveal>
     <q-toolbar>
-      <q-toolbar-title v-if="logo">
-        <q-img src="~assets/logo.svg" width="1.7rem" />
+      <q-toolbar-title v-if="logo" class="flex items-center">
+        <q-img src="logo.svg" width="1.7rem" />
         <span class="q-ml-sm inline row text-secondary">
           <b>Celebrity</b>
           Fanalyzer
         </span>
       </q-toolbar-title>
-      <q-toolbar-title>
+      <q-toolbar-title v-if="backButton || title || subtitle">
         <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
         <b class="text-secondary">{{ title }}</b>
         <span class="float-right text-secondary">{{ subtitle }}</span>

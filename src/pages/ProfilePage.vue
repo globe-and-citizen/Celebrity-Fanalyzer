@@ -43,15 +43,15 @@
       <q-separator />
 
       <q-tab-panels v-model="tab" animated>
-        <q-tab-panel class="q-gutter-y-md" name="profile">
+        <q-tab-panel name="profile">
           <ProfileTab />
         </q-tab-panel>
 
-        <q-tab-panel class="q-gutter-y-md" name="feedback">
+        <q-tab-panel name="feedback">
           <FeedbackTab />
         </q-tab-panel>
 
-        <q-tab-panel class="q-gutter-y-md" name="settings">
+        <q-tab-panel name="settings">
           <SettingsTab />
         </q-tab-panel>
       </q-tab-panels>
@@ -65,7 +65,7 @@ import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
 import LoginForm from 'src/components/Profile/LoginForm.vue'
 import ProfileTab from 'src/components/Profile/ProfileTab.vue'
 import SettingsTab from 'src/components/Profile/SettingsTab.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
@@ -79,6 +79,7 @@ const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
+  tab.value = state._profileTab
 })
 
 function onRejected() {

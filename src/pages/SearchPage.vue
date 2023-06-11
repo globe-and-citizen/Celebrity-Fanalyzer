@@ -23,7 +23,7 @@
         <ArticleSkeleton />
       </section>
       <q-tab-panels animated swipeable v-model="category" data-test="prompt-list">
-        <q-tab-panel v-for="(categ, i) in computedCategories" :key="i" :name="categ.value">
+        <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
           <TransitionGroup name="prompt" tag="div">
             <ItemCard
               v-for="prompt in computedPrompts"
@@ -43,10 +43,10 @@
 </template>
 
 <script setup>
-import ArticleSkeleton from 'src/components/ArticleSkeleton.vue'
-import ItemCard from 'src/components/ItemCard.vue'
-import TheEntries from 'src/components/TheEntries.vue'
-import TheHeader from 'src/components/TheHeader.vue'
+import ArticleSkeleton from 'src/components/shared/ArticleSkeleton.vue'
+import ItemCard from 'src/components/shared/ItemCard.vue'
+import TheEntries from 'src/components/shared/TheEntries.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -104,11 +104,20 @@ const computedEntries = computed(() => {
 })
 </script>
 
-<style>
+<style lang="scss" scoped>
+.panel {
+  padding-bottom: 0;
+  padding-top: 0;
+  @media (max-width: 500px) {
+    padding: 0;
+  }
+}
+
 .prompt-enter-active,
 .prompt-leave-active {
   transition: all 0.3s ease;
 }
+
 .prompt-enter-from,
 .prompt-leave-to {
   opacity: 0;

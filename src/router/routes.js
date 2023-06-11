@@ -30,6 +30,10 @@ const routes = [
         component: () => import('pages/EntryPage.vue')
       },
       {
+        path: 'fan/:username',
+        component: () => import('pages/PublicProfilePage.vue')
+      },
+      {
         path: 'profile',
         component: () => import('pages/ProfilePage.vue')
       },

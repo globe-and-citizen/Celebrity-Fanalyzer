@@ -53,12 +53,12 @@
         <!-- <q-btn
             data-test="anonymous-button"
             :disable="userStore.getUser.isAnonymous"
-            icon="img:src/assets/anonymous.svg"
+            icon="img:/icons/anonymous.svg"
             :label="userStore.getUser.isAnonymous ? 'Signed Anonymously' : 'Sign as Anonymous'"
             rounded
             @click="anonymousSign"
           /> -->
-        <q-btn data-test="google-button" icon="img:src/assets/google.svg" label="Sign with Google" rounded @click="googleSign" />
+        <q-btn data-test="google-button" icon="img:/icons/google.svg" label="Sign with Google" rounded @click="googleSign" />
       </div>
     </q-card>
   </q-page>

@@ -1,13 +1,12 @@
 {
   "name": "celebrity-fanalyzer",
-  "version": "1.3",
+  "version": "1.4",
   "description": "Celebrities Over Analyzed",
   "productName": "Celebrity Fanalyzer",
   "private": true,
   "scripts": {
     "build": "quasar build --mode pwa",
     "dev": "quasar dev --mode pwa",
-    "dev:test": "cross-env VITE_RELEASE_STAGE=testing quasar dev --mode pwa",
     "dev:e2e": "cross-env NODE_ENV=test VITE_MODE=E2E quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",

@@ -1,6 +1,6 @@
 <template>
   <q-page-container style="padding-bottom: 0">
-    <q-page class="bg-white">
+    <q-page class="bg-white" style="padding-bottom: 7rem">
       <TheHeader feedbackButton :title="title" />
       <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
       <section class="q-pa-md" style="margin-top: 100%">
@@ -58,8 +58,13 @@
         <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
-      <q-separator inset spaced />
-      <section v-if="post?.author" class="flex items-center no-wrap q-pa-md">
+      <q-separator inset />
+      <section
+        v-if="post?.author"
+        class="cursor-pointer flex items-center no-wrap q-pa-md"
+        data-test="author-section"
+        @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
+      >
         <q-avatar size="6rem">
           <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
         </q-avatar>
@@ -74,15 +79,18 @@
 </template>
 
 <script setup>
-import TheHeader from 'src/components/TheHeader.vue'
+import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 
 const props = defineProps(['collectionName', 'post', 'title'])
 defineEmits(['clickComments'])
+
+const router = useRouter()
 
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
