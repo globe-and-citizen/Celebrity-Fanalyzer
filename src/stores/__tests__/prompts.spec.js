@@ -3,8 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import { useCommentStore, useEntryStore, useUserStore, usePromptStore, useStorageStore } from 'src/stores'
-import { ref, reactive } from 'vue'
+import { useUserStore, usePromptStore, useStorageStore } from 'src/stores'
 import fs from 'fs'
 
 describe('Prompt Store', async () => {
@@ -14,10 +13,10 @@ describe('Prompt Store', async () => {
   const userStore = useUserStore()
   const promptStore = usePromptStore()
   const storageStore = useStorageStore()
+  const fakeDate = '2991-01'
 
   //Load an image to use
   var bitmap = fs.readFileSync('src/assets/cypress.jpg')
-  console.log('a node buffer: ', bitmap)
 
   /* Login test@test.com:
    * If you will be using only a logged in user to run the tests,
@@ -46,6 +45,14 @@ describe('Prompt Store', async () => {
         }
       }
     })
+
+    // Check if a prompt with the date "2991-01" exists in the firestore. And, if so, delete it
+    await promptStore.fetchPrompts()
+    let prompts = promptStore.getPrompts
+    //console.log('prompts: ', prompts)
+    if (prompts.some((prompt) => prompt.id === fakeDate)) {
+      await promptStore.deletePrompt(fakeDate)
+    }
   })
 
   it('Creates and then deletes a fake prompt.', async () => {
@@ -57,12 +64,8 @@ describe('Prompt Store', async () => {
     const startingNumberOfPrompts = prompts.length
 
     // 3) Add a fake prompt & test it was added successfully added
-    const fakeDate = '1991-01'
     let user = userStore.getUser
-    let imgAddress
-
-    //const aBuffer = Buffer.from('A fake picture', 'utf-8')
-    imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
+    let imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
 
     const fakePrompt = {
       author: { label: user.displayName, value: user.uid },
@@ -77,7 +80,7 @@ describe('Prompt Store', async () => {
     }
 
     await promptStore.addPrompt(fakePrompt)
-    await promptStore.fetchPrompts()
+    //await promptStore.fetchPrompts()
     let expandedPrompts = promptStore.getPrompts
     let newNumberOfPrompts = expandedPrompts.length
     expect(newNumberOfPrompts).toBe(startingNumberOfPrompts + 1)
@@ -86,8 +89,8 @@ describe('Prompt Store', async () => {
 
     // 5) Delete fake prompt and check
     await promptStore.deletePrompt(fakePrompt.id)
-    await promptStore.fetchPrompts()
-    expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts)
+    const numberOfPromptsAfterDeletion = promptStore.getPrompts.length
+    expect(numberOfPromptsAfterDeletion).toBe(newNumberOfPrompts - 1)
   })
 })
 

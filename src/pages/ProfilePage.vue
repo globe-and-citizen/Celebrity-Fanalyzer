@@ -43,15 +43,15 @@
       <q-separator />
 
       <q-tab-panels v-model="tab" animated>
-        <q-tab-panel class="q-gutter-y-md" name="profile">
+        <q-tab-panel name="profile">
           <ProfileTab />
         </q-tab-panel>
 
-        <q-tab-panel class="q-gutter-y-md" name="feedback">
+        <q-tab-panel name="feedback">
           <FeedbackTab />
         </q-tab-panel>
 
-        <q-tab-panel class="q-gutter-y-md" name="settings">
+        <q-tab-panel name="settings">
           <SettingsTab />
         </q-tab-panel>
       </q-tab-panels>
