@@ -156,6 +156,14 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, documentId, 'comments', reply.id), reply).finally(() => (this._isLoading = false))
+    },
+
+    async removeCommentFromFirestore(collectionName, documentId, commentId) {
+      const userStore = useUserStore()
+      await userStore.fetchUserIp()
+
+      this._isLoading = true
+      await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId)).finally(() => (this._isLoading = false))
     }
   }
 })
