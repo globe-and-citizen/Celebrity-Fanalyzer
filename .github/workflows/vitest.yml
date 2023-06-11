@@ -27,3 +27,6 @@ jobs:
           nohup npm run emulators &> emulators.log &
           sleep 1m
           npm run test
+
+      - name: ✅ Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
