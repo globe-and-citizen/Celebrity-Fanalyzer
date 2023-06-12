@@ -56,6 +56,16 @@
           <q-tooltip>Comments</q-tooltip>
         </q-btn>
         <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
+        <q-btn
+          v-if="userStore.isAuthenticated"
+          color="blue"
+          flat
+          :icon="userStore.getUser.subscriptions?.includes(props.post.id) ? 'notifications' : 'notifications_none'"
+          round
+          @click="subscribe"
+        >
+          <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
+        </q-btn>
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset />
@@ -115,6 +125,10 @@ async function dislike() {
 
 async function share(socialNetwork) {
   await shareStore.addShare(props.collectionName, props.post.id, socialNetwork).catch((error) => errorStore.throwError(error))
+}
+
+async function subscribe() {
+  await userStore.toggleSubscription(props.post.id).catch((error) => errorStore.throwError(error))
 }
 </script>
 

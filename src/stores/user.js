@@ -6,7 +6,20 @@ import {
   signInWithPopup,
   signOut
 } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
+import {
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  or,
+  query,
+  runTransaction,
+  setDoc,
+  where
+} from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
@@ -102,8 +115,8 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await signInWithEmailAndPassword(auth, user.email, user.password)
         .then(async (result) => {
-          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
-            this.$patch({ _user: { uid: document.id, ...document.data() } })
+          onSnapshot(doc(db, 'users', result.user.uid), (doc) => {
+            this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
         })
         .finally(() => (this._isLoading = false))
@@ -132,11 +145,24 @@ export const useUserStore = defineStore('user', {
             await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
           }
 
-          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
-            this.$patch({ _user: { uid: document.id, ...document.data() } })
+          onSnapshot(doc(db, 'users', result.user.uid), (doc) => {
+            this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
         })
         .finally(() => (this._isLoading = false))
+    },
+
+    async toggleSubscription(documentId) {
+      this._isLoading = true
+      await runTransaction(db, async (transaction) => {
+        if (this.getUser.subscriptions?.includes(documentId)) {
+          transaction.update(this.getUserRef, { subscriptions: arrayRemove(documentId) })
+          this._user.subscriptions = this.getUser.subscriptions.filter((id) => id !== documentId)
+        } else {
+          transaction.update(this.getUserRef, { subscriptions: arrayUnion(documentId) })
+          this._user.subscriptions = [...this.getUser.subscriptions, documentId]
+        }
+      }).finally(() => (this._isLoading = false))
     },
 
     async checkUsernameAvailability(username) {
