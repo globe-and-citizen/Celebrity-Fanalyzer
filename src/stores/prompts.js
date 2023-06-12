@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   orderBy,
   query,
   runTransaction,
@@ -79,21 +80,20 @@ export const usePromptStore = defineStore('prompts', {
       }
 
       this._isLoading = true
-      await getDocs(collection(db, 'prompts'))
-        .then((querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      onSnapshot(collection(db, 'prompts'), (querySnapshot) => {
+        const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const prompt of prompts) {
-            prompt.author = userStore.getUserById(prompt.author.id)
-            prompt.entries = prompt.entries?.map((entry) => entry.id)
-          }
+        for (const prompt of prompts) {
+          prompt.author = userStore.getUserById(prompt.author.id)
+          prompt.entries = prompt.entries?.map((entry) => entry.id)
+        }
 
-          prompts.reverse()
+        prompts.reverse()
 
-          this._prompts = []
-          this.$patch({ _prompts: prompts })
-        })
-        .finally(() => (this._isLoading = false))
+        this._prompts = []
+        this.$patch({ _prompts: prompts })
+      })
+      this._isLoading = false
     },
 
     async addPrompt(payload) {

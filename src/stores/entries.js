@@ -6,6 +6,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   runTransaction,
   setDoc,
@@ -40,19 +41,18 @@ export const useEntryStore = defineStore('entries', {
       }
 
       this._isLoading = true
-      await getDocs(collection(db, 'entries'))
-        .then((querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      onSnapshot(collection(db, 'entries'), (querySnapshot) => {
+        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const entry of entries) {
-            entry.author = userStore.getUserById(entry.author.id)
-            entry.prompt = entry.prompt.id
-          }
+        for (const entry of entries) {
+          entry.author = userStore.getUserById(entry.author.id)
+          entry.prompt = entry.prompt.id
+        }
 
-          this._entries = []
-          this.$patch({ _entries: entries })
-        })
-        .finally(() => (this._isLoading = false))
+        this._entries = []
+        this.$patch({ _entries: entries })
+      })
+      this._isLoading = false
     },
 
     async fetchEntryBySlug(slug) {
