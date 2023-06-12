@@ -60,8 +60,9 @@
           v-if="userStore.isAuthenticated"
           color="blue"
           flat
-          :icon="userStore.getUser.subscriptions?.includes(props.post.id) ? 'notifications' : 'notifications_none'"
-          round
+          :icon="userStore.getUser.subscriptions?.includes(props.post?.id) ? 'notifications' : 'notifications_none'"
+          :label="props.post?.subscribers?.length || 0"
+          rounded
           @click="subscribe"
         >
           <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
