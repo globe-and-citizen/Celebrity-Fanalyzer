@@ -24,6 +24,8 @@ import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
+import { useEntryStore } from './entries'
+import { usePromptStore } from './prompts'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -153,16 +155,51 @@ export const useUserStore = defineStore('user', {
     },
 
     async toggleSubscription(collectionName, documentId) {
+      const promptStore = usePromptStore()
+      const entryStore = useEntryStore()
+
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         if (this.getUser.subscriptions?.includes(documentId)) {
-          transaction.update(this.getUserRef, { subscriptions: arrayRemove(documentId) })
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(this.getUser.uid) })
+          transaction.update(this.getUserRef, { subscriptions: arrayRemove(documentId) })
           this._user.subscriptions = this.getUser.subscriptions.filter((id) => id !== documentId)
+          if (collectionName === 'prompts') {
+            promptStore._prompts = promptStore.getPrompts.map((prompt) => {
+              if (prompt.id === documentId) {
+                prompt.subscribers = prompt.subscribers.filter((id) => id !== this.getUser.uid)
+              }
+              return prompt
+            })
+          }
+          if (collectionName === 'entries') {
+            entryStore._entries = entryStore.getEntries.map((entry) => {
+              if (entry.id === documentId) {
+                entry.subscribers = entry.subscribers.filter((id) => id !== this.getUser.uid)
+              }
+              return entry
+            })
+          }
         } else {
-          transaction.update(this.getUserRef, { subscriptions: arrayUnion(documentId) })
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayUnion(this.getUser.uid) })
+          transaction.update(this.getUserRef, { subscriptions: arrayUnion(documentId) })
           this._user.subscriptions = [...this.getUser.subscriptions, documentId]
+          if (collectionName === 'prompts') {
+            promptStore._prompts = promptStore.getPrompts.map((prompt) => {
+              if (prompt.id === documentId) {
+                prompt.subscribers = [...prompt.subscribers, this.getUser.uid]
+              }
+              return prompt
+            })
+          }
+          if (collectionName === 'entries') {
+            entryStore._entries = entryStore.getEntries.map((entry) => {
+              if (entry.id === documentId) {
+                entry.subscribers = [...entry.subscribers, this.getUser.uid]
+              }
+              return entry
+            })
+          }
         }
       }).finally(() => (this._isLoading = false))
     },
