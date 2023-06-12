@@ -49,7 +49,6 @@ export const useEntryStore = defineStore('entries', {
           entry.prompt = entry.prompt.id
         }
 
-        this._entries = []
         this.$patch({ _entries: entries })
       })
       this._isLoading = false
