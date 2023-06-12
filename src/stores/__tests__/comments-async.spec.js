@@ -21,7 +21,7 @@ const watchWantedResponse = (callback, config = { timeout: 5000 }) => {
     }
   })
 }
-describe('', () => {
+describe('Async watcher ', () => {
   setActivePinia(createPinia())
   const entryStore = useEntryStore()
   const commentStore = useCommentStore()
@@ -77,7 +77,6 @@ describe('', () => {
     },
     { timeout: 50000 }
   )
-
   it(
     'Should fetch async the comment using await ',
     async () => {
@@ -91,16 +90,45 @@ describe('', () => {
       // Example usage
       await watchWantedResponse(() => {
         return commentStore.getComments.length > 0
-      })
-        .then(() => {
+      }).then(
+        () => {
           console.log('Comment are fetched')
-        })
-        .catch(() => {
-          console.log('Desired response is rejected')
-        })
+        },
+        { timeout: 50000 }
+      )
 
       const startingNumberOfComments = commentStore.getComments.length
       expect(startingNumberOfComments).toBeGreaterThan(0)
+    },
+    { timeout: 50000 }
+  )
+
+  it(
+    'Should fail fetch async the comment using await ',
+    async () => {
+      const firstEntry = ref({})
+      await entryStore.fetchEntries()
+      firstEntry.value = entryStore.getEntries[0]
+
+      // Step 2: Check the starting number of comments.
+      await commentStore.fetchComments('entries', firstEntry.value.id)
+
+      console.log('were a here')
+      // Example usage
+      await watchWantedResponse(
+        () => {
+          return commentStore.getComments.length > 0
+        },
+        { timeout: 1 }
+      )
+        .then(() => {
+          console.log('Comment are fetched')
+          expect(1 + 1).toBe(3)
+        })
+        .catch(() => {
+          console.log('Desired response is rejected')
+          expect(1 + 1).toBe(2)
+        })
     },
     { timeout: 50000 }
   )
