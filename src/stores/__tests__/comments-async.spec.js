@@ -132,4 +132,26 @@ describe('Async watcher ', () => {
     },
     { timeout: 50000 }
   )
+
+  it("user of done callback", ()=>new Promise(async (resolve, reject) => {
+
+    const firstEntry = ref({})
+    await entryStore.fetchEntries()
+    firstEntry.value = entryStore.getEntries[0]
+
+    setTimeout(() => {
+      // Try To reject after timout
+      reject()
+    }, 5000)
+    if (commentStore.getComments.length > 0) {
+      resolve()
+    } else {
+      const intervalId = setInterval(() => {
+        if (commentStore.getComments.length > 0) {
+          clearInterval(intervalId)
+          resolve()
+        }
+      }, 1000)
+    }
+  }))
 })
