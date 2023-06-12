@@ -26,7 +26,7 @@ jobs:
           npm install --save firebase-tools
           nohup npm run emulators &> emulators.log &
           sleep 1m
-          npm run test
+          npm run test:unit:coverage
 
       - name: ✅ Upload coverage to Codecov
         uses: codecov/codecov-action@v2
