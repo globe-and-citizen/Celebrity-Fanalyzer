@@ -1,5 +1,5 @@
 <template>
-  <TheHeader feedbackButton logo :backButton="false" />
+  <TheHeader logo notificationButton :backButton="false" />
 
   <q-page-container>
     <q-page class="q-pa-md">
