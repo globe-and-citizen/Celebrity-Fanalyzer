@@ -160,45 +160,39 @@ export const useUserStore = defineStore('user', {
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
+        const addToArray = (array, element) => [...array, element]
+        const removeFromArray = (array, element) => array.filter((item) => item !== element)
+
         if (this.getUser.subscriptions?.includes(documentId)) {
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(this.getUser.uid) })
           transaction.update(this.getUserRef, { subscriptions: arrayRemove(documentId) })
-          this._user.subscriptions = this.getUser.subscriptions.filter((id) => id !== documentId)
+          this._user.subscriptions = removeFromArray(this.getUser.subscriptions, documentId)
+
           if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) => {
-              if (prompt.id === documentId) {
-                prompt.subscribers = prompt.subscribers.filter((id) => id !== this.getUser.uid)
-              }
-              return prompt
-            })
+            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
+              prompt.id === documentId ? { ...prompt, subscribers: removeFromArray(prompt.subscribers, this.getUser.uid) } : prompt
+            )
           }
           if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) => {
-              if (entry.id === documentId) {
-                entry.subscribers = entry.subscribers.filter((id) => id !== this.getUser.uid)
-              }
-              return entry
-            })
+            entryStore._entries = entryStore.getEntries.map((entry) =>
+              entry.id === documentId ? { ...entry, subscribers: removeFromArray(entry.subscribers, this.getUser.uid) } : entry
+            )
           }
         } else {
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayUnion(this.getUser.uid) })
           transaction.update(this.getUserRef, { subscriptions: arrayUnion(documentId) })
-          this._user.subscriptions = [...this.getUser.subscriptions, documentId]
+          this._user.subscriptions = addToArray(this.getUser.subscriptions, documentId)
+
           if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) => {
-              if (prompt.id === documentId) {
-                prompt.subscribers = [...prompt.subscribers, this.getUser.uid]
-              }
-              return prompt
-            })
+            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
+              prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers, this.getUser.uid) } : prompt
+            )
           }
+
           if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) => {
-              if (entry.id === documentId) {
-                entry.subscribers = [...entry.subscribers, this.getUser.uid]
-              }
-              return entry
-            })
+            entryStore._entries = entryStore.getEntries.map((entry) =>
+              entry.id === documentId ? { ...entry, subscribers: addToArray(entry.subscribers, this.getUser.uid) } : entry
+            )
           }
         }
       }).finally(() => (this._isLoading = false))
