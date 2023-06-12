@@ -60,6 +60,12 @@ onMounted(async () => {
 
   await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 })
+
+entryStore.$subscribe((_mutation, state) => {
+  if (entry.value.id) {
+    entry.value = state._entries.find((res) => res.id === entry.value.id)
+  }
+})
 </script>
 
 <style scoped lang="scss">

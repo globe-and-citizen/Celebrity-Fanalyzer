@@ -78,6 +78,10 @@ onMounted(async () => {
     })
 })
 
+promptStore.$subscribe((_mutation, state) => {
+  prompt.value = state._prompts.find((prompt) => prompt.id === promptByRoute()?.id)
+})
+
 const promptByRoute = () => {
   const route = router.currentRoute.value
   const currentMonth = currentYearMonth()
