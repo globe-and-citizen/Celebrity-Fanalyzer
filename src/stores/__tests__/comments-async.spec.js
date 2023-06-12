@@ -78,4 +78,30 @@ describe('', () => {
     { timeout: 50000 }
   )
 
+  it(
+    'Should fetch async the comment using await ',
+    async () => {
+      const firstEntry = ref({})
+      await entryStore.fetchEntries()
+      firstEntry.value = entryStore.getEntries[0]
+
+      // Step 2: Check the starting number of comments.
+      await commentStore.fetchComments('entries', firstEntry.value.id)
+
+      // Example usage
+      await watchWantedResponse(() => {
+        return commentStore.getComments.length > 0
+      })
+        .then(() => {
+          console.log('Comment are fetched')
+        })
+        .catch(() => {
+          console.log('Desired response is rejected')
+        })
+
+      const startingNumberOfComments = commentStore.getComments.length
+      expect(startingNumberOfComments).toBeGreaterThan(0)
+    },
+    { timeout: 50000 }
+  )
 })
