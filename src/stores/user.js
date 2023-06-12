@@ -152,14 +152,16 @@ export const useUserStore = defineStore('user', {
         .finally(() => (this._isLoading = false))
     },
 
-    async toggleSubscription(documentId) {
+    async toggleSubscription(collectionName, documentId) {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         if (this.getUser.subscriptions?.includes(documentId)) {
           transaction.update(this.getUserRef, { subscriptions: arrayRemove(documentId) })
+          transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(this.getUser.uid) })
           this._user.subscriptions = this.getUser.subscriptions.filter((id) => id !== documentId)
         } else {
           transaction.update(this.getUserRef, { subscriptions: arrayUnion(documentId) })
+          transaction.update(doc(db, collectionName, documentId), { subscribers: arrayUnion(this.getUser.uid) })
           this._user.subscriptions = [...this.getUser.subscriptions, documentId]
         }
       }).finally(() => (this._isLoading = false))

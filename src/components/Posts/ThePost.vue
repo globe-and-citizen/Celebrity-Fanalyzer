@@ -128,7 +128,7 @@ async function share(socialNetwork) {
 }
 
 async function subscribe() {
-  await userStore.toggleSubscription(props.post.id).catch((error) => errorStore.throwError(error))
+  await userStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
 </script>
 
