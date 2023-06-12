@@ -1,7 +1,7 @@
 <template>
   <q-btn color="secondary" flat icon="notifications" round size="1rem">
     <q-menu anchor="bottom right" self="top right">
-      <q-item clickable>
+      <q-item clickable @click="notify">
         <q-item-section>New tab</q-item-section>
       </q-item>
       <q-item clickable>
@@ -15,14 +15,12 @@
 function notify() {
   Notification.requestPermission().then((result) => {
     if (result === 'granted') {
-      navigator.serviceWorker.ready.then((registration) => {
-        registration.showNotification('Vibration Sample', {
-          body: 'Buzz! Buzz!',
-          icon: 'img:/logo.svg',
-          // vibrate: [200, 100, 200, 100, 200, 100, 200],
-          tag: 'vibration-sample'
-        })
-      })
+      const options = {
+        body: `Hello, this is a notification!`,
+        icon: 'logo.svg',
+        vibrate: [100, 50, 100]
+      }
+      new Notification('CelebrityFanalyzer', options)
     }
   })
 }
