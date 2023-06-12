@@ -57,7 +57,7 @@ describe('Comments Store', () => {
     const startingNumberOfComments = commentStore.getComments.length
 
     // 3) Add a fake comment & test it was added successfully added
-    let myComment = reactive({ text: "sup. I'm here to rock N test" })
+    let myComment = reactive({ text: 'Branch feature/delete-comment-preserve-replies' })
     await commentStore.addComment('entries', myComment, firstEntry.value)
 
     // 4) Test to see that the number of comments has increased by one
@@ -66,13 +66,24 @@ describe('Comments Store', () => {
     expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
 
     // 5): Delete fake comment. Start by retrieving it.
-    const comments = commentStore.getComments
-    const commentsOrdered = comments.sort((a, b) => b.created - a.created)
+    let comments = commentStore.getComments
+    let commentsOrdered = comments.sort((a, b) => b.created - a.created)
     commentStore.deleteComment('entries', firstEntry.value.id, commentsOrdered[0].id)
     await letSnapshotListenerRun(500)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+    comments = commentStore.getComments
+    commentsOrdered = comments.sort((a, b) => b.created - a.created)
 
     // 6) Check to see that the comments has reduced back to the original value.
-    expect(commentStore.getComments.length).toBe(startingNumberOfComments)
+    expect(commentsOrdered[0].text).toBe('Comment Deleted')
+
+    // 7) remove the comment from the Firebase Store
+    commentStore.removeCommentFromFirestore('entries', firstEntry.value.id, commentsOrdered[0].id)
+    await letSnapshotListenerRun(500)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+    comments = commentStore.getComments
+    commentsOrdered = comments.sort((a, b) => b.created - a.created)
+    expect(comments.length).toBe(startingNumberOfComments)
   })
 })
 
