@@ -1,9 +1,7 @@
-import { arrayRemove, arrayUnion, doc, runTransaction } from 'firebase/firestore'
+import { arrayRemove, arrayUnion, collection, doc, onSnapshot, runTransaction, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { useEntryStore } from './entries'
-import { usePromptStore } from './prompts'
-import { useUserStore } from './user'
+import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
@@ -62,6 +60,31 @@ export const useNotificationStore = defineStore('notification', {
           }
         }
       }).finally(() => (this._isLoading = false))
+    },
+
+    /**
+     * Sends a notification to each user on the subscriber list.
+     * @param {*} subscribers - Array of user ids
+     * @param {*} notification - Notification object
+     */
+    async createNotification(subscribers, notification) {
+      notification.created = Date.now()
+      notification.id = Date.now().toString()
+      notification.read = false
+
+      console.time('Notification Duration')
+      subscribers.forEach(async (subscriber) => {
+        await setDoc(doc(db, 'users', subscriber, 'notifications', notification.id), notification)
+      })
+      console.timeEnd('Notification Duration')
+    },
+
+    async readNotifications() {
+      const userStore = useUserStore()
+
+      onSnapshot(collection(db, 'users', userStore.getUser.uid, 'notifications'), (querySnapshot) => {
+        this._notifications = querySnapshot.docs.map((doc) => doc.data())
+      })
     }
   }
 })
