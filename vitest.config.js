@@ -8,6 +8,7 @@ import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 export default defineConfig({
   test: {
     environment: 'jsdom',
+    testTimeout: 50000,
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'json', 'html']
