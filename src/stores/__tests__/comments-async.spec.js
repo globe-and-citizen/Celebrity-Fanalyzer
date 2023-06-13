@@ -2,25 +2,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
+import { waitUntil } from 'src/waitUntil'
 
-const watchWantedResponse = (callback, config = { timeout: 5000 }) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Try To reject after timout
-      reject()
-    }, config.timeout)
-    if (callback()) {
-      resolve()
-    } else {
-      const intervalId = setInterval(() => {
-        if (callback()) {
-          clearInterval(intervalId)
-          resolve()
-        }
-      }, 1000)
-    }
-  })
-}
 describe('Async watcher ', () => {
   setActivePinia(createPinia())
   const entryStore = useEntryStore()
@@ -62,7 +45,7 @@ describe('Async watcher ', () => {
       await commentStore.fetchComments('entries', firstEntry.value.id)
 
       // Example usage
-      watchWantedResponse(() => {
+      waitUntil(() => {
         return commentStore.getComments.length > 0
       })
         .then(() => {
@@ -88,7 +71,7 @@ describe('Async watcher ', () => {
       await commentStore.fetchComments('entries', firstEntry.value.id)
 
       // Example usage
-      await watchWantedResponse(() => {
+      await waitUntil(() => {
         return commentStore.getComments.length > 0
       }).then(
         () => {
@@ -115,7 +98,7 @@ describe('Async watcher ', () => {
 
       console.log('were a here')
       // Example usage
-      await watchWantedResponse(
+      await waitUntil(
         () => {
           return commentStore.getComments.length > 0
         },
@@ -133,25 +116,25 @@ describe('Async watcher ', () => {
     { timeout: 50000 }
   )
 
-  it("user of done callback", ()=>new Promise(async (resolve, reject) => {
+  it('user of done callback', () =>
+    new Promise(async (resolve, reject) => {
+      const firstEntry = ref({})
+      await entryStore.fetchEntries()
+      firstEntry.value = entryStore.getEntries[0]
 
-    const firstEntry = ref({})
-    await entryStore.fetchEntries()
-    firstEntry.value = entryStore.getEntries[0]
-
-    setTimeout(() => {
-      // Try To reject after timout
-      reject()
-    }, 5000)
-    if (commentStore.getComments.length > 0) {
-      resolve()
-    } else {
-      const intervalId = setInterval(() => {
-        if (commentStore.getComments.length > 0) {
-          clearInterval(intervalId)
-          resolve()
-        }
-      }, 1000)
-    }
-  }))
+      setTimeout(() => {
+        // Try To reject after timout
+        reject()
+      }, 5000)
+      if (commentStore.getComments.length > 0) {
+        resolve()
+      } else {
+        const intervalId = setInterval(() => {
+          if (commentStore.getComments.length > 0) {
+            clearInterval(intervalId)
+            resolve()
+          }
+        }, 1000)
+      }
+    }))
 })
