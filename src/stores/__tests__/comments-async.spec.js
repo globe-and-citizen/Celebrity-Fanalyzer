@@ -52,13 +52,11 @@ describe('Async watcher ', () => {
 
       // Example usage
       waitUntil(getCommentLength(commentStore)).then(() => {
-        console.log('Comment are fetched')
 
         const startingNumberOfComments = commentStore.getComments.length
         expect(startingNumberOfComments).toBeGreaterThan(0)
       })
-    },
-    { timeout: 50000 }
+    }
   )
   it(
     'Should fetch async the comment using await ',
@@ -73,11 +71,9 @@ describe('Async watcher ', () => {
       // Example usage
       await waitUntil(getCommentLength(commentStore))
 
-      console.log('Comment are fetched')
       const startingNumberOfComments = commentStore.getComments.length
       expect(startingNumberOfComments).toBeGreaterThan(0)
-    },
-    { timeout: 50000 }
+    }
   )
 
   it(
@@ -91,14 +87,9 @@ describe('Async watcher ', () => {
       await commentStore.fetchComments('entries', firstEntry.value.id)
 
       // Example usage
-      await waitUntil(getCommentLength(commentStore)).catch(() => {
-        console.log('Desired response is rejected')
-        expect(1 + 1).toBe(2)
-      })
-
+      await waitUntil(getCommentLength(commentStore))
       expect(commentStore.getComments.length).toBeGreaterThan(0)
-    },
-    { timeout: 50000 }
+    }
   )
 
   it('user of done callback', () =>
