@@ -247,7 +247,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -261,6 +261,7 @@ const $q = useQuasar()
 const router = useRouter()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
+const notificationStore = useNotificationStore()
 const userStore = useUserStore()
 
 const childComments = ref([])
@@ -333,6 +334,12 @@ async function addComment() {
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
+
+      notificationStore.createNotification(props.post.subscribers, {
+        link: '/' + props.post.id,
+        message: 'There is a new comment on a post you are subscribed to',
+        type: 'comment'
+      })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }
