@@ -12,6 +12,7 @@ function getCommentLength(commentStore) {
 
 describe('Async watcher ', () => {
   setActivePinia(createPinia())
+  const userStore = useUserStore()
   const entryStore = useEntryStore()
   const commentStore = useCommentStore()
 
@@ -26,7 +27,6 @@ describe('Async watcher ', () => {
     })
 
     // Login the test@test.com user
-    const userStore = useUserStore()
     try {
       let userObj = {
         email: import.meta.env.VITE_TEST_USER,
@@ -72,4 +72,99 @@ describe('Async watcher ', () => {
     const startingNumberOfComments = commentStore.getComments.length
     expect(startingNumberOfComments).toBeGreaterThan(0)
   })
-})
+  /*
+  TODO: Comment for Prompt or entry
+
+  BeforeAll Add loading
+  AfterAll Remove loading
+
+  Fetch Comments for a document
+  Add Comment
+  Edit Comment
+  Delete Comment
+  Like Comment
+  Dislike Comment
+  Delete Comment Collection
+  Add Reply
+
+
+   */
+  it.only('should test full comment store', async function () {
+    const firstEntry = ref({})
+    await entryStore.fetchEntries()
+    firstEntry.value = entryStore.getEntries[0]
+
+    function getCommentLength(commentStore) {
+      return () => {
+        return commentStore.getComments.length > 0
+      }
+    }
+
+    // 1- Check initial state
+    expect(commentStore.getComments.length).toBe(0)
+    expect(commentStore.isLoading).toBe(false)
+
+    // 2- Check Fetch Comment
+    await commentStore.fetchComments('entries', firstEntry.value.id)
+
+    // await waitUntil(getCommentLength(commentStore))
+    const startingNumberOfComments = commentStore.getComments.length
+    // expect(startingNumberOfComments).toBeGreaterThan(0)
+
+    // 3- Check Add comment
+    let myComment = { text: 'Test comment' }
+    commentStore.addComment('entries', myComment, firstEntry.value)
+
+    // Check Loading state variation false =>true => false
+    await waitUntil(() => {
+      return commentStore.isLoading === true
+    })
+    expect(commentStore.isLoading).toBe(true)
+    await waitUntil(() => {
+      return commentStore.isLoading === false
+    })
+    expect(commentStore.isLoading).toBe(false)
+
+    // Validate of add
+    expect(commentStore.getComments.length).toBeGreaterThan(startingNumberOfComments)
+    const createdComment = commentStore.getComments.sort((a, b) => b.created - a.created)[0]
+
+    // 4- Check edit Comment
+    commentStore.editComment(
+      'entries',
+      firstEntry.value.id,
+      createdComment.id,
+      'Edited comment',
+      userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
+    )
+
+    // Check Loading state variation false =>true => false
+    await waitUntil(() => {
+      return commentStore.isLoading === true
+    })
+    expect(commentStore.isLoading).toBe(true)
+    await waitUntil(() => {
+      return commentStore.isLoading === false
+    })
+    expect(commentStore.isLoading).toBe(false)
+
+    await waitUntil(() => {
+      return commentStore.getComments.sort((a, b) => b.created - a.created)[0].text === 'Edited comment'
+    })
+    expect(commentStore.getComments.sort((a, b) => b.created - a.created)[0].text).toBe('Edited comment')
+
+    // 5- Check like Comment
+    // 6- Check dislikeComment
+    // 6- Check deleteComment
+    await  commentStore.deleteComment('entries', firstEntry.value.id, commentStore.getComments.sort((a, b) => b.created - a.created)[0].id)
+
+    expect(commentStore.isLoading).toBe(false)
+    await waitUntil(() => {
+      return commentStore.getComments.sort((a, b) => b.created - a.created)[0].text === 'Comment Deleted'
+    })
+    expect(commentStore.getComments.sort((a, b) => b.created - a.created)[0].text).toBe('Comment Deleted')
+    // 6- Check deleteCommentsCollection
+    // addReply
+    // removeCommentFromFirestore
+  })
+}, {timeout: 5000})
