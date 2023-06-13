@@ -4,6 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { waitUntil } from 'src/waitUntil'
 
+function getCommentLength(commentStore) {
+  return () => {
+    return commentStore.getComments.length > 0
+  }
+}
+
 describe('Async watcher ', () => {
   setActivePinia(createPinia())
   const entryStore = useEntryStore()
@@ -45,18 +51,12 @@ describe('Async watcher ', () => {
       await commentStore.fetchComments('entries', firstEntry.value.id)
 
       // Example usage
-      waitUntil(() => {
-        return commentStore.getComments.length > 0
-      })
-        .then(() => {
-          console.log('Comment are fetched')
+      waitUntil(getCommentLength(commentStore)).then(() => {
+        console.log('Comment are fetched')
 
-          const startingNumberOfComments = commentStore.getComments.length
-          expect(startingNumberOfComments).toBeGreaterThan(0)
-        })
-        .catch(() => {
-          console.log('Desired response is rejected')
-        })
+        const startingNumberOfComments = commentStore.getComments.length
+        expect(startingNumberOfComments).toBeGreaterThan(0)
+      })
     },
     { timeout: 50000 }
   )
@@ -71,15 +71,9 @@ describe('Async watcher ', () => {
       await commentStore.fetchComments('entries', firstEntry.value.id)
 
       // Example usage
-      await waitUntil(() => {
-        return commentStore.getComments.length > 0
-      }).then(
-        () => {
-          console.log('Comment are fetched')
-        },
-        { timeout: 50000 }
-      )
+      await waitUntil(getCommentLength(commentStore))
 
+      console.log('Comment are fetched')
       const startingNumberOfComments = commentStore.getComments.length
       expect(startingNumberOfComments).toBeGreaterThan(0)
     },
@@ -96,22 +90,13 @@ describe('Async watcher ', () => {
       // Step 2: Check the starting number of comments.
       await commentStore.fetchComments('entries', firstEntry.value.id)
 
-      console.log('were a here')
       // Example usage
-      await waitUntil(
-        () => {
-          return commentStore.getComments.length > 0
-        },
-        { timeout: 1 }
-      )
-        .then(() => {
-          console.log('Comment are fetched')
-          expect(1 + 1).toBe(3)
-        })
-        .catch(() => {
-          console.log('Desired response is rejected')
-          expect(1 + 1).toBe(2)
-        })
+      await waitUntil(getCommentLength(commentStore)).catch(() => {
+        console.log('Desired response is rejected')
+        expect(1 + 1).toBe(2)
+      })
+
+      expect(commentStore.getComments.length).toBeGreaterThan(0)
     },
     { timeout: 50000 }
   )
