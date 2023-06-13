@@ -6,26 +6,11 @@ import {
   signInWithPopup,
   signOut
 } from 'firebase/auth'
-import {
-  arrayRemove,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  or,
-  query,
-  runTransaction,
-  setDoc,
-  where
-} from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
-import { useEntryStore } from './entries'
-import { usePromptStore } from './prompts'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -152,50 +137,6 @@ export const useUserStore = defineStore('user', {
           })
         })
         .finally(() => (this._isLoading = false))
-    },
-
-    async toggleSubscription(collectionName, documentId) {
-      const promptStore = usePromptStore()
-      const entryStore = useEntryStore()
-
-      this._isLoading = true
-      await runTransaction(db, async (transaction) => {
-        const addToArray = (array, element) => [...array, element]
-        const removeFromArray = (array, element) => array.filter((item) => item !== element)
-
-        if (this.getUser.subscriptions?.includes(documentId)) {
-          transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(this.getUser.uid) })
-          transaction.update(this.getUserRef, { subscriptions: arrayRemove(documentId) })
-          this._user.subscriptions = removeFromArray(this.getUser.subscriptions, documentId)
-
-          if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
-              prompt.id === documentId ? { ...prompt, subscribers: removeFromArray(prompt.subscribers, this.getUser.uid) } : prompt
-            )
-          }
-          if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) =>
-              entry.id === documentId ? { ...entry, subscribers: removeFromArray(entry.subscribers, this.getUser.uid) } : entry
-            )
-          }
-        } else {
-          transaction.update(doc(db, collectionName, documentId), { subscribers: arrayUnion(this.getUser.uid) })
-          transaction.update(this.getUserRef, { subscriptions: arrayUnion(documentId) })
-          this._user.subscriptions = addToArray(this.getUser.subscriptions, documentId)
-
-          if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
-              prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers, this.getUser.uid) } : prompt
-            )
-          }
-
-          if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) =>
-              entry.id === documentId ? { ...entry, subscribers: addToArray(entry.subscribers, this.getUser.uid) } : entry
-            )
-          }
-        }
-      }).finally(() => (this._isLoading = false))
     },
 
     async checkUsernameAvailability(username) {

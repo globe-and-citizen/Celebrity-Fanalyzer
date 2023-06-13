@@ -91,7 +91,7 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
 import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -106,6 +106,7 @@ const router = useRouter()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
+const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 
@@ -129,7 +130,7 @@ async function share(socialNetwork) {
 }
 
 async function subscribe() {
-  await userStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
 </script>
 
