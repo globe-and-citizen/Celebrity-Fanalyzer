@@ -40,77 +40,36 @@ describe('Async watcher ', () => {
     }
   })
 
-  it(
-    'Should fetch async the comment using then',
-    async () => {
-      const firstEntry = ref({})
-      await entryStore.fetchEntries()
-      firstEntry.value = entryStore.getEntries[0]
+  it('Should fetch async the comment using then', async () => {
+    const firstEntry = ref({})
+    await entryStore.fetchEntries()
+    firstEntry.value = entryStore.getEntries[0]
 
-      // Step 2: Check the starting number of comments.
-      await commentStore.fetchComments('entries', firstEntry.value.id)
+    // Step 2: Check the starting number of comments.
+    await commentStore.fetchComments('entries', firstEntry.value.id)
 
-      // Example usage
-      waitUntil(getCommentLength(commentStore)).then(() => {
-
-        const startingNumberOfComments = commentStore.getComments.length
-        expect(startingNumberOfComments).toBeGreaterThan(0)
-      })
-    }
-  )
-  it(
-    'Should fetch async the comment using await ',
-    async () => {
-      const firstEntry = ref({})
-      await entryStore.fetchEntries()
-      firstEntry.value = entryStore.getEntries[0]
-
-      // Step 2: Check the starting number of comments.
-      await commentStore.fetchComments('entries', firstEntry.value.id)
-
-      // Example usage
-      await waitUntil(getCommentLength(commentStore))
-
+    // Example usage
+    waitUntil(getCommentLength(commentStore)).then(() => {
       const startingNumberOfComments = commentStore.getComments.length
       expect(startingNumberOfComments).toBeGreaterThan(0)
-    }
-  )
+    })
+  })
 
-  it(
-    'Should fail fetch async the comment using await ',
-    async () => {
-      const firstEntry = ref({})
-      await entryStore.fetchEntries()
-      firstEntry.value = entryStore.getEntries[0]
+  /**
+   * Better way to use it
+   */
+  it('Should fetch async the comment using await ', async () => {
+    const firstEntry = ref({})
+    await entryStore.fetchEntries()
+    firstEntry.value = entryStore.getEntries[0]
 
-      // Step 2: Check the starting number of comments.
-      await commentStore.fetchComments('entries', firstEntry.value.id)
+    // Step 2: Check the starting number of comments.
+    await commentStore.fetchComments('entries', firstEntry.value.id)
 
-      // Example usage
-      await waitUntil(getCommentLength(commentStore))
-      expect(commentStore.getComments.length).toBeGreaterThan(0)
-    }
-  )
+    // Example usage
+    await waitUntil(getCommentLength(commentStore))
 
-  it('user of done callback', () =>
-    new Promise(async (resolve, reject) => {
-      const firstEntry = ref({})
-      await entryStore.fetchEntries()
-      firstEntry.value = entryStore.getEntries[0]
-
-      setTimeout(() => {
-        // Try To reject after timout
-        reject()
-      }, 5000)
-      if (commentStore.getComments.length > 0) {
-        resolve()
-      } else {
-        const intervalId = setInterval(() => {
-          if (commentStore.getComments.length > 0) {
-            clearInterval(intervalId)
-            resolve()
-          }
-        }, 1000)
-      }
-    }))
+    const startingNumberOfComments = commentStore.getComments.length
+    expect(startingNumberOfComments).toBeGreaterThan(0)
+  })
 })
