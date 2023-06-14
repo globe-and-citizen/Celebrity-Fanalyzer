@@ -1,6 +1,6 @@
 <template>
   <q-btn color="secondary" dense flat icon="notifications" round size="1rem">
-    <q-badge color="red" floating rounded>{{ unreadedNotifications }}</q-badge>
+    <q-badge v-if="unreadNotifications.length" color="red" floating rounded>{{ unreadNotifications.length }}</q-badge>
     <q-menu anchor="bottom right" self="top right">
       <q-item style="min-width: 320px">
         <q-item-section class="text-center">
