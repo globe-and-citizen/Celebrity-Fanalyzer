@@ -25,7 +25,7 @@ export const useNotificationStore = defineStore('notification', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         const addToArray = (array, element) => [...array, element]
-        const removeFromArray = (array, element) => array.filter((item) => item !== element)
+        const removeFromArray = (array, element) => array?.filter((item) => item !== element) ?? []
 
         if (userStore.getUser.subscriptions?.includes(documentId)) {
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(userStore.getUser.uid) })
@@ -45,17 +45,17 @@ export const useNotificationStore = defineStore('notification', {
         } else {
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayUnion(userStore.getUser.uid) })
           transaction.update(userStore.getUserRef, { subscriptions: arrayUnion(documentId) })
-          userStore._user.subscriptions = addToArray(userStore.getUser.subscriptions, documentId)
+          userStore._user.subscriptions = addToArray(userStore.getUser.subscriptions || [], documentId)
 
           if (collectionName === 'prompts') {
             promptStore._prompts = promptStore.getPrompts.map((prompt) =>
-              prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers, userStore.getUser.uid) } : prompt
+              prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers || [], userStore.getUser.uid) } : prompt
             )
           }
 
           if (collectionName === 'entries') {
             entryStore._entries = entryStore.getEntries.map((entry) =>
-              entry.id === documentId ? { ...entry, subscribers: addToArray(entry.subscribers, userStore.getUser.uid) } : entry
+              entry.id === documentId ? { ...entry, subscribers: addToArray(entry.subscribers || [], userStore.getUser.uid) } : entry
             )
           }
         }
@@ -70,10 +70,13 @@ export const useNotificationStore = defineStore('notification', {
     async createNotification(subscribers, notification) {
       notification.created = Date.now()
       notification.id = Date.now().toString()
+      notification.message = notification.message.length > 50 ? notification.message.substring(0, 50) + '...' : notification.message
       notification.read = false
 
+      // BUG: Don't send notification to the user who called the function
+
       console.time('Notification Duration')
-      subscribers.forEach(async (subscriber) => {
+      subscribers?.forEach(async (subscriber) => {
         await setDoc(doc(db, 'users', subscriber, 'notifications', notification.id), notification)
       })
       console.timeEnd('Notification Duration')
