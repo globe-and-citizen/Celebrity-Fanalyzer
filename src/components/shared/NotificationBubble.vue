@@ -17,12 +17,12 @@
             color="blue"
             :name="notification.read ? 'radio_button_unchecked' : 'circle'"
             size="0.75rem"
-            @click="toggleRead"
+            @click="toggleRead(notification.id)"
           />
         </q-item-section>
         <q-item-section class="cursor-pointer" @click="goToLink(notification.link)">{{ notification.message }}</q-item-section>
         <q-item-section side>
-          <q-btn flat icon="clear" round size="sm" @click="remove" />
+          <q-btn flat icon="clear" round size="sm" @click="remove(notification.id)" />
         </q-item-section>
       </q-item>
     </q-menu>
@@ -39,13 +39,13 @@ const router = useRouter()
 const notificationStore = useNotificationStore()
 
 onMounted(async () => {
-  await notificationStore.readNotifications()
+  await notificationStore.readList()
 })
 
 const unreadedNotifications = computed(() => notificationStore.getNotifications.filter((notification) => !notification.read).length)
 
-function toggleRead() {
-  // notificationStore.toggleRead()
+function toggleRead(id) {
+  notificationStore.toggleRead(id)
 }
 
 function readAll() {
@@ -56,7 +56,8 @@ function goToLink(link) {
   router.push(link || '/')
 }
 
-function remove() {
+function remove(id) {
+  console.log(id)
   // notificationStore.remove()
 }
 

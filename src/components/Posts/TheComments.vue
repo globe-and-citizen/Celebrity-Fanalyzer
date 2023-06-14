@@ -331,7 +331,7 @@ async function addComment() {
   await commentStore
     .addComment(props.collectionName, myComment, props.post)
     .then(() => {
-      notificationStore.createNotification(props.post.subscribers, {
+      notificationStore.create(props.post.subscribers, {
         link: '/' + props.post.id,
         message: 'New comment: ' + myComment.text,
         type: 'comment'

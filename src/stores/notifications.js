@@ -67,7 +67,7 @@ export const useNotificationStore = defineStore('notification', {
      * @param {*} subscribers - Array of user ids
      * @param {*} notification - Notification object
      */
-    async createNotification(subscribers, notification) {
+    async create(subscribers, notification) {
       notification.created = Date.now()
       notification.id = Date.now().toString()
       notification.message = notification.message.length > 50 ? notification.message.substring(0, 50) + '...' : notification.message
@@ -82,11 +82,20 @@ export const useNotificationStore = defineStore('notification', {
       console.timeEnd('Notification Duration')
     },
 
-    async readNotifications() {
+    async readList() {
       const userStore = useUserStore()
 
       onSnapshot(collection(db, 'users', userStore.getUser.uid, 'notifications'), (querySnapshot) => {
         this._notifications = querySnapshot.docs.map((doc) => doc.data())
+      })
+    },
+
+    async toggleRead(notificationId) {
+      // Update the document to toggle "read" between true and false
+      const userStore = useUserStore()
+
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'users', userStore.getUser.uid, 'notifications', notificationId), { read: !notification.read })
       })
     }
   }
