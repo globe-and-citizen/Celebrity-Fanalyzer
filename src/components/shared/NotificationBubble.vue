@@ -1,7 +1,7 @@
 <template>
   <q-btn color="secondary" dense flat icon="notifications" round size="1rem">
     <q-badge v-if="unreadNotifications.length" color="red" floating rounded>{{ unreadNotifications.length }}</q-badge>
-    <q-menu anchor="bottom right" self="top right">
+    <q-menu v-if="notificationStore.getNotifications.length" anchor="bottom right" self="top right">
       <q-item style="min-width: 320px">
         <q-item-section class="text-center">
           <q-btn class="no-wrap" color="primary" dense label="Mark all as read" outline @click="markAllAsRead" />
@@ -23,6 +23,13 @@
         <q-item-section class="cursor-pointer" @click="goToLink(notification.link)">{{ notification.message }}</q-item-section>
         <q-item-section side>
           <q-btn flat icon="clear" round size="sm" @click="deleteOne(notification.id)" />
+        </q-item-section>
+      </q-item>
+    </q-menu>
+    <q-menu v-else>
+      <q-item>
+        <q-item-section class="text-center">
+          <p class="q-my-sm text-body2">There are no notifications</p>
         </q-item-section>
       </q-item>
     </q-menu>
@@ -64,7 +71,7 @@ function deleteOne(id) {
 }
 
 function deleteAll() {
-  // notificationStore.deleteAll()
+  notificationStore.deleteAll()
 }
 
 function notify() {

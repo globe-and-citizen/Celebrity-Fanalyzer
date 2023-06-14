@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, collection, doc, onSnapshot, runTransaction, setDoc } from 'firebase/firestore'
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDocs, onSnapshot, runTransaction, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
@@ -106,6 +106,25 @@ export const useNotificationStore = defineStore('notification', {
         unreadNotifications.forEach((notification) => {
           transaction.update(doc(db, 'users', userStore.getUser.uid, 'notifications', notification.id), { read: true })
         })
+      })
+    },
+
+    // TODO: Develop this function
+    // async deleteOne(notificationId) {
+    //   const userStore = useUserStore()
+
+    //   await runTransaction(db, async (transaction) => {
+    //     transaction.delete(doc(db, 'users', userStore.getUser.uid, 'notifications', notificationId))
+    //   })
+    // },
+
+    async deleteAll() {
+      const userStore = useUserStore()
+
+      const notificationSnapshot = await getDocs(collection(db, 'users', userStore.getUser.uid, 'notifications'))
+
+      notificationSnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
       })
     }
   }
