@@ -331,15 +331,15 @@ async function addComment() {
   await commentStore
     .addComment(props.collectionName, myComment, props.post)
     .then(() => {
+      notificationStore.createNotification(props.post.subscribers, {
+        link: '/' + props.post.id,
+        message: 'New comment: ' + myComment.text,
+        type: 'comment'
+      })
+
       myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
-
-      notificationStore.createNotification(props.post.subscribers, {
-        link: '/' + props.post.id,
-        message: 'There is a new comment on a post you are subscribed to',
-        type: 'comment'
-      })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
 }
