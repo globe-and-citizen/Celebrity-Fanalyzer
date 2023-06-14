@@ -90,12 +90,22 @@ export const useNotificationStore = defineStore('notification', {
       })
     },
 
-    async toggleRead(notificationId) {
-      // Update the document to toggle "read" between true and false
+    async markOneAsRead(notificationId) {
       const userStore = useUserStore()
 
       await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'users', userStore.getUser.uid, 'notifications', notificationId), { read: !notification.read })
+        transaction.update(doc(db, 'users', userStore.getUser.uid, 'notifications', notificationId), { read: true })
+      })
+    },
+
+    async markAllAsRead() {
+      const userStore = useUserStore()
+      const unreadNotifications = this.getNotifications.filter((notification) => !notification.read)
+
+      await runTransaction(db, async (transaction) => {
+        unreadNotifications.forEach((notification) => {
+          transaction.update(doc(db, 'users', userStore.getUser.uid, 'notifications', notification.id), { read: true })
+        })
       })
     }
   }

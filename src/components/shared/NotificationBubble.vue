@@ -4,25 +4,25 @@
     <q-menu anchor="bottom right" self="top right">
       <q-item style="min-width: 320px">
         <q-item-section class="text-center">
-          <q-btn class="no-wrap" color="primary" dense label="Mark all as read" outline @click="readAll" />
+          <q-btn class="no-wrap" color="primary" dense label="Mark all as read" outline @click="markAllAsRead" />
         </q-item-section>
         <q-item-section>
-          <q-btn color="primary" dense label="Clear all" outline @click="clearAll" />
+          <q-btn color="primary" dense label="Clear all" outline @click="deleteAll" />
         </q-item-section>
       </q-item>
       <q-item v-for="notification in notificationStore.getNotifications" class="non-selectable" :key="notification.id">
         <q-item-section side>
           <q-icon
             class="cursor-pointer"
-            color="blue"
-            :name="notification.read ? 'radio_button_unchecked' : 'circle'"
+            :color="notification.read ? 'white' : 'blue'"
+            name="circle"
             size="0.75rem"
-            @click="toggleRead(notification.id)"
+            @click="markOneAsRead(notification.id)"
           />
         </q-item-section>
         <q-item-section class="cursor-pointer" @click="goToLink(notification.link)">{{ notification.message }}</q-item-section>
         <q-item-section side>
-          <q-btn flat icon="clear" round size="sm" @click="remove(notification.id)" />
+          <q-btn flat icon="clear" round size="sm" @click="deleteOne(notification.id)" />
         </q-item-section>
       </q-item>
     </q-menu>
@@ -42,27 +42,29 @@ onMounted(async () => {
   await notificationStore.readList()
 })
 
-const unreadedNotifications = computed(() => notificationStore.getNotifications.filter((notification) => !notification.read).length)
+const unreadNotifications = computed(() => notificationStore.getNotifications.filter((notification) => !notification.read))
 
-function toggleRead(id) {
-  notificationStore.toggleRead(id)
+function markOneAsRead(id) {
+  if (unreadNotifications.value.some((i) => i.id === id)) {
+    notificationStore.markOneAsRead(id)
+  }
 }
 
-function readAll() {
-  // notificationStore.readAll()
+function markAllAsRead() {
+  notificationStore.markAllAsRead()
 }
 
 function goToLink(link) {
   router.push(link || '/')
 }
 
-function remove(id) {
+function deleteOne(id) {
   console.log(id)
-  // notificationStore.remove()
+  // notificationStore.deleteOne(id)
 }
 
-function clearAll() {
-  // notificationStore.clearAll()
+function deleteAll() {
+  // notificationStore.deleteAll()
 }
 
 function notify() {
