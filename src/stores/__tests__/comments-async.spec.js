@@ -15,6 +15,7 @@ describe('Async watcher ', () => {
   const userStore = useUserStore()
   const entryStore = useEntryStore()
   const commentStore = useCommentStore()
+  const userId = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
 
   beforeEach(async () => {
     // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
@@ -89,7 +90,7 @@ describe('Async watcher ', () => {
 
 
    */
-  it.only('should test full comment store', async function () {
+  it('should test full comment store', async function () {
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
@@ -98,6 +99,10 @@ describe('Async watcher ', () => {
       return () => {
         return commentStore.getComments.length > 0
       }
+    }
+
+    function getLastComment() {
+      return commentStore.getComments.sort((a, b) => b.created - a.created)[0]
     }
 
     // 1- Check initial state
@@ -127,7 +132,7 @@ describe('Async watcher ', () => {
 
     // Validate of add
     expect(commentStore.getComments.length).toBeGreaterThan(startingNumberOfComments)
-    const createdComment = commentStore.getComments.sort((a, b) => b.created - a.created)[0]
+    const createdComment = getLastComment()
 
     // 4- Check edit Comment
     commentStore.editComment(
@@ -149,22 +154,20 @@ describe('Async watcher ', () => {
     expect(commentStore.isLoading).toBe(false)
 
     await waitUntil(() => {
-      return commentStore.getComments.sort((a, b) => b.created - a.created)[0].text === 'Edited comment'
+      return getLastComment().text === 'Edited comment'
     })
-    expect(commentStore.getComments.sort((a, b) => b.created - a.created)[0].text).toBe('Edited comment')
+    expect(getLastComment().text).toBe('Edited comment')
 
-    // 5- Check like Comment
-    // 6- Check dislikeComment
     // 6- Check deleteComment
-    await  commentStore.deleteComment('entries', firstEntry.value.id, commentStore.getComments.sort((a, b) => b.created - a.created)[0].id)
+    await commentStore.deleteComment('entries', firstEntry.value.id, getLastComment().id)
 
     expect(commentStore.isLoading).toBe(false)
     await waitUntil(() => {
-      return commentStore.getComments.sort((a, b) => b.created - a.created)[0].text === 'Comment Deleted'
+      return getLastComment().text === 'Comment Deleted'
     })
-    expect(commentStore.getComments.sort((a, b) => b.created - a.created)[0].text).toBe('Comment Deleted')
+    expect(getLastComment().text).toBe('Comment Deleted')
     // 6- Check deleteCommentsCollection
     // addReply
     // removeCommentFromFirestore
   })
-}, {timeout: 5000})
+})
