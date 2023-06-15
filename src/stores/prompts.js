@@ -16,7 +16,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 
 export const usePromptStore = defineStore('prompts', {
@@ -97,6 +97,7 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async addPrompt(payload) {
+      const notificationStore = useNotificationStore()
       const userStore = useUserStore()
 
       const prompt = { ...payload }
@@ -112,6 +113,8 @@ export const usePromptStore = defineStore('prompts', {
           this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
         .finally(() => (this._isLoading = false))
+
+      await notificationStore.toggleSubscription('prompts', prompt.id)
     },
 
     async editPrompt(payload) {
