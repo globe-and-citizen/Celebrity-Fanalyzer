@@ -17,7 +17,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -69,6 +69,7 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(payload) {
+      const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
       const userStore = useUserStore()
 
@@ -86,9 +87,11 @@ export const useEntryStore = defineStore('entries', {
         entry.author = userStore.getUserById(entry.author.id)
         this.$patch({ _entries: [...this.getEntries, entry] })
       })
+      this._isLoading = false
 
       await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
-      this._isLoading = false
+
+      await notificationStore.toggleSubscription('entries', entry.id)
     },
 
     async editEntry(payload) {
