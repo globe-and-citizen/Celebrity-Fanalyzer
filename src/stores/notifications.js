@@ -109,14 +109,11 @@ export const useNotificationStore = defineStore('notification', {
       })
     },
 
-    // TODO: Develop this function
-    // async deleteOne(notificationId) {
-    //   const userStore = useUserStore()
+    async deleteOne(notificationId) {
+      const userStore = useUserStore()
 
-    //   await runTransaction(db, async (transaction) => {
-    //     transaction.delete(doc(db, 'users', userStore.getUser.uid, 'notifications', notificationId))
-    //   })
-    // },
+      await deleteDoc(doc(db, 'users', userStore.getUser.uid, 'notifications', notificationId))
+    },
 
     async deleteAll() {
       const userStore = useUserStore()

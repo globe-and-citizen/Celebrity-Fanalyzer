@@ -66,8 +66,7 @@ function goToLink(link) {
 }
 
 function deleteOne(id) {
-  console.log(id)
-  // notificationStore.deleteOne(id)
+  notificationStore.deleteOne(id)
 }
 
 function deleteAll() {
