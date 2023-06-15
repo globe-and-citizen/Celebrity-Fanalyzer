@@ -22,7 +22,22 @@ describe('Async watcher ', () => {
     global.fetch = vi.fn(async () => {
       return {
         text: () => {
-          return '255.255.255.255'
+          return `fl=378f39
+            h=www.cloudflare.com
+            ip=255.255.255.255
+            ts=1686840839.606
+            visit_scheme=https
+            uag=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
+            colo=LHR
+            sliver=none
+            http=http/2
+            loc=TG
+            tls=TLSv1.3
+            sni=plaintext
+            warp=off
+            gateway=off
+            rbi=off
+            kex=X25519`
         }
       }
     })
