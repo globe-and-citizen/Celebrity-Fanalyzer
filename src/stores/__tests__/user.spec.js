@@ -80,6 +80,16 @@ describe('Users Store', () => {
     // 5) Verify that the user has at least one prompt or one entry
     expect(filteredPrompts.length > 0 || filteredEntries.length > 0).toBe(true)
   })
+
+  it('Should fetch all user', async () => {
+    await userStore.fetchUsers()
+    expect(userStore.getUsers.length).toBeGreaterThan(0)
+  })
+
+  // it('Should Sign up with email then remove the acount', async () => {
+  //   await userStore.emailSignUp({ email: 'newTest@test.com', name: 'NewName', password: '123456' })
+  //   await userStore.emailSignIn({ email: 'newTest@test.com', password: '123456' })
+  // })
 })
 
 afterAll(async () => {
