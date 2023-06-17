@@ -64,6 +64,11 @@ describe('Async watcher ', () => {
     const commentStore = useCommentStore()
     const firstEntry = ref({})
     await entryStore.fetchEntries()
+
+    await waitUntil(()=>{
+      return entryStore.getEntries.length>0
+    })
+
     firstEntry.value = entryStore.getEntries[0]
 
     // Step 2: Check the starting number of comments.
