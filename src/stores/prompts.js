@@ -59,8 +59,6 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async editPrompt(payload) {
-      const userStore = useUserStore()
-
       const prompt = { ...payload }
 
       prompt.author = doc(db, 'users', prompt.author.value)

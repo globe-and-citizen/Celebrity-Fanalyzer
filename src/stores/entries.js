@@ -14,7 +14,7 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore'
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
 import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
