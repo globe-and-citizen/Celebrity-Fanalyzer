@@ -6,6 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import {waitUntil} from "src/waitUntil";
 
 // Snapshot Listener Helper -- A Shameless Hack
 async function letSnapshotListenerRun(delay) {
@@ -73,9 +74,18 @@ describe('Users Store', () => {
 
     // 4) Get the user's prompts and entries
     await promptStore.fetchPrompts()
+    await waitUntil(() => {
+      // TODO : Default state
+      return promptStore.getPrompts.length > 0
+    })
     const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author.uid === user.value.uid)
 
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+
+    await waitUntil(() => {
+      // TODO : Default state
+      return entryStore.getEntries.length > 0
+    })
     const filteredEntries = entryStore.getEntries.filter((entry) => entry.author.uid === user.value.uid)
 
     // 5) Verify that the user has at least one prompt or one entry
