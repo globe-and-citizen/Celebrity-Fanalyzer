@@ -1,5 +1,5 @@
 <template>
-  <TheHeader logo notificationButton :backButton="false" />
+  <TheHeader :backButton="false" logo :notificationButton="userStore.isAuthenticated" />
 
   <q-page-container>
     <q-page class="q-pa-md">
@@ -164,12 +164,13 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
 const monthPrompt = ref(promptStore.getMonthPrompt)
 
