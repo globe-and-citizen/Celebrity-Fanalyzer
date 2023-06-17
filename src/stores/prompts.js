@@ -109,8 +109,10 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt)
         .then(() => {
-          prompt.author = userStore.getUserById(prompt.author.id)
-          this.$patch({ _prompts: [...this.getPrompts, prompt] })
+
+          // This not needed, with onSnapCHot
+          // prompt.author = userStore.getUserById(prompt.author.id)
+          // this.$patch({ _prompts: [...this.getPrompts, prompt] })
         })
         .finally(() => (this._isLoading = false))
 
@@ -163,8 +165,9 @@ export const usePromptStore = defineStore('prompts', {
         const deleteShares = shareStore.deleteAllShares('prompts', id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc]).then(() => {
-          const index = this._prompts.findIndex((prompt) => prompt.id === id)
-          this._prompts.splice(index, 1)
+         // No need
+         //  const index = this._prompts.findIndex((prompt) => prompt.id === id)
+         //  this._prompts.splice(index, 1)
         })
       } catch (error) {
         errorStore.throwError(error)
