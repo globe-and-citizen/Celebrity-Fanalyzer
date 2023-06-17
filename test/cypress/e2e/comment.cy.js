@@ -5,12 +5,18 @@
 describe('Commenting', async () => {
   beforeEach(() => {
     cy.viewport('iphone-x')
-    cy.visit('/profile')
 
-    // Fill the email and password fields and click the sign in button
-    cy.get('[data-test="email-field"]').type('test@test.com')
-    cy.get('[data-test="password-field"]').type('12345678')
-    cy.get('[data-test="sign-button"]').click().wait(3000)
+    cy.session('Login', () => {
+      cy.visit('/profile')
+      // Fill the email and password fields and click the sign in button
+      cy.get('[data-test="email-field"]').type('test@test.com')
+      cy.get('[data-test="password-field"]').type('12345678')
+      cy.get('[data-test="sign-button"]').click()
+      // Visits the Admin Page
+      cy.get('[href="/admin"]').click()
+      cy.location('pathname').should('eq', '/admin')
+    })
+
 
     // Visits the prompt of the month
     cy.visit('/month').wait(3000)
