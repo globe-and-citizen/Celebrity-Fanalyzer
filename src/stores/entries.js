@@ -71,7 +71,6 @@ export const useEntryStore = defineStore('entries', {
     async addEntry(payload) {
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
-      const userStore = useUserStore()
 
       const entry = { ...payload }
 
@@ -83,11 +82,7 @@ export const useEntryStore = defineStore('entries', {
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await setDoc(entryRef, entry).then(() => {
-        entry.author = userStore.getUserById(entry.author.id)
-        this.$patch({ _entries: [...this.getEntries, entry] })
-      })
-      this._isLoading = false
+      await setDoc(entryRef, entry).finally(() => (this._isLoading = false))
 
       await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
 
@@ -96,7 +91,6 @@ export const useEntryStore = defineStore('entries', {
 
     async editEntry(payload) {
       const promptStore = usePromptStore()
-      const userStore = useUserStore()
 
       const entry = { ...payload }
 
@@ -107,13 +101,7 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      })
-        .then(() => {
-          entry.author = userStore.getUserById(entry.author.id)
-          const index = this.getEntries.findIndex((p) => p.id === entry.id)
-          this.$patch({ _entries: [...this._entries.slice(0, index), entry, ...this._entries.slice(index + 1)] })
-        })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async deleteEntry(entryId) {
@@ -134,10 +122,7 @@ export const useEntryStore = defineStore('entries', {
         const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
-        Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares]).then(() => {
-          const index = this._entries.findIndex((entry) => entry.id === entryId)
-          this._entries.splice(index, 1)
-        })
+        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares])
       } catch (error) {
         errorStore.throwError(error)
       }

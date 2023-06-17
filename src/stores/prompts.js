@@ -98,7 +98,6 @@ export const usePromptStore = defineStore('prompts', {
 
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
-      const userStore = useUserStore()
 
       const prompt = { ...payload }
 
@@ -107,14 +106,7 @@ export const usePromptStore = defineStore('prompts', {
       prompt.id = prompt.date
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.id), prompt)
-        .then(() => {
-
-          // This not needed, with onSnapCHot
-          // prompt.author = userStore.getUserById(prompt.author.id)
-          // this.$patch({ _prompts: [...this.getPrompts, prompt] })
-        })
-        .finally(() => (this._isLoading = false))
+      await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
 
       await notificationStore.toggleSubscription('prompts', prompt.id)
     },
@@ -130,15 +122,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
-      })
-        .then(() => {
-          const index = this.getPrompts.findIndex((p) => p.id === prompt.id)
-          prompt.author = userStore.getUserById(prompt.author.id)
-          this.$patch({
-            _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
-          })
-        })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
@@ -164,11 +148,7 @@ export const usePromptStore = defineStore('prompts', {
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc]).then(() => {
-         // No need
-         //  const index = this._prompts.findIndex((prompt) => prompt.id === id)
-         //  this._prompts.splice(index, 1)
-        })
+        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc])
       } catch (error) {
         errorStore.throwError(error)
       }
