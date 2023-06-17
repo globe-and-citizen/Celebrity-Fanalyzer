@@ -165,6 +165,7 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
@@ -172,14 +173,15 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const monthPrompt = ref(promptStore.getMonthPrompt)
+const monthPrompt = ref({})
 
 onMounted(async () => {
-  await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
-  monthPrompt.value = promptStore.getMonthPrompt
-
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+})
+
+promptStore.$subscribe((_mutation, state) => {
+  monthPrompt.value = state._prompts.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
 })
 </script>
 
