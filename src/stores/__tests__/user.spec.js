@@ -17,11 +17,6 @@ async function letSnapshotListenerRun(delay) {
 }
 
 describe('Users Store', () => {
-  setActivePinia(createPinia())
-  const entryStore = useEntryStore()
-  const promptStore = usePromptStore()
-  const userStore = useUserStore()
-
   // Create a router instance using the `createRouter()` function
   const router = createRouter({
     history: createWebHistory(),
@@ -29,6 +24,8 @@ describe('Users Store', () => {
   })
 
   beforeEach(async () => {
+    setActivePinia(createPinia())
+
     // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
     global.fetch = vi.fn(async () => {
       return {
@@ -40,6 +37,7 @@ describe('Users Store', () => {
   })
 
   it('Access a non-existing public profile', async () => {
+    const userStore = useUserStore()
     // 1) Attempt to get the user
     const user = ref()
     await userStore.getUserByUidOrUsername('abc123').then((res) => (user.value = res))
@@ -56,6 +54,9 @@ describe('Users Store', () => {
   })
 
   it('Access a existing public profile', async () => {
+    const entryStore = useEntryStore()
+    const promptStore = usePromptStore()
+    const userStore = useUserStore()
     // 1) Attempt to get the user
     const user = ref()
     await userStore.getUserByUidOrUsername('arnonrdp').then((res) => (user.value = res))
