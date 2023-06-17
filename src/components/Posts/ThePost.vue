@@ -1,9 +1,9 @@
 <template>
   <q-page-container style="padding-bottom: 0">
-    <q-page class="bg-white" style="padding-bottom: 7rem">
+    <q-page class="bg-white" style="min-height: auto; padding-bottom: 7rem">
       <TheHeader feedbackButton :title="title" />
       <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
-      <section class="q-pa-md" style="margin-top: 100%">
+      <section class="q-pa-md q-pb-none" style="margin-top: 100%">
         <div class="flex justify-between">
           <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
           <div>
@@ -13,7 +13,24 @@
           </div>
         </div>
         <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
-        <p class="text-body1" v-html="post?.description"></p>
+        <q-separator spaced />
+        <section
+          v-if="post?.author"
+          class="cursor-pointer flex items-center no-wrap q-pa-md"
+          data-test="author-section"
+          @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
+        >
+          <q-avatar size="6rem">
+            <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
+          </q-avatar>
+          <div class="q-ml-md">
+            <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
+            <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
+          </div>
+        </section>
+        <q-separator spaced />
+        <p class="q-mt-md text-body1" v-html="post?.description"></p>
+        <q-separator spaced />
         <q-btn
           color="green"
           :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
@@ -53,26 +70,11 @@
           size="0.75rem"
           @click="$emit('clickComments')"
         >
-          <q-tooltip>Comments</q-tooltip>
+          <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
         </q-btn>
         <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
-      <q-separator inset />
-      <section
-        v-if="post?.author"
-        class="cursor-pointer flex items-center no-wrap q-pa-md"
-        data-test="author-section"
-        @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
-      >
-        <q-avatar size="6rem">
-          <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
-        </q-avatar>
-        <div class="q-ml-md">
-          <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
-          <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
-        </div>
-      </section>
       <q-separator inset />
     </q-page>
   </q-page-container>
