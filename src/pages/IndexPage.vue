@@ -3,11 +3,11 @@
 
   <q-page-container>
     <q-page class="q-pa-md">
-      <section class="text-center">
+      <section class="text-center" v-if="promptStore.getMonthPrompt">
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
           <q-img
-            :src="monthPrompt?.image"
+            :src="promptStore.getMonthPrompt?.image"
             spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
@@ -17,7 +17,7 @@
           This Month's Prompt:
           <br />
           <RouterLink to="month">
-            {{ monthPrompt?.title }}
+            {{ promptStore.getMonthPrompt?.title }}
           </RouterLink>
         </p>
       </section>
@@ -164,20 +164,16 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { computed, onMounted } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
-const userStore = useUserStore()
-
-const monthPrompt = computed(() =>
-  promptStore.getPrompts.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
-)
 
 onMounted(async () => {
+  await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
+
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 })
