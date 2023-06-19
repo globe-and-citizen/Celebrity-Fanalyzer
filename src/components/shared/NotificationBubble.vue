@@ -20,7 +20,7 @@
             @click="markOneAsRead(notification.id)"
           />
         </q-item-section>
-        <q-item-section class="cursor-pointer" @click="goToLink(notification.link)">{{ notification.message }}</q-item-section>
+        <q-item-section class="cursor-pointer" @click="goToLink(notification)">{{ notification.message }}</q-item-section>
         <q-item-section side>
           <q-btn flat icon="clear" round size="sm" @click="deleteOne(notification.id)" />
         </q-item-section>
@@ -61,8 +61,9 @@ function markAllAsRead() {
   notificationStore.markAllAsRead()
 }
 
-function goToLink(link) {
-  router.push(link || '/')
+function goToLink(notification) {
+  router.push(notification.link || '/')
+  markOneAsRead(notification.id)
 }
 
 function deleteOne(id) {
