@@ -80,6 +80,7 @@
           :icon="userStore.getUser.subscriptions?.includes(props.post?.id) ? 'notifications' : 'notifications_none'"
           :label="props.post?.subscribers?.length || 0"
           rounded
+          size="0.75rem"
           @click="subscribe"
         >
           <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
