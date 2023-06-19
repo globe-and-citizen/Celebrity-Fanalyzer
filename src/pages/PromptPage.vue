@@ -4,7 +4,7 @@
     <q-tab content-class="q-pb-md" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!Object.keys(prompt)?.length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!prompt" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="prompt" style="padding: 0">
@@ -41,35 +41,25 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
-const prompt = ref({})
+const prompt = ref()
 const tab = ref('prompt')
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
+promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
-onMounted(async () => {
-  if (!promptByRoute()) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+// Subscriber that update current prompt
+promptStore.$subscribe( (_mutation, state) => {
+  prompt.value = {
+    ...state._prompts.find((prompt) => prompt.id === promptByRoute()?.id),
+    // Add this line because in case the entries are fetched befor the prompt
+    entries: entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
   }
-
-  prompt.value = promptByRoute()
-
-  if (!prompt.value) {
-    router.push('/404')
-    return
-  }
-
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  }
-
-  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
-
-  await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+  commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+  likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
   shareIsLoading.value = true
-  await shareStore
+  shareStore
     .fetchShares('prompts', prompt.value.id)
     .catch((error) => errorStore.throwError(error))
     .finally(() => {
@@ -78,9 +68,20 @@ onMounted(async () => {
     })
 })
 
-promptStore.$subscribe((_mutation, state) => {
-  prompt.value = state._prompts.find((prompt) => prompt.id === promptByRoute()?.id)
+// Subscriber that update current prompt
+entryStore.$subscribe((_mutation, state) => {
+  if (prompt.value) {
+    prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+  }
 })
+
+// redirection after 30s
+setTimeout(() => {
+  if (!prompt.value) {
+    router.push('/404')
+  }
+}, 30000)
+
 
 const promptByRoute = () => {
   const route = router.currentRoute.value
