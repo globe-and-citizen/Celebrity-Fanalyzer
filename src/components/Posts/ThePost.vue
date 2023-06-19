@@ -30,7 +30,7 @@
         </section>
         <q-separator spaced />
         <p class="q-mt-md text-body1" v-html="post?.description"></p>
-        <q-separator spaced />
+        <q-separator spaced="lg" />
         <q-btn
           color="green"
           :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
