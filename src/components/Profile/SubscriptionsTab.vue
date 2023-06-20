@@ -33,10 +33,11 @@
 </template>
 
 <script setup>
-import { useEntryStore, usePromptStore, useUserStore } from 'app/src/stores'
+import { useEntryStore, useNotificationStore, usePromptStore, useUserStore } from 'app/src/stores'
 import { computed } from 'vue'
 
 const entryStore = useEntryStore()
+const notificationStore = useNotificationStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
@@ -49,7 +50,7 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 const filteredPrompts = computed(() => promptStore.getPrompts.filter((prompt) => userStore.getSubscriptions.includes(prompt.id)))
 const filteredEntries = computed(() => entryStore.getEntries.filter((entry) => userStore.getSubscriptions.includes(entry.id)))
 
-function unsubscribe(id) {
-  // userStore.unsubscribe(id)
+function unsubscribe(collectionName, documentId) {
+  notificationStore.toggleSubscription(collectionName, documentId)
 }
 </script>
