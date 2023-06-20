@@ -52,20 +52,32 @@ entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 promptStore.$subscribe( (_mutation, state) => {
   prompt.value = {
     ...state._prompts.find((prompt) => prompt.id === promptByRoute()?.id),
-    // Add this line because in case the entries are fetched befor the prompt
-    entries: entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
   }
-  commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-  likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  shareIsLoading.value = true
-  shareStore
-    .fetchShares('prompts', prompt.value.id)
-    .catch((error) => errorStore.throwError(error))
-    .finally(() => {
-      shareIsLoading.value = false
-      shareIsLoaded.value = true
+  if(prompt.value && prompt.value.id){
+    prompt.value = {
+      ...prompt.value,
+      // Add this line because in case the entries are fetched befor the prompt
+      entries: entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+    }
+    // console.log("we have value", prompt.value)
+    commentStore.fetchComments('prompts', prompt.value.id).catch((error) => {
+      console.log("we have error here 2 ", error)
+      errorStore.throwError(error)
     })
+    likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => {
+      console.log("we have error here", error)
+      errorStore.throwError(error)
+    })
+
+    shareIsLoading.value = true
+    shareStore
+      .fetchShares('prompts', prompt.value.id)
+      .catch((error) => errorStore.throwError(error))
+      .finally(() => {
+        shareIsLoading.value = false
+        shareIsLoaded.value = true
+      })
+  }
 })
 
 // Subscriber that update current prompt

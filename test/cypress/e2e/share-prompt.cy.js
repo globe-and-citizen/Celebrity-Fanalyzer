@@ -10,7 +10,7 @@ describe('Sharing a Prompt', () => {
     cy.get('[data-test="share-button"]').click()
 
     // Selects the first card on the page (copy to clipboard) and clicks it
-    cy.get('.q-card > .row > :nth-child(2) > img').should('be.visible').click()
+    cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
 
     // Select the amount of shares to see if its value is greater than 0
     cy.get('[data-test="share-button"] > .q-btn__content > .block').invoke('text').then(parseFloat).should('be.greaterThan', 0)
