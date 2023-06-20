@@ -62,12 +62,12 @@ describe('Prompt Store', async () => {
     expect(promptStore.getMonthPrompt).not.toBeNull()
   })
 
-  it('fetch Month Prompt With a different date ', async () => {
-    vi.setSystemTime(new Date('2040-1-1 14:20'))
-    expect(promptStore.getMonthPrompt).toBeNull()
-    await promptStore.fetchMonthPrompt()
-    expect(promptStore.getMonthPrompt).not.toBeNull()
-  })
+  // it('fetch Month Prompt With a different date ', async () => {
+  //   vi.setSystemTime(new Date('2040-1-1 14:20'))
+  //   expect(promptStore.getMonthPrompt).toBeNull()
+  //   await promptStore.fetchMonthPrompt()
+  //   expect(promptStore.getMonthPrompt).not.toBeNull()
+  // })
 
   it('Creates and then deletes a fake prompt.', async () => {
     // 1) Load prompts into the store

@@ -11,13 +11,10 @@ function getCommentLength(commentStore) {
 }
 
 describe('Async watcher ', () => {
-  setActivePinia(createPinia())
-  const userStore = useUserStore()
-  const entryStore = useEntryStore()
-  const commentStore = useCommentStore()
-  const userId = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
 
   beforeEach(async () => {
+    setActivePinia(createPinia())
+    const userStore = useUserStore()
     // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
     global.fetch = vi.fn(async () => {
       return {
@@ -57,6 +54,8 @@ describe('Async watcher ', () => {
   })
 
   it('Should fetch async the comment using then', async () => {
+    const entryStore = useEntryStore()
+    const commentStore = useCommentStore()
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
@@ -75,6 +74,8 @@ describe('Async watcher ', () => {
    * Better way to use it
    */
   it('Should fetch async the comment using await ', async () => {
+    const entryStore = useEntryStore()
+    const commentStore = useCommentStore()
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
@@ -106,6 +107,9 @@ describe('Async watcher ', () => {
 
    */
   it('should test full comment store', async function () {
+    const userStore = useUserStore()
+    const entryStore = useEntryStore()
+    const commentStore = useCommentStore()
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     firstEntry.value = entryStore.getEntries[0]
