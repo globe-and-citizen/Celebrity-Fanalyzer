@@ -9,6 +9,7 @@
     <q-page v-else class="q-pa-sm">
       <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
         <q-tab name="profile" label="Profile" data-test="tab-profile" />
+        <q-tab name="subscriptions" label="Subscriptions" data-test="tab-subscriptions" />
         <q-tab name="feedback" label="Feedback" data-test="tab-feedback" />
         <q-tab name="settings" label="Settings" data-test="tab-settings" />
       </q-tabs>
@@ -18,6 +19,10 @@
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="profile">
           <ProfileTab />
+        </q-tab-panel>
+
+        <q-tab-panel name="subscriptions">
+          <SubscriptionsTab />
         </q-tab-panel>
 
         <q-tab-panel name="feedback">
@@ -37,6 +42,7 @@ import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
 import LoginForm from 'src/components/Profile/LoginForm.vue'
 import ProfileTab from 'src/components/Profile/ProfileTab.vue'
 import SettingsTab from 'src/components/Profile/SettingsTab.vue'
+import SubscriptionsTab from 'src/components/Profile/SubscriptionsTab.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useUserStore } from 'src/stores'
 import { ref } from 'vue'
