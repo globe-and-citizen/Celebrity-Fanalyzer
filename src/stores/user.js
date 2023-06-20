@@ -27,6 +27,7 @@ export const useUserStore = defineStore('user', {
     getAdmins: (getters) => getters.getUsers.filter((user) => user.role === 'Admin'),
     getAdminsAndWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer'),
     getProfileTab: (state) => state._profileTab,
+    getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
     getUserById: (getters) => (id) => getters.getUsers.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
