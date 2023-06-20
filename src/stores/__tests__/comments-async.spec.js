@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { waitUntil } from 'src/waitUntil'
+import { waitUntil } from 'src/utils/waitUntil'
 
 function getCommentLength(commentStore) {
   return () => {
