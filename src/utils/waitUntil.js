@@ -8,7 +8,7 @@ export const waitUntil = (callback) => {
           clearInterval(intervalId)
           resolve()
         }
-      }, 1000)
+      }, 10)
     }
   })
 }

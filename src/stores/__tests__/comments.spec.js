@@ -53,7 +53,7 @@ describe('Comments Store', () => {
 
     // Step 2: Check the starting number of comments.
     await commentStore.fetchComments('entries', firstEntry.value.id)
-    await letSnapshotListenerRun(500)
+    await letSnapshotListenerRun(1500)
     const startingNumberOfComments = commentStore.getComments.length
 
     // 3) Add a fake comment & test it was added successfully added
@@ -68,8 +68,8 @@ describe('Comments Store', () => {
     // 5): Delete fake comment. Start by retrieving it.
     let comments = commentStore.getComments
     let commentsOrdered = comments.sort((a, b) => b.created - a.created)
-    commentStore.deleteComment('entries', firstEntry.value.id, commentsOrdered[0].id)
-    await letSnapshotListenerRun(500)
+    await commentStore.deleteComment('entries', firstEntry.value.id, commentsOrdered[0].id)
+    await letSnapshotListenerRun(1500)
     await commentStore.fetchComments('entries', firstEntry.value.id)
     comments = commentStore.getComments
     commentsOrdered = comments.sort((a, b) => b.created - a.created)
