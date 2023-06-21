@@ -77,11 +77,9 @@ export const useNotificationStore = defineStore('notification', {
 
       subscribers = subscribers.filter((subscriber) => subscriber !== userStore.getUser.uid)
 
-      console.time('Notification Duration')
       subscribers?.forEach(async (subscriber) => {
         await setDoc(doc(db, 'users', subscriber, 'notifications', notification.id), notification)
       })
-      console.timeEnd('Notification Duration')
     },
 
     async readList() {
