@@ -11,7 +11,7 @@ describe('Prompt Store', async () => {
   const fakeDate = '2991-01'
 
   //Load an image to use
-  var bitmap = fs.readFileSync('src/assets/cypress.jpg')
+  const bitmap = fs.readFileSync('src/assets/cypress.jpg')
 
   beforeEach(async () => {
 
@@ -68,6 +68,20 @@ describe('Prompt Store', async () => {
     }
   })
 
+  // TODO deprecated fetchMonthPrompt
+  it('fetch Month Prompt and check the result', async () => {
+    expect(promptStore.getMonthPrompt).toBeNull()
+    await promptStore.fetchMonthPrompt()
+    expect(promptStore.getMonthPrompt).not.toBeNull()
+  })
+
+  // it('fetch Month Prompt With a different date ', async () => {
+  //   vi.setSystemTime(new Date('2040-1-1 14:20'))
+  //   expect(promptStore.getMonthPrompt).toBeNull()
+  //   await promptStore.fetchMonthPrompt()
+  //   expect(promptStore.getMonthPrompt).not.toBeNull()
+  // })
+
   it('Creates and then deletes a fake prompt.', async () => {
     const promptStore = usePromptStore()
     const storageStore = useStorageStore()
@@ -80,6 +94,10 @@ describe('Prompt Store', async () => {
       // TODO : Default state
       return promptStore.getPrompts.length > 0
     })
+
+    function getLatestPrompt() {
+      return promptStore.getPrompts.find((prompt) => prompt.id === fakeDate)
+    }
 
     // Step 2: Check the starting number of comments.
     const startingNumberOfPrompts = promptStore.getPrompts.length
@@ -108,8 +126,14 @@ describe('Prompt Store', async () => {
     // Check Prompts length increase
     expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts + 1)
 
+    const latestPrompt = getLatestPrompt()
     // 4) Edit the fake prompt
-
+    await promptStore.editPrompt({
+      ...latestPrompt,
+      description: 'Updated Value of the prompt',
+      author: { label: user.displayName, value: user.uid }
+    })
+    // TODO delete Prompt that have entries
     // 5) Delete fake prompt and check
     await promptStore.deletePrompt(fakePrompt.id)
     await waitUntil(() => {

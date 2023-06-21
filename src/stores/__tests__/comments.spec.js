@@ -53,11 +53,7 @@ describe('Comments Store', () => {
 
     // Step 2: Check the starting number of comments.
     await commentStore.fetchComments('entries', firstEntry.value.id)
-    // Example usage
-    await waitUntil(() => {
-      // TODO : Default state
-      return commentStore.getComments.length > 0
-    })
+    await letSnapshotListenerRun(1500)
     const startingNumberOfComments = commentStore.getComments.length
 
     // 3) Add a fake comment & test it was added successfully added
@@ -75,7 +71,8 @@ describe('Comments Store', () => {
     let comments = commentStore.getComments
     let commentsOrdered = comments.sort((a, b) => b.created - a.created)
     await commentStore.deleteComment('entries', firstEntry.value.id, commentsOrdered[0].id)
-    // Example usage
+    await letSnapshotListenerRun(1500)
+    await commentStore.fetchComments('entries', firstEntry.value.id)
     comments = commentStore.getComments
     commentsOrdered = comments.sort((a, b) => b.created - a.created)
 

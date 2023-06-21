@@ -332,7 +332,7 @@ async function addComment() {
     .addComment(props.collectionName, myComment, props.post)
     .then(() => {
       notificationStore.create(props.post.subscribers, {
-        link: '/' + props.post.id,
+        link: '/' + props.post.id.replace(/-/g, '/'),
         message: 'New comment: ' + myComment.text,
         type: 'comment'
       })
