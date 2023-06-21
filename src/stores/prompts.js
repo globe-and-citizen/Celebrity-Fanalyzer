@@ -10,7 +10,7 @@ export const usePromptStore = defineStore('prompts', {
     _prompts: [],
     _tab: 'post'
   }),
-  //TODO: check tab adition
+
   persist: true,
 
   getters: {
@@ -100,6 +100,10 @@ export const usePromptStore = defineStore('prompts', {
         errorStore.throwError(error)
       }
       this._isLoading = false
+    },
+
+    setTab(tab) {
+      this.$patch({ _tab: tab })
     }
   }
 })

@@ -22,14 +22,16 @@ import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, use
 export const useEntryStore = defineStore('entries', {
   state: () => ({
     _entries: [],
-    _isLoading: false
+    _isLoading: false,
+    _tab: 'post'
   }),
 
   persist: true,
 
   getters: {
     getEntries: (state) => state._entries,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    tab: (state) => state._tab
   },
 
   actions: {
@@ -127,6 +129,10 @@ export const useEntryStore = defineStore('entries', {
         errorStore.throwError(error)
       }
       this._isLoading = false
+    },
+
+    setTab(tab) {
+      this.$patch({ _tab: tab })
     }
   }
 })
