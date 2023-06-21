@@ -1,13 +1,13 @@
 <template>
   <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-sm" icon="fiber_manual_record" name="entry" :ripple="false" />
+    <q-tab content-class="q-ml-auto q-pb-sm" icon="fiber_manual_record" name="post" :ripple="false" />
     <q-tab content-class="q-pb-sm" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-sm" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
-    <q-tab-panel name="entry" style="padding: 0">
+    <q-tab-panel name="post" style="padding: 0">
       <ThePost collectionName="entries" :post="entry" title="Entry Page" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -39,7 +39,7 @@ const likeStore = useLikeStore()
 const shareStore = useShareStore()
 
 const entry = ref({})
-const tab = ref('entry')
+const tab = ref('post')
 
 onMounted(async () => {
   if (router.currentRoute.value.params.id) {
