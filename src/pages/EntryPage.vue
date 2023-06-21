@@ -1,8 +1,8 @@
 <template>
   <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="entry" :ripple="false" />
-    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
+    <q-tab content-class="q-ml-auto q-pb-sm" icon="fiber_manual_record" name="entry" :ripple="false" />
+    <q-tab content-class="q-pb-sm" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-sm" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
