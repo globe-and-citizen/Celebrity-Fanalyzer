@@ -29,7 +29,7 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -42,7 +42,7 @@ const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
 const prompt = ref({})
-const tab = ref('post')
+const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
@@ -76,6 +76,10 @@ onMounted(async () => {
       shareIsLoading.value = false
       shareIsLoaded.value = true
     })
+})
+
+onUnmounted(() => {
+  promptStore.setTab('post')
 })
 
 promptStore.$subscribe((_mutation, state) => {

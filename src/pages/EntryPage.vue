@@ -27,7 +27,7 @@ import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -59,6 +59,10 @@ onMounted(async () => {
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
   await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+})
+
+onUnmounted(() => {
+  entryStore.setTab('post')
 })
 
 entryStore.$subscribe((_mutation, state) => {
