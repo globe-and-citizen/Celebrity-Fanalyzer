@@ -68,12 +68,14 @@ export const useNotificationStore = defineStore('notification', {
      * @param {*} notification - Notification object
      */
     async create(subscribers, notification) {
+      const userStore = useUserStore()
+
       notification.created = Date.now()
       notification.id = Date.now().toString()
       notification.message = notification.message.length > 50 ? notification.message.substring(0, 50) + '...' : notification.message
       notification.read = false
 
-      // BUG: Don't send notification to the user who called the function
+      subscribers = subscribers.filter((subscriber) => subscriber !== userStore.getUser.uid)
 
       console.time('Notification Duration')
       subscribers?.forEach(async (subscriber) => {

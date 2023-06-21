@@ -7,15 +7,17 @@ import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useNotific
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
-    _prompts: []
+    _prompts: [],
+    _tab: 'post'
   }),
-
+  //TODO: check tab adition
   persist: true,
 
   getters: {
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    tab: (state) => state._tab
   },
 
   actions: {
