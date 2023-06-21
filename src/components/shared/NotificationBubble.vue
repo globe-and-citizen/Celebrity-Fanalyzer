@@ -37,13 +37,15 @@
 </template>
 
 <script setup>
-import { useNotificationStore } from 'app/src/stores'
+import { useEntryStore, useNotificationStore, usePromptStore } from 'app/src/stores'
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const entryStore = useEntryStore()
 const notificationStore = useNotificationStore()
+const promptStore = usePromptStore()
 
 onMounted(async () => {
   await notificationStore.readList()
@@ -62,8 +64,17 @@ function markAllAsRead() {
 }
 
 function goToLink(notification) {
-  router.push(notification.link || '/')
   markOneAsRead(notification.id)
+
+  if (notification.collection === 'prompts') {
+    router.push(notification.link || '/')
+    promptStore.setTab('comments')
+  }
+  if (notification.collection === 'entries') {
+    const entry = entryStore.getEntries.find((entry) => entry.id === notification.link.slice(1))
+    router.push(entry.slug)
+    entryStore.setTab('comments')
+  }
 }
 
 function deleteOne(id) {
