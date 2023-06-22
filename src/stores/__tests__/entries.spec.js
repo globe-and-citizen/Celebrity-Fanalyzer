@@ -5,7 +5,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 // Necessary Components
 import { useEntryStore, useUserStore, useStorageStore, usePromptStore } from 'src/stores'
 import { ref, reactive } from 'vue'
-import { waitUntil } from 'src/waitUntil'
+import { waitUntil } from 'src/utils/waitUntil'
 import fs from 'fs'
 
 //Load an image to use

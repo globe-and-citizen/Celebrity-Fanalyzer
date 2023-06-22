@@ -5,7 +5,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 // Necessary Components
 import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { ref, reactive } from 'vue'
-import { waitUntil } from 'src/waitUntil'
+import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Comments Store', () => {
 

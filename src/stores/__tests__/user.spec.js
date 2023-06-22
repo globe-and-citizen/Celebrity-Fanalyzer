@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import {waitUntil} from "src/waitUntil";
+import {waitUntil} from "src/utils/waitUntil";
 
 // Snapshot Listener Helper -- A Shameless Hack
 async function letSnapshotListenerRun(delay) {

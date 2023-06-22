@@ -5,7 +5,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 // Necessary Components
 import { useUserStore, usePromptStore, useStorageStore } from 'src/stores'
 import fs from 'fs'
-import { waitUntil } from 'src/waitUntil'
+import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Prompt Store', async () => {
   const fakeDate = '2991-01'
