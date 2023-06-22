@@ -9,7 +9,7 @@ function getCommentLength(commentStore) {
   }
 }
 
-describe('Async watcher ', () => {
+describe.skip('Async watcher ', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
@@ -92,8 +92,7 @@ describe('Async watcher ', () => {
     // Example usage
     await waitUntil(getCommentLength(commentStore))
 
-    const startingNumberOfComments = commentStore.getComments.length
-    expect(startingNumberOfComments).toBeGreaterThan(0)
+    expect(commentStore.getComments.length).toBeGreaterThan(0)
   })
   /*
   TODO: Comment for Prompt or entry

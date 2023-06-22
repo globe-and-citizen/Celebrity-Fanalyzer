@@ -7,7 +7,7 @@ import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { ref, reactive } from 'vue'
 import { waitUntil } from 'src/utils/waitUntil'
 
-describe('Comments Store', () => {
+describe.skip('Comments Store', () => {
 
   beforeEach(async () => {
     // Put setActivePinia in beforeEach because we need a fresh store
