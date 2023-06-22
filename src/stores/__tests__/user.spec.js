@@ -8,15 +8,6 @@ import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import {waitUntil} from "src/utils/waitUntil";
 
-// Snapshot Listener Helper -- A Shameless Hack
-async function letSnapshotListenerRun(delay) {
-  return new Promise((res, rej) => {
-    setTimeout(() => {
-      res()
-    }, delay)
-  })
-}
-
 describe('Users Store', () => {
   // Create a router instance using the `createRouter()` function
   const router = createRouter({
@@ -93,6 +84,7 @@ describe('Users Store', () => {
   })
 
   it('Should fetch all user', async () => {
+    const userStore = useUserStore()
     await userStore.fetchUsers()
     expect(userStore.getUsers.length).toBeGreaterThan(0)
   })
