@@ -4,7 +4,7 @@
     <q-tab content-class="q-py-sm" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!Object.keys(prompt)?.length && promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-if="!prompt " class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
@@ -29,7 +29,7 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { onMounted, onUnmounted, ref } from 'vue'
+import {  onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -41,49 +41,51 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
-const prompt = ref({})
+const prompt = ref()
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
-onMounted(async () => {
-  if (!promptByRoute()) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+// This will be called every time, it's not a good practice but work for the moment
+promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+
+promptStore.$subscribe((_mutation, state) => {
+  if (promptByRoute()) {
+    prompt.value = { ...promptByRoute() }
+    if (prompt.value.id) {
+      commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+      likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+
+      shareIsLoading.value = true
+       shareStore
+        .fetchShares('prompts', prompt.value.id)
+        .catch((error) => errorStore.throwError(error))
+        .finally(() => {
+          shareIsLoading.value = false
+          shareIsLoaded.value = true
+        })
+    }
   }
+})
 
-  prompt.value = promptByRoute()
+entryStore.$subscribe((_mutation, state) => {
+  // How to handle when we have entry befor prompt
+  if (prompt.value && prompt.value.id) {
+    prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value.id)
+  }
+})
 
+// Use a timeout because the value can be not define at the begining
+setTimeout(() => {
   if (!prompt.value) {
     router.push('/404')
-    return
   }
+}, 30000)
 
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  }
-
-  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
-
-  await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  shareIsLoading.value = true
-  await shareStore
-    .fetchShares('prompts', prompt.value.id)
-    .catch((error) => errorStore.throwError(error))
-    .finally(() => {
-      shareIsLoading.value = false
-      shareIsLoaded.value = true
-    })
-})
 
 onUnmounted(() => {
   promptStore.setTab('post')
-})
-
-promptStore.$subscribe((_mutation, state) => {
-  prompt.value = state._prompts.find((prompt) => prompt.id === promptByRoute()?.id)
 })
 
 const promptByRoute = () => {
@@ -91,20 +93,21 @@ const promptByRoute = () => {
   const currentMonth = currentYearMonth()
   const previousMonth = previousYearMonth()
 
-  return (
-    promptStore.getPrompts.find((prompt) => {
-      switch (route.href) {
-        case '/month':
-          return [currentMonth, previousMonth].includes(prompt.date)
-        case `/${route.params.year}/${route.params.month}`:
-          return prompt.date === route.params.year + '-' + route.params.month
-        case `/${route.params.slug}`:
-          return [route.params.slug, route.path].includes(prompt.slug)
-        default:
-          return false
-      }
-    }) || promptStore.getPrompts[0]
-  )
+  // Check if we have prompts and try to find or send the first one. Else return undefined
+  return promptStore.getPrompts
+    ? promptStore.getPrompts.find((prompt) => {
+        switch (route.href) {
+          case '/month':
+            return [currentMonth, previousMonth].includes(prompt.date)
+          case `/${route.params.year}/${route.params.month}`:
+            return prompt.date === route.params.year + '-' + route.params.month
+          case `/${route.params.slug}`:
+            return [route.params.slug, route.path].includes(prompt.slug)
+          default:
+            return false
+        }
+      }) || promptStore.getPrompts[0]
+    : undefined
 }
 </script>
 
