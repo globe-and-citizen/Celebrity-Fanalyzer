@@ -2,6 +2,7 @@ import { getAnalytics } from 'firebase/analytics'
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getMessaging } from 'firebase/messaging'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
@@ -18,10 +19,11 @@ const app = initializeApp(firebaseConfig)
 
 const auth = getAuth(app)
 const db = getFirestore(app)
+const messaging = getMessaging(app)
 const storage = getStorage(app)
 
 if (import.meta.env.VITE_RELEASE_STAGE === 'production') {
   getAnalytics(app)
 }
 
-export { auth, db, storage }
+export { auth, db, messaging, storage }
