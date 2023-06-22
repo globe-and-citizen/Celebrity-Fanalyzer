@@ -10,7 +10,7 @@ import { waitUntil } from 'src/utils/waitUntil'
 describe('Comments Store', () => {
 
   beforeEach(async () => {
-    // Put setActivePinia in beforeEach beacause we need a fresh store
+    // Put setActivePinia in beforeEach because we need a fresh store
     setActivePinia(createPinia())
     // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
     global.fetch = vi.fn(async () => {
@@ -45,7 +45,6 @@ describe('Comments Store', () => {
     const firstEntry = ref({})
     await entryStore.fetchEntries()
     await waitUntil(() => {
-
       // TODO : Default state : find a better way to test it. Should use undefined for default state
       return entryStore.getEntries.length > 0
     })
@@ -53,7 +52,10 @@ describe('Comments Store', () => {
 
     // Step 2: Check the starting number of comments.
     await commentStore.fetchComments('entries', firstEntry.value.id)
-    await letSnapshotListenerRun(1500)
+    await waitUntil(() => {
+      // TODO : Default state
+      return commentStore.getComments.length > 0
+    })
     const startingNumberOfComments = commentStore.getComments.length
 
     // 3) Add a fake comment & test it was added successfully added
@@ -71,8 +73,6 @@ describe('Comments Store', () => {
     let comments = commentStore.getComments
     let commentsOrdered = comments.sort((a, b) => b.created - a.created)
     await commentStore.deleteComment('entries', firstEntry.value.id, commentsOrdered[0].id)
-    await letSnapshotListenerRun(1500)
-    await commentStore.fetchComments('entries', firstEntry.value.id)
     comments = commentStore.getComments
     commentsOrdered = comments.sort((a, b) => b.created - a.created)
 
