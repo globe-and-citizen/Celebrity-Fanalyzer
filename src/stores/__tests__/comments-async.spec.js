@@ -1,7 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
 import { waitUntil } from 'src/utils/waitUntil'
 
 function getCommentLength(commentStore) {
@@ -11,7 +10,6 @@ function getCommentLength(commentStore) {
 }
 
 describe('Async watcher ', () => {
-
   beforeEach(async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
@@ -50,19 +48,21 @@ describe('Async watcher ', () => {
       const errorMessage = error.message
       console.log(errorCode, errorMessage)
     }
-
   })
 
   it('Should fetch async the comment using then', async () => {
     const entryStore = useEntryStore()
     const commentStore = useCommentStore()
-    const firstEntry = ref({})
     await entryStore.fetchEntries()
-    await waitUntil(()=>{return entryStore.getEntries.length>0})
-    firstEntry.value = entryStore.getEntries[0]
+    await waitUntil(() => {
+      return entryStore.getEntries.length > 0
+    })
+
+    // Using a methode kep the reactivity
+    const getFirstEntry = () => {return entryStore.getEntries[0]}
 
     // Step 2: Check the starting number of comments.
-    await commentStore.fetchComments('entries', firstEntry.value.id)
+    await commentStore.fetchComments('entries', getFirstEntry().id)
 
     // Example usage
     waitUntil(getCommentLength(commentStore)).then(() => {
@@ -77,17 +77,17 @@ describe('Async watcher ', () => {
   it('Should fetch async the comment using await ', async () => {
     const entryStore = useEntryStore()
     const commentStore = useCommentStore()
-    const firstEntry = ref({})
     await entryStore.fetchEntries()
 
-    await waitUntil(()=>{
-      return entryStore.getEntries.length>0
+    await waitUntil(() => {
+      return entryStore.getEntries.length > 0
     })
 
-    firstEntry.value = entryStore.getEntries[0]
+    // Using a methode kep the reactivity
+    const getFirstEntry = () => {return entryStore.getEntries[0]}
 
     // Step 2: Check the starting number of comments.
-    await commentStore.fetchComments('entries', firstEntry.value.id)
+    await commentStore.fetchComments('entries', getFirstEntry().id)
 
     // Example usage
     await waitUntil(getCommentLength(commentStore))
@@ -116,15 +116,13 @@ describe('Async watcher ', () => {
     const userStore = useUserStore()
     const entryStore = useEntryStore()
     const commentStore = useCommentStore()
-    const firstEntry = ref({})
     await entryStore.fetchEntries()
-    firstEntry.value = entryStore.getEntries[0]
+    await waitUntil(() => {
+      return entryStore.getEntries.length > 0
+    })
 
-    function getCommentLength(commentStore) {
-      return () => {
-        return commentStore.getComments.length > 0
-      }
-    }
+    // Using a methode kep the reactivity
+    const getFirstEntry = () => {return entryStore.getEntries[0]}
 
     function getLastComment() {
       return commentStore.getComments.sort((a, b) => b.created - a.created)[0]
@@ -135,15 +133,15 @@ describe('Async watcher ', () => {
     expect(commentStore.isLoading).toBe(false)
 
     // 2- Check Fetch Comment
-    await commentStore.fetchComments('entries', firstEntry.value.id)
+    await commentStore.fetchComments('entries', getFirstEntry().id)
 
-    // await waitUntil(getCommentLength(commentStore))
+    await waitUntil(getCommentLength(commentStore))
     const startingNumberOfComments = commentStore.getComments.length
-    // expect(startingNumberOfComments).toBeGreaterThan(0)
+    expect(startingNumberOfComments).toBeGreaterThan(0)
 
     // 3- Check Add comment
     let myComment = { text: 'Test comment' }
-    commentStore.addComment('entries', myComment, firstEntry.value)
+    commentStore.addComment('entries', myComment, getFirstEntry())
 
     // Check Loading state variation false =>true => false
     await waitUntil(() => {
@@ -162,7 +160,7 @@ describe('Async watcher ', () => {
     // 4- Check edit Comment
     commentStore.editComment(
       'entries',
-      firstEntry.value.id,
+      getFirstEntry().id,
       createdComment.id,
       'Edited comment',
       userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
@@ -184,7 +182,7 @@ describe('Async watcher ', () => {
     expect(getLastComment().text).toBe('Edited comment')
 
     // 6- Check deleteComment
-    await commentStore.deleteComment('entries', firstEntry.value.id, getLastComment().id)
+    await commentStore.deleteComment('entries', getFirstEntry().id, getLastComment().id)
 
     expect(commentStore.isLoading).toBe(false)
     await waitUntil(() => {
