@@ -9,17 +9,7 @@ describe('Admin Prompt & Entry', () => {
     cy.viewport('macbook-16')
     // Visits the profile page
 
-    cy.session('Login', () => {
-      cy.visit('/profile')
-      // Fill the email and password fields and click the sign in button
-      cy.get('[data-test="email-field"]').type('test@test.com')
-      cy.get('[data-test="password-field"]').type('12345678')
-      cy.get('[data-test="sign-button"]').click()
-      // Visits the Admin Page
-      cy.get('[href="/admin"]').click()
-      cy.location('pathname').should('eq', '/admin')
-    })
-
+    cy.login()
     cy.visit('/admin')
   })
 
