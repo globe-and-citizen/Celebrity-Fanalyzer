@@ -36,5 +36,6 @@ jobs:
 
       - name: ✅ Upload coverage to Codecov
         uses: codecov/codecov-action@v2
+        directory: .nyc_output
         with:
           flags: E2E
