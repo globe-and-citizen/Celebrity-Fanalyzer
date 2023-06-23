@@ -1,11 +1,11 @@
 //Testing Frameworks
-import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import {createPinia, setActivePinia} from 'pinia'
+import {afterAll, beforeEach, describe, expect, it, vi} from 'vitest'
 
 // Necessary Components
-import { useUserStore, usePromptStore, useStorageStore } from 'src/stores'
+import {useUserStore, usePromptStore, useStorageStore} from 'src/stores'
 import fs from 'fs'
-import { waitUntil } from 'src/utils/waitUntil'
+import {waitUntil} from 'src/utils/waitUntil'
 
 describe('Prompt Store', async () => {
   const fakeDate = '2991-01'
@@ -58,7 +58,9 @@ describe('Prompt Store', async () => {
     if (prompts.some((prompt) => prompt.id === fakeDate)) {
 
       const startingNumberOfPrompts = promptStore.getPrompts.length
-      await promptStore.deletePrompt(fakeDate)
+      await promptStore.deletePrompt(fakeDate).catch((e) => {
+        console.log("there is an error", e)
+      })
 
       await waitUntil(() => {
         return (promptStore.getPrompts.length = startingNumberOfPrompts - 1)
@@ -101,7 +103,7 @@ describe('Prompt Store', async () => {
     let imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
 
     const fakePrompt = {
-      author: { label: user.displayName, value: user.uid },
+      author: {label: user.displayName, value: user.uid},
       categories: ['1_CategoryFake', '2_CategoryFake', '3_CategoryFake'],
       date: fakeDate,
       description: 'Let it be known: THIS is my fake entry!',
