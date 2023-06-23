@@ -3,10 +3,10 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import { useEntryStore, useUserStore, useStorageStore, usePromptStore } from 'src/stores'
-import { reactive } from 'vue'
-import { waitUntil } from 'src/utils/waitUntil'
 import fs from 'fs'
+import { useEntryStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
+import { waitUntil } from 'src/utils/waitUntil'
+import { reactive } from 'vue'
 
 //Load an image to use
 
@@ -15,7 +15,6 @@ describe('Entry Store', async () => {
   // you can avoid redeclaring the stores within each "it" block.
   //Load and image to use
   let bitmap = fs.readFileSync('src/assets/cypress.jpg')
-
 
   beforeEach(async () => {
     setActivePinia(createPinia())
@@ -49,7 +48,6 @@ describe('Entry Store', async () => {
   })
 
   it('Creates and then deletes a fake entry.', async () => {
-
     const promptStore = usePromptStore()
     const entryStore = useEntryStore()
     const storageStore = useStorageStore()
@@ -60,12 +58,10 @@ describe('Entry Store', async () => {
     await entryStore.fetchEntries()
 
     await waitUntil(() => {
-
       // TODO : Default state
       return promptStore.getPrompts.length > 0
     })
     await waitUntil(() => {
-
       // TODO : Default state : find a better way to test it. Should use undefined for default state
       return entryStore.getEntries.length > 0
     })
@@ -83,13 +79,13 @@ describe('Entry Store', async () => {
       author: { label: userStore.getUser.displayName, value: userStore.getUser.uid },
       description: 'The description of a fake entry',
       image: imgAddress,
-      title: 'Title: Fake Entry',
-      prompt: { label: `${aPrompt.date} - ${aPrompt.title}`, value: aPrompt.date }
+      title: 'Fake Entry',
+      prompt: { label: `${aPrompt.date} - ${aPrompt.title}`, value: aPrompt.date },
+      slug: `/${aPrompt.date.replace(/\-/g, '/')}/fake-entry`
     })
 
     await entryStore.addEntry(fakeEntry)
     await waitUntil(() => {
-
       // TODO : Default state : find a better way to test it. Should use undefined for default state
       return entryStore.getEntries.length === startingNumberOfEntries + 1
     })
