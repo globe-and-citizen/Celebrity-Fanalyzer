@@ -75,11 +75,9 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('tester').wait(1000)
-
+    cy.get('[data-test="input-search"]').type('tester')
     // Get the expand button and click it
-    cy.get('[data-test="button-expand"]').click()
-
+    cy.get('[data-test="2022-01"] > .q-table--col-auto-width > [data-test="button-expand"]').click()
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
@@ -97,7 +95,6 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="confirm-delete-entry"]').click()
     // Wait the notification
     cy.get('.q-notification__message').contains('Entry deleted')
-    cy.wait(4000)
   })
 
   it('Should delete the prompt', () => {
@@ -105,7 +102,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(1000)
 
     // Get the delete button and click it
-    cy.get('[data-test="button-delete-prompt"]').click()
+    cy.get('[data-test="2022-01"] > .text-right > [data-test="button-delete-prompt"]').click()
 
     // Get the confirm button and click it
     cy.get('[data-test="confirm-delete-prompt"]').click()
