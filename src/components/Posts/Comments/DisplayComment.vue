@@ -29,11 +29,9 @@
           >
             <q-list>
               <q-item clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
-<!--              <q-item clickable data-test="comment-select-edit" v-close-popup>-->
                 <q-item-section>Edit</q-item-section>
               </q-item>
-<!--              <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(1, comment.id)">-->
-              <q-item clickable data-test="comment-select-delete" v-close-popup>
+              <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment( comment.id)">
                 <q-item-section>Delete</q-item-section>
               </q-item>
             </q-list>
@@ -41,7 +39,7 @@
         </q-item-section>
       </q-item>
       <!-- Parent comment editing -->
-      <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, comment.text)">
+      <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, newComment)">
         <q-input
           :data-test="comment.text + '-comment-edit'"
           class="q-px-sm"
@@ -60,8 +58,8 @@
       </q-form>
 
       <!-- Parent comment -->
-<!--      <div v-else class="q-my-sm text-body2">-->
-      <div class="q-my-sm text-body2">
+      <div v-else class="q-my-sm text-body2">
+<!--      <div class="q-my-sm text-body2">-->
         {{ comment.text }}
       </div>
     </div>
@@ -73,12 +71,13 @@
 import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {shortMonthDayTime} from "src/utils/date";
-import {useCommentStore, useUserStore} from "src/stores";
+import {useCommentStore, useErrorStore, useUserStore} from "src/stores";
 import {useQuasar} from "quasar";
 
 const router = useRouter()
 const userStore = useUserStore()
 const commentStore = useCommentStore()
+const errorStore = useErrorStore()
 
 
 const props = defineProps({
@@ -86,6 +85,7 @@ const props = defineProps({
   collectionName: { type: String, required: true },
   documentId: { type: String, required: true },
 })
+
 
 
 const userId = ref('')
@@ -110,7 +110,15 @@ async function editComment(commentId, editedComment) {
     .finally(() => (isEditing.value = false))
 }
 
+async function deleteComment(commentId) {
+  await commentStore
+    .deleteComment(props.collectionName, props.documentId, commentId)
+    .then(() => $q.notify({ type: 'positive', message: 'Comment successfully deleted' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
+  // Set all child comments parentId into the current comment Parent Id
+  // childComments.value = comments.value.filter((comment) => commentParentId === comment.parentId)
+}
 function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
     // expanded.value = false
