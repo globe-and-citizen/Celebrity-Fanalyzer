@@ -3,8 +3,14 @@
   <q-page-container>
     <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
       <section v-if="comments.length" class="q-pa-md" style="margin-bottom: 4rem">
-        <q-list v-for="comment of comments" dense :key="comment.id">
-          <div v-if="comment.parentId === undefined && comment.author">
+        <q-list
+          v-for="comment of comments.filter((element) => {
+            return element.parentId === undefined && element.author
+          })"
+          dense
+          :key="comment.id"
+        >
+          <div>
             <!-- Parent comment author info and edit delete dropdown items -->
             <q-item class="q-px-none">
               <q-item-section avatar>
