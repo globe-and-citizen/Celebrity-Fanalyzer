@@ -3,6 +3,10 @@
   <q-page-container>
     <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
       <section v-if="comments.length" class="q-pa-md" style="margin-bottom: 4rem">
+        <DisplayComment :comment="comments[comments.length-1]"
+                        :collection-name="collectionName"
+                        :document-id="post.id"
+        ></DisplayComment>
         <q-list
           v-for="comment of comments.filter((element) => {
             return element.parentId === undefined && element.author
@@ -253,6 +257,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TheHeader from 'src/components/shared/TheHeader.vue'
+import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
