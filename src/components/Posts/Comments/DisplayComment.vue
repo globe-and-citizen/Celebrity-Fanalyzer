@@ -59,16 +59,54 @@
 
       <!-- Parent comment -->
       <div v-else class="q-my-sm text-body2">
-<!--      <div class="q-my-sm text-body2">-->
         {{ comment.text }}
       </div>
+
+      <!-- Parent Like, Dislike, Reply buttons -->
+
+      <div class="row">
+        <q-btn
+          :data-test="'like' + comment.text"
+          flat
+          :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+          :label="comment.likes?.length || 0"
+          rounded
+          size="0.75rem"
+          @click="likeComment(comment.id)"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+        </q-btn>
+        <q-btn
+          :data-test="'dislike' + comment.text"
+          flat
+          :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+          :label="comment.dislikes?.length || 0"
+          rounded
+          size="0.75rem"
+          @click="dislikeComment(comment.id)"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+        </q-btn>
+<!--        <q-btn-->
+<!--          :data-test="comment.text + '-add-reply'"-->
+<!--          flat-->
+<!--          icon="img:/icons/arrow-reply.svg"-->
+<!--          :label="replyCounter(comment.id)"-->
+<!--          rounded-->
+<!--          size="0.75rem"-->
+<!--          @click="showReplies(comment.id, comment.text, comment.author.displayName || 'Anonymous')"-->
+<!--        >-->
+<!--          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>-->
+<!--        </q-btn>-->
+      </div>
+
     </div>
   </q-list>
 </template>
 
 <script setup>
 
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {shortMonthDayTime} from "src/utils/date";
 import {useCommentStore, useErrorStore, useUserStore} from "src/stores";
@@ -119,6 +157,25 @@ async function deleteComment(commentId) {
   // Set all child comments parentId into the current comment Parent Id
   // childComments.value = comments.value.filter((comment) => commentParentId === comment.parentId)
 }
+
+
+const likeIconClass = computed(() => {
+  return (comment) => comment.likes?.some((like) => like === userId.value) || false
+})
+
+const dislikeIconClass = computed(() => {
+  return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
+})
+
+
+function likeComment(commentId) {
+  commentStore.likeComment(props.collectionName, props.documentId, commentId)
+}
+
+function dislikeComment(commentId) {
+  commentStore.dislikeComment(props.collectionName, props.documentId, commentId)
+}
+
 function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
     // expanded.value = false
