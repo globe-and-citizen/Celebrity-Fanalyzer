@@ -50,7 +50,7 @@ export const useErrorStore = defineStore('errors', {
           if (message) {
             Notify.create({ message, type: 'negative' })
           }
-          throw new Error(error)
+          // throw new Error(error)
         })
     },
 

@@ -13,7 +13,8 @@
         <b class="text-secondary">{{ title }}</b>
         <span class="float-right text-secondary">{{ subtitle }}</span>
       </q-toolbar-title>
-      <q-btn v-if="feedbackButton" flat icon="feedback" round size="1rem" text-color="secondary" @click="goToFeedback" />
+      <q-btn v-if="feedbackButton" color="secondary" flat icon="feedback" round size="1rem" @click="goToFeedback" />
+      <NotificationBubble v-if="notificationButton" />
       <slot />
     </q-toolbar>
     <q-toolbar v-if="searchInput">
@@ -39,12 +40,14 @@
 <script setup>
 import { useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
+import NotificationBubble from './NotificationBubble.vue'
 
 defineProps({
   backButton: { type: Boolean, required: false, default: true },
   logo: { type: Boolean, required: false, default: false },
   modelValue: { required: false },
   feedbackButton: { type: Boolean, required: false, default: false },
+  notificationButton: { type: Boolean, required: false, default: false },
   searchInput: { type: Boolean, required: false, default: false },
   subtitle: { type: String, required: false },
   title: { type: String, required: false }

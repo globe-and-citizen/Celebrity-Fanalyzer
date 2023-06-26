@@ -24,7 +24,11 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr :props="props">
+      <q-tr
+        :props="props"
+        :data-test="props.key"
+        class="new"
+      >
         <q-td auto-width>
           <q-btn
             color="red"
@@ -36,7 +40,7 @@
             @click="props.expand = !props.expand"
           />
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
+        <q-td v-for="col in props.cols" :key="col.name" :props="props" >{{ col.value }}</q-td>
         <q-td class="text-right">
           <q-btn
             color="warning"

@@ -30,49 +30,63 @@
         </section>
         <q-separator spaced />
         <p class="q-mt-md text-body1" v-html="post?.description"></p>
-        <q-separator spaced />
-        <q-btn
-          color="green"
-          :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
-          flat
-          :icon="
-            likeStore.getLikes.find((post) => post.author.id === userId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
-          "
-          :label="likeStore.getLikes.length"
-          rounded
-          size="0.75rem"
-          @click="like()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-btn
-          color="red"
-          :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
-          flat
-          :icon="
-            likeStore.getDislikes.find((post) => post.author.id === userId)
-              ? 'img:/icons/thumbs-down-bolder.svg'
-              : 'img:/icons/thumbs-down.svg'
-          "
-          :label="likeStore.getDislikes.length"
-          rounded
-          size="0.75rem"
-          @click="dislike()"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-        <q-btn
-          :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
-          flat
-          icon="chat_bubble_outline"
-          :label="commentStore.getComments.length"
-          rounded
-          size="0.75rem"
-          @click="$emit('clickComments')"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
-        </q-btn>
-        <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
+        <q-separator spaced="lg" />
+        <div class="text-center">
+          <q-btn
+            color="green"
+            :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
+            flat
+            :icon="
+              likeStore.getLikes.find((post) => post.author.id === userId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
+            "
+            :label="likeStore.getLikes.length"
+            rounded
+            size="0.75rem"
+            @click="like()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </q-btn>
+          <q-btn
+            color="red"
+            :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
+            flat
+            :icon="
+              likeStore.getDislikes.find((post) => post.author.id === userId)
+                ? 'img:/icons/thumbs-down-bolder.svg'
+                : 'img:/icons/thumbs-down.svg'
+            "
+            :label="likeStore.getDislikes.length"
+            rounded
+            size="0.75rem"
+            @click="dislike()"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </q-btn>
+          <q-btn
+            :data-test="commentStore.isLoading ? '' : 'panel-3-navigator'"
+            flat
+            icon="chat_bubble_outline"
+            :label="commentStore.getComments.length"
+            rounded
+            size="0.75rem"
+            @click="$emit('clickComments')"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
+          </q-btn>
+          <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
+          <q-btn
+            v-if="userStore.isAuthenticated"
+            color="blue"
+            flat
+            :icon="userStore.getUser.subscriptions?.includes(props.post?.id) ? 'notifications' : 'notifications_none'"
+            :label="props.post?.subscribers?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="subscribe"
+          >
+            <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
+          </q-btn>
+        </div>
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
       <q-separator inset />
@@ -82,7 +96,7 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
 import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -97,6 +111,7 @@ const router = useRouter()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
+const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 
@@ -117,6 +132,10 @@ async function dislike() {
 
 async function share(socialNetwork) {
   await shareStore.addShare(props.collectionName, props.post.id, socialNetwork).catch((error) => errorStore.throwError(error))
+}
+
+async function subscribe() {
+  await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
 </script>
 
