@@ -23,14 +23,14 @@
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs align="justify" v-model="tab" class="text-secondary">
-        <q-tab v-if="userStore.isAdminOrWriter" name="posts" icon="view_list" label="Prompts & Entries" />
+        <q-tab v-if="userStore.isWriterOrAbove" name="posts" icon="view_list" label="Prompts & Entries" />
         <q-tab v-if="userStore.isAdmin" name="users" icon="people" label="Users" />
-        <q-tab v-if="userStore.isAdminOrWriter" name="feedbacks" icon="feedback" label="Feedbacks" />
+        <q-tab v-if="userStore.isEditorOrAbove" name="feedbacks" icon="feedback" label="Feedbacks" />
         <q-tab v-if="userStore.isAdmin" name="errors" icon="error" label="Errors" />
       </q-tabs>
 
       <q-tab-panels animated style="padding-bottom: 2rem" swipeable v-model="tab">
-        <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
+        <q-tab-panel v-if="userStore.isWriterOrAbove" name="posts">
           <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
         </q-tab-panel>
 
@@ -38,7 +38,7 @@
           <ManageUsers :users="users" />
         </q-tab-panel>
 
-        <q-tab-panel v-if="userStore.isAdminOrWriter" name="feedbacks">
+        <q-tab-panel v-if="userStore.isEditorOrAbove" name="feedbacks">
           <ManageFeedbacks />
         </q-tab-panel>
 
