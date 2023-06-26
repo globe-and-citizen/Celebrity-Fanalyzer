@@ -3,12 +3,12 @@
     <q-badge v-if="unreadNotifications.length" color="red" floating rounded>{{ unreadNotifications.length }}</q-badge>
     <q-menu v-if="notificationStore.getNotifications.length" anchor="bottom right" self="top right">
       <!-- TODO: Check need for this button -->
-      <q-item class="column" style="max-width: 400px">
+      <!-- <q-item class="column" style="max-width: 400px">
         <p class="q-my-sm text-center">This App requires your permission to send notifications. Please click the button below to allow.</p>
         <q-item-section>
           <q-btn color="primary" dense icon="notifications_active" label="Request Permission" outline @click="notify" />
         </q-item-section>
-      </q-item>
+      </q-item> -->
       <q-separator spaced />
       <q-item style="min-width: 320px">
         <q-item-section class="text-center">
