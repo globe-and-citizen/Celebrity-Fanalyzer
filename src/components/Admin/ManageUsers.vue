@@ -32,7 +32,7 @@ const columns = [
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'left' }
 ]
-const options = ['Admin', 'Writer', 'User']
+const options = ['Admin', 'Editor', 'Writer', 'User']
 const pagination = { sortBy: 'email', descending: true, rowsPerPage: 0 }
 
 function updateRole(user) {
