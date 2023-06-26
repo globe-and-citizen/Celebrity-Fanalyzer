@@ -11,10 +11,20 @@
       transition-hide="jump-up"
     >
       <q-list style="min-width: 100px">
-        <q-item clickable @click="openPromptDialog()" :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'">
+        <q-item
+          v-if="userStore.isEditorOrAbove"
+          clickable
+          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'"
+          @click="openPromptDialog()"
+        >
           <q-item-section>New Prompt</q-item-section>
         </q-item>
-        <q-item clickable @click="openEntryDialog()" :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'">
+        <q-item
+          v-if="userStore.isWriterOrAbove"
+          clickable
+          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'"
+          @click="openEntryDialog()"
+        >
           <q-item-section>New Entry</q-item-section>
         </q-item>
       </q-list>
