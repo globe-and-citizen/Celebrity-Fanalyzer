@@ -34,14 +34,12 @@ export const useUserStore = defineStore('user', {
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     getUsers: (state) => state._users,
-    getWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Writer'),
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
     isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
     isAnonymous: (getters) => getters.getUser.isAnonymous,
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
-    isLoading: (state) => state._isLoading,
-    isWriter: (getters) => getters.getUser.role === 'Writer'
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
@@ -110,15 +108,6 @@ export const useUserStore = defineStore('user', {
         })
         .finally(() => (this._isLoading = false))
     },
-
-    // async anonymousSignIn() {
-    //   this._isLoading = true
-    //   await signInAnonymously(auth)
-    //     .catch((error) => console.error(error))
-    //     .finally(() => (this._isLoading = false))
-
-    //   onAuthStateChanged(auth, (user) => (this._user = user))
-    // },
 
     async googleSignIn() {
       this.$reset()
