@@ -1,6 +1,6 @@
 <template>
   <q-list>
-    <div style="border-left: red solid 1px; padding-left:2%">
+    <div style="border-left: black solid 1px; padding-left:2%; margin-bottom: 15px">
       <q-item class="q-px-none">
         <q-item-section avatar>
           <q-avatar>
@@ -87,18 +87,19 @@
         >
           <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
         </q-btn>
-<!--        <q-btn-->
-<!--          :data-test="comment.text + '-add-reply'"-->
-<!--          flat-->
-<!--          icon="img:/icons/arrow-reply.svg"-->
-<!--          :label="replyCounter(comment.id)"-->
-<!--          rounded-->
-<!--          size="0.75rem"-->
-<!--          @click="showReplies(comment.id, comment.text, comment.author.displayName || 'Anonymous')"-->
-<!--        >-->
-<!--          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>-->
-<!--        </q-btn>-->
+        <q-btn
+          :data-test="comment.text + '-add-reply'"
+          flat
+          icon="img:/icons/arrow-reply.svg"
+          :label="replyCounter(comment.id)"
+          rounded
+          size="0.75rem"
+          @click="replyTo(comment.id)"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+        </q-btn>
       </div>
+      <DisplayComment v-for="item of commentStore.getCommentChildren(comment.id)" :document-id="documentId" :collection-name="collectionName" :key="item.id" :comment="item"></DisplayComment>
 
     </div>
   </q-list>
@@ -124,8 +125,6 @@ const props = defineProps({
   documentId: { type: String, required: true },
 })
 
-
-
 const userId = ref('')
 const inputEdit = ref('')
 const isEditing = ref(false)
@@ -138,7 +137,6 @@ onMounted(async () => {
 
   window.addEventListener('keydown', handleKeydown)
 })
-
 
 async function editComment(commentId, editedComment) {
   await commentStore
@@ -158,7 +156,6 @@ async function deleteComment(commentId) {
   // childComments.value = comments.value.filter((comment) => commentParentId === comment.parentId)
 }
 
-
 const likeIconClass = computed(() => {
   return (comment) => comment.likes?.some((like) => like === userId.value) || false
 })
@@ -166,7 +163,6 @@ const likeIconClass = computed(() => {
 const dislikeIconClass = computed(() => {
   return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
 })
-
 
 function likeComment(commentId) {
   commentStore.likeComment(props.collectionName, props.documentId, commentId)
@@ -176,6 +172,13 @@ function dislikeComment(commentId) {
   commentStore.dislikeComment(props.collectionName, props.documentId, commentId)
 }
 
+const replyCounter = (id) => {
+  return commentStore.getComments.filter((comment) => comment.parentId === id).length
+}
+
+const replyTo= (commentId)=>{
+  commentStore.setReplyTo(commentId)
+}
 function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
     // expanded.value = false
@@ -189,7 +192,6 @@ function editInput(commentId) {
   isEditing.value = !isEditing.value
   inputEdit.value = commentId
 }
-
 
 // const { comment } = props
 </script>

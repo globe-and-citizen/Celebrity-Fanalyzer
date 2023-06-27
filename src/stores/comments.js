@@ -18,14 +18,32 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: [],
-    _isLoading: false
+    _isLoading: false,
+    _replyTo: ''
   }),
 
   persist: true,
 
   getters: {
     getComments: (state) => state._comments,
-    isLoading: (state) => state._isLoading
+    getCommentById: () => {
+      return (commentId) => {
+        return state._comments ? state._comments.find((comment) => comment.id === commentId) : []
+      }
+    },
+    isLoading: (state) => state._isLoading,
+    /**
+     * Return A comment children
+     * @param state
+     * @returns {function(*): T[]|*[]}
+     */
+    getCommentChildren: (state) => {
+      return (commentId) => {
+        return state._comments ? state._comments.filter((comment) => comment.parentId === commentId) : []
+      }
+    },
+    getReplyTo: (state) => state._replyTo,
+    haveToReply: (state) => state._replyTo !== ''
   },
 
   actions: {
@@ -78,6 +96,14 @@ export const useCommentStore = defineStore('comments', {
         } else {
           throw new Error(error)
         }
+      }
+    },
+
+    setReplyTo(commentId) {
+      if (this._replyTo !== commentId) {
+        this._replyTo = commentId
+      } else {
+        this._replyTo = ''
       }
     },
 
