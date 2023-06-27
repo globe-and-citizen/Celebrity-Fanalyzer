@@ -17,6 +17,22 @@ export const useRequestStore = defineStore('request', {
   },
 
   actions: {
+    async readRequests() {
+      const userStore = useUserStore()
+
+      this._isLoading = true
+      onSnapshot(collection(db, 'requests'), (querySnapshot) => {
+        const requests = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+        for (const request of requests) {
+          request.user = userStore.getUserById(request.id)
+        }
+
+        this.$patch({ _requests: requests })
+      })
+      this._isLoading = false
+    },
+
     async becomeWriter(message) {
       const userStore = useUserStore()
 
