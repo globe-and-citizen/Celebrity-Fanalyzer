@@ -45,7 +45,7 @@
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isAdmin" name="users">
-          <ManageUsers :users="users" />
+          <ManageUsers />
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isEditorOrAbove" name="feedbacks">
@@ -85,20 +85,12 @@ const userStore = useUserStore()
 const entry = ref({})
 const prompt = ref({})
 const tab = ref('posts')
-const users = ref([])
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 
 onMounted(() => {
   userStore.fetchUsers()
   requestStore.readRequests()
-})
-
-userStore.$subscribe((_mutation, state) => {
-  users.value = state._users.map((user) => {
-    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
-    return user
-  })
 })
 
 function openPromptDialog(props) {
