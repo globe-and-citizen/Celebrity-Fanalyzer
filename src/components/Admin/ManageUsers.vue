@@ -6,6 +6,7 @@
     hide-bottom
     :loading="userStore.isLoading"
     :pagination="{ rowsPerPage: 0 }"
+    row-key="email"
     :rows="computedRequests"
     title="Manage Requests"
   >
@@ -35,8 +36,8 @@
     hide-bottom
     :loading="userStore.isLoading"
     :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
-    :rows="computedUsers"
     row-key="email"
+    :rows="userStore.getUsers"
     title="Manage Users"
   >
     <template v-slot:body-cell-role="props">
@@ -74,12 +75,5 @@ const computedRequests = computed(() => {
   return requestStore.getRequests
     .filter((request) => request.status === 'pending')
     .map((request) => ({ ...request, displayName: request.user.displayName, email: request.user.email, role: request.user.role }))
-})
-
-const computedUsers = computed(() => {
-  return userStore.getUsers.map((user) => {
-    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
-    return user
-  })
 })
 </script>
