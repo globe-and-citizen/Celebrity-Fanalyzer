@@ -1,6 +1,6 @@
 <template>
   <q-list>
-    <div style="border-left: black solid 1px; padding-left:2%; margin-bottom: 15px">
+    <div style="border-left: black solid 1px; padding-left:2%; margin-bottom: 15px" >
       <q-item class="q-px-none">
         <q-item-section avatar>
           <q-avatar>
@@ -94,7 +94,7 @@
           :label="replyCounter(comment.id)"
           rounded
           size="0.75rem"
-          @click="replyTo(comment.id)"
+          @click="commentStore.setReplyTo(comment.id)"
         >
           <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
         </q-btn>
@@ -152,8 +152,7 @@ async function deleteComment(commentId) {
     .then(() => $q.notify({ type: 'positive', message: 'Comment successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Failed to delete comment'))
 
-  // Set all child comments parentId into the current comment Parent Id
-  // childComments.value = comments.value.filter((comment) => commentParentId === comment.parentId)
+  // TODO Set all child comments parentId into the current comment Parent Id)
 }
 
 const likeIconClass = computed(() => {
@@ -176,9 +175,6 @@ const replyCounter = (id) => {
   return commentStore.getComments.filter((comment) => comment.parentId === id).length
 }
 
-const replyTo= (commentId)=>{
-  commentStore.setReplyTo(commentId)
-}
 function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
     // expanded.value = false
@@ -193,7 +189,6 @@ function editInput(commentId) {
   inputEdit.value = commentId
 }
 
-// const { comment } = props
 </script>
 
 <style scoped></style>

@@ -26,7 +26,7 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
-    getCommentById: () => {
+    getCommentById: (state) => {
       return (commentId) => {
         return state._comments ? state._comments.find((comment) => comment.id === commentId) : []
       }
