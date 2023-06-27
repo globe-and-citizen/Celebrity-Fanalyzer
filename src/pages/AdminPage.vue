@@ -76,9 +76,10 @@ import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useRequestStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
+const requestStore = useRequestStore()
 const userStore = useUserStore()
 
 const entry = ref({})
@@ -90,6 +91,7 @@ const promptStore = usePromptStore()
 
 onMounted(() => {
   userStore.fetchUsers()
+  requestStore.readRequests()
 })
 
 userStore.$subscribe((_mutation, state) => {
