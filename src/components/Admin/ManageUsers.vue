@@ -5,7 +5,7 @@
     flat
     hide-bottom
     :loading="userStore.isLoading"
-    :pagination="pagination"
+    :pagination="{ rowsPerPage: 0 }"
     :rows="computedRequests"
     title="Manage Requests"
   >
@@ -34,7 +34,7 @@
     flat
     hide-bottom
     :loading="userStore.isLoading"
-    :pagination="pagination"
+    :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
     :rows="computedUsers"
     row-key="email"
     title="Manage Users"
@@ -69,7 +69,6 @@ const columnsUser = [
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
 ]
 const options = ['Admin', 'Editor', 'Writer', 'User']
-const pagination = { sortBy: 'email', descending: true, rowsPerPage: 0 }
 
 const computedRequests = computed(() => {
   return requestStore.getRequests
