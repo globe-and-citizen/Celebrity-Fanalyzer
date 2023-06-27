@@ -20,7 +20,7 @@
         <p class="text-body1">Be the first to share what you think!</p>
       </div>
 
-      <q-form greedy @submit.prevent="commentStore.haveToReply ? addReply(commentStore.getReplyTo) : addComment()">
+      <q-form greedy @submit.prevent="commentStore.haveToReply ? addReply() : addComment()">
         <q-input
           ref="inputField"
           class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
@@ -46,7 +46,7 @@
             :data-test="commentStore.haveToReply ? commentText + '-submit-fill-add-reply' : ''"
             color="grey-6"
             dense
-            :disable="commentStore.haveToReply ? !reply.text : !myComment.text"
+            :disable="!commentValue"
             flat
             icon="send"
             round
@@ -63,10 +63,8 @@ import { useQuasar } from 'quasar'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
-import { shortMonthDayTime } from 'src/utils/date'
-import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref} from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { comment } from 'postcss'
 
 const props = defineProps({
   collectionName: { type: String, required: true },
@@ -82,17 +80,11 @@ const userStore = useUserStore()
 const commentId = ref('')
 const commentText = ref('')
 const displayName = ref('')
-const expanded = ref(false)
-const expandedReply = ref(false)
-const myComment = reactive({})
 const reply = reactive({})
-const userId = ref('')
+const commentValue = ref('')
 const inputField = ref()
 
 onMounted(async () => {
-  await userStore.fetchUserIp()
-  userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
-
   window.addEventListener('keydown', handleKeydown)
 })
 
@@ -102,9 +94,6 @@ onBeforeUnmount(() => {
 
 function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
-    expanded.value = false
-    commentId.value = ''
-    expandedReply.value = false
     inputField.value.blur()
   }
 }
@@ -113,67 +102,43 @@ function getReplyAuthor() {
   if (commentStore.haveToReply) {
     const parentComment = commentStore.getCommentById(commentStore.getReplyTo)
     if (parentComment) {
-      return parentComment.author.displayName ?parentComment.author.displayName : "Anonymous"
+      return parentComment.author.displayName ? parentComment.author.displayName : 'Anonymous'
     }
   }
-  return "Anonymous"
+  return 'Anonymous'
 }
 
-const commentValue = computed({
-  get() {
-    return expanded.value ? reply.text : myComment.text
-  },
-  set(value) {
-    if (expanded.value) {
-      reply.text = value
-    } else {
-      myComment.text = value
-    }
-  }
-})
-
 async function addComment() {
-  await commentStore
-    .addComment(props.collectionName, myComment, props.post)
+  reply.parentId = commentStore.getReplyTo
+  const comment = { text: commentValue.value }
+  commentStore
+    .addComment(props.collectionName, comment, props.post)
     .then(() => {
-      myComment.text = ''
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
+  commentValue.value = ''
 }
-onUnmounted(()=>{
+
+onUnmounted(() => {
   commentStore.setReplyTo('')
 })
 
-// async function showReplies(id, text, name) {
-//   if (commentId.value === id) {
-//     expanded.value = false
-//     commentId.value = ''
-//     expandedReply.value = false
-//     inputField.value.blur()
-//     return
-//   }
-//   expanded.value = true
-//   expandedReply.value = true
-//   commentId.value = id
-//   commentText.value = text
-//   displayName.value = name
-//   reply.parentId = id
-//
-//   await nextTick()
-//   inputField.value.focus()
-// }
+commentStore.$subscribe(()=>{
+  commentStore.haveToReply ? inputField.value.focus(): inputField.value.blur()
+})
 
-async function addReply(commentId) {
-  await commentStore
-    .addReply(props.collectionName, props.post.id, reply)
+async function addReply() {
+  const comment = { text: commentValue.value, parentId: commentStore.getReplyTo }
+   commentStore
+    .addReply(props.collectionName, props.post.id, comment)
     .then(() => {
-      reply.text = ''
       $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
-      expandedReply.value = false
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
+
+  commentValue.value = ''
   await nextTick()
   inputField.value.blur()
 }
