@@ -32,3 +32,15 @@ registerCommands()
 Cypress.Commands.add('getByData', (selector) => {
   return cy.get(`[data-test=${selector}]`)
 })
+Cypress.Commands.add('login', () => {
+  cy.session("login", () => {
+    cy.visit('/profile')
+    // Fill the email and password fields and click the sign in button
+    cy.get('[data-test="email-field"]').type('test@test.com')
+    cy.get('[data-test="password-field"]').type('12345678')
+    cy.get('[data-test="sign-button"]').click()
+    // Visits the Admin Page
+    cy.get('[href="/admin"]').click()
+    cy.location('pathname').should('eq', '/admin')
+  })
+})

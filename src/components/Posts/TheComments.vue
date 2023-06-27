@@ -61,9 +61,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
-import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
-import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
+
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -75,6 +73,7 @@ const $q = useQuasar()
 const router = useRouter()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
+const notificationStore = useNotificationStore()
 const userStore = useUserStore()
 
 const commentId = ref('')
@@ -114,6 +113,7 @@ async function addComment() {
   commentStore
     .addComment(props.collectionName, comment, props.post)
     .then(() => {
+
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
