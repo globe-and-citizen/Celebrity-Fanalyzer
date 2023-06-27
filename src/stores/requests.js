@@ -1,4 +1,4 @@
-import { doc, runTransaction, setDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, onSnapshot, runTransaction, setDoc, updateDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -48,6 +48,24 @@ export const useRequestStore = defineStore('request', {
 
       runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', userStore.getUser.uid), { askedToBeWriter: true })
+      }).finally(() => (this._isLoading = false))
+    },
+
+    async acceptWriter(userId) {
+      this._isLoading = true
+      updateDoc(doc(db, 'requests', userId), { status: 'accepted' })
+
+      runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'users', userId), { acceptedAsWriter: true, role: 'Writer' })
+      }).finally(() => (this._isLoading = false))
+    },
+
+    async denyWriter(userId) {
+      this._isLoading = true
+      updateDoc(doc(db, 'requests', userId), { status: 'denied' })
+
+      runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'users', userId), { acceptedAsWriter: false, role: 'User' })
       }).finally(() => (this._isLoading = false))
     }
   }
