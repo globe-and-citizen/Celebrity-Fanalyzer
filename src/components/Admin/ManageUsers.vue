@@ -33,6 +33,7 @@
   <q-table
     :columns="columnsUser"
     flat
+    :filter="filter"
     hide-bottom
     :loading="userStore.isLoading"
     :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
@@ -40,6 +41,13 @@
     :rows="userStore.getUsers"
     title="Manage Users"
   >
+    <template v-slot:top-right>
+      <q-input debounce="300" dense placeholder="Search" v-model="filter" @update:model-value="userStore.queryUsers(filter)">
+        <template v-slot:append>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+    </template>
     <template v-slot:body-cell-role="props">
       <q-td>
         <q-select borderless dense :options="options" v-model="props.row.role" @update:model-value="userStore.updateRole(props.row)" />
@@ -50,7 +58,7 @@
 
 <script setup>
 import { useRequestStore, useUserStore } from 'src/stores'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -69,6 +77,7 @@ const columnsUser = [
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
 ]
+const filter = ref('')
 const options = ['Admin', 'Editor', 'Writer', 'User']
 
 const computedRequests = computed(() => {
