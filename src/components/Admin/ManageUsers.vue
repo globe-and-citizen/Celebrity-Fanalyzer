@@ -42,7 +42,14 @@
     title="Manage Users"
   >
     <template v-slot:top-right>
-      <q-input debounce="300" dense placeholder="Search" v-model="filter" @update:model-value="userStore.queryUsers(filter)">
+      <q-input
+        debounce="300"
+        data-test="query-input"
+        dense
+        placeholder="Search"
+        v-model="filter"
+        @update:model-value="userStore.queryUsers(filter)"
+      >
         <template v-slot:append>
           <q-icon name="search" />
         </template>
