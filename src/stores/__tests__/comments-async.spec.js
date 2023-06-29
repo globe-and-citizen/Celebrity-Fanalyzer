@@ -3,13 +3,7 @@ import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { waitUntil } from 'src/utils/waitUntil'
 
-function getCommentLength(commentStore) {
-  return () => {
-    return commentStore.getComments.length > 0
-  }
-}
-
-describe.skip('Async watcher ', () => {
+describe('Async watcher ', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
@@ -65,7 +59,9 @@ describe.skip('Async watcher ', () => {
     await commentStore.fetchComments('entries', getFirstEntry().id)
 
     // Example usage
-    waitUntil(getCommentLength(commentStore)).then(() => {
+    waitUntil(() => {
+      return commentStore.isLoaded
+    }).then(() => {
       const startingNumberOfComments = commentStore.getComments.length
       expect(startingNumberOfComments).toBeGreaterThan(0)
     })
@@ -90,7 +86,10 @@ describe.skip('Async watcher ', () => {
     await commentStore.fetchComments('entries', getFirstEntry().id)
 
     // Example usage
-    await waitUntil(getCommentLength(commentStore))
+    await waitUntil(() => {
+      return commentStore.isLoaded
+    })
+
 
     expect(commentStore.getComments.length).toBeGreaterThan(0)
   })
@@ -128,13 +127,15 @@ describe.skip('Async watcher ', () => {
     }
 
     // 1- Check initial state
-    expect(commentStore.getComments.length).toBe(0)
-    expect(commentStore.isLoading).toBe(false)
+    expect(commentStore.getComments).toBe(undefined)
+    expect(commentStore.isLoaded).toBe(false)
 
     // 2- Check Fetch Comment
     await commentStore.fetchComments('entries', getFirstEntry().id)
 
-    await waitUntil(getCommentLength(commentStore))
+    await waitUntil(() => {
+      return commentStore.isLoaded
+    })
     const startingNumberOfComments = commentStore.getComments.length
     expect(startingNumberOfComments).toBeGreaterThan(0)
 

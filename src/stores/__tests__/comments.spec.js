@@ -7,7 +7,7 @@ import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
 import { ref, reactive } from 'vue'
 import { waitUntil } from 'src/utils/waitUntil'
 
-describe.skip('Comments Store', () => {
+describe('Comments Store', () => {
 
   beforeEach(async () => {
     // Put setActivePinia in beforeEach because we need a fresh store
@@ -53,8 +53,7 @@ describe.skip('Comments Store', () => {
     // Step 2: Check the starting number of comments.
     await commentStore.fetchComments('entries', firstEntry.value.id)
     await waitUntil(() => {
-      // TODO : Default state
-      return commentStore.getComments.length > 0
+      return commentStore.isLoaded
     })
     const startingNumberOfComments = commentStore.getComments.length
 
