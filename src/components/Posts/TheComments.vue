@@ -1,8 +1,8 @@
 <template>
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
-    <q-page :data-test="!commentStore.isLoading ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.getComments.length" class="q-pa-md" style="margin-bottom: 6rem">
+    <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
+      <section v-if="commentStore.getComments?.length>0" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
           v-for="comment of commentStore.getComments.filter((element) => {
             return element.parentId === undefined && element.author

@@ -1,6 +1,6 @@
 <template>
   <q-list>
-    <div style="border-left: black solid 1px; padding-left:2%; margin-bottom: 15px" >
+    <div style="border-left: black solid 1px; padding-left: 2%; margin-bottom: 15px">
       <q-item class="q-px-none">
         <q-item-section avatar>
           <q-avatar>
@@ -19,19 +19,12 @@
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
         <q-item-section v-if="(comment.author?.uid || comment.author) === userId" side>
-          <q-btn-dropdown
-            color="secondary"
-            :data-test="comment.text + '-button-dropdown'"
-            dense
-            dropdown-icon="more_vert"
-            flat
-            rounded
-          >
+          <q-btn-dropdown color="secondary" :data-test="comment.text + '-button-dropdown'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
               <q-item clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment( comment.id)">
+              <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
                 <q-item-section>Delete</q-item-section>
               </q-item>
             </q-list>
@@ -99,36 +92,39 @@
           <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
         </q-btn>
       </div>
-      <DisplayComment v-for="item of commentStore.getCommentChildren(comment.id)" :document-id="documentId" :collection-name="collectionName" :key="item.id" :comment="item"></DisplayComment>
-
+      <DisplayComment
+        v-for="item of commentStore.getCommentChildren(comment.id)"
+        :document-id="documentId"
+        :collection-name="collectionName"
+        :key="item.id"
+        :comment="item"
+      ></DisplayComment>
     </div>
   </q-list>
 </template>
 
 <script setup>
-
-import {computed, onMounted, ref} from "vue";
-import {useRouter} from "vue-router";
-import {shortMonthDayTime} from "src/utils/date";
-import {useCommentStore, useErrorStore, useUserStore} from "src/stores";
-import {useQuasar} from "quasar";
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { shortMonthDayTime } from 'src/utils/date'
+import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 const userStore = useUserStore()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 
-
 const props = defineProps({
   comment: { type: Object, required: true },
   collectionName: { type: String, required: true },
-  documentId: { type: String, required: true },
+  documentId: { type: String, required: true }
 })
 
 const userId = ref('')
 const inputEdit = ref('')
 const isEditing = ref(false)
-const newComment=ref(props.comment.text)
+const newComment = ref(props.comment.text)
 
 const $q = useQuasar()
 onMounted(async () => {
@@ -172,7 +168,7 @@ function dislikeComment(commentId) {
 }
 
 const replyCounter = (id) => {
-  return commentStore.getComments.filter((comment) => comment.parentId === id).length
+  return commentStore.getComments ? commentStore.getComments.filter((comment) => comment.parentId === id).length : 0
 }
 
 function handleKeydown(event) {
@@ -188,7 +184,6 @@ function editInput(commentId) {
   isEditing.value = !isEditing.value
   inputEdit.value = commentId
 }
-
 </script>
 
 <style scoped></style>
