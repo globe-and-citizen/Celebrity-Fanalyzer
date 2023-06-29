@@ -12,9 +12,9 @@
           narrow-indicator
           v-model="type"
         >
+          <q-tab name="day" label="Daily" />
+          <q-tab name="week" label="Weekly" />
           <q-tab name="all" label="All" />
-          <q-tab name="week" label="Week" />
-          <q-tab name="day" label="Days" />
         </q-tabs>
         <!-- TODO: Create graph of visitors and visits -->
         {{ visitorStore.getVisitors }}
