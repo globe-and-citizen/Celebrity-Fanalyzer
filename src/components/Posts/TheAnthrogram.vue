@@ -12,13 +12,14 @@
           narrow-indicator
           v-model="type"
         >
-          <q-tab name="day" label="Daily" />
-          <q-tab name="week" label="Weekly" />
+          <q-tab name="daily" label="Daily" />
+          <q-tab name="weekly" label="Weekly" />
           <q-tab name="all" label="All" />
         </q-tabs>
         <VisitorsBar :data="visitorStore.getVisitors" :interval="type" />
         <q-separator spaced="xl" />
         <LikesBar :data="graphData(type)" />
+        <q-separator spaced="xl" />
         <SharesPie :data="shares" :interval="type" />
       </section>
     </q-page>
@@ -43,7 +44,7 @@ const shareStore = useShareStore()
 const visitorStore = useVisitorStore()
 
 const shares = ref(shareStore.getShares)
-const type = ref('all')
+const type = ref('daily')
 
 const updateChartData = () => {
   if (!props.post.created) return
@@ -70,12 +71,14 @@ shareStore.$subscribe((_mutation, state) => {
 function graphData(type) {
   if (!chartData.value) return []
 
-  if (type === 'day') {
-    return formatStats(chartData.value.dayStats, 'day')
+  if (type === 'daily') {
+    return formatStats(chartData.value.dayStats, 'daily')
   }
-  if (type === 'week') {
-    return formatStats(chartData.value.weekStats, 'week')
+
+  if (type === 'weekly') {
+    return formatStats(chartData.value.weekStats, 'weekly')
   }
+
   return formatAllStats(chartData.value.allStats)
 }
 </script>
