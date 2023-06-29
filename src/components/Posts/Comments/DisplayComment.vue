@@ -19,7 +19,7 @@
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
         <q-item-section v-if="(comment.author?.uid || comment.author) === userId" side>
-          <q-btn-dropdown color="secondary" :data-test="comment.text + '-button-dropdown'" dense dropdown-icon="more_vert" flat rounded>
+          <q-btn-dropdown color="secondary" :data-test="comment.text + '-reply-button'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
               <q-item clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
                 <q-item-section>Edit</q-item-section>
