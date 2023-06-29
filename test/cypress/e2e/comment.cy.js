@@ -19,6 +19,11 @@ describe('Commenting', async () => {
   })
 
   it('creating comment ', () => {
+    // TODO: Have a better way to check if we have comment or not
+    cy.wait(5000)
+
+    cy.getByData('comment-loaded')
+
     // navigate to the comment input form.
     cy.get('[data-test="comment-main-box"]').type('Cypress-testing{enter}')
 
@@ -27,16 +32,16 @@ describe('Commenting', async () => {
   })
 
   it('like comment', () => {
-    cy.get('[data-test="likeCypress-testing"]').click({ multiple: true })
+    cy.get('[data-test="likeCypress-testing"]').eq(0).click({force: true})
   })
 
   it('dislike comment', () => {
-    cy.get('[data-test="dislikeCypress-testing"]').click({ multiple: true })
+    cy.get('[data-test="dislikeCypress-testing"]').eq(0).click({force: true})
   })
 
   it('add reply comment', () => {
     // expand the add reply form
-    cy.get('[data-test="Cypress-testing-add-reply"]').click({ multiple: true })
+    cy.get('[data-test="Cypress-testing-add-reply"]').eq(0).click({ multiple: true })
 
     // fill add reply form input
     cy.get('[data-test="Cypress-testing-fill-add-reply"]').type('Added-Reply')
