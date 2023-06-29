@@ -61,6 +61,9 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TheHeader from 'src/components/shared/TheHeader.vue'
+import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
+import {useCommentStore, useErrorStore, useNotificationStore, useUserStore} from 'src/stores'
+import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 
@@ -114,6 +117,13 @@ async function addComment() {
     .addComment(props.collectionName, comment, props.post)
     .then(() => {
 
+      notificationStore.create(props.post.subscribers, {
+        collection: props.collectionName,
+        link: '/' + props.post.id.replace(/-/g, '/'),
+        message: 'New comment: ' + comment.text,
+        type: 'comment'
+      })
+
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
@@ -134,6 +144,14 @@ async function addReply() {
    commentStore
     .addReply(props.collectionName, props.post.id, comment)
     .then(() => {
+      notificationStore.create(props.post.subscribers, {
+        collection: props.collectionName,
+        link: '/' + props.post.id.replace(/-/g, '/'),
+        message: 'New comment: ' + comment.text,
+        type: 'comment'
+      })
+
+      window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Reply successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Reply submission failed!'))
