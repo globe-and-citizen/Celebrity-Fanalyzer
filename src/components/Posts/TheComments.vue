@@ -24,7 +24,7 @@
         <q-input
           ref="inputField"
           class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
-          :data-test="commentStore.haveToReply ? commentText + '-fill-add-reply' : 'comment-main-box'"
+          :data-test="commentStore.haveToReply ? 'fill-add-reply' : 'comment-main-box'"
           dense
           :label="commentStore.haveToReply ? 'Reply' : 'Comment'"
           lazy-rules
@@ -43,7 +43,7 @@
             <q-btn @click="commentStore.setReplyTo('')" icon="close" round flat dense size="sm"></q-btn>
           </div>
           <q-btn
-            :data-test="commentStore.haveToReply ? commentText + '-submit-fill-add-reply' : ''"
+            :data-test="commentStore.haveToReply ?  'submit-fill-add-reply' : ''"
             color="grey-6"
             dense
             :disable="!commentValue"
@@ -80,8 +80,6 @@ const notificationStore = useNotificationStore()
 const userStore = useUserStore()
 
 const commentId = ref('')
-const commentText = ref('')
-const displayName = ref('')
 const reply = reactive({})
 const commentValue = ref('')
 const inputField = ref()

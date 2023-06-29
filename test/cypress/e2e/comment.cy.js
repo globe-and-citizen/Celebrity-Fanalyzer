@@ -15,15 +15,10 @@ describe('Commenting', async () => {
     cy.get('[data-test="panel-3-navigator"]').click()
 
     // Wait all comments to be loaded
-    cy.get('[data-test="comment-loaded"]')
+    cy.getByData('comment-loaded')
   })
 
   it('creating comment ', () => {
-    // TODO: Have a better way to check if we have comment or not
-    cy.wait(5000)
-
-    cy.getByData('comment-loaded')
-
     // navigate to the comment input form.
     cy.get('[data-test="comment-main-box"]').type('Cypress-testing{enter}')
 
@@ -41,13 +36,13 @@ describe('Commenting', async () => {
 
   it('add reply comment', () => {
     // expand the add reply form
-    cy.get('[data-test="Cypress-testing-add-reply"]').eq(0).click({ multiple: true })
+    cy.get('[data-test="Cypress-testing-add-reply"]').eq(0).click({ force: true })
 
     // fill add reply form input
-    cy.get('[data-test="Cypress-testing-fill-add-reply"]').type('Added-Reply')
+    cy.get('[data-test="fill-add-reply"]').type('Added-Reply')
 
     // submit filled add reply form
-    cy.get('[data-test="Cypress-testing-submit-fill-add-reply"]').click({ timeout: 5000 })
+    cy.get('[data-test="submit-fill-add-reply"]').click({ timeout: 5000 })
 
     //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Reply successfully submitted')
