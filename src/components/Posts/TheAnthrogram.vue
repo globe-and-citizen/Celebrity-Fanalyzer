@@ -16,8 +16,8 @@
           <q-tab name="week" label="Weekly" />
           <q-tab name="all" label="All" />
         </q-tabs>
-        <!-- TODO: Create graph of visitors and visits -->
-        {{ visitorStore.getVisitors }}
+        <VisitorsBar :data="visitorStore.getVisitors" :interval="type" />
+        <q-separator spaced="xl" />
         <LikesBar :data="graphData(type)" />
         <SharesPie :data="shares" :interval="type" />
       </section>
@@ -27,6 +27,7 @@
 
 <script setup>
 import { Timestamp } from 'firebase/firestore'
+import VisitorsBar from 'src/components/Graphs/VisitorsBar.vue'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
