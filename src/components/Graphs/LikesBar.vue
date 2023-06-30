@@ -32,6 +32,10 @@ function compute() {
     tooltip: {
       trigger: 'item'
     },
+    legend: {
+      data: ['Likes', 'Dislikes'],
+      bottom: '1%'
+    },
     xAxis: {
       type: 'category',
       data: dates.value
@@ -119,10 +123,6 @@ watchEffect(() => {
   dates.value = info.map((obj) => Object.keys(obj)[0])
   likes.value = info.map((obj) => Object.values(obj)[0].likes)
   dislikes.value = info.map((obj) => Object.values(obj)[0].dislikes)
-
-  console.log('dates', dates.value)
-  console.log('likes', likes.value)
-  console.log('dislikes', dislikes.value)
 
   countLikes.value = likes.value.reduce((acc, item) => acc + item, 0)
   countDislikes.value = dislikes.value.reduce((acc, item) => acc + item, 0)
