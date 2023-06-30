@@ -4,10 +4,10 @@
     <q-tab content-class="q-py-sm" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-tab-panels v-if="prompt && shareStore.getShares.length>0 " animated class="bg-transparent col-grow" swipeable v-model="tab">
+  <q-tab-panels v-if="prompt" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
-      <ThePost collectionName="prompts" v-if="shareStore.getShares.length>0" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
+      <ThePost collectionName="prompts" v-if="shareStore.getShares" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
       <TheEntries v-if="prompt?.entries" :entries="prompt.entries" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
