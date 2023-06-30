@@ -58,56 +58,54 @@ function compute() {
   }
 }
 
-const intervalFunctions = {
-  day: (date, now) => date >= new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-  week: (date, now) => date >= new Date(now.setDate(now.getDate() - now.getDay())),
-  all: () => true
-}
+const transformData = (data) => {
+  const uniqueDates = []
 
-function getDates(data) {
-  const today = new Date()
-  const startDate = new Date(Math.min(...data.map((item) => new Date(item.visits[0]))))
-  const dates = []
-
-  for (let date = startDate; date <= today; date.setDate(date.getDate() + 1)) {
-    dates.push(date.toLocaleDateString('en-US'))
-  }
-
-  return dates
-}
-
-function getVisitors(data, dates) {
-  const visitors = Array(dates.length).fill(0)
-
+  // Extract all unique dates from the objects in the data array
   data.forEach((item) => {
-    const index = dates.indexOf(item.visits[0])
-    if (index !== -1) {
-      visitors[index]++
-    }
-  })
-
-  return visitors
-}
-
-function getVisits(data, dates) {
-  const visitsMap = data.reduce((acc, item) => {
     item.visits.forEach((date) => {
-      if (dates.includes(date)) {
-        acc[date] = (acc[date] || 0) + 1
+      if (!uniqueDates.includes(date)) {
+        uniqueDates.push(date)
       }
     })
-    return acc
-  }, {})
+  })
 
-  return dates.map((date) => visitsMap[date] || 0)
+  const today = new Date()
+  const firstDate = new Date(uniqueDates[0])
+
+  let currentDate = new Date(firstDate)
+
+  // Generate missing dates between the first provided date and today's date
+  while (currentDate <= today) {
+    const formattedDate = currentDate.toLocaleDateString('en-US')
+    if (!uniqueDates.includes(formattedDate)) {
+      uniqueDates.push(formattedDate)
+    }
+    currentDate.setDate(currentDate.getDate() + 1)
+  }
+
+  // Sort the dates in ascending order
+  uniqueDates.sort((a, b) => new Date(a) - new Date(b))
+
+  return uniqueDates.map((date) => {
+    // Count the number of items with the first visit on the current date
+    const visitorsCount = data.filter((item) => item.visits[0] === date).length
+
+    // Count the number of items that contain the current date in their visits
+    const visitsCount = data.filter((item) => item.visits.includes(date)).length
+
+    return { [date]: { visitors: visitorsCount, visits: visitsCount } }
+  })
 }
 
 watchEffect(() => {
   if (!props.data) return
 
-  dates.value = getDates(props.data)
-  visitors.value = getVisitors(props.data, dates.value)
-  visits.value = getVisits(props.data, dates.value)
+  const info = transformData(props.data)
+
+  dates.value = info.map((obj) => Object.keys(obj)[0])
+  visitors.value = info.map((obj) => Object.values(obj)[0].visitors)
+  visits.value = info.map((obj) => Object.values(obj)[0].visits)
 
   countVisitors.value = visitors.value.reduce((acc, cur) => acc + cur)
   countVisits.value = visits.value.reduce((acc, cur) => acc + cur)
