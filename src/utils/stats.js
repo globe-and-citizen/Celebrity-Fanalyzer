@@ -63,12 +63,7 @@ export function groupInfoByWeek(data) {
 
   return groupedInfo.map((week) => {
     const weekRange = `${week.startDate.getMonth() + 1}/${week.startDate.getDate()}-${week.endDate.getDate()}`
-    return {
-      [weekRange]: {
-        visitors: week.visitors,
-        visits: week.visits
-      }
-    }
+    return { [weekRange]: { visitors: week.visitors, visits: week.visits } }
   })
 }
 
