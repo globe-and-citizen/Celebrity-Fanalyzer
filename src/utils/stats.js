@@ -15,50 +15,59 @@ export const formatAllStats = (stats) => {
   return stats?.map((stat) => ({ ...stat, label: 'All' }))
 }
 
-export const transformData = (data) => {
-  const allDates = []
+/**
+ * Group data by week.
+ * @param {*} data = [
+ *   { "6/22/2023": { "visitors": 1, "visits": 1 } },
+ *   { "6/23/2023": { "visitors": 0, "visits": 0 } },
+ *   { "6/24/2023": { "visitors": 0, "visits": 0 } },
+ *   { "6/25/2023": { "visitors": 1, "visits": 2 } },
+ *   { "6/26/2023": { "visitors": 0, "visits": 0 } },
+ *   { "6/27/2023": { "visitors": 0, "visits": 0 } },
+ *   { "6/28/2023": { "visitors": 0, "visits": 2 } },
+ *   { "6/29/2023": { "visitors": 0, "visits": 1 } },
+ *   { "6/30/2023": { "visitors": 0, "visits": 1 } },
+ * ];
+ * @returns [
+ *   { '6/22-24': { visitors: 1, visits: 1 } },
+ *   { '6/25-30': { visitors: 1, visits: 6 } }
+ * ]
+ */
+export function groupInfoByWeek(data) {
+  const groupedInfo = []
+  let currentWeek = null
 
-  // Extrai todas as datas dos objetos em data1
-  data.forEach((item) => {
-    item.visits.forEach((date) => {
-      if (!allDates.includes(date)) {
-        allDates.push(date)
+  for (const item of data) {
+    const date = Object.keys(item)[0]
+    const { visitors, visits } = item[date]
+
+    const currentDate = new Date(date)
+    const currentDay = currentDate.getDay()
+
+    if (currentDay === 0 || currentWeek === null) {
+      // If the current day is Sunday or there is no active week, create a new week with the current date as the start date.
+      currentWeek = {
+        startDate: currentDate,
+        endDate: currentDate,
+        visitors: 0,
+        visits: 0
       }
-    })
-  })
-
-  // Gera as datas ausentes entre a primeira data fornecida e a data de hoje
-  const firstDate = new Date(allDates[0])
-  const today = new Date()
-  let currentDate = new Date(firstDate)
-
-  while (currentDate <= today) {
-    const formattedDate = currentDate.toLocaleDateString('en-US')
-    if (!allDates.includes(formattedDate)) {
-      allDates.push(formattedDate)
+      groupedInfo.push(currentWeek)
+    } else {
+      currentWeek.endDate = currentDate
     }
-    currentDate.setDate(currentDate.getDate() + 1)
+
+    currentWeek.visitors += visitors
+    currentWeek.visits += visits
   }
 
-  // Ordena as datas em ordem crescente
-  allDates.sort((a, b) => new Date(a) - new Date(b))
-
-  // console.log(allDates) // ['6/22/2023', '6/23/2023', '6/24/2023', '6/25/2023', '6/26/2023', '6/27/2023', '6/28/2023', '6/29/2023', '6/30/2023']
-  // console.log(data) // [{ id: 'r3C28i2x4RUuqn2jrt69A5K6RcC3', visits: ['6/22/2023', '6/25/2023', '6/28/2023', '6/29/2023'] }, { id: 'wVk9Gp2jImQgD4ELfrv43dTbVZQ2', visits: ['6/25/2023', '6/28/2023'] }]
-
-  // Itera sobre o array de allDates e busca pela primeira data de visita em cada item do array data, para popular o objeto de result com a contagem de visitantes.
-  const result = []
-  allDates.forEach((date) => {
-    result.push({ [date]: { visitors: 0, visits: 0 } })
-    data.forEach((item) => {
-      if (date === item.visits[0]) {
-        result[result.length - 1][date].visitors += 1
+  return groupedInfo.map((week) => {
+    const weekRange = `${week.startDate.getMonth() + 1}/${week.startDate.getDate()}-${week.endDate.getDate()}`
+    return {
+      [weekRange]: {
+        visitors: week.visitors,
+        visits: week.visits
       }
-      if (item.visits.includes(date)) {
-        result[result.length - 1][date].visits += 1
-      }
-    })
+    }
   })
-
-  return result
 }
