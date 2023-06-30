@@ -47,13 +47,13 @@ function compute() {
         name: 'Visitors',
         type: 'bar',
         data: visitors.value,
-        color: '#48982a'
+        color: '#ffd0c6'
       },
       {
         name: 'Visits',
         type: 'bar',
         data: visits.value,
-        color: 'blue'
+        color: '#838eb1'
       }
     ]
   }
