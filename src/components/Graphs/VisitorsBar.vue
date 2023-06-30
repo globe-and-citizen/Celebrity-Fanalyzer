@@ -7,7 +7,7 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { groupInfoByWeek } from 'src/utils/stats'
+import { groupInfoByWeek, groupInfoByMonth } from 'src/utils/stats'
 import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
@@ -106,6 +106,9 @@ watchEffect(() => {
 
   if (props.interval === 'weekly') {
     info = groupInfoByWeek(info)
+  }
+  if (props.interval === 'monthly') {
+    info = groupInfoByMonth(info)
   }
 
   dates.value = info.map((obj) => Object.keys(obj)[0])

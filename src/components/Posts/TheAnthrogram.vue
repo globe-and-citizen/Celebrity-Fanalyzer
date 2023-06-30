@@ -14,7 +14,7 @@
         >
           <q-tab name="daily" label="Daily" />
           <q-tab name="weekly" label="Weekly" />
-          <q-tab name="all" label="All" />
+          <q-tab name="monthly" label="Monthly" />
         </q-tabs>
         <VisitorsBar :data="visitorStore.getVisitors" :interval="type" />
         <q-separator spaced="xl" />

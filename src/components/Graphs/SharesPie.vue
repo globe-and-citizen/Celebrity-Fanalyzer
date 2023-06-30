@@ -65,7 +65,7 @@ const intervalFunctions = {
     const weekStart = new Date(now.setDate(now.getDate() - now.getDay()))
     return shareDate >= weekStart
   },
-  all: () => true
+  monthly: () => true
 }
 
 watchEffect(() => {
