@@ -71,3 +71,39 @@ export function groupInfoByWeek(data) {
     }
   })
 }
+
+export function groupInfoByMonth(info) {
+  const groupedInfo = []
+  let currentMonth = null
+
+  for (const item of info) {
+    const date = Object.keys(item)[0]
+    const { visitors, visits } = item[date]
+
+    const currentDate = new Date(date)
+    const currentMonthIndex = currentDate.getMonth()
+
+    if (currentMonth === null || currentMonthIndex !== currentMonth.monthIndex) {
+      // If there is no active month or the month has changed,
+      // create a new month with the current date as the start date.
+      currentMonth = {
+        monthIndex: currentMonthIndex,
+        startDate: currentDate,
+        endDate: currentDate,
+        visitors: 0,
+        visits: 0
+      }
+      groupedInfo.push(currentMonth)
+    } else {
+      currentMonth.endDate = currentDate
+    }
+
+    currentMonth.visitors += visitors
+    currentMonth.visits += visits
+  }
+
+  return groupedInfo.map((month) => {
+    const monthRange = `${month.startDate.getMonth() + 1}/${month.startDate.getFullYear()}`
+    return { [monthRange]: { visitors: month.visitors, visits: month.visits } }
+  })
+}
