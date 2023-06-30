@@ -4,22 +4,23 @@
     <q-tab content-class="q-py-sm" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="promptStore.isLoading" class="absolute-center" color="primary" size="3em" />
-  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+  <q-tab-panels v-if="prompt && shareStore.getShares.length>0 " animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
-      <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries :entries="prompt?.entries" />
+      <ThePost collectionName="prompts" v-if="shareStore.getShares.length>0" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
+      <TheEntries v-if="prompt?.entries" :entries="prompt.entries" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
       <TheAnthrogram :post="prompt" />
     </q-tab-panel>
     <!-- Panel 3: Comments -->
-    <q-tab-panel name="comments" class="bg-white">
+    <q-tab-panel name="comments" class="bg-white" v-if="prompt">
       <TheComments collectionName="prompts" :post="prompt" />
     </q-tab-panel>
   </q-tab-panels>
+
+  <q-spinner  v-else class="absolute-center" color="primary" size="3em" />
 </template>
 
 <script setup>
@@ -67,13 +68,14 @@ const prompt = computed(() => {
 onMounted(async () => {
   if (!promptStore.getPrompts.length) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-    await new Promise((resolve) => setTimeout(resolve, 2000)) // wait 2 seconds before continue
+    await new Promise((resolve) => setTimeout(resolve, 5000)) // wait 2 seconds before continue
   }
 
-  if (!prompt.value) {
-    router.push('/404')
-    return
-  }
+  setTimeout(() => {
+    if (!prompt.value) {
+      router.push('/404')
+    }
+  }, 5000)
 
   if (!entryStore.getEntries.length) {
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))

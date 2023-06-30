@@ -17,22 +17,40 @@ import { useUserStore } from 'src/stores'
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
-    _comments: [],
-    _isLoading: false
+    _comments: undefined,
+    _isLoading: false,
+    _replyTo: ''
   }),
 
   persist: true,
 
   getters: {
     getComments: (state) => state._comments,
-    isLoading: (state) => state._isLoading
+    getCommentById: (state) => {
+      return (commentId) => {
+        return state._comments ? state._comments?.find((comment) => comment.id === commentId) : []
+      }
+    },
+    isLoading: (state) => state._isLoading,
+    isLoaded: (state) => !!state._comments,
+    /**
+     * Return A comment children
+     * @param state
+     * @returns {function(*): T[]|*[]}
+     */
+    getCommentChildren: (state) => {
+      return (commentId) => {
+        return state._comments ? state._comments.filter((comment) => comment.parentId === commentId) : []
+      }
+    },
+    getReplyTo: (state) => state._replyTo,
+    haveToReply: (state) => state._replyTo !== ''
   },
 
   actions: {
+    // TODO : No need of async
     async fetchComments(collectionName, documentId) {
       const userStore = useUserStore()
-
-      this._isLoading = true
       onSnapshot(collection(db, collectionName, documentId, 'comments'), (querySnapshot) => {
         const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
@@ -45,7 +63,6 @@ export const useCommentStore = defineStore('comments', {
         }
         this.$patch({ _comments: comments })
       })
-      this._isLoading = false
     },
 
     async addComment(collectionName, comment, document) {
@@ -65,7 +82,7 @@ export const useCommentStore = defineStore('comments', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      const comment = this.getComments.find((comment) => comment.id === id)
+      const comment = this.getComments?.find((comment) => comment.id === id)
       const index = this._comments.findIndex((comment) => comment.id === id)
 
       if (comment) {
@@ -76,8 +93,16 @@ export const useCommentStore = defineStore('comments', {
             transaction.update(doc(db, collectionName, documentId, 'comments', comment.id), { text: editedComment })
           }).finally(() => (this._isLoading = false))
         } else {
-          throw new Error(error)
+          throw new Error("Can't Find the comment with ID " + id)
         }
+      }
+    },
+
+    setReplyTo(commentId) {
+      if (this._replyTo !== commentId) {
+        this._replyTo = commentId
+      } else {
+        this._replyTo = ''
       }
     },
 
@@ -90,6 +115,9 @@ export const useCommentStore = defineStore('comments', {
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       const userId = user?.id || user
 
+      if (!comment) {
+        throw new Error("Can't Find the comment with ID: " + commentId)
+      }
       if (!comment.likes?.includes(userId)) {
         await updateDoc(commentRef, { likes: arrayUnion(user) })
       } else {
@@ -110,6 +138,9 @@ export const useCommentStore = defineStore('comments', {
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       const userId = user?.id || user
 
+      if (!comment) {
+        throw new Error("Can't Find the comment with ID: " + commentId)
+      }
       if (!comment.dislikes?.includes(userId)) {
         await updateDoc(commentRef, { dislikes: arrayUnion(user) })
       } else {
