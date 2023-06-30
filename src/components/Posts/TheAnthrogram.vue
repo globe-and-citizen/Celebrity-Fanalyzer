@@ -10,17 +10,17 @@
           dense
           indicator-color="primary"
           narrow-indicator
-          v-model="type"
+          v-model="interval"
         >
           <q-tab name="daily" label="Daily" />
           <q-tab name="weekly" label="Weekly" />
           <q-tab name="monthly" label="Monthly" />
         </q-tabs>
-        <VisitorsBar :data="visitorStore.getVisitors" :interval="type" />
+        <VisitorsBar :data="visitorStore.getVisitors" :interval="interval" />
         <q-separator spaced="xl" />
-        <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="type" />
+        <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="interval" />
         <q-separator spaced="xl" />
-        <SharesPie :data="shares" :interval="type" />
+        <SharesPie :data="shares" :interval="interval" />
       </section>
     </q-page>
   </q-page-container>
@@ -41,7 +41,7 @@ const shareStore = useShareStore()
 const visitorStore = useVisitorStore()
 
 const shares = ref(shareStore.getShares)
-const type = ref('daily')
+const interval = ref('daily')
 
 shareStore.$subscribe((_mutation, state) => {
   shares.value = state._shares
