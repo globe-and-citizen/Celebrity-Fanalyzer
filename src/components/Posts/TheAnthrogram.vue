@@ -18,7 +18,7 @@
         </q-tabs>
         <VisitorsBar :data="visitorStore.getVisitors" :interval="type" />
         <q-separator spaced="xl" />
-        <LikesBar :data="graphData(type)" />
+        <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="type" />
         <q-separator spaced="xl" />
         <SharesPie :data="shares" :interval="type" />
       </section>
