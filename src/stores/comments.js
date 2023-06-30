@@ -18,6 +18,7 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: undefined,
+    _unSubscribe: undefined,
     _isLoading: false,
     _replyTo: ''
   }),
@@ -48,10 +49,12 @@ export const useCommentStore = defineStore('comments', {
   },
 
   actions: {
-    // TODO : No need of async
     async fetchComments(collectionName, documentId) {
       const userStore = useUserStore()
-      onSnapshot(collection(db, collectionName, documentId, 'comments'), (querySnapshot) => {
+      if(this._unSubscribe){
+        this._unSubscribe()
+      }
+      this._unSubscribe= onSnapshot(collection(db, collectionName, documentId, 'comments'), (querySnapshot) => {
         const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const comment of comments) {
