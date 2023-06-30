@@ -39,31 +39,31 @@ export function groupInfoByWeek(data) {
 
   for (const item of data) {
     const date = Object.keys(item)[0]
-    const { visitors, visits } = item[date]
+    const info = item[date]
+    const keys = Object.keys(info)
 
     const currentDate = new Date(date)
     const currentDay = currentDate.getDay()
 
     if (currentDay === 0 || currentWeek === null) {
-      // If the current day is Sunday or there is no active week, create a new week with the current date as the start date.
       currentWeek = {
         startDate: currentDate,
         endDate: currentDate,
-        visitors: 0,
-        visits: 0
+        counts: {}
       }
       groupedInfo.push(currentWeek)
     } else {
       currentWeek.endDate = currentDate
     }
 
-    currentWeek.visitors += visitors
-    currentWeek.visits += visits
+    for (const key of keys) {
+      currentWeek.counts[key] = (currentWeek.counts[key] || 0) + info[key]
+    }
   }
 
   return groupedInfo.map((week) => {
     const weekRange = `${week.startDate.getMonth() + 1}/${week.startDate.getDate()}-${week.endDate.getDate()}`
-    return { [weekRange]: { visitors: week.visitors, visits: week.visits } }
+    return { [weekRange]: week.counts }
   })
 }
 
@@ -73,32 +73,31 @@ export function groupInfoByMonth(info) {
 
   for (const item of info) {
     const date = Object.keys(item)[0]
-    const { visitors, visits } = item[date]
+    const infoData = item[date]
+    const keys = Object.keys(infoData)
 
     const currentDate = new Date(date)
     const currentMonthIndex = currentDate.getMonth()
 
     if (currentMonth === null || currentMonthIndex !== currentMonth.monthIndex) {
-      // If there is no active month or the month has changed,
-      // create a new month with the current date as the start date.
       currentMonth = {
         monthIndex: currentMonthIndex,
         startDate: currentDate,
         endDate: currentDate,
-        visitors: 0,
-        visits: 0
+        counts: {}
       }
       groupedInfo.push(currentMonth)
     } else {
       currentMonth.endDate = currentDate
     }
 
-    currentMonth.visitors += visitors
-    currentMonth.visits += visits
+    for (const key of keys) {
+      currentMonth.counts[key] = (currentMonth.counts[key] || 0) + infoData[key]
+    }
   }
 
   return groupedInfo.map((month) => {
     const monthRange = `${month.startDate.getMonth() + 1}/${month.startDate.getFullYear()}`
-    return { [monthRange]: { visitors: month.visitors, visits: month.visits } }
+    return { [monthRange]: month.counts }
   })
 }
