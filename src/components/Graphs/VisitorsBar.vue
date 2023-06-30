@@ -29,10 +29,10 @@ function compute() {
       left: 'center'
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'axis'
     },
     legend: {
-      data: ['Visitors', 'Visits'],
+      data: ['Unique Visitors', 'Visits'],
       bottom: '1%'
     },
     xAxis: {
@@ -44,7 +44,7 @@ function compute() {
     },
     series: [
       {
-        name: 'Visitors',
+        name: 'Unique Visitors',
         type: 'bar',
         data: visitors.value,
         color: '#ffd0c6'
