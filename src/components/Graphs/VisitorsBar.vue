@@ -64,7 +64,7 @@ const transformData = (data) => {
 
   // Extract all unique dates from the objects in the data array
   data.forEach((item) => {
-    item.visits.forEach((date) => {
+    item.visits?.forEach((date) => {
       if (!uniqueDates.includes(date)) {
         uniqueDates.push(date)
       }

@@ -66,7 +66,7 @@
             :data-test="commentStore.getComments ? 'panel-3-navigator' : ''"
             flat
             icon="chat_bubble_outline"
-            :label="commentStore.getComments.length"
+            :label="commentStore.getComments?.length"
             rounded
             size="0.75rem"
             @click="$emit('clickComments')"

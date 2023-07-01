@@ -90,6 +90,6 @@ const options = ['Admin', 'Editor', 'Writer', 'User']
 const computedRequests = computed(() => {
   return requestStore.getRequests
     .filter((request) => request.status === 'pending')
-    .map((request) => ({ ...request, displayName: request.user.displayName, email: request.user.email, role: request.user.role }))
+    .map((request) => ({ ...request, displayName: request.user?.displayName, email: request.user?.email, role: request.user?.role }))
 })
 </script>
