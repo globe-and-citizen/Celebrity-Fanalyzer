@@ -33,7 +33,7 @@ export const useVisitorStore = defineStore('visitors', {
       if (visitorSnap.exists()) {
         await updateDoc(visitorRef, { visits: arrayUnion(monthDayYear()) })
       } else {
-        visitor.visits = 1
+        visitor.visits = monthDayYear()
         await setDoc(visitorRef, visitor).finally(() => (this._isLoading = false))
       }
     },
