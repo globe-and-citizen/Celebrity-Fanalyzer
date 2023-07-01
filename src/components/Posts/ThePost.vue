@@ -96,7 +96,15 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
+import {
+  useCommentStore,
+  useErrorStore,
+  useLikeStore,
+  useNotificationStore,
+  useShareStore,
+  useUserStore,
+  useVisitorStore
+} from 'src/stores'
 import { monthYear } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -114,12 +122,17 @@ const likeStore = useLikeStore()
 const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
+const visitorStore = useVisitorStore()
 
 const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
+
+  visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+
+  await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 })
 
 async function like() {

@@ -7,29 +7,38 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
+import { monthDayYear } from 'src/utils/date'
+import { groupInfoByMonth, groupInfoByWeek } from 'src/utils/stats'
 import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
 use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
 
-const props = defineProps(['data'])
+const props = defineProps(['data', 'interval'])
 
-const likes = ref(0)
-const dislikes = ref(0)
+const countLikes = ref(0)
+const countDislikes = ref(0)
+const dates = ref([])
+const dislikes = ref([])
+const likes = ref([])
 const option = ref({})
 
 function compute() {
   option.value = {
     title: {
-      text: `${likes.value} Likes & ${dislikes.value} Dislikes`,
+      text: `${countLikes.value} Likes & ${countDislikes.value} Dislikes`,
       left: 'center'
     },
     tooltip: {
       trigger: 'item'
     },
+    legend: {
+      data: ['Likes', 'Dislikes'],
+      bottom: '1%'
+    },
     xAxis: {
       type: 'category',
-      data: props.data.map((item) => item.label)
+      data: dates.value
     },
     yAxis: {
       type: 'value'
@@ -39,25 +48,84 @@ function compute() {
         name: 'Likes',
         type: 'bar',
         stack: 'Total',
-        data: props.data.map((item) => item.likes),
+        data: likes.value,
         color: '#48982a'
       },
       {
         name: 'Dislikes',
         type: 'bar',
         stack: 'Total',
-        data: props.data.map((item) => -item.dislikes),
+        data: dislikes.value,
         color: '#ea3423'
       }
     ]
   }
 }
 
+function groupLikesAndDislikesByDate(data) {
+  const likes = data.likes
+  const dislikes = data.dislikes
+
+  const likesByDate = likes.reduce((acc, item) => {
+    const date = monthDayYear(item.createdAt)
+    if (acc[date]) {
+      acc[date].likes = (acc[date].likes || 0) + 1
+    } else {
+      acc[date] = { likes: 1 }
+    }
+    return acc
+  }, {})
+
+  const dislikesByDate = dislikes.reduce((acc, item) => {
+    const date = monthDayYear(item.createdAt)
+    if (acc[date]) {
+      acc[date].dislikes = (acc[date].dislikes || 0) + 1
+    } else {
+      acc[date] = { dislikes: 1 }
+    }
+    return acc
+  }, {})
+
+  const mergedResult = []
+
+  const allDates = new Set([...Object.keys(likesByDate), ...Object.keys(dislikesByDate)])
+
+  allDates.forEach((date) => {
+    mergedResult.push({
+      [date]: {
+        likes: likesByDate[date] ? likesByDate[date].likes : 0,
+        dislikes: dislikesByDate[date] ? -dislikesByDate[date].dislikes : 0
+      }
+    })
+  })
+
+  mergedResult.sort((a, b) => {
+    const dateA = Object.keys(a)[0]
+    const dateB = Object.keys(b)[0]
+    return new Date(dateA) - new Date(dateB)
+  })
+
+  return mergedResult
+}
+
 watchEffect(() => {
   if (!props.data) return
 
-  likes.value = props.data.reduce((acc, item) => acc + item.likes, 0)
-  dislikes.value = props.data.reduce((acc, item) => acc + item.dislikes, 0)
+  let info = groupLikesAndDislikesByDate(props.data)
+
+  if (props.interval === 'weekly') {
+    info = groupInfoByWeek(info)
+  }
+  if (props.interval === 'monthly') {
+    info = groupInfoByMonth(info)
+  }
+
+  dates.value = info.map((obj) => Object.keys(obj)[0])
+  likes.value = info.map((obj) => Object.values(obj)[0].likes)
+  dislikes.value = info.map((obj) => Object.values(obj)[0].dislikes)
+
+  countLikes.value = likes.value.reduce((acc, item) => acc + item, 0)
+  countDislikes.value = dislikes.value.reduce((acc, item) => acc + item, 0)
 
   compute()
 })

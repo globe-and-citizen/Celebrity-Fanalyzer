@@ -12,6 +12,7 @@ import { useShareStore } from './shares'
 import { useStatStore } from './stats'
 import { useStorageStore } from './storage'
 import { useUserStore } from './user'
+import { useVisitorStore } from './visitors'
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -43,5 +44,6 @@ export {
   useShareStore,
   useStatStore,
   useStorageStore,
-  useUserStore
+  useUserStore,
+  useVisitorStore
 }
