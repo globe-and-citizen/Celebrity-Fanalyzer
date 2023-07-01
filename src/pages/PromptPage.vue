@@ -20,7 +20,7 @@
     </q-tab-panel>
   </q-tab-panels>
 
-  <q-spinner  v-else class="absolute-center" color="primary" size="3em" />
+  <q-spinner v-else class="absolute-center" color="primary" size="3em" />
 </template>
 
 <script setup>

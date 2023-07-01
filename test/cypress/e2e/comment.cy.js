@@ -7,7 +7,6 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
     cy.login()
 
-
     // Visits the prompt of the month
     cy.visit('/month').wait(3000)
 
@@ -27,11 +26,11 @@ describe('Commenting', async () => {
   })
 
   it('like comment', () => {
-    cy.get('[data-test="likeCypress-testing"]').eq(0).click({force: true})
+    cy.get('[data-test="likeCypress-testing"]').eq(0).click({ force: true })
   })
 
   it('dislike comment', () => {
-    cy.get('[data-test="dislikeCypress-testing"]').eq(0).click({force: true})
+    cy.get('[data-test="dislikeCypress-testing"]').eq(0).click({ force: true })
   })
 
   it('add reply comment', () => {

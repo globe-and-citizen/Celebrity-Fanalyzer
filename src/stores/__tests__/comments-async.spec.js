@@ -53,7 +53,9 @@ describe('Async watcher ', () => {
     })
 
     // Using a methode kep the reactivity
-    const getFirstEntry = () => {return entryStore.getEntries[0]}
+    const getFirstEntry = () => {
+      return entryStore.getEntries[0]
+    }
 
     // Step 2: Check the starting number of comments.
     await commentStore.fetchComments('entries', getFirstEntry().id)
@@ -80,7 +82,9 @@ describe('Async watcher ', () => {
     })
 
     // Using a methode kep the reactivity
-    const getFirstEntry = () => {return entryStore.getEntries[0]}
+    const getFirstEntry = () => {
+      return entryStore.getEntries[0]
+    }
 
     // Step 2: Check the starting number of comments.
     await commentStore.fetchComments('entries', getFirstEntry().id)
@@ -89,7 +93,6 @@ describe('Async watcher ', () => {
     await waitUntil(() => {
       return commentStore.isLoaded
     })
-
 
     expect(commentStore.getComments.length).toBeGreaterThan(0)
   })
@@ -120,7 +123,9 @@ describe('Async watcher ', () => {
     })
 
     // Using a methode kep the reactivity
-    const getFirstEntry = () => {return entryStore.getEntries[0]}
+    const getFirstEntry = () => {
+      return entryStore.getEntries[0]
+    }
 
     function getLastComment() {
       return commentStore.getComments.sort((a, b) => b.created - a.created)[0]

@@ -33,7 +33,7 @@ Cypress.Commands.add('getByData', (selector) => {
   return cy.get(`[data-test=${selector}]`)
 })
 Cypress.Commands.add('login', () => {
-  cy.session("login", () => {
+  cy.session('login', () => {
     cy.visit('/profile')
     // Fill the email and password fields and click the sign in button
     cy.get('[data-test="email-field"]').type('test@test.com')

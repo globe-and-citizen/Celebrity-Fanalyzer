@@ -4,11 +4,10 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
 import { useCommentStore, useEntryStore, useUserStore } from 'src/stores'
-import { ref, reactive } from 'vue'
 import { waitUntil } from 'src/utils/waitUntil'
+import { reactive, ref } from 'vue'
 
 describe('Comments Store', () => {
-
   beforeEach(async () => {
     // Put setActivePinia in beforeEach because we need a fresh store
     setActivePinia(createPinia())
@@ -35,7 +34,6 @@ describe('Comments Store', () => {
       console.log(errorCode, errorMessage)
     }
   })
-
 
   it('Create and then delete a fake comment in here', async () => {
     // Step 1: Retrieve an entry to comment on.

@@ -118,11 +118,11 @@ describe('utils/dates.js', () => {
       ]
 
       const d = stats.dayStats.map((dayStat, index) => {
-        return {likes : dayStat.likes, dislikes: dayStat.dislikes}
+        return { likes: dayStat.likes, dislikes: dayStat.dislikes }
       })
 
       const w = stats.weekStats.map((weekStat, index) => {
-        return {likes : weekStat.likes, dislikes: weekStat.dislikes}
+        return { likes: weekStat.likes, dislikes: weekStat.dislikes }
       })
       // expect(w).toBe(weekExpected)
       // expect(d).toBe(dateExpected)

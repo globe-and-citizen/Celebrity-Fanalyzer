@@ -20,9 +20,8 @@ const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const db = getFirestore(app)
 let messaging
-isSupported().then((res)=>{
-  if(res){
-
+isSupported().then((res) => {
+  if (res) {
     messaging = getMessaging(app)
   }
 })

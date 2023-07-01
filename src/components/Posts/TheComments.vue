@@ -2,7 +2,7 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.getComments?.length>0" class="q-pa-md" style="margin-bottom: 6rem">
+      <section v-if="commentStore.getComments?.length > 0" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
           v-for="comment of commentStore.getComments.filter((element) => {
             return element.parentId === undefined && element.author
@@ -43,8 +43,8 @@
             <q-btn @click="commentStore.setReplyTo('')" icon="close" round flat dense size="sm"></q-btn>
           </div>
           <q-btn
-            :data-test="commentStore.haveToReply ?  'submit-fill-add-reply' : ''"
             color="grey-6"
+            :data-test="commentStore.haveToReply ? 'submit-fill-add-reply' : ''"
             dense
             :disable="!commentValue"
             flat
@@ -60,11 +60,10 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import TheHeader from 'src/components/shared/TheHeader.vue'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
-import {useCommentStore, useErrorStore, useNotificationStore, useUserStore} from 'src/stores'
+import TheHeader from 'src/components/shared/TheHeader.vue'
+import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
 import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
-
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -114,7 +113,6 @@ async function addComment() {
   commentStore
     .addComment(props.collectionName, comment, props.post)
     .then(() => {
-
       notificationStore.create(props.post.subscribers, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
@@ -133,13 +131,13 @@ onUnmounted(() => {
   commentStore.setReplyTo('')
 })
 
-commentStore.$subscribe(()=>{
-  commentStore.haveToReply ? inputField.value.focus(): inputField.value.blur()
+commentStore.$subscribe(() => {
+  commentStore.haveToReply ? inputField.value.focus() : inputField.value.blur()
 })
 
 async function addReply() {
   const comment = { text: commentValue.value, parentId: commentStore.getReplyTo }
-   commentStore
+  commentStore
     .addReply(props.collectionName, props.post.id, comment)
     .then(() => {
       notificationStore.create(props.post.subscribers, {

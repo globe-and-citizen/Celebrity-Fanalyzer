@@ -4,9 +4,9 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import { waitUntil } from 'src/utils/waitUntil'
 import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import {waitUntil} from "src/utils/waitUntil";
 
 describe('Users Store', () => {
   // Create a router instance using the `createRouter()` function
