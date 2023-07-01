@@ -11,10 +11,20 @@
       transition-hide="jump-up"
     >
       <q-list style="min-width: 100px">
-        <q-item clickable @click="openPromptDialog()" :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'">
+        <q-item
+          v-if="userStore.isEditorOrAbove"
+          clickable
+          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'"
+          @click="openPromptDialog()"
+        >
           <q-item-section>New Prompt</q-item-section>
         </q-item>
-        <q-item clickable @click="openEntryDialog()" :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'">
+        <q-item
+          v-if="userStore.isWriterOrAbove"
+          clickable
+          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'"
+          @click="openEntryDialog()"
+        >
           <q-item-section>New Entry</q-item-section>
         </q-item>
       </q-list>
@@ -23,22 +33,22 @@
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs align="justify" v-model="tab" class="text-secondary">
-        <q-tab v-if="userStore.isAdminOrWriter" name="posts" icon="view_list" label="Prompts & Entries" />
-        <q-tab v-if="userStore.isAdmin" name="users" icon="people" label="Users" />
-        <q-tab v-if="userStore.isAdminOrWriter" name="feedbacks" icon="feedback" label="Feedbacks" />
-        <q-tab v-if="userStore.isAdmin" name="errors" icon="error" label="Errors" />
+        <q-tab v-if="userStore.isWriterOrAbove" data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" />
+        <q-tab v-if="userStore.isAdmin" data-test="users-tab" name="users" icon="people" label="Users" />
+        <q-tab v-if="userStore.isEditorOrAbove" data-test="feedbacks-tab" name="feedbacks" icon="feedback" label="Feedbacks" />
+        <q-tab v-if="userStore.isAdmin" data-test="errors-tab" name="errors" icon="error" label="Errors" />
       </q-tabs>
 
       <q-tab-panels animated style="padding-bottom: 2rem" swipeable v-model="tab">
-        <q-tab-panel v-if="userStore.isAdminOrWriter" name="posts">
+        <q-tab-panel v-if="userStore.isWriterOrAbove" name="posts">
           <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isAdmin" name="users">
-          <ManageUsers :users="users" />
+          <ManageUsers />
         </q-tab-panel>
 
-        <q-tab-panel v-if="userStore.isAdminOrWriter" name="feedbacks">
+        <q-tab-panel v-if="userStore.isEditorOrAbove" name="feedbacks">
           <ManageFeedbacks />
         </q-tab-panel>
 
@@ -66,27 +76,21 @@ import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useRequestStore, useUserStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
 
+const requestStore = useRequestStore()
 const userStore = useUserStore()
 
 const entry = ref({})
 const prompt = ref({})
 const tab = ref('posts')
-const users = ref([])
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 
 onMounted(() => {
   userStore.fetchUsers()
-})
-
-userStore.$subscribe((_mutation, state) => {
-  users.value = state._users.map((user) => {
-    user.role = user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || 'User'
-    return user
-  })
+  requestStore.readRequests()
 })
 
 function openPromptDialog(props) {

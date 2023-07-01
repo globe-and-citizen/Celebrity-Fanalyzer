@@ -1,5 +1,5 @@
 <template>
-  <q-btn data-test="share-button" flat rounded icon="share" :label="label" @click="onShare()">
+  <q-btn data-test="share-button" flat icon="share" :label="label" rounded size="0.75rem" @click="onShare()">
     <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
   </q-btn>
 </template>

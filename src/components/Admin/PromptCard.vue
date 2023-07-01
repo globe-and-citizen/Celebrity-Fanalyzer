@@ -185,7 +185,7 @@ watchEffect(() => {
     prompt.showcase = props.showcase
     prompt.title = props.title
   } else {
-    prompt.author = userStore.isAdminOrWriter ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    prompt.author = userStore.isWriterOrAbove ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
     prompt.date = currentYearMonth()
   }
@@ -232,7 +232,7 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
-  prompt.slug = prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
+  prompt.slug = '/' + prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
   if (!props.id && promptStore.getPrompts.find((p) => p.date === prompt.date)) {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })

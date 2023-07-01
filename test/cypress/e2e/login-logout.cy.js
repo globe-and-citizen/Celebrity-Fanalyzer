@@ -15,12 +15,12 @@ describe('Login page', () => {
     })
 
     it('Should navigate between Profiles tabs', () => {
-      cy.getByData('tab-settings').click()
+      cy.getByData('tab-settings').click({ force: true })
       cy.getByData('tab-feedback').click()
       cy.getByData('tab-profile').click()
     })
     it('Logout', () => {
-      cy.getByData('tab-settings').click()
+      cy.getByData('tab-settings').click({ force: true })
       cy.getByData('logout-button').click()
     })
   })

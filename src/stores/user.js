@@ -6,7 +6,7 @@ import {
   signInWithPopup,
   signOut
 } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import sha1 from 'sha1'
@@ -27,28 +27,48 @@ export const useUserStore = defineStore('user', {
     getAdmins: (getters) => getters.getUsers.filter((user) => user.role === 'Admin'),
     getAdminsAndWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer'),
     getProfileTab: (state) => state._profileTab,
+    getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
     getUserById: (getters) => (id) => getters.getUsers.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
     getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
     getUsers: (state) => state._users,
-    getWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Writer'),
     isAdmin: (getters) => getters.getUser.role === 'Admin',
-    isAdminOrWriter: (getters) => getters.getUser.role === 'Admin' || getters.getUser.role === 'Writer',
+    isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
+    isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
     isAnonymous: (getters) => getters.getUser.isAnonymous,
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
-    isLoading: (state) => state._isLoading,
-    isWriter: (getters) => getters.getUser.role === 'Writer'
+    isLoading: (state) => state._isLoading
   },
+
   actions: {
     async fetchUsers() {
       this._isLoading = true
-      await getDocs(collection(db, 'users'))
+      await getDocs(query(collection(db, 'users'), where('role', '!=', 'User')))
         .then((querySnapshot) => {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })
         })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async queryUsers(search) {
+      this._isLoading = true
+      return await getDocs(
+        query(collection(db, 'users'), where('displayName', '>=', search), where('displayName', '<=', search + '\uf8ff'))
+      )
+        .then((querySnapshot) => {
+          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+          this.$patch({ _users: users })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async getUserByUidOrUsername(id) {
+      this._isLoading = true
+      return await getDocs(query(collection(db, 'users'), or(where('uid', '==', id), where('username', '==', id))))
+        .then((querySnapshot) => querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))[0])
         .finally(() => (this._isLoading = false))
     },
 
@@ -94,21 +114,12 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await signInWithEmailAndPassword(auth, user.email, user.password)
         .then(async (result) => {
-          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
-            this.$patch({ _user: { uid: document.id, ...document.data() } })
+          onSnapshot(doc(db, 'users', result.user.uid), (doc) => {
+            this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
         })
         .finally(() => (this._isLoading = false))
     },
-
-    // async anonymousSignIn() {
-    //   this._isLoading = true
-    //   await signInAnonymously(auth)
-    //     .catch((error) => console.error(error))
-    //     .finally(() => (this._isLoading = false))
-
-    //   onAuthStateChanged(auth, (user) => (this._user = user))
-    // },
 
     async googleSignIn() {
       this.$reset()
@@ -124,9 +135,19 @@ export const useUserStore = defineStore('user', {
             await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
           }
 
-          await getDoc(doc(db, 'users', result.user.uid)).then((document) => {
-            this.$patch({ _user: { uid: document.id, ...document.data() } })
+          onSnapshot(doc(db, 'users', result.user.uid), (doc) => {
+            this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
+    async checkUsernameAvailability(username) {
+      this._isLoading = true
+      return await getDocs(query(collection(db, 'users'), where('uid', '!=', this.getUser.uid)))
+        .then((querySnapshot) => {
+          const usernames = querySnapshot.docs.map((document) => document.data().username)
+          return usernames.some((name) => name?.toLowerCase() === username?.toLowerCase())
         })
         .finally(() => (this._isLoading = false))
     },

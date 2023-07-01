@@ -30,6 +30,10 @@ const routes = [
         component: () => import('pages/EntryPage.vue')
       },
       {
+        path: 'fan/:username',
+        component: () => import('pages/PublicProfilePage.vue')
+      },
+      {
         path: 'profile',
         component: () => import('pages/ProfilePage.vue')
       },
@@ -38,7 +42,7 @@ const routes = [
         component: () => import('pages/AdminPage.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-          if (userStore.isAdmin || userStore.isWriter) next()
+          if (userStore.isWriterOrAbove) next()
           else next('/')
         }
       }

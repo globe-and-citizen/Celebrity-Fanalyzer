@@ -1,76 +1,26 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  runTransaction,
-  setDoc,
-  Timestamp,
-  where
-} from 'firebase/firestore'
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { collection, deleteDoc, doc, onSnapshot, runTransaction, setDoc, Timestamp } from 'firebase/firestore'
+import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
-import { currentYearMonth } from 'src/utils/date'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
-    _monthPrompt: null,
-    _prompts: []
+    _prompts: [],
+    _tab: 'post'
   }),
 
   persist: true,
 
   getters: {
-    getMonthPrompt: (state) => state._monthPrompt,
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    tab: (state) => state._tab
   },
 
   actions: {
-    /**
-     * Fetch the current month prompt and set the value in the store :
-     * Checking if we have a data in the store.
-     * Check if we have data in the local storage.
-     * Fetch the data form firebase if 1-2 is false.
-     * @returns {Promise<void>}
-     */
-    async fetchMonthPrompt() {
-      const currentMonthId = currentYearMonth()
-
-      this._isLoading = true
-      const docSnap = await getDoc(doc(db, 'prompts', currentMonthId))
-
-      let prompt = {}
-
-      if (docSnap.exists()) {
-        prompt = docSnap.data()
-      } else {
-        await getDocs(query(collection(db, 'prompts'), orderBy('date', 'desc'), limit(1))).then(async (querySnapshot) => {
-          prompt = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-        })
-      }
-
-      prompt.author = await getDoc(prompt.author).then((doc) => doc.data())
-      this._monthPrompt = prompt
-
-      if (prompt.entries?.length) {
-        for (const index in prompt.entries) {
-          prompt.entries[index] = await getDoc(prompt.entries[index]).then((doc) => doc.data())
-          prompt.entries[index].author = await getDoc(prompt.entries[index].author).then((doc) => doc.data())
-        }
-      }
-
-      this._isLoading = false
-    },
-
     async fetchPrompts() {
       const userStore = useUserStore()
 
@@ -79,25 +29,24 @@ export const usePromptStore = defineStore('prompts', {
       }
 
       this._isLoading = true
-      await getDocs(collection(db, 'prompts'))
-        .then((querySnapshot) => {
-          const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      onSnapshot(collection(db, 'prompts'), (querySnapshot) => {
+        const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const prompt of prompts) {
-            prompt.author = userStore.getUserById(prompt.author.id)
-            prompt.entries = prompt.entries?.map((entry) => entry.id)
-          }
+        for (const prompt of prompts) {
+          prompt.author = userStore.getUserById(prompt.author.id)
+          prompt.entries = prompt.entries?.map((entry) => entry.id)
+        }
 
-          prompts.reverse()
+        prompts.reverse()
 
-          this._prompts = []
-          this.$patch({ _prompts: prompts })
-        })
-        .finally(() => (this._isLoading = false))
+        this._prompts = []
+        this.$patch({ _prompts: prompts })
+      })
+      this._isLoading = false
     },
 
     async addPrompt(payload) {
-      const userStore = useUserStore()
+      const notificationStore = useNotificationStore()
 
       const prompt = { ...payload }
 
@@ -106,17 +55,12 @@ export const usePromptStore = defineStore('prompts', {
       prompt.id = prompt.date
 
       this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.id), prompt)
-        .then(() => {
-          prompt.author = userStore.getUserById(prompt.author.id)
-          this.$patch({ _prompts: [...this.getPrompts, prompt] })
-        })
-        .finally(() => (this._isLoading = false))
+      await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
+
+      await notificationStore.toggleSubscription('prompts', prompt.id)
     },
 
     async editPrompt(payload) {
-      const userStore = useUserStore()
-
       const prompt = { ...payload }
 
       prompt.author = doc(db, 'users', prompt.author.value)
@@ -125,15 +69,7 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
-      })
-        .then(() => {
-          const index = this.getPrompts.findIndex((p) => p.id === prompt.id)
-          prompt.author = userStore.getUserById(prompt.author.id)
-          this.$patch({
-            _prompts: [...this._prompts.slice(0, index), { ...this._prompts[index], ...prompt }, ...this._prompts.slice(index + 1)]
-          })
-        })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
@@ -159,14 +95,15 @@ export const usePromptStore = defineStore('prompts', {
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
 
-        Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc]).then(() => {
-          const index = this._prompts.findIndex((prompt) => prompt.id === id)
-          this._prompts.splice(index, 1)
-        })
+        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc])
       } catch (error) {
         errorStore.throwError(error)
       }
       this._isLoading = false
+    },
+
+    setTab(tab) {
+      this.$patch({ _tab: tab })
     }
   }
 })

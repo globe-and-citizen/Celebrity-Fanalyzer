@@ -14,7 +14,7 @@ use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent
 
 const props = defineProps({
   data: { type: Array, required: true },
-  interval: { type: String, default: 'day' }
+  interval: { type: String, default: 'daily' }
 })
 
 const option = ref({})
@@ -60,12 +60,12 @@ function compute() {
 }
 
 const intervalFunctions = {
-  day: (shareDate, now) => shareDate >= new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-  week: (shareDate, now) => {
+  daily: (shareDate, now) => shareDate >= new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+  weekly: (shareDate, now) => {
     const weekStart = new Date(now.setDate(now.getDate() - now.getDay()))
     return shareDate >= weekStart
   },
-  all: () => true
+  monthly: () => true
 }
 
 watchEffect(() => {

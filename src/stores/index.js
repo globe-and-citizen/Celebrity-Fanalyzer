@@ -6,11 +6,14 @@ import { useEntryStore } from './entries'
 import { useErrorStore } from './errors'
 import { useFeedbackStore } from './feedbacks'
 import { useLikeStore } from './likes'
+import { useNotificationStore } from './notifications'
 import { usePromptStore } from './prompts'
+import { useRequestStore } from './requests'
 import { useShareStore } from './shares'
 import { useStatStore } from './stats'
 import { useStorageStore } from './storage'
 import { useUserStore } from './user'
+import { useVisitorStore } from './visitors'
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -37,9 +40,12 @@ export {
   useErrorStore,
   useFeedbackStore,
   useLikeStore,
+  useNotificationStore,
   usePromptStore,
+  useRequestStore,
   useShareStore,
   useStatStore,
   useStorageStore,
-  useUserStore
+  useUserStore,
+  useVisitorStore
 }

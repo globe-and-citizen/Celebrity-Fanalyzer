@@ -24,7 +24,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr :props="props">
+      <q-tr class="new" :data-test="props.key" :props="props">
         <q-td auto-width>
           <q-btn
             color="red"
