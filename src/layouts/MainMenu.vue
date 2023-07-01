@@ -4,7 +4,7 @@
       <q-route-tab v-for="(route, index) in routes" exact :icon="route.icon" :key="index" :to="route.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route.tooltip }}</q-tooltip>
       </q-route-tab>
-      <q-route-tab v-if="userStore.isAdmin || userStore.isWriter" exact icon="admin_panel_settings" to="/admin">
+      <q-route-tab v-if="userStore.isWriterOrAbove" exact icon="admin_panel_settings" to="/admin">
         <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
     </q-tabs>
