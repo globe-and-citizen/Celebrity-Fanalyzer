@@ -27,9 +27,9 @@
 </template>
 
 <script setup>
-import LikesBar from 'src/components/Graphs/LikesBar.vue'
-import SharesPie from 'src/components/Graphs/SharesPie.vue'
-import VisitorsBar from 'src/components/Graphs/VisitorsBar.vue'
+import LikesBar from 'src/components/Posts/Graphs/LikesBar.vue'
+import SharesPie from 'src/components/Posts/Graphs/SharesPie.vue'
+import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useLikeStore, useShareStore, useVisitorStore } from 'src/stores'
 import { ref } from 'vue'
