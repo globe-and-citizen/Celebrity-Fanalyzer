@@ -46,27 +46,12 @@ function compute() {
     },
     xAxis: {
       type: 'category',
-      data: ['30 Jun', '1 Jul', '2 Jul', '3 Jul'] // dates.value
+      data: dates.value
     },
     yAxis: {
       type: 'value'
     },
-    series: [
-      {
-        name: 'Clipboard',
-        type: 'bar',
-        stack: 'Total',
-        data: [120, 132, 101, 134],
-        color: '#777777'
-      },
-      {
-        name: 'Facebook',
-        type: 'bar',
-        stack: 'Total',
-        data: [220, 182, 191, 234],
-        color: '#4267B2'
-      }
-    ]
+    series: shares.value
   }
 }
 
@@ -118,23 +103,17 @@ watchEffect(() => {
   if (!props.data.length) return
 
   const info = groupSharesByDate(props.data)
-  console.log('info', JSON.stringify(info, null, 2))
 
-  // shares.value = platforms
-  //   .map((platform) => {
-  //     const count = props.data.reduce((acc, share) => {
-  //       const shareDate = new Date(share.createdAt.seconds * 1000)
-  //       const now = new Date()
-
-  //       if (platform.name.toLowerCase() === share.sharedOn.toLowerCase() && intervalFunctions[props.interval](shareDate, now)) {
-  //         return acc + 1
-  //       }
-  //       return acc
-  //     }, 0)
-
-  //     return { name: platform.name, value: count, color: platform.color }
-  //   })
-  //   .filter((platform) => platform.value > 0)
+  dates.value = info.map((obj) => Object.keys(obj)[0])
+  shares.value = platforms
+    .map((platform) => ({
+      name: platform.name,
+      type: 'bar',
+      stack: 'Total',
+      data: info.map((obj) => Object.values(obj)[0][platform.name.toLowerCase()] || 0),
+      color: platform.color
+    }))
+    .filter((platform) => platform.data.some((value) => value > 0))
 
   compute()
 })
