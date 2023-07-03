@@ -1,5 +1,7 @@
 <template>
+  <h5 v-if="!errorStore.getErrors.length" class="text-center">Nothing is wrong! 🎉</h5>
   <q-table
+    v-else
     :columns="columns"
     flat
     hide-bottom

@@ -1,5 +1,7 @@
 <template>
+  <h5 v-if="!feedbackStore.getFeedbacks.length" class="text-center">There are no feedbacks yet.</h5>
   <q-table
+    v-else
     :columns="columns"
     grid
     hide-header
