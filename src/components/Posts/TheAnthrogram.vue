@@ -12,7 +12,7 @@
         <q-separator spaced="xl" />
         <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="interval" />
         <q-separator spaced="xl" />
-        <SharesPie :data="shares" :interval="interval" />
+        <SharesPie :data="shareStore.getShares" :interval="interval" />
       </section>
     </q-page>
   </q-page-container>
@@ -32,10 +32,5 @@ const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const visitorStore = useVisitorStore()
 
-const shares = ref(shareStore.getShares)
 const interval = ref('daily')
-
-shareStore.$subscribe((_mutation, state) => {
-  shares.value = state._shares
-})
 </script>
