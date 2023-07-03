@@ -30,7 +30,7 @@ The following user stories should be runnable without error in production.
    - Add a title
    - Write my description
    - Add an image
-   - Submit entry which shows a green `Submission Successful` drop down.
+   - Submit entry which shows a green `Enstry Successfully Submitted` drop down. The "Edit Entry Dialogue Card" then closes so that I can't re-submit accidentally the same entry.
 5. When I navigate to `Search`, and chose the appropriate month prompt, I can see my own entry
 6. I `Like` my own entry and see the icon go bold.
 7. I `Share` my own entry, and successfully post the link to my `Facebook`.
@@ -55,3 +55,23 @@ The following user stories should be runnable without error in production.
    - Reply to a comment I disagree with and see it posted immediately
    - Like a comment I agree with and see the like icon bolded immediately
    - Dislike a comment I disagree with and the the dislike icon bolded immediately
+
+## Story 3
+
+**As an:** Editor of the website,
+
+**I want to:** Delete an offensive entry and edit another.
+
+**So that:** The website is hate and intimidation free.
+
+**When I Do => I Get:**
+
+1. Navigate directly to https://celebrity-fanalyzer.pages.dev/admin
+2. Click the drop down menu beside the prompt where the entry is associated.
+3. Choose the `Delete` garbage can icon and chose `DELETE`and then see the red confirmation "Entry Deleted"
+4. Next I choose the `Edit` pencil icon. I am going to:
+   - change the title of the entry.
+   - change the description of the entry.
+   - change the picture of the entry.
+5. When I click `SUBMIT ENTRY` I see a blue confirmation drop down of "Entry successfully edited". The "Edit Entry Dialogue Card" then closes so that I can't re-submit accidentally the same entry.
+6. I navigate to search where I see that the entry I deleted is gone and the entry that I edited is changed.
