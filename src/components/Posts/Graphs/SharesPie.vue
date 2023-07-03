@@ -71,57 +71,45 @@ function compute() {
 }
 
 function groupSharesByDate(data) {
-  // create a new object that will hold the results
+  // Reduce the data to an object with dates as keys and shares as values
   const sharesByDate = data.reduce((acc, item) => {
     const date = monthDayYear(item.createdAt)
+    const sharedOn = item.sharedOn
+
     if (acc[date]) {
-      // add the share to the date
-      acc[date][item.sharedOn] = (acc[date][item.sharedOn] || 0) + 1
+      acc[date][sharedOn] = (acc[date][sharedOn] || 0) + 1
     } else {
-      // otherwise, set the date and add the share
-      acc[date] = { [item.sharedOn]: 1 }
+      acc[date] = { [sharedOn]: 1 }
     }
+
     return acc
   }, {})
 
-  // convert the object into a sorted array
-  const result = Object.keys(sharesByDate).map((date) => ({ [date]: sharesByDate[date] }))
+  // Convert the object to an array of objects with dates as keys and shares as values
+  const result = Object.entries(sharesByDate)
+    .map(([date, shares]) => ({ [date]: shares }))
+    .sort((a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0]))
 
-  // sort the array by date
-  result.sort((a, b) => {
-    var dateA = Object.keys(a)[0]
-    var dateB = Object.keys(b)[0]
-    return new Date(dateA) - new Date(dateB)
-  })
+  const uniqueDates = Array.from(new Set(result.map((item) => Object.keys(item)[0])))
 
-  const uniqueDates = []
   const today = new Date()
-  const firstDate = Object.keys(result[0])[0]
-
+  const firstDate = uniqueDates[0]
   let currentDate = new Date(firstDate)
 
-  // Generate missing dates between the first provided date and today's date
+  // Fill in the gaps between the first date and today
   while (currentDate <= today) {
     const formattedDate = currentDate.toLocaleDateString('en-US')
+
     if (!uniqueDates.includes(formattedDate)) {
+      result.push({ [formattedDate]: {} })
       uniqueDates.push(formattedDate)
     }
+
     currentDate.setDate(currentDate.getDate() + 1)
   }
 
-  // Add missing dates to the result
-  uniqueDates.forEach((date) => {
-    if (!result.find((item) => Object.keys(item)[0] === date)) {
-      result.push({ [date]: {} })
-    }
-  })
-
-  // sort the array by date
-  result.sort((a, b) => {
-    var dateA = Object.keys(a)[0]
-    var dateB = Object.keys(b)[0]
-    return new Date(dateA) - new Date(dateB)
-  })
+  // Sort the array by date
+  result.sort((a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0]))
 
   return result
 }
