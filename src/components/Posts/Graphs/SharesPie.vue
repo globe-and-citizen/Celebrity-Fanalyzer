@@ -1,5 +1,5 @@
 <template>
-  <v-chart class="chart" data-test="shares-pie" :option="option" autoresize />
+  <v-chart autoresize class="chart" data-test="shares-pie" :option="option" style="height: 40vh" />
 </template>
 
 <script setup>
@@ -139,9 +139,3 @@ watchEffect(() => {
   compute()
 })
 </script>
-
-<style scoped>
-.chart {
-  height: 40vh;
-}
-</style>
