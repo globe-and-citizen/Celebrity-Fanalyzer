@@ -3,15 +3,7 @@
   <q-page-container>
     <q-page>
       <section class="q-py-md">
-        <q-tabs
-          active-color="primary"
-          align="justify"
-          class="text-grey q-mb-xl"
-          dense
-          indicator-color="primary"
-          narrow-indicator
-          v-model="interval"
-        >
+        <q-tabs active-color="primary" align="justify" class="text-grey q-mb-xl" dense indicator-color="primary" v-model="interval">
           <q-tab name="daily" label="Daily" />
           <q-tab name="weekly" label="Weekly" />
           <q-tab name="monthly" label="Monthly" />
