@@ -21,11 +21,11 @@ export const useRequestStore = defineStore('request', {
       const userStore = useUserStore()
 
       this._isLoading = true
-      onSnapshot(collection(db, 'requests'), (querySnapshot) => {
+      onSnapshot(collection(db, 'requests'), async (querySnapshot) => {
         const requests = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const request of requests) {
-          request.user = userStore.getUserById(request.id)
+          request.user = await userStore.getUserByUidOrUsername(request.id)
         }
 
         this.$patch({ _requests: requests })
