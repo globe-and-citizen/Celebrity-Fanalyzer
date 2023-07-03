@@ -25,8 +25,6 @@
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.4",
-    "@sentry/tracing": "^7.52.1",
-    "@sentry/vue": "^7.52.1",
     "dotenv": "^16.0.3",
     "echarts": "^5.4.2",
     "firebase": "^9.22.0",
@@ -44,7 +42,6 @@
     "@quasar/app-vite": "^1.4.3",
     "@quasar/quasar-app-extension-testing-e2e-cypress": "^5.1.0",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^0.3.0",
-    "@sentry/vite-plugin": "^2.0.0",
     "@vitest/coverage-istanbul": "^0.31.1",
     "@vue/test-utils": "^2.3.2",
     "autoprefixer": "^10.4.14",
