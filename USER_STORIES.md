@@ -75,3 +75,22 @@ The following user stories should be runnable without error in production.
    - change the picture of the entry.
 5. When I click `SUBMIT ENTRY` I see a blue confirmation drop down of "Entry successfully edited". The "Edit Entry Dialogue Card" then closes so that I can't re-submit accidentally the same entry.
 6. I navigate to search where I see that the entry I deleted is gone and the entry that I edited is changed.
+
+## Story 4
+
+**As an:** Register user, no role,
+
+**I want to:** Make an anonymous comment, log in, and then reply with my account proper.
+
+**So that:** I can put my opinion anonymously and openly.
+
+**When I Do => I Get:**
+
+1. Navigate directly to https://celebrity-fanalyzer.pages.dev/<prompt>
+2. Swipe to the left x 2 to arrive at commenting.
+3. Add a new comment anonymously and I expect to see the green "Success" banner and my comment show up.
+4. Navigate to the `Profile` page, login successuly and be redirect to the profile page.
+5. Navigate back to https://celebrity-fanalyzer.pages.dev/<prompt> and swipe left x 2.
+6. Reply to the previous anonymous comment that I made and see it pop up as soon as I submit.
+7. Click `Dislike` thumb on the anonymous comment that was mine before.
+8. Edit my reply and see the change immediately.
