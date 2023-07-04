@@ -35,6 +35,16 @@
           style="margin-bottom: 6.7rem"
           v-model="commentValue"
         >
+          <q-list v-if="isMention" class="absolute bg-secondary rounded-borders text-caption" dark style="bottom: 40px">
+            <q-item clickable v-close-popup>
+              <q-item-section>New tab</q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable v-close-popup>
+              <q-item-section>New incognito tab</q-item-section>
+            </q-item>
+          </q-list>
+
           <div v-show="commentStore.haveToReply" class="replyTop">
             <p>
               Replying to
@@ -63,7 +73,7 @@ import { useQuasar } from 'quasar'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
-import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -82,9 +92,16 @@ const commentId = ref('')
 const reply = reactive({})
 const commentValue = ref('')
 const inputField = ref()
+const isMention = ref(false)
 
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
+})
+
+watchEffect(() => {
+  if (userStore.getUser && commentValue.value.charAt(0) === '@') {
+    isMention.value = true
+  }
 })
 
 onBeforeUnmount(() => {
