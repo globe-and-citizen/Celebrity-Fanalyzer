@@ -56,7 +56,7 @@ function compute() {
 }
 
 function groupSharesByDate(data) {
-  // Reduce the data to an object with dates as keys and shares as values
+  // Group shares by date
   const sharesByDate = data.reduce((acc, item) => {
     const date = monthDayYear(item.createdAt)
     const sharedOn = item.sharedOn
@@ -71,32 +71,29 @@ function groupSharesByDate(data) {
   }, {})
 
   // Convert the object to an array of objects with dates as keys and shares as values
-  const result = Object.entries(sharesByDate)
+  const groupedSharesByDate = Object.entries(sharesByDate)
     .map(([date, shares]) => ({ [date]: shares }))
     .sort((a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0]))
 
-  const uniqueDates = Array.from(new Set(result.map((item) => Object.keys(item)[0])))
-
+  // Fill in missing dates between the first date and today
+  const uniqueDates = new Set(groupedSharesByDate.map((item) => Object.keys(item)[0]))
   const today = new Date()
-  const firstDate = uniqueDates[0]
-  let currentDate = new Date(firstDate)
+  const firstDate = groupedSharesByDate[0] ? Object.keys(groupedSharesByDate[0])[0] : null
+  const startDate = firstDate ? new Date(firstDate) : null
 
-  // Fill in the gaps between the first date and today
-  while (currentDate <= today) {
+  for (let currentDate = startDate; currentDate <= today; currentDate.setDate(currentDate.getDate() + 1)) {
     const formattedDate = currentDate.toLocaleDateString('en-US')
 
-    if (!uniqueDates.includes(formattedDate)) {
-      result.push({ [formattedDate]: {} })
-      uniqueDates.push(formattedDate)
+    if (!uniqueDates.has(formattedDate)) {
+      groupedSharesByDate.push({ [formattedDate]: {} })
+      uniqueDates.add(formattedDate)
     }
-
-    currentDate.setDate(currentDate.getDate() + 1)
   }
 
   // Sort the array by date
-  result.sort((a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0]))
+  groupedSharesByDate.sort((a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0]))
 
-  return result
+  return groupedSharesByDate
 }
 
 watchEffect(() => {
