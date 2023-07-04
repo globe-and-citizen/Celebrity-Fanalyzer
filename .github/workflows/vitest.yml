@@ -20,6 +20,7 @@ jobs:
 
       - name: 💻 Run Vitest
         run: |
+          npm ci
           npm run test:unit:coverage
 
       - name: ✅ Upload coverage to Codecov
