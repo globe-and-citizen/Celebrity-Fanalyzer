@@ -127,7 +127,7 @@ describe('Async watcher ', () => {
       return entryStore.getEntries[0]
     }
 
-    function getLastComment() {
+    const getLastComment = () => {
       return commentStore.getComments.sort((a, b) => b.created - a.created)[0]
     }
 
