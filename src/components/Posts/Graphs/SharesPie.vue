@@ -8,6 +8,7 @@ import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/compo
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { monthDayYear } from 'src/utils/date'
+import { groupInfoByMonth, groupInfoByWeek } from 'src/utils/stats'
 import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
@@ -99,7 +100,14 @@ function groupSharesByDate(data) {
 watchEffect(() => {
   if (!props.data.length) return
 
-  const info = groupSharesByDate(props.data)
+  let info = groupSharesByDate(props.data)
+
+  if (props.interval === 'weekly') {
+    info = groupInfoByWeek(info)
+  }
+  if (props.interval === 'monthly') {
+    info = groupInfoByMonth(info)
+  }
 
   dates.value = info.map((obj) => Object.keys(obj)[0])
   shares.value = platforms
