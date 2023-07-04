@@ -49,6 +49,7 @@ describe('Users Store', () => {
     const entryStore = useEntryStore()
     const promptStore = usePromptStore()
     const userStore = useUserStore()
+
     // 1) Attempt to get the user
     const user = ref()
     await userStore.getUserByUidOrUsername('arnonrdp').then((res) => (user.value = res))
@@ -63,13 +64,15 @@ describe('Users Store', () => {
     // 3) Verify that the user is redirected to the Index Page.
     expect(router.currentRoute.value.path).toBe('/fan/arnonrdp')
 
+    await userStore.fetchAdminsAndWriters()
+
     // 4) Get the user's prompts and entries
     await promptStore.fetchPrompts()
     await waitUntil(() => {
       // TODO : Default state
       return promptStore.getPrompts.length > 0
     })
-    const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author.uid === user.value.uid)
+    const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author?.uid === user.value.uid)
 
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
@@ -77,7 +80,7 @@ describe('Users Store', () => {
       // TODO : Default state
       return entryStore.getEntries.length > 0
     })
-    const filteredEntries = entryStore.getEntries.filter((entry) => entry.author.uid === user.value.uid)
+    const filteredEntries = entryStore.getEntries.filter((entry) => entry.author?.uid === user.value.uid)
 
     // 5) Verify that the user has at least one prompt or one entry
     expect(filteredPrompts.length > 0 || filteredEntries.length > 0).toBe(true)
