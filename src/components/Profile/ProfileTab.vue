@@ -26,7 +26,13 @@
       </q-avatar>
       <q-input class="col-grow q-pl-sm" label="Name" v-model="user.displayName" />
     </div>
-    <q-input debounce="400" label="Username" :prefix="origin" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username" />
+    <q-input
+      debounce="400"
+      label="Username"
+      :prefix="origin + 'fan/'"
+      :rules="[(val) => usernameValidator(val)]"
+      v-model.trim="user.username"
+    />
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
