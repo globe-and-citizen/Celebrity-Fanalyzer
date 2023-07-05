@@ -26,7 +26,20 @@
       </q-avatar>
       <q-input class="col-grow q-pl-sm" label="Name" v-model="user.displayName" />
     </div>
-    <q-input debounce="400" label="Username" :prefix="origin" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username" />
+    <q-input
+      class="non-selectable"
+      debounce="400"
+      label="Username"
+      :prefix="origin + 'fan/'"
+      :rules="[(val) => usernameValidator(val)]"
+      v-model.trim="user.username"
+    >
+      <template v-slot:append>
+        <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
+          <q-tooltip>Copy</q-tooltip>
+        </q-btn>
+      </template>
+    </q-input>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
@@ -77,6 +90,11 @@ async function usernameValidator(username) {
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
   const isAvailable = !(await userStore.checkUsernameAvailability(username))
   if (!isAvailable) return 'Username already taken'
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(origin + 'fan/' + user.value.username)
+  Notify.create({ type: 'positive', message: 'Link copied to clipboard' })
 }
 
 function save() {
