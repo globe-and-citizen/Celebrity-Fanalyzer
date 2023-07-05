@@ -8,14 +8,14 @@
             <q-img
               v-else
               class="cursor-pointer"
-              :src="comment.author.photoURL"
+              :src="comment.author?.photoURL"
               @click="router.push(`/fan/${comment.author.username || comment.author.uid}`)"
             />
           </q-avatar>
         </q-item-section>
 
         <q-item-section>
-          <q-item-label>{{ comment.author.displayName || 'Anonymous' }}</q-item-label>
+          <q-item-label>{{ comment.author?.displayName || 'Anonymous' }}</q-item-label>
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
         <q-item-section v-if="(comment.author?.uid || comment.author) === userId" side>
