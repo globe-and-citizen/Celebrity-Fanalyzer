@@ -36,12 +36,8 @@
           v-model="commentValue"
         >
           <q-list v-if="isMention" class="absolute bg-secondary rounded-borders text-caption" dark style="bottom: 40px">
-            <q-item clickable v-close-popup>
-              <q-item-section>New tab</q-item-section>
-            </q-item>
-            <q-separator />
-            <q-item clickable v-close-popup>
-              <q-item-section>New incognito tab</q-item-section>
+            <q-item v-for="(commenter, index) in commenters" clickable :key="index" @click="mentionUser">
+              <q-item-section>{{ commenter }}</q-item-section>
             </q-item>
           </q-list>
 
@@ -73,7 +69,7 @@ import { useQuasar } from 'quasar'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
-import { nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -92,16 +88,23 @@ const commentId = ref('')
 const reply = reactive({})
 const commentValue = ref('')
 const inputField = ref()
-const isMention = ref(false)
+
+const commenters = computed(() => {
+  return commentStore.getComments
+    .map((comment) => comment.author?.username)
+    .filter((value, index, self) => value && self.indexOf(value) === index)
+})
+
+const isMention = computed(() => {
+  return (
+    userStore.getUser &&
+    commentValue.value.endsWith('@') &&
+    (commentValue.value[commentValue.value.length - 2] === ' ' || commentValue.value[commentValue.value.length - 2] === undefined)
+  )
+})
 
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
-})
-
-watchEffect(() => {
-  if (userStore.getUser && commentValue.value.charAt(0) === '@') {
-    isMention.value = true
-  }
 })
 
 onBeforeUnmount(() => {
@@ -112,6 +115,14 @@ function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
     inputField.value.blur()
   }
+}
+
+function mentionUser(event) {
+  commentValue.value = commentValue.value.slice(0, -1) + '@' + event.target.innerText + ' '
+  isMention.value = false
+  nextTick(() => {
+    inputField.value.focus()
+  })
 }
 
 function getReplyAuthor() {
