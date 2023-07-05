@@ -78,12 +78,12 @@ onMounted(async () => {
   if (!promptStore.getPrompts.length) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   }
-  const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author.uid === user.value.uid)
+  const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author?.uid === user.value.uid)
 
   if (!entryStore.getEntries.length) {
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
   }
-  const filteredEntries = entryStore.getEntries.filter((entry) => entry.author.uid === user.value.uid)
+  const filteredEntries = entryStore.getEntries.filter((entry) => entry.author?.uid === user.value.uid)
 
   computedPosts.value = [...filteredPrompts, ...filteredEntries].sort((a, b) => b.date - a.date)
 })
