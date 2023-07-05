@@ -27,6 +27,7 @@
       <q-input class="col-grow q-pl-sm" label="Name" v-model="user.displayName" />
     </div>
     <q-input
+      class="non-selectable"
       debounce="400"
       label="Username"
       :prefix="origin + 'fan/'"
