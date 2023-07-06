@@ -33,6 +33,7 @@
           style="margin-bottom: 6.7rem"
           v-model="commentValue"
           @blur="isMention = false"
+          @keydown.escape="inputField.blur()"
         >
           <q-list v-if="isMention" class="absolute bg-secondary rounded-borders text-caption" dark style="bottom: 40px">
             <q-item v-for="(commenter, index) in commenters" clickable :key="index" @click="mentionUser(commenter)">
@@ -101,20 +102,6 @@ watchEffect(() => {
       (commentValue.value[commentValue.value.length - 2] === ' ' || commentValue.value[commentValue.value.length - 2] === undefined)
   )
 })
-
-onMounted(async () => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
-
-function handleKeydown(event) {
-  if (event.key === 'Escape' || event.key === 'Esc') {
-    inputField.value.blur()
-  }
-}
 
 function mentionUser(mentioned) {
   commentValue.value = commentValue.value.slice(0, -1) + '@' + mentioned.name + ' '
