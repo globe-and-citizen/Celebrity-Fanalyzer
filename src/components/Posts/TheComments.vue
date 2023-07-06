@@ -34,10 +34,11 @@
           standout="bg-secondary text-white"
           style="margin-bottom: 6.7rem"
           v-model="commentValue"
+          @blur="isMention = false"
         >
           <q-list v-if="isMention" class="absolute bg-secondary rounded-borders text-caption" dark style="bottom: 40px">
-            <q-item v-for="(commenter, index) in commenters" clickable :key="index" @click="mentionUser">
-              <q-item-section>{{ commenter }}</q-item-section>
+            <q-item v-for="(commenter, index) in commenters" clickable :key="index" @click="mentionUser(commenter)">
+              <q-item-section>{{ commenter.name }}</q-item-section>
             </q-item>
           </q-list>
 
@@ -88,18 +89,20 @@ const commentId = ref('')
 const reply = reactive({})
 const commentValue = ref('')
 const inputField = ref()
+const isMention = ref(false)
+const mentionedUsers = ref([])
 
 const commenters = computed(() => {
   return commentStore.getComments
-    .map((comment) => comment.author?.username)
-    .filter((value, index, self) => value && self.indexOf(value) === index)
+    .map((comment) => ({ id: comment.author?.uid, name: comment.author?.displayName }))
+    .filter((value, index, self) => value.id && value.name && self.findIndex((t) => t.id === value.id && t.name === value.name) === index)
 })
 
-const isMention = computed(() => {
-  return (
+watchEffect(() => {
+  isMention.value = Boolean(
     userStore.getUser &&
-    commentValue.value.endsWith('@') &&
-    (commentValue.value[commentValue.value.length - 2] === ' ' || commentValue.value[commentValue.value.length - 2] === undefined)
+      commentValue.value.endsWith('@') &&
+      (commentValue.value[commentValue.value.length - 2] === ' ' || commentValue.value[commentValue.value.length - 2] === undefined)
   )
 })
 
@@ -117,8 +120,10 @@ function handleKeydown(event) {
   }
 }
 
-function mentionUser(event) {
-  commentValue.value = commentValue.value.slice(0, -1) + '@' + event.target.innerText + ' '
+// TODO create a method that stores users that will be notified
+function mentionUser(mentioned) {
+  commentValue.value = commentValue.value.slice(0, -1) + '@' + mentioned.name + ' '
+  mentionedUsers.value.push(mentioned.id)
   isMention.value = false
   nextTick(() => {
     inputField.value.focus()
@@ -138,6 +143,7 @@ function getReplyAuthor() {
 async function addComment() {
   reply.parentId = commentStore.getReplyTo
   const comment = { text: commentValue.value }
+
   commentStore
     .addComment(props.collectionName, comment, props.post)
     .then(() => {
@@ -147,12 +153,19 @@ async function addComment() {
         message: 'New comment: ' + comment.text,
         type: 'comment'
       })
-
+      notificationStore.create(mentionedUsers.value, {
+        collection: props.collectionName,
+        link: '/' + props.post.id.replace(/-/g, '/'),
+        message: userStore.getUser.displayName + ' mentioned you: ' + comment.text,
+        type: 'mention'
+      })
+    })
+    .then(() => {
       window.scrollTo(0, document.body.scrollHeight)
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
-  commentValue.value = ''
+    .finally(() => (commentValue.value = ''))
 }
 
 onUnmounted(() => {
