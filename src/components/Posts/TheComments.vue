@@ -120,7 +120,6 @@ function handleKeydown(event) {
   }
 }
 
-// TODO create a method that stores users that will be notified
 function mentionUser(mentioned) {
   commentValue.value = commentValue.value.slice(0, -1) + '@' + mentioned.name + ' '
   mentionedUsers.value.push(mentioned.id)
