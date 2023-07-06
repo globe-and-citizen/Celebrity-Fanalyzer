@@ -68,6 +68,8 @@ export const useNotificationStore = defineStore('notification', {
      * @param {*} notification - Notification object
      */
     async create(subscribers, notification) {
+      if (!subscribers?.length) return
+
       const userStore = useUserStore()
 
       notification.created = Date.now()
