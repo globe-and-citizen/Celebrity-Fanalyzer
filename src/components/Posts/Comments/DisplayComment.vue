@@ -51,7 +51,7 @@
       </q-form>
 
       <!-- Parent comment -->
-      <div v-else class="q-my-sm text-body2">
+      <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
         {{ comment.text }}
       </div>
 
