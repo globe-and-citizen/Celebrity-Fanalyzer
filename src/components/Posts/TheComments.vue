@@ -71,7 +71,6 @@ import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
 import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
 
 const props = defineProps({
   collectionName: { type: String, required: true },
@@ -79,7 +78,6 @@ const props = defineProps({
 })
 
 const $q = useQuasar()
-const router = useRouter()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const notificationStore = useNotificationStore()
