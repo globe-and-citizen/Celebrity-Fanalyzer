@@ -41,12 +41,12 @@
             </q-item>
           </q-list>
 
-          <div v-show="commentStore.haveToReply" class="replyTop">
+          <div v-if="commentStore.haveToReply" class="replyTop">
             <p>
               Replying to
               <span class="text-bold">{{ getReplyAuthor() }}</span>
             </p>
-            <q-btn @click="commentStore.setReplyTo('')" icon="close" round flat dense size="sm"></q-btn>
+            <q-btn dense flat icon="close" round size="sm" @click="commentStore.setReplyTo('')" />
           </div>
           <q-btn
             color="grey-6"
@@ -183,16 +183,16 @@ async function addReply() {
 
 <style scoped>
 .replyTop {
-  position: absolute;
-  display: flex;
-  width: 100%;
-  border-radius: 10px 10px 10px 10px;
-  height: 30px;
-  top: -30px;
-  padding: 5px 10px;
-  color: white;
-  font-size: 12px;
-  justify-content: space-between;
   background-color: #5e6775;
+  border-radius: 10px;
+  color: white;
+  display: flex;
+  font-size: 12px;
+  height: 30px;
+  justify-content: space-between;
+  padding: 5px 10px;
+  position: absolute;
+  top: -30px;
+  width: 100%;
 }
 </style>
