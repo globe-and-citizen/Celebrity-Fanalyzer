@@ -4,14 +4,12 @@
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
       <section v-if="commentStore.getComments?.length > 0" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
-          v-for="comment of commentStore.getComments.filter((element) => {
-            return element.parentId === undefined && element.author
-          })"
-          :comment="comment"
+          v-for="comment of commentStore.getComments.filter((element) => element.parentId === undefined && element.author)"
           :collection-name="collectionName"
+          :comment="comment"
           :document-id="post.id"
           :key="comment.id"
-        ></DisplayComment>
+        />
       </section>
 
       <div v-else class="q-mt-xl text-center">
@@ -22,14 +20,14 @@
 
       <q-form greedy @submit.prevent="commentStore.haveToReply ? addReply() : addComment()">
         <q-input
-          ref="inputField"
           class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
           :data-test="commentStore.haveToReply ? 'fill-add-reply' : 'comment-main-box'"
           dense
           :label="commentStore.haveToReply ? 'Reply' : 'Comment'"
           lazy-rules
-          :required="!commentStore.haveToReply"
           :name="commentStore.haveToReply ? commentId : ''"
+          ref="inputField"
+          :required="!commentStore.haveToReply"
           rounded
           standout="bg-secondary text-white"
           style="margin-bottom: 6.7rem"
@@ -84,11 +82,11 @@ const notificationStore = useNotificationStore()
 const userStore = useUserStore()
 
 const commentId = ref('')
-const reply = reactive({})
 const commentValue = ref('')
 const inputField = ref()
 const isMention = ref(false)
 const mentionedUsers = ref([])
+const reply = reactive({})
 
 const commenters = computed(() => {
   return commentStore.getComments
