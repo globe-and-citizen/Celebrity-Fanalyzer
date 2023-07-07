@@ -23,7 +23,7 @@ jobs:
         with:
           start: npm run dev:e2e
           wait-on: http://localhost:9200/
-          browser: firefox
+          browser: chrome
           headed: true
           record: true
           parallel: true

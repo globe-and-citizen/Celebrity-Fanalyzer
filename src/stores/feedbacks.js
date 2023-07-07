@@ -5,13 +5,14 @@ import { useUserStore } from './user'
 
 export const useFeedbackStore = defineStore('feedbacks', {
   state: () => ({
-    _feedbacks: [],
+    _feedbacks: undefined,
     _isLoading: false
   }),
 
   getters: {
     getFeedbacks: (state) => state._feedbacks,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    isLoaded: (state) => !!state._feedbacks
   },
 
   actions: {

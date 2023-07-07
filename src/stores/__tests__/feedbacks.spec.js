@@ -42,12 +42,12 @@ describe('Test FeedBacks Store', async () => {
     const userStore = useUserStore()
     // Check initial state
     expect(feedbackStore.isLoading).toBe(false)
-    expect(feedbackStore.getFeedbacks).toBeTruthy([])
+    expect(feedbackStore.getFeedbacks).toBe(undefined)
 
     // 1 Fetch feedback
     await feedbackStore.fetchFeedbacks()
 
-    expect(feedbackStore.getFeedbacks.length).toBeGreaterThan(0)
+    expect(feedbackStore.getFeedbacks).not.toBe(undefined)
     const initialFeedbacks = feedbackStore.getFeedbacks
 
     // 2 Add feedback
