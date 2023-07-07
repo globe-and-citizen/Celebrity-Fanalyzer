@@ -100,9 +100,7 @@ function handleKeydown(event) {
 function getReplyAuthor() {
   if (commentStore.haveToReply) {
     const parentComment = commentStore.getCommentById(commentStore.getReplyTo)
-    if (parentComment) {
-      return parentComment.author.displayName ? parentComment.author.displayName : 'Anonymous'
-    }
+    return parentComment?.author?.displayName || 'Anonymous'
   }
   return 'Anonymous'
 }
