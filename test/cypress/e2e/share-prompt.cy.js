@@ -3,17 +3,24 @@
 
 describe('Sharing a Prompt', () => {
   it('Should display properly and navigate to /month page', () => {
+    let initialValue = 0
     // Visits the month page and waits for 5 seconds for the page to load
-    cy.visit('/month').wait(5000)
+    cy.visit('/month')
 
     // Selects the share button on the page and clicks it
     cy.get('[data-test="share-button"]').click()
+
+    cy.get('[data-test="share-button"] > .q-btn__content > .block')
+      .invoke('text')
+      .then(($value) => {
+        initialValue = parseFloat($value)
+      })
 
     // Selects the first card on the page (copy to clipboard) and clicks it
     cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
 
     // Select the amount of shares to see if its value is greater than 0
-    cy.get('[data-test="share-button"] > .q-btn__content > .block').invoke('text').then(parseFloat).should('be.greaterThan', 0)
+    cy.get('[data-test="share-button"] > .q-btn__content > .block').invoke('text').then(parseFloat).should('be.greaterThan', initialValue)
 
     // Selects the second card on the page and clicks it
     cy.get('[data-test="graph-tab"]').click()
