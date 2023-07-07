@@ -41,12 +41,8 @@ const entry = ref({})
 const tab = ref(entryStore.tab)
 
 onMounted(async () => {
-  if (router.currentRoute.value.params.id) {
-    await entryStore
-      .fetchEntryBySlug(router.currentRoute.value.href)
-      .then((res) => (entry.value = res))
-      .catch(() => (entry.value = null))
-  }
+  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  entry.value = entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
 
   if (!entry.value) {
     router.push('/404')
