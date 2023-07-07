@@ -12,7 +12,7 @@
         <q-separator spaced="xl" />
         <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="interval" />
         <q-separator spaced="xl" />
-        <SharesPie :data="shareStore.getShares" :interval="interval" />
+        <SharesPie v-if="shareStore.getShares" :data="shareStore.getShares" :interval="interval" />
         <q-separator spaced="xl" />
       </section>
     </q-page>
