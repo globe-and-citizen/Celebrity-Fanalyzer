@@ -5,13 +5,14 @@ import { useUserStore } from 'src/stores'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
-    _shares: []
+    _shares: undefined
   }),
 
   persist: true,
 
   getters: {
-    getShares: (state) => state._shares
+    getShares: (state) => state._shares,
+    isLoaded: (state) => !!state._shares,
   },
 
   actions: {
