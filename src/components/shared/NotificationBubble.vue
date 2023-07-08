@@ -80,7 +80,7 @@ function goToLink(notification) {
   }
   if (notification.collection === 'entries') {
     const entry = entryStore.getEntries.find((entry) => entry.id === notification.link.slice(1))
-    router.push(entry.slug)
+    router.push(entry?.slug)
     entryStore.setTab('comments')
   }
 }
