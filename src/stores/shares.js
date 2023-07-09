@@ -36,7 +36,7 @@ export const useShareStore = defineStore('shares', {
         sharedOn: socialNetwork
       })
 
-      this.fetchShares(collectionName, documentId)
+      await this.fetchShares(collectionName, documentId)
     },
 
     async deleteAllShares(collectionName, documentId) {
@@ -47,6 +47,8 @@ export const useShareStore = defineStore('shares', {
       snapshot.forEach(async (doc) => {
         await deleteDoc(doc.ref)
       })
+
+      await this.fetchShares(collectionName, documentId)
     }
   }
 })
