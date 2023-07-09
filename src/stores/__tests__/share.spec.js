@@ -19,7 +19,7 @@ describe("Unit Test Share Store", ()=>{
             visit_scheme=https
             uag=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
             colo=LHR
-            sliver=none
+             sliver=none
             http=http/2
             loc=TG
             tls=TLSv1.3
@@ -49,25 +49,47 @@ describe("Unit Test Share Store", ()=>{
     const shareStore = useShareStore()
     await entryStore.fetchEntries()
     await waitUntil(() => {
-      return entryStore.getEntries.length > 0
+      return entryStore.getEntries.length>0
     })
     const firstEntry= entryStore.getEntries[0]
 
-    // Delete All Share to have an empty share list
-    await shareStore.deleteAllShares('entries', firstEntry.id)
-    expect(shareStore.getShares.length).toBe(0)
-
-    expect(shareStore.isLoaded).toBe(false)
     await shareStore.fetchShares('entries', firstEntry.id)
+    // await shareStore.fetchShares('entries', entryStore.getEntries[1].id)
+
+    await waitUntil(() => {
+      return shareStore.isLoaded ===true
+    })
     expect(shareStore.isLoaded).toBe(true)
-    const initialLength= shareStore.getShares.length
 
-    await shareStore.addShare('entries', firstEntry.id, 'instagram')
+    let initialLength= shareStore.getShares.length
+    if(initialLength>0){
+      // Delete All Share to have an empty share list
+      await shareStore.deleteAllShares('entries', firstEntry.id)
 
+      await waitUntil(() => {
+        return shareStore.getShares.length ===0
+      })
+      expect(shareStore.getShares.length).toBe(0)
+    }
+
+     initialLength= shareStore.getShares.length
+
+
+    expect(shareStore.getShares.length).toBe(0)
+    shareStore.addShare('entries', firstEntry.id, 'instagram')
+
+    await waitUntil(() => {
+      return shareStore.isLoading
+    })
+    await waitUntil(() => {
+      return !shareStore.isLoading
+    })
     expect(shareStore.getShares.length).toBe(initialLength+1)
 
     await shareStore.deleteAllShares('entries', firstEntry.id)
+    await waitUntil(() => {
+      return shareStore.getShares.length ===0
+    })
     expect(shareStore.getShares.length).toBe(0)
-
   })
 })
