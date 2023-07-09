@@ -91,5 +91,10 @@ describe("Unit Test Share Store", ()=>{
       return shareStore.getShares.length ===0
     })
     expect(shareStore.getShares.length).toBe(0)
+
+    // Reload fetch Share with another entries
+    await shareStore.fetchShares('entries', entryStore.getEntries[1].id)
+    expect(shareStore.isLoaded).toBe(true)
+
   })
 })
