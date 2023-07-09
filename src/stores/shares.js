@@ -1,11 +1,13 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timestamp } from 'firebase/firestore'
+import {collection, deleteDoc, doc, getDocs, onSnapshot, setDoc, Timestamp} from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
-    _shares: undefined
+    _shares: undefined,
+    _unSubscribe: undefined,
+    _isLoading: false
   }),
 
   persist: true,
@@ -13,18 +15,21 @@ export const useShareStore = defineStore('shares', {
   getters: {
     getShares: (state) => state._shares,
     isLoaded: (state) => !!state._shares,
+    isLoading: (state) => state._isLoading
   },
 
   actions: {
     async fetchShares(collectionName, documentId) {
-      const sharesCollection = collection(db, collectionName, documentId, 'shares')
-
-      const snapshot = await getDocs(sharesCollection)
-
-      this._shares = snapshot.docs.map((doc) => doc.data())
+      if (this._unSubscribe) {
+        this._unSubscribe()
+      }
+      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'shares'), (querySnapshot) => {
+        this._shares = querySnapshot.docs.map((doc) => doc.data())
+      })
     },
 
     async addShare(collectionName, documentId, socialNetwork) {
+      this._isLoading = true
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
@@ -36,10 +41,11 @@ export const useShareStore = defineStore('shares', {
         sharedOn: socialNetwork
       })
 
-      await this.fetchShares(collectionName, documentId)
+      this._isLoading = false
     },
 
     async deleteAllShares(collectionName, documentId) {
+      this._isLoading = true
       const sharesCollection = collection(db, collectionName, documentId, 'shares')
 
       const snapshot = await getDocs(sharesCollection)
@@ -47,8 +53,7 @@ export const useShareStore = defineStore('shares', {
       snapshot.forEach(async (doc) => {
         await deleteDoc(doc.ref)
       })
-
-      await this.fetchShares(collectionName, documentId)
+      this._isLoading = false
     }
   }
 })
