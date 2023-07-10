@@ -104,7 +104,7 @@ watchEffect(() => {
 })
 
 function mentionUser(mentioned) {
-  commentValue.value = commentValue.value.slice(0, -1) + '@' + mentioned.name + ' '
+  commentValue.value = commentValue.value.slice(0, -1) + '@' + mentioned.name.split(' ')[0] + ' '
   mentionedUsers.value.push(mentioned.id)
   isMention.value = false
   nextTick(() => {
