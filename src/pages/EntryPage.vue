@@ -46,7 +46,11 @@ const entry = computed(() => {
 onMounted(async () => {
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
-  if (!entry.value) {
+  if (!entry.value?.id) {
+    await new Promise((resolve) => setTimeout(resolve, 2000)) // wait 2 seconds before continue
+  }
+
+  if (!entry.value?.id) {
     router.push('/404')
     return
   }
