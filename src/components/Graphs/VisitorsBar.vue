@@ -117,8 +117,8 @@ watchEffect(() => {
   visitors.value = info.map((obj) => Object.values(obj)[0].visitors)
   visits.value = info.map((obj) => Object.values(obj)[0].visits)
 
-  countVisitors.value = visitors.value.reduce((acc, cur) => acc + cur)
-  countVisits.value = visits.value.reduce((acc, cur) => acc + cur)
+  countVisitors.value = visitors.value.reduce((acc, cur) => acc + cur, 0)
+  countVisits.value = visits.value.reduce((acc, cur) => acc + cur, 0)
 
   compute()
 })
