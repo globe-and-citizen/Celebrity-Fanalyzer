@@ -64,11 +64,13 @@ const transformData = (data) => {
 
   // Extract all unique dates from the objects in the data array
   data.forEach((item) => {
-    item.visits?.forEach((date) => {
-      if (!uniqueDates.includes(date)) {
-        uniqueDates.push(date)
-      }
-    })
+    if (Array.isArray(item.visits)) {
+      item.visits.forEach((date) => {
+        if (!uniqueDates.includes(date)) {
+          uniqueDates.push(date)
+        }
+      })
+    }
   })
 
   const today = new Date()
