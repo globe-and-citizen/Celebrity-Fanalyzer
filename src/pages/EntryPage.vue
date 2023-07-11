@@ -26,7 +26,7 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -37,12 +37,14 @@ const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 
-const entry = ref({})
 const tab = ref(entryStore.tab)
+
+const entry = computed(() => {
+  return entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
+})
 
 onMounted(async () => {
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  entry.value = entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
 
   if (!entry.value) {
     router.push('/404')
@@ -58,12 +60,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   entryStore.setTab('post')
-})
-
-entryStore.$subscribe((_mutation, state) => {
-  if (entry.value.id) {
-    entry.value = state._entries.find((res) => res.id === entry.value.id)
-  }
 })
 </script>
 
