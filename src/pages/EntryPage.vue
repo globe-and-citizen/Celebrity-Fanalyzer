@@ -7,7 +7,7 @@
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
-    <q-tab-panel name="post" style="padding: 0">
+    <q-tab-panel v-if="entry" name="post" style="padding: 0">
       <ThePost collectionName="entries" :post="entry" title="Entry Page" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -26,7 +26,7 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -37,14 +37,20 @@ const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 
-const entry = ref({})
 const tab = ref(entryStore.tab)
+
+const entry = computed(() => {
+  return entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
+})
 
 onMounted(async () => {
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  entry.value = entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
 
-  if (!entry.value) {
+  if (!entry.value?.id) {
+    await new Promise((resolve) => setTimeout(resolve, 2000)) // wait 2 seconds before continue
+  }
+
+  if (!entry.value?.id) {
     router.push('/404')
     return
   }
@@ -58,12 +64,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   entryStore.setTab('post')
-})
-
-entryStore.$subscribe((_mutation, state) => {
-  if (entry.value.id) {
-    entry.value = state._entries.find((res) => res.id === entry.value.id)
-  }
 })
 </script>
 
