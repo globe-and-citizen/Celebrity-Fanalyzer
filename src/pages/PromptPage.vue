@@ -8,7 +8,7 @@
     <!-- Panel 1: Prompt -->
     <q-tab-panel v-if="prompt" name="post" style="padding: 0">
       <ThePost collectionName="prompts" v-if="shareStore.getShares" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries v-if="prompt?.entries" :entries="prompt.entries" />
+      <TheEntries v-if="entries" :entries="entries" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -65,6 +65,10 @@ const prompt = computed(() => {
   })
 })
 
+const entries = computed(() => {
+  return entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+})
+
 onMounted(async () => {
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 
@@ -77,11 +81,7 @@ onMounted(async () => {
     return
   }
 
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  }
-
-  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
   await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
