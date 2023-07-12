@@ -1,5 +1,5 @@
 <template>
-  <TheHeader feedbackButton title="Profile" />
+  <TheHeader feedbackButton notificationButton title="Profile" />
 
   <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 

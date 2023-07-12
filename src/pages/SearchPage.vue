@@ -1,5 +1,11 @@
 <template>
-  <TheHeader feedbackButton searchInput :title="`${router.currentRoute.value.params.year} Search Archive`" v-model="search" />
+  <TheHeader
+    feedbackButton
+    notificationButton
+    searchInput
+    :title="`${router.currentRoute.value.params.year} Search Archive`"
+    v-model="search"
+  />
   <q-page-container>
     <q-page class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
