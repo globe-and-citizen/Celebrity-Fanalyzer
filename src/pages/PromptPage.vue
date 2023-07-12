@@ -86,14 +86,17 @@ onMounted(async () => {
   await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-  shareIsLoading.value = true
-  await shareStore
-    .fetchShares('prompts', prompt.value.id)
-    .catch((error) => errorStore.throwError(error))
-    .finally(() => {
-      shareIsLoading.value = false
-      shareIsLoaded.value = true
-    })
+
+  if (prompt.value?.id) {
+    shareIsLoading.value = true
+    await shareStore
+      .fetchShares('prompts', prompt.value.id)
+      .catch((error) => errorStore.throwError(error))
+      .finally(() => {
+        shareIsLoading.value = false
+        shareIsLoaded.value = true
+      })
+  }
 })
 
 onUnmounted(() => {
