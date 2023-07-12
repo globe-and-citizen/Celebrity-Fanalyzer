@@ -22,20 +22,22 @@ export const useVisitorStore = defineStore('visitors', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      const visitor = {
-        id: userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
-      }
+      const visitorId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
 
-      const visitorRef = doc(db, collectionName, documentId, 'visitors', visitor.id)
+      const visitorRef = doc(db, collectionName, documentId, 'visitors', visitorId)
       const visitorSnap = await getDoc(visitorRef)
 
       this._isLoading = true
       if (visitorSnap.exists()) {
         await updateDoc(visitorRef, { visits: arrayUnion(monthDayYear()) })
       } else {
-        visitor.visits = monthDayYear()
-        await setDoc(visitorRef, visitor).finally(() => (this._isLoading = false))
+        const visitor = {
+          id: userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp,
+          visits: [monthDayYear()]
+        }
+        await setDoc(visitorRef, visitor)
       }
+      this._isLoading = false
     },
 
     async readVisitors(collectionName, documentId) {

@@ -129,7 +129,7 @@ const userId = ref('')
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
-  console.log('post.id', props.post)
+
   visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))

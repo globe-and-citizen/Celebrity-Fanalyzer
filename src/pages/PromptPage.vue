@@ -65,23 +65,23 @@ const prompt = computed(() => {
   })
 })
 
+const entries = computed(() => {
+  return entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+})
+
 onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-    await new Promise((resolve) => setTimeout(resolve, 5000)) // wait 2 seconds before continue
+  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+
+  if (!prompt.value?.id) {
+    await new Promise((resolve) => setTimeout(resolve, 2000)) // wait 2 seconds before continue
   }
 
-  setTimeout(() => {
-    if (!prompt.value) {
-      router.push('/404')
-    }
-  }, 5000)
-
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  if (!prompt.value?.id) {
+    router.push('/404')
+    return
   }
 
-  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
   await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
