@@ -51,12 +51,16 @@
       </q-form>
 
       <!-- Parent comment -->
-      <div v-else class="q-my-sm text-body2">
-        {{ comment.text }}
+      <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
+        <span v-if="comment.text.includes('@')">
+          <span v-for="item of comment.text.split(' ')" :key="item">
+            <span :class="item.includes('@') ? 'cursor-pointer text-bold' : ''">{{ item }}&nbsp;</span>
+          </span>
+        </span>
+        <span v-else>{{ comment.text }}</span>
       </div>
 
       <!-- Parent Like, Dislike, Reply buttons -->
-
       <div class="row">
         <q-btn
           :data-test="'like' + comment.text"
@@ -185,5 +189,3 @@ function editInput(commentId) {
   inputEdit.value = commentId
 }
 </script>
-
-<style scoped></style>
