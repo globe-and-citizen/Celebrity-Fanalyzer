@@ -13,7 +13,7 @@
         <b class="text-secondary">{{ title }}</b>
         <span class="float-right text-secondary">{{ subtitle }}</span>
       </q-toolbar-title>
-      <NotificationBubble v-if="notificationButton" />
+      <NotificationBubble v-if="notificationButton && userStore.isAuthenticated" />
       <q-btn v-if="feedbackButton" color="secondary" flat icon="feedback" round size="1rem" @click="goToFeedback" />
       <slot />
     </q-toolbar>

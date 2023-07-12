@@ -1,5 +1,5 @@
 <template>
-  <TheHeader :backButton="false" logo :notificationButton="userStore.isAuthenticated" />
+  <TheHeader :backButton="false" logo notificationButton />
 
   <q-page-container>
     <q-page class="q-pa-md">
