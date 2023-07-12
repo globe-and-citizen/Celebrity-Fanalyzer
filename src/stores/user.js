@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth'
 import { collection, doc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
+import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
 
@@ -103,8 +103,12 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.displayName, email: user.email })
+          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email })
+            .then(() => this.emailSignIn(user))
+            .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
+            .catch((error) => console.error(error))
         })
+        .catch((error) => console.error(error))
         .finally(() => (this._isLoading = false))
     },
 
