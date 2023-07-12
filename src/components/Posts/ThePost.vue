@@ -73,7 +73,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
+          <ShareComponent :label="shareStore.isLoaded? shareStore.getShares.length: 0" :disable="!shareStore.isLoaded" @share="share($event)" />
           <q-btn
             v-if="userStore.isAuthenticated"
             color="blue"
@@ -129,7 +129,7 @@ const userId = ref('')
 onMounted(async () => {
   await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
-  console.log('post.id', props.post)
+
   visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))

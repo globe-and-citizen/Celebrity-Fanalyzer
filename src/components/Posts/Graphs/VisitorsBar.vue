@@ -64,11 +64,13 @@ const transformData = (data) => {
 
   // Extract all unique dates from the objects in the data array
   data.forEach((item) => {
-    item.visits?.forEach((date) => {
-      if (!uniqueDates.includes(date)) {
-        uniqueDates.push(date)
-      }
-    })
+    if (Array.isArray(item.visits)) {
+      item.visits.forEach((date) => {
+        if (!uniqueDates.includes(date)) {
+          uniqueDates.push(date)
+        }
+      })
+    }
   })
 
   const today = new Date()
@@ -115,8 +117,8 @@ watchEffect(() => {
   visitors.value = info.map((obj) => Object.values(obj)[0].visitors)
   visits.value = info.map((obj) => Object.values(obj)[0].visits)
 
-  countVisitors.value = visitors.value.reduce((acc, cur) => acc + cur)
-  countVisits.value = visits.value.reduce((acc, cur) => acc + cur)
+  countVisitors.value = visitors.value.reduce((acc, cur) => acc + cur, 0)
+  countVisits.value = visits.value.reduce((acc, cur) => acc + cur, 0)
 
   compute()
 })
