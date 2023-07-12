@@ -6,9 +6,9 @@
   </q-tabs>
   <q-tab-panels v-if="prompt" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
-    <q-tab-panel v-if="prompt" name="post" style="padding: 0">
-      <ThePost collectionName="prompts" v-if="shareStore.getShares" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries v-if="entries" :entries="entries" />
+    <q-tab-panel name="post" style="padding: 0">
+      <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
+      <TheEntries v-if="prompt?.entries" :entries="prompt.entries" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
