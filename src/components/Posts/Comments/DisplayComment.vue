@@ -115,11 +115,11 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
+import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
+import { shortMonthDayTime } from 'src/utils/date'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { shortMonthDayTime } from 'src/utils/date'
-import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
-import { useQuasar } from 'quasar'
 
 const router = useRouter()
 const userStore = useUserStore()
