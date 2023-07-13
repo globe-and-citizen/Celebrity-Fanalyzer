@@ -8,6 +8,7 @@ import { useFeedbackStore } from './feedbacks'
 import { useLikeStore } from './likes'
 import { useNotificationStore } from './notifications'
 import { usePromptStore } from './prompts'
+import { useReportStore } from './reports'
 import { useRequestStore } from './requests'
 import { useShareStore } from './shares'
 import { useStatStore } from './stats'
@@ -42,6 +43,7 @@ export {
   useLikeStore,
   useNotificationStore,
   usePromptStore,
+  useReportStore,
   useRequestStore,
   useShareStore,
   useStatStore,
