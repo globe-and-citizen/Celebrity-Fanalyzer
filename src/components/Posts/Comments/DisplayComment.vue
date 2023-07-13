@@ -1,6 +1,6 @@
 <template>
-  <q-list>
-    <div style="border-left: black solid 1px; padding-left: 2%; margin-bottom: 15px">
+  <q-list class="q-mb-md">
+    <div style="border-left: black solid 1px; padding-left: 2%" @mouseover="actionButtons = true" @mouseleave="actionButtons = false">
       <q-item class="q-px-none">
         <q-item-section avatar>
           <q-avatar>
@@ -51,7 +51,7 @@
       </q-form>
 
       <!-- Parent comment -->
-      <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
+      <div v-else class="q-py-xs text-body2" style="white-space: pre-line">
         <span v-if="comment.text.includes('@')">
           <span v-for="item of comment.text.split(' ')" :key="item">
             <span :class="item.includes('@') ? 'cursor-pointer text-bold' : ''">{{ item }}&nbsp;</span>
@@ -99,6 +99,8 @@
           <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
         </q-btn>
       </div>
+    </div>
+    <div style="border-left: black solid 1px; padding-left: 2%">
       <DisplayComment
         v-for="item of commentStore.getCommentChildren(comment.id)"
         :document-id="documentId"
