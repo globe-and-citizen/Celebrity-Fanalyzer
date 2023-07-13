@@ -96,7 +96,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
-          <q-btn :data-test="'report' + comment.text" flat icon="report" rounded size="0.75rem" @click="reportComment(comment.id)">
+          <q-btn :data-test="'report' + comment.text" flat icon="report" rounded size="0.75rem" @click="isReporting = true">
             <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
           </q-btn>
         </div>
@@ -112,11 +112,29 @@
       ></DisplayComment>
     </div>
   </q-list>
+
+  <q-dialog persistent v-model="isReporting">
+    <q-card dark>
+      <q-card-section>
+        <p class="text-center text-subtitle2">You are about to report this comment:</p>
+        <q class="text-italic">{{ comment.text.substring(0, 300) }}{{ comment.text.length > 300 ? '...' : '' }}</q>
+        <p class="q-mb-none q-mt-md text-center text-subtitle2">
+          Are you sure you want to report this comment?
+          <br />
+          The report will be reviewed by our team.
+        </p>
+      </q-card-section>
+      <q-card-actions>
+        <q-btn class="col-grow" color="negative" label="Cancel" outline v-close-popup />
+        <q-btn class="col-grow" color="negative" label="Report" @click="reportComment(comment)" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useReportStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -125,6 +143,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
+const reportStore = useReportStore()
 
 const props = defineProps({
   comment: { type: Object, required: true },
@@ -135,6 +154,7 @@ const props = defineProps({
 const userId = ref('')
 const inputEdit = ref('')
 const isEditing = ref(false)
+const isReporting = ref(false)
 const newComment = ref(props.comment.text)
 const actionButtons = ref(false)
 
@@ -183,8 +203,11 @@ const replyCounter = (id) => {
   return commentStore.getComments ? commentStore.getComments.filter((comment) => comment.parentId === id).length : 0
 }
 
-function reportComment(commentId) {
-  console.log('report comment', commentId)
+function reportComment(comment) {
+  reportStore
+    .createReport(props.collectionName, props.documentId, comment)
+    .then(() => $q.notify({ type: 'info', message: 'Thank you for helping us keep our community safe.' }))
+  isReporting.value = false
 }
 
 function handleKeydown(event) {
