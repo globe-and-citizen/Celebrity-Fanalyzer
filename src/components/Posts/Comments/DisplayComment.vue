@@ -60,8 +60,8 @@
         <span v-else>{{ comment.text }}</span>
       </div>
 
-      <!-- Parent Like, Dislike, Reply buttons -->
-      <div class="row">
+      <!-- Parent Like, Dislike, Reply, Report buttons -->
+      <div v-if="actionButtons" class="row">
         <q-btn
           :data-test="'like' + comment.text"
           flat
@@ -93,6 +93,9 @@
           size="0.75rem"
           @click="commentStore.setReplyTo(comment.id)"
         >
+          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+        </q-btn>
+        <q-btn :data-test="'report' + comment.text" flat icon="report" rounded size="0.75rem" @click="reportComment(comment.id)">
           <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
         </q-btn>
       </div>
@@ -129,6 +132,7 @@ const userId = ref('')
 const inputEdit = ref('')
 const isEditing = ref(false)
 const newComment = ref(props.comment.text)
+const actionButtons = ref(false)
 
 const $q = useQuasar()
 onMounted(async () => {
@@ -173,6 +177,10 @@ function dislikeComment(commentId) {
 
 const replyCounter = (id) => {
   return commentStore.getComments ? commentStore.getComments.filter((comment) => comment.parentId === id).length : 0
+}
+
+function reportComment(commentId) {
+  console.log('report comment', commentId)
 }
 
 function handleKeydown(event) {
