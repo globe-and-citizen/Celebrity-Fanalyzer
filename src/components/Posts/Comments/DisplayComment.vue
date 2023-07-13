@@ -61,44 +61,46 @@
       </div>
 
       <!-- Parent Like, Dislike, Reply, Report buttons -->
-      <div v-if="actionButtons" class="row">
-        <q-btn
-          :data-test="'like' + comment.text"
-          flat
-          :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
-          :label="comment.likes?.length || 0"
-          rounded
-          size="0.75rem"
-          @click="likeComment(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
-        </q-btn>
-        <q-btn
-          :data-test="'dislike' + comment.text"
-          flat
-          :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
-          :label="comment.dislikes?.length || 0"
-          rounded
-          size="0.75rem"
-          @click="dislikeComment(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
-        </q-btn>
-        <q-btn
-          :data-test="comment.text + '-add-reply'"
-          flat
-          icon="img:/icons/arrow-reply.svg"
-          :label="replyCounter(comment.id)"
-          rounded
-          size="0.75rem"
-          @click="commentStore.setReplyTo(comment.id)"
-        >
-          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
-        </q-btn>
-        <q-btn :data-test="'report' + comment.text" flat icon="report" rounded size="0.75rem" @click="reportComment(comment.id)">
-          <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
-        </q-btn>
-      </div>
+      <Transition name="slide-fade">
+        <div v-if="actionButtons" class="row">
+          <q-btn
+            :data-test="'like' + comment.text"
+            flat
+            :icon="likeIconClass(comment) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'"
+            :label="comment.likes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="likeComment(comment.id)"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Like</q-tooltip>
+          </q-btn>
+          <q-btn
+            :data-test="'dislike' + comment.text"
+            flat
+            :icon="dislikeIconClass(comment) ? 'img:/icons/thumbs-down-bolder.svg' : 'img:/icons/thumbs-down.svg'"
+            :label="comment.dislikes?.length || 0"
+            rounded
+            size="0.75rem"
+            @click="dislikeComment(comment.id)"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
+          </q-btn>
+          <q-btn
+            :data-test="comment.text + '-add-reply'"
+            flat
+            icon="img:/icons/arrow-reply.svg"
+            :label="replyCounter(comment.id)"
+            rounded
+            size="0.75rem"
+            @click="commentStore.setReplyTo(comment.id)"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+          </q-btn>
+          <q-btn :data-test="'report' + comment.text" flat icon="report" rounded size="0.75rem" @click="reportComment(comment.id)">
+            <q-tooltip anchor="bottom middle" self="center middle">Reply</q-tooltip>
+          </q-btn>
+        </div>
+      </Transition>
     </div>
     <div style="border-left: black solid 1px; padding-left: 2%">
       <DisplayComment
@@ -199,3 +201,16 @@ function editInput(commentId) {
   inputEdit.value = commentId
 }
 </script>
+
+<style scoped>
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in-out;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+</style>
