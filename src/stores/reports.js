@@ -18,7 +18,7 @@ export const useReportStore = defineStore('reports', {
   },
 
   actions: {
-    async createReport(collectionName, documentId, comment) {
+    async create(collectionName, documentId, comment) {
       const userStore = useUserStore()
 
       const reportId = new Date().getTime().toString()
@@ -38,7 +38,7 @@ export const useReportStore = defineStore('reports', {
       await setDoc(doc(db, 'reports', reportId), report).finally(() => (this._isLoading = false))
     },
 
-    async readReports() {
+    async read() {
       await getDocs(collection(db, 'reports', reportId)).then((querySnapshot) => {
         const reports = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 

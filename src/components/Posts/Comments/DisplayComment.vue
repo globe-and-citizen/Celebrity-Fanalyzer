@@ -205,7 +205,7 @@ const replyCounter = (id) => {
 
 function reportComment(comment) {
   reportStore
-    .createReport(props.collectionName, props.documentId, comment)
+    .create(props.collectionName, props.documentId, comment)
     .then(() => $q.notify({ type: 'info', message: 'Thank you for helping us keep our community safe.' }))
   isReporting.value = false
 }
