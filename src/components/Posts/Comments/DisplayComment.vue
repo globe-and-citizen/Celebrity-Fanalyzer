@@ -114,7 +114,7 @@
   </q-list>
 
   <q-dialog persistent v-model="isReporting">
-    <q-card dark>
+    <q-card class="q-pa-sm" dark>
       <q-card-section>
         <p class="text-center text-subtitle2">You are about to report this comment:</p>
         <q class="text-italic">{{ comment.text.substring(0, 300) }}{{ comment.text.length > 300 ? '...' : '' }}</q>
