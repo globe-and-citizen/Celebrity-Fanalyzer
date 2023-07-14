@@ -36,6 +36,7 @@
         <q-tab v-if="userStore.isWriterOrAbove" data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" />
         <q-tab v-if="userStore.isAdmin" data-test="users-tab" name="users" icon="people" label="Users" />
         <q-tab v-if="userStore.isEditorOrAbove" data-test="feedbacks-tab" name="feedbacks" icon="feedback" label="Feedbacks" />
+        <q-tab v-if="userStore.isEditorOrAbove" data-test="reports-tab" name="reports" icon="report" label="Reports" />
         <q-tab v-if="userStore.isAdmin" data-test="errors-tab" name="errors" icon="error" label="Errors" />
       </q-tabs>
 
@@ -50,6 +51,10 @@
 
         <q-tab-panel v-if="userStore.isEditorOrAbove" name="feedbacks">
           <ManageFeedbacks />
+        </q-tab-panel>
+
+        <q-tab-panel v-if="userStore.isEditorOrAbove" name="reports">
+          <ManageReports />
         </q-tab-panel>
 
         <q-tab-panel v-if="userStore.isAdmin" name="errors">
@@ -73,6 +78,7 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import ManageErrors from 'src/components/Admin/ManageErrors.vue'
 import ManageFeedbacks from 'src/components/Admin/ManageFeedbacks.vue'
 import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
+import ManageReports from 'src/components/Admin/ManageReports.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
