@@ -25,7 +25,8 @@ export const useReportStore = defineStore('reports', {
 
       const report = {
         author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        created: monthDayYear(),
+        createdAt: monthDayYear(),
+        comment: comment.text,
         document: doc(db, collectionName, documentId),
         id: reportId,
         isResolved: false,
@@ -39,10 +40,10 @@ export const useReportStore = defineStore('reports', {
     },
 
     async read() {
-      await getDocs(collection(db, 'reports', reportId)).then((querySnapshot) => {
+      await getDocs(collection(db, 'reports')).then((querySnapshot) => {
         const reports = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-        console.log(reports)
+        this._reports = reports
       })
     }
   }
