@@ -2,6 +2,12 @@
 /// <reference types="cypress" />
 
 describe('Sharing a Prompt', () => {
+  beforeEach(() => {
+    cy.viewport('macbook-16')
+    // Visits the profile page
+
+    cy.login()
+  })
   it('Should display properly and navigate to /month page', () => {
     let initialValue = 0
     // Visits the month page and waits for 5 seconds for the page to load
