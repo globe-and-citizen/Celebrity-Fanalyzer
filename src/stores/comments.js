@@ -28,8 +28,11 @@ export const useCommentStore = defineStore('comments', {
   getters: {
     getComments: (state) => state._comments,
     getCommentById: (state) => {
+      /**
+       * @returns undefined|Object
+       */
       return (commentId) => {
-        return state._comments ? state._comments?.find((comment) => comment.id === commentId) : []
+        return  state._comments?.find((comment) => comment.id === commentId)
       }
     },
     isLoading: (state) => state._isLoading,
@@ -64,8 +67,8 @@ export const useCommentStore = defineStore('comments', {
           if (!comment.isAnonymous) {
             comment.author = userStore.getUserById(comment.author.id)
           }
-          comment.likes = comment.likes?.map((like) => like.id || like)
-          comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+          comment.likes = comment.likes? comment.likes.map((like) => like.id || like) :  []
+          comment.dislikes = comment.dislikes? comment.dislikes.map((dislike) => dislike.id || dislike) :  []
         }
         this.$patch({ _comments: comments })
       })
