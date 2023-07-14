@@ -4,9 +4,6 @@
 describe('Sharing a Prompt', () => {
   beforeEach(() => {
     cy.viewport('macbook-16')
-    // Visits the profile page
-
-    cy.login()
   })
   it('Should display properly and navigate to /month page', () => {
     let initialValue = 0
@@ -23,7 +20,7 @@ describe('Sharing a Prompt', () => {
       })
 
     // Selects the first card on the page (copy to clipboard) and clicks it
-    cy.get('.q-card > .row > :nth-child(2) > img').should('be.visible').click()
+    cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
 
     // Select the amount of shares to see if its value is greater than 0
     // cy.get('[data-test="share-button"] > .q-btn__content > .block').invoke('text').then(parseFloat).should('be.greaterThan', initialValue)
@@ -33,6 +30,5 @@ describe('Sharing a Prompt', () => {
 
     // Selects the second canvas on the page and checks to see if it is visible
     cy.get('canvas').eq(1).should('be.visible')
-    cy.wait(1000)
   })
 })
