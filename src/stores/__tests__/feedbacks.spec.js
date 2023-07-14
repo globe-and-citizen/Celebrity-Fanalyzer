@@ -39,7 +39,6 @@ describe('Test FeedBacks Store', async () => {
   })
   it('should Fetch Feedback then add a feedBack then delete It', async () => {
     const feedbackStore = useFeedbackStore()
-    const userStore = useUserStore()
     // Check initial state
     expect(feedbackStore.isLoading).toBe(false)
     expect(feedbackStore.getFeedbacks).toBe(undefined)
@@ -47,27 +46,32 @@ describe('Test FeedBacks Store', async () => {
     // 1 Fetch feedback
     await feedbackStore.fetchFeedbacks()
 
+    await waitUntil(() => {
+      return feedbackStore.isLoaded
+    })
+
     expect(feedbackStore.getFeedbacks).not.toBe(undefined)
     const initialFeedbacks = feedbackStore.getFeedbacks
 
     // 2 Add feedback
     const newFeedback = { subject: 'sujet', message: 'Message' }
-    await waitUntil(() => {
-      return userStore.getUser !== {}
-    })
-    await feedbackStore.addFeedback(newFeedback)
-    await feedbackStore.fetchFeedbacks()
-    const afterAddFeedbacks = feedbackStore.getFeedbacks
 
+    await feedbackStore.addFeedback(newFeedback)
+    await waitUntil(() => {
+      return feedbackStore.getFeedbacks.length > initialFeedbacks.length
+    })
+
+    const afterAddFeedbacks = feedbackStore.getFeedbacks
     expect(initialFeedbacks.length).toBe(afterAddFeedbacks.length - 1)
 
     // 3 Delete feedback
     const lastFeedBack = afterAddFeedbacks[0]
     await feedbackStore.deleteFeedback(lastFeedBack.id)
 
-    await feedbackStore.fetchFeedbacks()
+    await waitUntil(() => {
+      return feedbackStore.getFeedbacks.length === initialFeedbacks.length
+    })
     const afterDelFeedbacks = feedbackStore.getFeedbacks
-
     expect(initialFeedbacks.length).toBe(afterDelFeedbacks.length)
   })
 })

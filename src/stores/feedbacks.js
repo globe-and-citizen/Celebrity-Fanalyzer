@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from './user'
@@ -6,7 +6,8 @@ import { useUserStore } from './user'
 export const useFeedbackStore = defineStore('feedbacks', {
   state: () => ({
     _feedbacks: undefined,
-    _isLoading: false
+    _isLoading: false,
+    _unSubscribe: undefined
   }),
 
   getters: {
@@ -18,17 +19,18 @@ export const useFeedbackStore = defineStore('feedbacks', {
   actions: {
     async fetchFeedbacks() {
       this._isLoading = true
-      await getDocs(collection(db, 'feedbacks'))
-        .then(async (querySnapshot) => {
+
+      // TO avoid a subscription every time we call fetch FeedBacks
+      if (!this._unSubscribe)
+        this._unSubscribe = onSnapshot(collection(db, 'feedbacks'), async (querySnapshot) => {
           const feedbacks = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const feedback of feedbacks) {
             feedback.author = await getDoc(feedback.author).then((doc) => doc.data())
           }
-
           this.$patch({ _feedbacks: feedbacks })
         })
-        .finally(() => (this._isLoading = false))
+      this._isLoading = false
     },
 
     async addFeedback(feedback) {
@@ -38,16 +40,12 @@ export const useFeedbackStore = defineStore('feedbacks', {
       feedback.created = Timestamp.fromDate(new Date())
 
       this._isLoading = true
-      await addDoc(collection(db, 'feedbacks'), feedback)
-        .then(() => this.$patch({ _feedbacks: [...this._feedbacks, feedback] }))
-        .finally(() => (this._isLoading = false))
+      await addDoc(collection(db, 'feedbacks'), feedback).finally(() => (this._isLoading = false))
     },
 
     async deleteFeedback(id) {
       this._isLoading = true
-      await deleteDoc(doc(db, 'feedbacks', id))
-        .then(() => this.$patch({ _feedbacks: this._feedbacks.filter((feedback) => feedback.id !== id) }))
-        .finally(() => (this._isLoading = false))
+      await deleteDoc(doc(db, 'feedbacks', id)).finally(() => (this._isLoading = false))
     }
   }
 })
