@@ -44,58 +44,7 @@ describe('Async watcher ', () => {
     }
   })
 
-  it('Should fetch async the comment using then', async () => {
-    const entryStore = useEntryStore()
-    const commentStore = useCommentStore()
-    await entryStore.fetchEntries()
-    await waitUntil(() => {
-      return entryStore.getEntries.length > 0
-    })
 
-    // Using a methode kep the reactivity
-    const getFirstEntry = () => {
-      return entryStore.getEntries[0]
-    }
-
-    // Step 2: Check the starting number of comments.
-    await commentStore.fetchComments('entries', getFirstEntry().id)
-
-    // Example usage
-    waitUntil(() => {
-      return commentStore.isLoaded
-    }).then(() => {
-      const startingNumberOfComments = commentStore.getComments.length
-      expect(startingNumberOfComments).toBeGreaterThan(0)
-    })
-  })
-
-  /**
-   * Better way to use it
-   */
-  it('Should fetch async the comment using await ', async () => {
-    const entryStore = useEntryStore()
-    const commentStore = useCommentStore()
-    await entryStore.fetchEntries()
-
-    await waitUntil(() => {
-      return entryStore.getEntries.length > 0
-    })
-
-    // Using a methode kep the reactivity
-    const getFirstEntry = () => {
-      return entryStore.getEntries[0]
-    }
-
-    // Step 2: Check the starting number of comments.
-    await commentStore.fetchComments('entries', getFirstEntry().id)
-
-    // Example usage
-    await waitUntil(() => {
-      return commentStore.isLoaded
-    })
-
-    expect(commentStore.getComments.length).toBeGreaterThan(0)
-  })
   /*
   TODO: Comment for Prompt or entry
 
@@ -120,7 +69,7 @@ describe('Async watcher ', () => {
     await entryStore.fetchEntries()
     await waitUntil(() => {
       return entryStore.getEntries.length > 0
-    })
+    }).catch((e)=>console.log('Error :  Loading Entry', e))
 
     // Using a methode kep the reactivity
     const getFirstEntry = () => {
@@ -140,7 +89,8 @@ describe('Async watcher ', () => {
 
     await waitUntil(() => {
       return commentStore.isLoaded
-    })
+    }).catch((e)=>console.log('Error :  2- Check Fetch Comment', e))
+
     const startingNumberOfComments = commentStore.getComments.length
     expect(startingNumberOfComments).toBeGreaterThan(0)
 
@@ -183,7 +133,7 @@ describe('Async watcher ', () => {
 
     await waitUntil(() => {
       return getLastComment().text === 'Edited comment'
-    })
+    }).catch((e)=>console.log('Error :  4- Check edit Comment', e))
     expect(getLastComment().text).toBe('Edited comment')
 
     // 6- Check deleteComment
@@ -192,10 +142,16 @@ describe('Async watcher ', () => {
     expect(commentStore.isLoading).toBe(false)
     await waitUntil(() => {
       return getLastComment().text === 'Comment Deleted'
-    })
+    }).catch((e)=>console.log('Error :  6- Check deleteComment', e))
     expect(getLastComment().text).toBe('Comment Deleted')
-    // 6- Check deleteCommentsCollection
-    // addReply
-    // removeCommentFromFirestore
+
+    // 7) remove the comment from the Firebase Store
+    await commentStore.removeCommentFromFirestore('entries', getFirstEntry().id, getLastComment().id)
+
+    await waitUntil(() => {
+      return commentStore.getComments.length === startingNumberOfComments
+    }).catch((e)=>console.log('Error :  7) remove the comment from the Firebase Store', e))
+
+    expect(commentStore.getComments.length).toBe(startingNumberOfComments)
   })
 })
