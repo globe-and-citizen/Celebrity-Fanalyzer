@@ -33,5 +33,6 @@ describe('Sharing a Prompt', () => {
 
     // Selects the second canvas on the page and checks to see if it is visible
     cy.get('canvas').eq(1).should('be.visible')
+    cy.wait(1000)
   })
 })
