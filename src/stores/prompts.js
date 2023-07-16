@@ -24,7 +24,7 @@ export const usePromptStore = defineStore('prompts', {
     async fetchPrompts() {
       const userStore = useUserStore()
 
-      if (!userStore.getUsers.length) {
+      if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 

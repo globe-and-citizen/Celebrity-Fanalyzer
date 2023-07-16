@@ -54,7 +54,7 @@ export const useCommentStore = defineStore('comments', {
   actions: {
     async fetchComments(collectionName, documentId) {
       const userStore = useUserStore()
-      if(userStore.getUsers.length===0){
+      if(!userStore.getUsers){
         await userStore.fetchUsers()
       }
       if (this._unSubscribe) {

@@ -38,7 +38,7 @@ export const useEntryStore = defineStore('entries', {
     async fetchEntries() {
       const userStore = useUserStore()
 
-      if (!userStore.getUsers.length) {
+      if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 

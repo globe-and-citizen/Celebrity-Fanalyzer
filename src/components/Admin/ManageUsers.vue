@@ -35,7 +35,7 @@
     flat
     :filter="filter"
     hide-bottom
-    :loading="userStore.isLoading"
+    :loading="userStore.isLoading || !userStore.getUsers"
     :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
     row-key="email"
     :rows="userStore.getUsers"

@@ -17,7 +17,7 @@ export const useUserStore = defineStore('user', {
     _profileTab: 'profile',
     _user: {},
     _userIp: '',
-    _users: [],
+    _users: undefined,
     _isLoading: false
   }),
 
