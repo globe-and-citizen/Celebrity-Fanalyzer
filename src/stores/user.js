@@ -24,8 +24,8 @@ export const useUserStore = defineStore('user', {
   persist: true,
 
   getters: {
-    getAdmins: (getters) => getters.getUsers.filter((user) => user.role === 'Admin'),
-    getAdminsAndWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer'),
+    getAdmins: (getters) => getters.getUsers ?  getters.getUsers.filter((user) => user.role === 'Admin') : [],
+    getAdminsAndWriters: (getters) => getters.getUsers ? getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer') : [],
     getProfileTab: (state) => state._profileTab,
     getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
