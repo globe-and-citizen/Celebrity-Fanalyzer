@@ -27,6 +27,25 @@ describe('Users Store', () => {
       }
     })
   })
+  it('Should Access the store initial state with the getter as an anonymous user', ()=>{
+    const userStore = useUserStore()
+    expect(userStore.getAdmins).toEqual([])
+    expect(userStore.getAdminsAndWriters).toEqual([])
+    expect(userStore.getProfileTab).toEqual("profile")
+    expect(userStore.getSubscriptions).toEqual(undefined)
+    expect(userStore.getUser).toEqual({})
+    expect(userStore.getUserById('abcd')).toEqual(undefined)
+    expect(userStore.getUserIp).toEqual('')
+    expect(userStore.getUserIpHash).toEqual("da39a3ee5e6b4b0d3255bfef95601890afd80709")
+    expect(userStore.getUserRef).toEqual(undefined)
+    expect(userStore.getUsers).toEqual(undefined)
+    expect(userStore.isAdmin).toEqual(false)
+    expect(userStore.isEditorOrAbove).toEqual(false)
+    expect(userStore.isWriterOrAbove).toEqual(false)
+    expect(userStore.isAnonymous).toEqual(undefined)
+    expect(userStore.isLoading).toEqual(false)
+    expect(userStore.isAuthenticated).toEqual(false)
+  })
 
   it('Access a non-existing public profile', async () => {
     const userStore = useUserStore()
