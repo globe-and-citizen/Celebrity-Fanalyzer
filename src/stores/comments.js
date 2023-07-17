@@ -64,7 +64,7 @@ export const useCommentStore = defineStore('comments', {
         const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const comment of comments) {
-          if (!comment.isAnonymous) {
+          if (!comment.isAnonymous && userStore.getUserById(comment.author.id)) {
             comment.author = userStore.getUserById(comment.author.id)
           }
           comment.likes = comment.likes? comment.likes.map((like) => like.id || like) :  []

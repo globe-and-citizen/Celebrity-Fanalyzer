@@ -33,7 +33,7 @@ export const usePromptStore = defineStore('prompts', {
         const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const prompt of prompts) {
-          prompt.author = userStore.getUserById(prompt.author.id)
+          prompt.author = userStore.getUserById(prompt.author.id) ? userStore.getUserById(prompt.author.id) : prompt.author
           prompt.entries = prompt.entries?.map((entry) => entry.id)
         }
 
