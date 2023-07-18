@@ -45,12 +45,11 @@ export const useUserStore = defineStore('user', {
   actions: {
     async fetchUsers() {
       this._isLoading = true
-      await getDocs(query(collection(db, 'users'), where('role', '!=', 'User')))
-        .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
-        })
-        .finally(() => (this._isLoading = false))
+      onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {
+        const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+        this.$patch({ _users: users })
+      })
+      this._isLoading = false
     },
 
     async queryUsers(search) {
