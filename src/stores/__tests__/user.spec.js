@@ -4,24 +4,11 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import { waitUntil } from 'src/utils/waitUntil'
 import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
-// Snapshot Listener Helper -- A Shameless Hack
-async function letSnapshotListenerRun(delay) {
-  return new Promise((res, rej) => {
-    setTimeout(() => {
-      res()
-    }, delay)
-  })
-}
-
 describe('Users Store', () => {
-  setActivePinia(createPinia())
-  const entryStore = useEntryStore()
-  const promptStore = usePromptStore()
-  const userStore = useUserStore()
-
   // Create a router instance using the `createRouter()` function
   const router = createRouter({
     history: createWebHistory(),
@@ -29,6 +16,8 @@ describe('Users Store', () => {
   })
 
   beforeEach(async () => {
+    setActivePinia(createPinia())
+
     // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
     global.fetch = vi.fn(async () => {
       return {
@@ -40,6 +29,7 @@ describe('Users Store', () => {
   })
 
   it('Access a non-existing public profile', async () => {
+    const userStore = useUserStore()
     // 1) Attempt to get the user
     const user = ref()
     await userStore.getUserByUidOrUsername('abc123').then((res) => (user.value = res))
@@ -56,6 +46,9 @@ describe('Users Store', () => {
   })
 
   it('Access a existing public profile', async () => {
+    const entryStore = useEntryStore()
+    const promptStore = usePromptStore()
+    const userStore = useUserStore()
     // 1) Attempt to get the user
     const user = ref()
     await userStore.getUserByUidOrUsername('arnonrdp').then((res) => (user.value = res))
@@ -72,14 +65,34 @@ describe('Users Store', () => {
 
     // 4) Get the user's prompts and entries
     await promptStore.fetchPrompts()
+    await waitUntil(() => {
+      // TODO : Default state
+      return promptStore.getPrompts.length > 0
+    })
     const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author.uid === user.value.uid)
 
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+
+    await waitUntil(() => {
+      // TODO : Default state
+      return entryStore.getEntries.length > 0
+    })
     const filteredEntries = entryStore.getEntries.filter((entry) => entry.author.uid === user.value.uid)
 
     // 5) Verify that the user has at least one prompt or one entry
     expect(filteredPrompts.length > 0 || filteredEntries.length > 0).toBe(true)
   })
+
+  it('Should fetch all user', async () => {
+    const userStore = useUserStore()
+    await userStore.fetchUsers()
+    expect(userStore.getUsers.length).toBeGreaterThan(0)
+  })
+
+  // it('Should Sign up with email then remove the acount', async () => {
+  //   await userStore.emailSignUp({ email: 'newTest@test.com', name: 'NewName', password: '123456' })
+  //   await userStore.emailSignIn({ email: 'newTest@test.com', password: '123456' })
+  // })
 })
 
 afterAll(async () => {

@@ -1,5 +1,5 @@
 <template>
-  <TheHeader feedbackButton logo :backButton="false" />
+  <TheHeader :backButton="false" logo :notificationButton="userStore.isAuthenticated" />
 
   <q-page-container>
     <q-page class="q-pa-md">
@@ -164,19 +164,19 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { currentYearMonth, previousYearMonth } from 'src/utils/date'
+import { computed, onMounted } from 'vue'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
-const monthPrompt = ref(promptStore.getMonthPrompt)
-
+const monthPrompt = computed(() =>
+  promptStore.getPrompts.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
+)
 onMounted(async () => {
-  await promptStore.fetchMonthPrompt().catch((error) => errorStore.throwError(error))
-  monthPrompt.value = promptStore.getMonthPrompt
-
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 })

@@ -6,6 +6,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   runTransaction,
   setDoc,
@@ -13,22 +14,24 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore'
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
     _entries: [],
-    _isLoading: false
+    _isLoading: false,
+    _tab: 'post'
   }),
 
   persist: true,
 
   getters: {
     getEntries: (state) => state._entries,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    tab: (state) => state._tab
   },
 
   actions: {
@@ -40,19 +43,17 @@ export const useEntryStore = defineStore('entries', {
       }
 
       this._isLoading = true
-      await getDocs(collection(db, 'entries'))
-        .then((querySnapshot) => {
-          const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      onSnapshot(collection(db, 'entries'), (querySnapshot) => {
+        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const entry of entries) {
-            entry.author = userStore.getUserById(entry.author.id)
-            entry.prompt = entry.prompt.id
-          }
+        for (const entry of entries) {
+          entry.author = userStore.getUserById(entry.author.id)
+          entry.prompt = entry.prompt.id
+        }
 
-          this._entries = []
-          this.$patch({ _entries: entries })
-        })
-        .finally(() => (this._isLoading = false))
+        this.$patch({ _entries: entries })
+      })
+      this._isLoading = false
     },
 
     async fetchEntryBySlug(slug) {
@@ -70,8 +71,8 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(payload) {
+      const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
-      const userStore = useUserStore()
 
       const entry = { ...payload }
 
@@ -83,18 +84,15 @@ export const useEntryStore = defineStore('entries', {
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
 
       this._isLoading = true
-      await setDoc(entryRef, entry).then(() => {
-        entry.author = userStore.getUserById(entry.author.id)
-        this.$patch({ _entries: [...this.getEntries, entry] })
-      })
+      await setDoc(entryRef, entry).finally(() => (this._isLoading = false))
 
       await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
-      this._isLoading = false
+
+      await notificationStore.toggleSubscription('entries', entry.id)
     },
 
     async editEntry(payload) {
       const promptStore = usePromptStore()
-      const userStore = useUserStore()
 
       const entry = { ...payload }
 
@@ -105,13 +103,7 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      })
-        .then(() => {
-          entry.author = userStore.getUserById(entry.author.id)
-          const index = this.getEntries.findIndex((p) => p.id === entry.id)
-          this.$patch({ _entries: [...this._entries.slice(0, index), entry, ...this._entries.slice(index + 1)] })
-        })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async deleteEntry(entryId) {
@@ -132,14 +124,15 @@ export const useEntryStore = defineStore('entries', {
         const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
-        Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares]).then(() => {
-          const index = this._entries.findIndex((entry) => entry.id === entryId)
-          this._entries.splice(index, 1)
-        })
+        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares])
       } catch (error) {
         errorStore.throwError(error)
       }
       this._isLoading = false
+    },
+
+    setTab(tab) {
+      this.$patch({ _tab: tab })
     }
   }
 })

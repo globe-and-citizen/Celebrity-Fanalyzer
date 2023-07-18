@@ -1,7 +1,45 @@
 <template>
   <q-form class="q-gutter-y-md" greedy @submit="save">
-    <q-input label="Name" v-model="user.displayName" />
-    <q-input debounce="400" label="Username" :prefix="origin" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username" />
+    <div class="flex items-center no-wrap">
+      <q-avatar size="5rem" text-color="white">
+        <q-spinner v-if="storageStore.isLoading" color="primary" size="3rem" />
+        <q-img v-else :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
+          <div class="photo">
+            <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
+            <q-file
+              accept="image/*"
+              borderless
+              class="absolute-bottom cursor-pointer"
+              dense
+              max-file-size="5242880"
+              style="height: 5rem"
+              v-model="newPhoto"
+              @rejected="onRejected"
+              @update:model-value="uploadPhoto"
+            >
+              <template v-slot:file>
+                <q-chip class="hidden" />
+              </template>
+            </q-file>
+          </div>
+        </q-img>
+      </q-avatar>
+      <q-input class="col-grow q-pl-sm" label="Name" v-model="user.displayName" />
+    </div>
+    <q-input
+      class="non-selectable"
+      debounce="400"
+      label="Username"
+      :prefix="origin + 'fan/'"
+      :rules="[(val) => usernameValidator(val)]"
+      v-model.trim="user.username"
+    >
+      <template v-slot:append>
+        <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
+          <q-tooltip>Copy</q-tooltip>
+        </q-btn>
+      </template>
+    </q-input>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
@@ -19,15 +57,17 @@
 </template>
 
 <script setup>
-import { useErrorStore, useUserStore } from 'app/src/stores'
-import { useQuasar } from 'quasar'
+import { useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
+import { Notify, useQuasar } from 'quasar'
 import { ref } from 'vue'
 
 const $q = useQuasar()
 
 const errorStore = useErrorStore()
+const storageStore = useStorageStore()
 const userStore = useUserStore()
 
+const newPhoto = ref(null)
 const origin = window.location.origin + '/'
 const user = ref(userStore.getUser)
 
@@ -35,10 +75,26 @@ userStore.$subscribe((_mutation, state) => {
   user.value = state._user
 })
 
+function onRejected() {
+  Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
+}
+
+async function uploadPhoto() {
+  await storageStore
+    .uploadFile(newPhoto.value, `users/${userStore.getUser.uid}`)
+    .then((url) => (user.value.photoURL = url))
+    .catch((error) => errorStore.throwError(error))
+}
+
 async function usernameValidator(username) {
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
   const isAvailable = !(await userStore.checkUsernameAvailability(username))
   if (!isAvailable) return 'Username already taken'
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(origin + 'fan/' + user.value.username)
+  Notify.create({ type: 'positive', message: 'Link copied to clipboard' })
 }
 
 function save() {
@@ -48,3 +104,24 @@ function save() {
     .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
 </script>
+
+<style scoped lang="scss">
+.photo {
+  background-color: transparent;
+  height: 100%;
+  transition: all 0.3s;
+  width: 100%;
+
+  & .q-icon {
+    display: none;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+
+    & .q-icon {
+      display: block;
+    }
+  }
+}
+</style>

@@ -10,68 +10,40 @@
           dense
           indicator-color="primary"
           narrow-indicator
-          v-model="type"
+          v-model="interval"
         >
-          <q-tab name="all" label="All" />
-          <q-tab name="week" label="Week" />
-          <q-tab name="day" label="Days" />
+          <q-tab name="daily" label="Daily" />
+          <q-tab name="weekly" label="Weekly" />
+          <q-tab name="monthly" label="Monthly" />
         </q-tabs>
-        <LikesBar :data="graphData(type)" />
-        <SharesPie :data="shares" :interval="type" />
+        <VisitorsBar :data="visitorStore.getVisitors" :interval="interval" />
+        <q-separator spaced="xl" />
+        <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="interval" />
+        <q-separator spaced="xl" />
+        <SharesPie :data="shares" :interval="interval" />
       </section>
     </q-page>
   </q-page-container>
 </template>
 
 <script setup>
-import { Timestamp } from 'firebase/firestore'
 import LikesBar from 'src/components/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Graphs/SharesPie.vue'
+import VisitorsBar from 'src/components/Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useLikeStore, useShareStore } from 'src/stores'
-import { getStats } from 'src/utils/date'
-import { formatAllStats, formatStats } from 'src/utils/stats'
+import { useLikeStore, useShareStore, useVisitorStore } from 'src/stores'
 import { ref } from 'vue'
 
 const props = defineProps(['post'])
 
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
+const visitorStore = useVisitorStore()
 
 const shares = ref(shareStore.getShares)
-const type = ref('all')
-
-const updateChartData = () => {
-  if (!props.post.created) return
-  const { weekStats, dayStats } = getStats(likeStore.$state, props.post.created)
-  const allStats = [
-    {
-      date: Timestamp.fromDate(new Date()),
-      likes: likeStore.getLikes.length,
-      dislikes: likeStore.getDislikes.length
-    }
-  ]
-  return { weekStats, dayStats, allStats }
-}
-const chartData = ref(updateChartData())
-
-likeStore.$subscribe(() => {
-  chartData.value = updateChartData()
-})
+const interval = ref('daily')
 
 shareStore.$subscribe((_mutation, state) => {
   shares.value = state._shares
 })
-
-function graphData(type) {
-  if (!chartData.value) return []
-
-  if (type === 'day') {
-    return formatStats(chartData.value.dayStats, 'day')
-  }
-  if (type === 'week') {
-    return formatStats(chartData.value.weekStats, 'week')
-  }
-  return formatAllStats(chartData.value.allStats)
-}
 </script>
