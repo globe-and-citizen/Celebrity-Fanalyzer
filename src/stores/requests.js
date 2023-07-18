@@ -40,7 +40,8 @@ export const useRequestStore = defineStore('request', {
         createdAt: new Date(),
         message: message,
         status: 'pending',
-        request: 'writer'
+        request: 'writer',
+        requester: userStore.getUserRef
       }
 
       this._isLoading = true
