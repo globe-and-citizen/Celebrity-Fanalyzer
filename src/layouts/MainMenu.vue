@@ -19,11 +19,7 @@ const routes = [
   { icon: 'home', path: '/', tooltip: 'Home' },
   { icon: 'search', path: '/search', tooltip: 'Search' },
   { icon: 'description', path: '/month', tooltip: "Month's Prompt" },
-  {
-    icon: userStore.isAnonymous ? 'img:/icons/anonymous.svg' : 'person',
-    path: '/profile',
-    tooltip: userStore.isAnonymous ? "Profile\nYou're Anonymous" : 'Profile'
-  }
+  { icon: 'person', path: '/profile', tooltip: 'Profile' }
 ]
 </script>
 
