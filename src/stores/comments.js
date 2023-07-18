@@ -27,11 +27,10 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
-    getCommentById: (state) => {
-      return (commentId) => {
-        return state._comments ? state._comments?.find((comment) => comment.id === commentId) : []
-      }
-    },
+    /**
+     * @returns undefined|Object
+     */
+    getCommentById: (state) => (commentId) => state._comments?.find((comment) => comment.id === commentId),
     isLoading: (state) => state._isLoading,
     isLoaded: (state) => !!state._comments,
     /**
@@ -39,11 +38,7 @@ export const useCommentStore = defineStore('comments', {
      * @param state
      * @returns {function(*): T[]|*[]}
      */
-    getCommentChildren: (state) => {
-      return (commentId) => {
-        return state._comments ? state._comments.filter((comment) => comment.parentId === commentId) : []
-      }
-    },
+    getCommentChildren: (state) => (commentId) => state._comments?.filter((comment) => comment.parentId === commentId) || [],
     getReplyTo: (state) => state._replyTo,
     haveToReply: (state) => state._replyTo !== ''
   },
@@ -51,6 +46,9 @@ export const useCommentStore = defineStore('comments', {
   actions: {
     async fetchComments(collectionName, documentId) {
       const userStore = useUserStore()
+      if (userStore.getUsers.length === 0) {
+        await userStore.fetchUsers()
+      }
       if (this._unSubscribe) {
         this._unSubscribe()
       }
@@ -61,8 +59,8 @@ export const useCommentStore = defineStore('comments', {
           if (!comment.isAnonymous) {
             comment.author = userStore.getUserById(comment.author.id)
           }
-          comment.likes = comment.likes?.map((like) => like.id || like)
-          comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+          comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
+          comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
         }
         this.$patch({ _comments: comments })
       })

@@ -30,7 +30,7 @@ function compute() {
       left: 'center'
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'axis'
     },
     legend: {
       data: ['Likes', 'Dislikes'],

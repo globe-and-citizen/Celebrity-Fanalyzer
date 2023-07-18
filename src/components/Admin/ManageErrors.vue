@@ -1,9 +1,11 @@
 <template>
+  <h5 v-if="errorStore.isLoaded && errorStore.getErrors.length === 0" class="text-center">Nothing is wrong! 🎉</h5>
   <q-table
+    v-if="!errorStore.isLoaded || (errorStore.isLoaded && errorStore.getErrors.length > 0)"
     :columns="columns"
     flat
     hide-bottom
-    :loading="errorStore.isLoading"
+    :loading="!errorStore.isLoaded || errorStore.isLoading"
     :pagination="pagination"
     :rows="errorStore.getErrors"
     style="left: 0; right: 0"

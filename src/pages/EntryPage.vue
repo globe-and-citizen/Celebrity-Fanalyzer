@@ -59,7 +59,9 @@ onMounted(async () => {
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+  if (entry.value?.id) {
+    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+  }
 })
 
 onUnmounted(() => {
