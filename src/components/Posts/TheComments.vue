@@ -30,7 +30,7 @@
           :required="!commentStore.haveToReply"
           rounded
           standout="bg-secondary text-white"
-          style="margin-bottom: 6.7rem"
+          style="margin-bottom: 6.5rem"
           v-model="commentValue"
           @blur="isMention = false"
           @keydown.escape="inputField.blur()"
