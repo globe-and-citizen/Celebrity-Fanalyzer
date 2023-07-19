@@ -62,7 +62,6 @@ export const useCommentStore = defineStore('comments', {
           comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
           comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
         }
-        this.$patch({ _comments: comments })
 
         const authors = await Promise.all(
           comments
