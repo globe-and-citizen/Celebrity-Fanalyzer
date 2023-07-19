@@ -42,6 +42,15 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
+    async fetchUser(uid) {
+      this._isLoading = true
+      return await getDoc(doc(db, 'users', uid))
+        .then((document) => {
+          return { uid: document.id, ...document.data() }
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     async fetchUsers() {
       this._isLoading = true
       onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {
