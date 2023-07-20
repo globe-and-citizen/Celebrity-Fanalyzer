@@ -49,7 +49,7 @@ describe("Unit Test Share Store", ()=>{
     const shareStore = useShareStore()
     await entryStore.fetchEntries()
     await waitUntil(() => {
-      return entryStore.getEntries.length>0
+      return entryStore.getEntries
     })
     const firstEntry= entryStore.getEntries[0]
 

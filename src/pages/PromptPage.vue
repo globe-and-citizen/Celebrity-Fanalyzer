@@ -66,7 +66,7 @@ const prompt = computed(() => {
 })
 
 const entries = computed(() => {
-  return entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+  return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
 
 onMounted(async () => {

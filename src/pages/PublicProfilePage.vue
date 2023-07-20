@@ -46,7 +46,7 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { dayMonthYear } from 'src/utils/date'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -56,7 +56,7 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const computedPosts = ref()
+// const computedPosts = ref()
 const user = ref({})
 
 const socialNetworks = [
@@ -67,25 +67,21 @@ const socialNetworks = [
   { name: 'twitter', link: 'https://twitter.com/' }
 ]
 
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+promptStore.fetchPrompts()
+const computedPosts = computed(() => {
+  return [
+    ...(promptStore.getPrompts?.filter((prompt) => prompt.author?.uid === user.value.uid) || []),
+    ...(entryStore.getEntries?.filter((entry) => entry.author?.uid === user.value.uid) || [])
+  ].sort((a, b) => b.date - a.date)
+})
+
 onMounted(async () => {
   await userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then((res) => (user.value = res))
 
   if (!user.value) {
-    router.push('/')
-    return
+    await router.push('/')
   }
-
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-  }
-  const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author?.uid === user.value.uid)
-
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  }
-  const filteredEntries = entryStore.getEntries.filter((entry) => entry.author?.uid === user.value.uid)
-
-  computedPosts.value = [...filteredPrompts, ...filteredEntries].sort((a, b) => b.date - a.date)
 })
 
 function goToUrl(link) {

@@ -61,7 +61,7 @@
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
-        <q-td colspan="100%" style="padding: 0 !important">
+        <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
           <TableEntry v-else :filter="filter" :rows="props.row.entries" />
         </q-td>
@@ -93,7 +93,7 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { onMounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 defineEmits(['openPromptDialog'])
 
@@ -110,28 +110,18 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
-const entries = ref(entryStore.getEntries)
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
-const prompts = ref(promptStore.getPrompts)
 
 onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
 })
 
-promptStore.$subscribe((_mutation, state) => {
-  prompts.value = state._prompts
-})
-
-entryStore.$subscribe((_mutation, state) => {
-  entries.value = state._entries
-})
-
-watchEffect(() => {
-  prompts.value = prompts.value.map((prompt) => ({
+const prompts = computed(() => {
+  return promptStore.getPrompts?.map((prompt) => ({
     ...prompt,
-    entries: entries.value?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id)) || []
+    entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
   }))
 })
 

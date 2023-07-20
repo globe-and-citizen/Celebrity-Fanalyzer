@@ -12,7 +12,9 @@ describe('Admin Prompt & Entry', () => {
     cy.login()
     cy.visit('/admin')
   })
-
+  // it.only('display', () => {
+  //   cy.get('[data-test="entriesFetched"]')
+  // })
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="button-dropdown"]').click()
