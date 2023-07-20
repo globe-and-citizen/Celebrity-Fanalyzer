@@ -45,6 +45,8 @@ describe('Users Store', () => {
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isLoading).toEqual(false)
     expect(userStore.isAuthenticated).toEqual(false)
+    userStore.setProfileTab('feedback')
+    expect(userStore.getProfileTab).toEqual('feedback')
   })
 
   it('Should Login Then logout', async () => {
