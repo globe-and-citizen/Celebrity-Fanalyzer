@@ -200,13 +200,6 @@ export const useUserStore = defineStore('user', {
 
     setProfileTab(tab) {
       this.$patch({ _profileTab: tab })
-    },
-
-    async testing_loadUserProfile(user) {
-      await getDoc(doc(db, 'users', user.uid)).then((document) => {
-        this.$patch({ _user: { uid: document.id, ...document.data() } })
-        localStorage.setItem('user', JSON.stringify({ uid: document.id, ...document.data() }))
-      })
     }
   }
 })
