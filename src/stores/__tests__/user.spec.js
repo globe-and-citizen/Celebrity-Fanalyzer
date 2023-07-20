@@ -168,11 +168,37 @@ describe('Users Store', () => {
     expect(userStore.getAdmins.length).toBeGreaterThan(0)
     expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
   })
-
-  // it('Should Sign up with email then remove the acount', async () => {
-  //   await userStore.emailSignUp({ email: 'newTest@test.com', name: 'NewName', password: '123456' })
-  //   await userStore.emailSignIn({ email: 'newTest@test.com', password: '123456' })
+  // describe('UnAuthenticated User', () => {
+  //   beforeEach(async () => {
+  //     const userStore = useUserStore()
+  //   })
+  //   // it.fails('Should test UserName Availability', async () => {
+  //   //   const userStore = useUserStore()
+  //   //   expect( () =>  userStore.checkUsernameAvailability('abcd')).toThrowError('ERROR: you need to be authenticated')
+  //   // })
   // })
+  describe('Authenticated User', () => {
+    beforeEach(async () => {
+      const userStore = useUserStore()
+
+      // Part 1: Login The user
+      // Login the test@test.com user
+      let userObj = {
+        email: import.meta.env.VITE_TEST_USER,
+        password: import.meta.env.VITE_TEST_PASSWORD
+      }
+      await userStore.emailSignIn(userObj)
+      // wait the user to be authenticated
+      await waitUntil(() => {
+        return userStore.isAuthenticated
+      }).catch((e) => console.log('Error : Should be authenticated', e))
+    })
+
+    it('Should test UserName Availability', async () => {
+      const userStore = useUserStore()
+      expect(await userStore.checkUsernameAvailability('abcd')).toEqual(false)
+    })
+  })
 })
 
 afterAll(async () => {
