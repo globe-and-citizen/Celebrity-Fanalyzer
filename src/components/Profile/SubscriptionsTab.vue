@@ -16,7 +16,7 @@
   </q-table>
   <q-separator spaced="xl" />
   <q-table
-    v-if="filteredEntries.length"
+    v-if="filteredEntries"
     :columns="columns"
     flat
     hide-bottom

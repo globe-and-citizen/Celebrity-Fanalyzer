@@ -63,7 +63,7 @@ describe('Entry Store', async () => {
     })
     await waitUntil(() => {
       // TODO : Default state : find a better way to test it. Should use undefined for default state
-      return entryStore.getEntries.length > 0
+      return entryStore.getEntries
     })
     // Step 2: Check the starting number of entries.
     let entries = entryStore.getEntries
@@ -81,15 +81,15 @@ describe('Entry Store', async () => {
       image: imgAddress,
       title: 'Fake Entry',
       prompt: { label: `${aPrompt.date} - ${aPrompt.title}`, value: aPrompt.date },
-      slug: `/${aPrompt.date.replace(/\-/g, '/')}/fake-entry`
+      slug: `/${aPrompt.date.replace(/-/g, '/')}/fake-entry`
     })
 
     await entryStore.addEntry(fakeEntry)
     await waitUntil(() => {
       // TODO : Default state : find a better way to test it. Should use undefined for default state
-      return entryStore.getEntries.length === startingNumberOfEntries + 1
+      return entryStore.getEntries?.length === startingNumberOfEntries + 1
     })
-    expect(entryStore.getEntries.length).toBe(startingNumberOfEntries + 1)
+    expect(entryStore.getEntries?.length).toBe(startingNumberOfEntries + 1)
 
     // 4) Edit the fake entry
 

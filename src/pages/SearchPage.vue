@@ -54,23 +54,21 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
-const entries = ref(entryStore.getEntries)
+// const entries = ref(entryStore.getEntries)
 const category = ref('All')
 const prompts = ref(promptStore.getPrompts)
 const router = useRouter()
 const search = ref('')
 
-onMounted(() => {
-  promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-  entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-})
+promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
@@ -80,13 +78,13 @@ promptStore.$subscribe((_mutation, state) => {
   }
 })
 
-entryStore.$subscribe((_mutation, state) => {
-  entries.value = state._entries
-
-  if (router.currentRoute.value.params.year) {
-    entries.value = entries.value.filter((entry) => entry.id.split('-')[0] === router.currentRoute.value.params.year)
-  }
-})
+// entryStore.$subscribe((_mutation, state) => {
+//   entries.value = state._entries
+//
+//   if (router.currentRoute.value.params.year) {
+//     entries.value = entries.value.filter((entry) => entry.id.split('-')[0] === router.currentRoute.value.params.year)
+//   }
+// })
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value.flatMap(({ categories }) => categories)
@@ -104,7 +102,7 @@ const computedPrompts = computed(() => {
 })
 
 const computedEntries = computed(() => {
-  return entries.value.filter((item) =>
+  return entryStore.getEntries.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })
