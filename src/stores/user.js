@@ -24,15 +24,15 @@ export const useUserStore = defineStore('user', {
   persist: true,
 
   getters: {
-    getAdmins: (getters) => getters.getUsers ?  getters.getUsers.filter((user) => user.role === 'Admin') : [],
-    getAdminsAndWriters: (getters) => getters.getUsers ? getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer') : [],
+    getAdmins: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin') || [],
+    getAdminsAndWriters: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin' || user.role === 'Writer') || [],
     getProfileTab: (state) => state._profileTab,
     getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
     getUserById: (getters) => (id) => getters.getUsers?.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
-    getUserRef: (getters) => getters.getUser.uid ? doc(db, 'users', getters.getUser.uid) : undefined,
+    getUserRef: (getters) => (getters.getUser.uid ? doc(db, 'users', getters.getUser.uid) : undefined),
     getUsers: (state) => state._users,
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
@@ -183,7 +183,11 @@ export const useUserStore = defineStore('user', {
       signOut(auth).then(() => {
         this.$reset()
         LocalStorage.remove('user')
-        this.router.go(0)
+        try {
+          this.router.go(0)
+        } catch (e) {
+          console.log('Error', e)
+        }
       })
     },
 
