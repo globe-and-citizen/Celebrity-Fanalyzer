@@ -165,6 +165,8 @@ describe('Users Store', () => {
     const userStore = useUserStore()
     await userStore.fetchUsers()
     expect(userStore.getUsers.length).toBeGreaterThan(0)
+    expect(userStore.getAdmins.length).toBeGreaterThan(0)
+    expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
   })
 
   // it('Should Sign up with email then remove the acount', async () => {
