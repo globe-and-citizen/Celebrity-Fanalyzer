@@ -9,7 +9,7 @@
     </template>
   </q-table>
 
-  <q-dialog full-width position="bottom" v-model="editDialog">
+  <q-dialog full-width position="bottom" v-model="entry.dialog">
     <EntryCard v-bind="entry" @hideDialog="entry = {}" />
   </q-dialog>
 
@@ -57,14 +57,13 @@ const columns = [
   { name: 'actions', field: 'actions' }
 ]
 const deleteDialog = ref({})
-const editDialog = ref(false)
 const entry = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
-  editDialog.value = true
   entry.value = props
   entry.value.prompt = promptStore.getPrompts.find((prompt) => prompt.id === props.id.split('T')[0])
+  entry.value.dialog = true
 }
 
 function onDeleteDialog(entry) {
