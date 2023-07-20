@@ -83,7 +83,7 @@ describe('Admin Prompt & Entry', () => {
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
-        cy.get('[data-test="button-delete-entry"]').eq(i).click({force: true})
+        cy.get('[data-test="button-delete-entry"]').eq(i).click({ force: true })
         cy.get('[data-test="confirm-delete-entry"]').click()
         // Wait the notification
         cy.get('.q-notification__message').contains('Entry deleted')
@@ -93,7 +93,7 @@ describe('Admin Prompt & Entry', () => {
     cy.wait(4000)
 
     // Delete the last one
-    cy.get('[data-test="button-delete-entry"]').eq(0).click({force: true})
+    cy.get('[data-test="button-delete-entry"]').eq(0).click({ force: true })
     cy.get('[data-test="confirm-delete-entry"]').click()
     // Wait the notification
     cy.get('.q-notification__message').contains('Entry deleted')

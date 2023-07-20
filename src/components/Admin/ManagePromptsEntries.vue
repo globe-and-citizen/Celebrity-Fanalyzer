@@ -93,7 +93,7 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 defineEmits(['openPromptDialog'])
 
@@ -110,10 +110,8 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
-// const entries = ref(entryStore.getEntries)
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
-// const prompts = ref(promptStore.getPrompts)
 
 onMounted(() => {
   promptStore.fetchPrompts()
