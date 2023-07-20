@@ -21,7 +21,7 @@ import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, use
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
+    _entries: undefined,
     _isLoading: false,
     _tab: 'post'
   }),
