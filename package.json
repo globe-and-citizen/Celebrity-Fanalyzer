@@ -11,6 +11,7 @@
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
     "test": "vitest",
+    "vitest": "vitest -u",
     "test:unit:coverage": "vitest run --coverage",
     "coverage": "cd coverage/lcov-report && open index.html",
     "cy:run": "cypress run",
