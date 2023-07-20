@@ -4,7 +4,7 @@
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
       <section v-if="commentStore.getComments?.length > 0" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
-          v-for="comment of commentStore.getComments.filter((element) => element.parentId === undefined && element.author)"
+          v-for="comment of comments"
           :collection-name="collectionName"
           :comment="comment"
           :document-id="post.id"
@@ -30,7 +30,7 @@
           :required="!commentStore.haveToReply"
           rounded
           standout="bg-secondary text-white"
-          style="margin-bottom: 6.7rem"
+          style="margin-bottom: 6.5rem"
           v-model="commentValue"
           @blur="isMention = false"
           @keydown.escape="inputField.blur()"
@@ -88,6 +88,10 @@ const inputField = ref()
 const isMention = ref(false)
 const mentionedUsers = ref([])
 const reply = reactive({})
+
+const comments = computed(() => {
+  return commentStore.getComments.filter((comment) => !comment.parentId && comment.author)
+})
 
 const commenters = computed(() => {
   return commentStore.getComments

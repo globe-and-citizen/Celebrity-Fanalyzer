@@ -1,13 +1,5 @@
 <template>
-  <q-table
-    v-if="filteredPrompts.length"
-    :columns="columns"
-    flat
-    hide-bottom
-    :pagination="pagination"
-    :rows="filteredPrompts"
-    title="Prompts"
-  >
+  <q-table v-if="filteredPrompts" :columns="columns" flat hide-bottom :pagination="pagination" :rows="filteredPrompts" title="Prompts">
     <template v-slot:body-cell-actions="props">
       <q-td :props="props">
         <q-btn color="primary" flat icon="unsubscribe" round @click="unsubscribe('prompts', props.row.id)" />
@@ -15,15 +7,7 @@
     </template>
   </q-table>
   <q-separator spaced="xl" />
-  <q-table
-    v-if="filteredEntries.length"
-    :columns="columns"
-    flat
-    hide-bottom
-    :pagination="pagination"
-    :rows="filteredEntries"
-    title="Entries"
-  >
+  <q-table v-if="filteredEntries" :columns="columns" flat hide-bottom :pagination="pagination" :rows="filteredEntries" title="Entries">
     <template v-slot:body-cell-actions="props">
       <q-td :props="props">
         <q-btn color="primary" flat icon="unsubscribe" round @click="unsubscribe('entries', props.row.id)" />
@@ -47,8 +31,8 @@ const columns = [
 ]
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-const filteredPrompts = computed(() => promptStore.getPrompts.filter((prompt) => userStore.getSubscriptions.includes(prompt.id)))
-const filteredEntries = computed(() => entryStore.getEntries.filter((entry) => userStore.getSubscriptions.includes(entry.id)))
+const filteredPrompts = computed(() => promptStore.getPrompts?.filter((prompt) => userStore.getSubscriptions.includes(prompt.id)))
+const filteredEntries = computed(() => entryStore.getEntries?.filter((entry) => userStore.getSubscriptions.includes(entry.id)))
 
 function unsubscribe(collectionName, documentId) {
   notificationStore.toggleSubscription(collectionName, documentId)

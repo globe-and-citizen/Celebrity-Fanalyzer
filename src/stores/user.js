@@ -32,7 +32,7 @@ export const useUserStore = defineStore('user', {
     getUserById: (getters) => (id) => getters.getUsers.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
-    getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
+    getUserRef: (getters) => (getters.getUser.uid ? doc(db, 'users', getters.getUser.uid) : undefined),
     getUsers: (state) => state._users,
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
@@ -42,6 +42,15 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
+    async fetchUser(uid) {
+      this._isLoading = true
+      return await getDoc(doc(db, 'users', uid))
+        .then((document) => {
+          return { uid: document.id, ...document.data() }
+        })
+        .finally(() => (this._isLoading = false))
+    },
+
     async fetchUsers() {
       this._isLoading = true
       onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {

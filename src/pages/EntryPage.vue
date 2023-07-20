@@ -40,7 +40,7 @@ const shareStore = useShareStore()
 const tab = ref(entryStore.tab)
 
 const entry = computed(() => {
-  return entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
+  return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
 
 onMounted(async () => {
