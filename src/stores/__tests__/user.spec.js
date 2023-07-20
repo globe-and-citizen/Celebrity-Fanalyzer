@@ -164,6 +164,10 @@ describe('Users Store', () => {
   it('Should fetch all user', async () => {
     const userStore = useUserStore()
     await userStore.fetchUsers()
+    await waitUntil(() => {
+      return userStore.getUsers
+    })
+
     expect(userStore.getUsers.length).toBeGreaterThan(0)
     expect(userStore.getAdmins.length).toBeGreaterThan(0)
     expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
