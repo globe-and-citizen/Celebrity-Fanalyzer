@@ -37,20 +37,27 @@ export const useUserStore = defineStore('user', {
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
     isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
-    isAnonymous: (getters) => getters.getUser.isAnonymous,
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchUsers() {
+    async fetchUser(uid) {
       this._isLoading = true
-      await getDocs(query(collection(db, 'users'), where('role', '!=', 'User')))
-        .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
+      return await getDoc(doc(db, 'users', uid))
+        .then((document) => {
+          return { uid: document.id, ...document.data() }
         })
         .finally(() => (this._isLoading = false))
+    },
+
+    async fetchUsers() {
+      this._isLoading = true
+      onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {
+        const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+        this.$patch({ _users: users })
+      })
+      this._isLoading = false
     },
 
     async queryUsers(search) {

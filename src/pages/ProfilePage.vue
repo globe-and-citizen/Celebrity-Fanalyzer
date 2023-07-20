@@ -4,7 +4,7 @@
   <q-spinner v-if="userStore.isLoading" class="absolute-center z-fab" color="primary" size="3em" />
 
   <q-page-container>
-    <LoginForm v-if="!user.uid || user.isAnonymous" />
+    <LoginForm v-if="!user.uid" />
 
     <q-page v-else class="q-pa-sm">
       <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
