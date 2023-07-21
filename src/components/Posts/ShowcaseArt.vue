@@ -14,7 +14,7 @@
     <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
-  <q-dialog position="top" v-model="openDialog">
+  <q-dialog :seamless="true" position="top" v-model="openDialog">
     <q-carousel
       animated
       control-color="primary"
@@ -27,7 +27,8 @@
       v-model="slide"
     >
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
-        <q-img class="rounded-borders" fit="contain" :src="art" />
+        <q-img class="rounded-borders" fit="contain" :src="art"/>
+        <q-btn @click="openDialog = null">Buytton</q-btn>
       </q-carousel-slide>
       <q-carousel-slide class="q-pa-none row" :name="showcase?.arts.length">
         <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
@@ -38,7 +39,7 @@
 </template>
 
 <script setup>
-import { onUnmounted, ref } from 'vue'
+import { onUnmounted, onBeforeUnmount , ref } from 'vue'
 
 defineProps({
   showcase: { type: Object, required: true, default: () => {} }
@@ -58,7 +59,19 @@ function handleKeyPress(e) {
 
 onUnmounted(() => {
   document.removeEventListener('keyup', handleKeyPress)
+  openDialog.value = false
+  console.log(openDialog.value);
 })
+
+// if(openDialog.value = false) {
+//   document.addEventListener('click', function() {
+//     openDialog.value = true
+//   });
+// } else {
+//   document.addEventListener('click', function() {
+//     openDialog.value = false
+//   });
+// }
 </script>
 
 <style lang="scss" scoped>
@@ -71,4 +84,11 @@ onUnmounted(() => {
 .art-img:hover {
   filter: grayscale(0%);
 }
+/*.q-dialoginner{
+  pointer-events: auto !important;
+  background: rgba(0,0,0,0.4);
+  position: absolute;
+  width: 100%!important;
+  height: 100%!important;
+} */
 </style>
