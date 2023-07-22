@@ -85,6 +85,7 @@ describe('Users Store', () => {
     expect(userStore.isWriterOrAbove).toEqual(true)
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isAuthenticated).toEqual(true)
+    await userStore.updateProfile(userStore.getUser)
 
     // Part 1: Logout The user
     try {
@@ -173,6 +174,12 @@ describe('Users Store', () => {
     expect(userStore.getUsers.length).toBeGreaterThan(0)
     expect(userStore.getAdmins.length).toBeGreaterThan(0)
     expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
+  })
+
+  it('queryUsers', async () => {
+    const userStore = useUserStore()
+    const res = await userStore.queryUsers('Cypr')
+    expect(userStore.getUsers.length).toEqual(1)
   })
   // describe('UnAuthenticated User', () => {
   //   beforeEach(async () => {
