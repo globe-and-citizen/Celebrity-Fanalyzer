@@ -79,7 +79,7 @@ function goToLink(notification) {
     promptStore.setTab('comments')
   }
   if (notification.collection === 'entries') {
-    const entry = entryStore.getEntries.find((entry) => entry.id === notification.link.slice(1))
+    const entry = entryStore.getEntries?.find((entry) => entry.id === notification.link.slice(1))
     router.push(entry?.slug)
     entryStore.setTab('comments')
   }

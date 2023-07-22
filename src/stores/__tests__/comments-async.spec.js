@@ -44,7 +44,6 @@ describe('Async watcher ', () => {
     }
   })
 
-
   /*
   TODO: Comment for Prompt or entry
 
@@ -68,14 +67,13 @@ describe('Async watcher ', () => {
     const commentStore = useCommentStore()
     await entryStore.fetchEntries()
     await waitUntil(() => {
-      return entryStore.getEntries.length > 0
-    }).catch((e)=>console.log('Error :  Loading Entry', e))
+      return entryStore.getEntries
+    }).catch((e) => console.log('Error :  Loading Entry', e))
 
     // Using a methode kep the reactivity
     const getFirstEntry = () => {
-      return entryStore.getEntries[0]
+      return entryStore.getEntries?.[0]
     }
-
 
     // 1- Check initial state
     expect(commentStore.getComments).toBe(undefined)
@@ -86,7 +84,7 @@ describe('Async watcher ', () => {
 
     await waitUntil(() => {
       return commentStore.isLoaded
-    }).catch((e)=>console.log('Error :  2- Check Fetch Comment', e))
+    }).catch((e) => console.log('Error :  2- Check Fetch Comment', e))
 
     const startingNumberOfComments = commentStore.getComments.length
     expect(startingNumberOfComments).toBeGreaterThan(0)
@@ -112,29 +110,28 @@ describe('Async watcher ', () => {
     const firstLevelComment = commentStore.getComments.sort((a, b) => b.created - a.created)[0]
     expect(commentStore.getCommentChildren(firstLevelComment.id).length).toBe(0)
 
-
     // 3.2. Check reply to the firstLevelComment
     commentStore.setReplyTo(firstLevelComment.id)
     expect(commentStore.getReplyTo).toBe(firstLevelComment.id)
 
     // 3.3. Add reply
 
-    let reply = { text: 'Test repy' , parentId: commentStore.getReplyTo}
-    await  commentStore.addReply('entries', getFirstEntry().id,reply )
+    let reply = { text: 'Test repy', parentId: commentStore.getReplyTo }
+    await commentStore.addReply('entries', getFirstEntry().id, reply)
     expect(commentStore.getCommentChildren(firstLevelComment.id).length).toBe(1)
 
-    let comment= commentStore.getCommentById( firstLevelComment.id)
+    let comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.likes.length).toBe(0)
     expect(comment.dislikes.length).toBe(0)
     // TODO : Like
     await commentStore.likeComment('entries', getFirstEntry().id, firstLevelComment.id)
-    comment= commentStore.getCommentById( firstLevelComment.id)
+    comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.likes.length).toBe(1)
     expect(comment.dislikes.length).toBe(0)
     // TODO : Dislike
 
     await commentStore.dislikeComment('entries', getFirstEntry().id, firstLevelComment.id)
-    comment = commentStore.getCommentById( firstLevelComment.id)
+    comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.dislikes.length).toBe(1)
     expect(comment.likes.length).toBe(0)
     // 4- Check edit Comment
@@ -157,10 +154,10 @@ describe('Async watcher ', () => {
     expect(commentStore.isLoading).toBe(false)
 
     await waitUntil(() => {
-      return commentStore.getCommentById( firstLevelComment.id)?.text === 'Edited comment'
-    }).catch((e)=>console.log('Error :  4- Check edit Comment', e))
+      return commentStore.getCommentById(firstLevelComment.id)?.text === 'Edited comment'
+    }).catch((e) => console.log('Error :  4- Check edit Comment', e))
 
-    comment= commentStore.getCommentById( firstLevelComment.id)
+    comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.text).toBe('Edited comment')
 
     // 6- Check deleteComment
@@ -168,19 +165,19 @@ describe('Async watcher ', () => {
 
     expect(commentStore.isLoading).toBe(false)
     await waitUntil(() => {
-      return commentStore.getCommentById( firstLevelComment.id)?.text === 'Comment Deleted'
-    }).catch((e)=>console.log('Error :  6- Check deleteComment', e))
+      return commentStore.getCommentById(firstLevelComment.id)?.text === 'Comment Deleted'
+    }).catch((e) => console.log('Error :  6- Check deleteComment', e))
 
-    comment= commentStore.getCommentById( firstLevelComment.id)
+    comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.text).toBe('Comment Deleted')
 
     // 7) remove the comment from the Firebase Store
     await commentStore.removeCommentFromFirestore('entries', getFirstEntry().id, firstLevelComment.id)
 
     await waitUntil(() => {
-      return commentStore.getComments.length === startingNumberOfComments+1
-    }).catch((e)=>console.log('Error :  7) remove the comment from the Firebase Store', e))
+      return commentStore.getComments.length === startingNumberOfComments + 1
+    }).catch((e) => console.log('Error :  7) remove the comment from the Firebase Store', e))
 
-    expect(commentStore.getComments.length).toBe(startingNumberOfComments+1)
+    expect(commentStore.getComments.length).toBe(startingNumberOfComments + 1)
   })
 })

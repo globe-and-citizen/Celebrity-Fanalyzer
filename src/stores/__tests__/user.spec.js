@@ -155,8 +155,7 @@ describe('Users Store', () => {
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
     await waitUntil(() => {
-      // TODO : Default state
-      return entryStore.getEntries.length > 0
+      return entryStore.getEntries
     })
     const filteredEntries = entryStore.getEntries.filter((entry) => entry.author?.uid === user.value.uid)
 

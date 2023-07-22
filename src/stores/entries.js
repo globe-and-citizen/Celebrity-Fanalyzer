@@ -21,8 +21,9 @@ import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, use
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
+    _entries: undefined,
     _isLoading: false,
+    _unSubscribe: undefined,
     _tab: 'post'
   }),
 
@@ -43,7 +44,11 @@ export const useEntryStore = defineStore('entries', {
       }
 
       this._isLoading = true
-      onSnapshot(collection(db, 'entries'), (querySnapshot) => {
+
+      if (this._unSubscribe) {
+        this._unSubscribe()
+      }
+      this._unSubscribe = onSnapshot(collection(db, 'entries'), (querySnapshot) => {
         const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const entry of entries) {
