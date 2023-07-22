@@ -177,7 +177,7 @@ describe('Users Store', () => {
 
   it('queryUsers', async () => {
     const userStore = useUserStore()
-    const res = await userStore.queryUsers('Cypr')
+    await userStore.queryUsers('Cypr')
     expect(userStore.getUsers.length).toEqual(1)
   })
   // describe('UnAuthenticated User', () => {
