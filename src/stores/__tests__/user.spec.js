@@ -222,6 +222,8 @@ describe('Users Store', () => {
     const auth = getAuth()
     let user = auth.currentUser
     expect(user.email).toMatchInlineSnapshot('"test228@togo.com"')
+
+    // TODO Logout-LOGIN AS Admin- Update USER ROLE-LOGIN User then delete user
     await deleteUser(user)
 
     expect(auth.currentUser).toEqual(null)
