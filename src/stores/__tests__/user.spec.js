@@ -2,7 +2,6 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteUser, getAuth } from 'firebase/auth'
-import { auth, db } from 'src/firebase'
 
 // Necessary Components
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
@@ -189,7 +188,7 @@ describe('Users Store', () => {
     expect(user.displayName).toMatchInlineSnapshot('"Cypress Tester"')
   })
 
-  it('Should emailSignUp user ', async () => {
+  it('Should emailSignUp user then update user role then remove user', async () => {
     const userStore = useUserStore()
     let userObj = {
       email: 'test228@togo.com',
@@ -206,7 +205,7 @@ describe('Users Store', () => {
         const user = auth.currentUser
         await deleteUser(user)
       })
-    }catch (e){
+    } catch (e) {
       console.log('Error Mean User does not exist')
     }
 
@@ -215,15 +214,58 @@ describe('Users Store', () => {
     await userStore.emailSignUp(userObj)
 
     // Remove User
-    await waitUntil(()=>{
+    await waitUntil(() => {
       return userStore.isAuthenticated
     })
     expect(userStore.isAuthenticated).toEqual(true)
     const auth = getAuth()
     let user = auth.currentUser
-    expect(user.email).toMatchInlineSnapshot('"test228@togo.com"')
+    expect(user.email).toEqual('test228@togo.com')
+    const newUserUID = user.uid
 
-    // TODO Logout-LOGIN AS Admin- Update USER ROLE-LOGIN User then delete user
+    // Logout
+    userStore.logout()
+    await waitUntil(() => {
+      return !userStore.isAuthenticated
+    })
+
+    // Login Admin
+    let adminObj = {
+      email: import.meta.env.VITE_TEST_USER,
+      password: import.meta.env.VITE_TEST_PASSWORD
+    }
+    await userStore.emailSignIn(adminObj)
+    await waitUntil(() => {
+      return userStore.isAuthenticated
+    })
+    expect(userStore.isAuthenticated).toEqual(true)
+    user = await userStore.fetchUser(newUserUID)
+    expect(user.email).toEqual('test228@togo.com')
+    await userStore.fetchUsers()
+    await waitUntil(() => {
+      return userStore.getUsers
+    })
+
+    // Update user Roles
+    await userStore.updateRole({ ...user, role: 'Editor' })
+    user = await userStore.fetchUser(newUserUID)
+    expect(user.email).toEqual('test228@togo.com')
+    userStore.logout()
+    await waitUntil(() => {
+      return !userStore.isAuthenticated
+    })
+
+    // Login user
+    await userStore.emailSignIn(userObj)
+    await waitUntil(() => {
+      return userStore.isAuthenticated
+    })
+    expect(userStore.getUser.role).toEqual('Editor' )
+    expect(userStore.isAuthenticated).toEqual(true)
+    expect(userStore.isEditorOrAbove).toEqual(true)
+    expect(userStore.isWriterOrAbove).toEqual(true)
+
+    user = auth.currentUser
     await deleteUser(user)
 
     expect(auth.currentUser).toEqual(null)
