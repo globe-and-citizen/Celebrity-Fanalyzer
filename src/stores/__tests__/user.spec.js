@@ -1,6 +1,8 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { deleteUser, getAuth } from 'firebase/auth'
+import { auth, db } from 'src/firebase'
 
 // Necessary Components
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
@@ -179,6 +181,50 @@ describe('Users Store', () => {
     const userStore = useUserStore()
     await userStore.queryUsers('Cypr')
     expect(userStore.getUsers.length).toEqual(1)
+  })
+
+  it('Should Fetch user by ID', async () => {
+    const userStore = useUserStore()
+    const user = await userStore.fetchUser('r8oT5vFDyFQJtZHg7Kvn906KE9o2')
+    expect(user.displayName).toMatchInlineSnapshot('"Cypress Tester"')
+  })
+
+  it('Should emailSignUp user ', async () => {
+    const userStore = useUserStore()
+    let userObj = {
+      email: 'test228@togo.com',
+      name: 'Unit Tester',
+      password: import.meta.env.VITE_TEST_PASSWORD
+    }
+
+    // Check the user exit
+    try {
+      await userStore.emailSignIn(userObj).then(async () => {
+        // Success mean user exist
+        expect(userStore.isAuthenticated).toEqual(true)
+        const auth = getAuth()
+        const user = auth.currentUser
+        await deleteUser(user)
+      })
+    }catch (e){
+      console.log('Error Mean User does not exist')
+    }
+
+    // Register User
+    expect(userStore.isAuthenticated).toEqual(false)
+    await userStore.emailSignUp(userObj)
+
+    // Remove User
+    await waitUntil(()=>{
+      return userStore.isAuthenticated
+    })
+    expect(userStore.isAuthenticated).toEqual(true)
+    const auth = getAuth()
+    let user = auth.currentUser
+    expect(user.email).toMatchInlineSnapshot('"test228@togo.com"')
+    await deleteUser(user)
+
+    expect(auth.currentUser).toEqual(null)
   })
   // describe('UnAuthenticated User', () => {
   //   beforeEach(async () => {
