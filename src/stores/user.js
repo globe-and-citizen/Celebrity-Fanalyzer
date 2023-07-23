@@ -168,7 +168,6 @@ export const useUserStore = defineStore('user', {
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
       })
-        .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
         .finally(() => (this._isLoading = false))
     },
 
@@ -177,14 +176,6 @@ export const useUserStore = defineStore('user', {
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', user.uid), user)
       })
-        .then(() => {
-          const users = this.getUsers
-          if(users){
-            const index = users.findIndex((u) => u.uid === user.uid)
-            users[index].role = user.role
-            this.$patch({ _users: users })
-          }
-        })
         .finally(() => (this._isLoading = false))
     },
 
