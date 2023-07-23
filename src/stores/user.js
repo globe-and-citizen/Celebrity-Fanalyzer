@@ -179,9 +179,11 @@ export const useUserStore = defineStore('user', {
       })
         .then(() => {
           const users = this.getUsers
-          const index = users.findIndex((u) => u.uid === user.uid)
-          users[index].role = user.role
-          this.$patch({ _users: users })
+          if(users){
+            const index = users.findIndex((u) => u.uid === user.uid)
+            users[index].role = user.role
+            this.$patch({ _users: users })
+          }
         })
         .finally(() => (this._isLoading = false))
     },
