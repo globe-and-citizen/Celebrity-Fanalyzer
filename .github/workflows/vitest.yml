@@ -21,7 +21,7 @@ jobs:
       - name: 💻 Run Vitest
         run: |
           npm ci
-          npm run test:unit:coverage
+          npm run vitest:coverage
 
       - name: ✅ Upload coverage to Codecov
         uses: codecov/codecov-action@v2
