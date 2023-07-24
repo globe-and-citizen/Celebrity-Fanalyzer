@@ -191,7 +191,7 @@ describe('Users Store', () => {
   it('Should emailSignUp user then update user role then remove user', async () => {
     const userStore = useUserStore()
     let userObj = {
-      email: 'test228@togo.com',
+      email: Math.random().toString(36).substring(5, 10) + '@cypress.com',
       name: 'Unit Tester',
       password: import.meta.env.VITE_TEST_PASSWORD
     }
@@ -220,7 +220,7 @@ describe('Users Store', () => {
     expect(userStore.isAuthenticated).toEqual(true)
     const auth = getAuth()
     let user = auth.currentUser
-    expect(user.email).toEqual('test228@togo.com')
+    expect(user.email).toEqual(userObj.email)
     const newUserUID = user.uid
 
     // Logout
@@ -240,7 +240,7 @@ describe('Users Store', () => {
     })
     expect(userStore.isAuthenticated).toEqual(true)
     user = await userStore.fetchUser(newUserUID)
-    expect(user.email).toEqual('test228@togo.com')
+    expect(user.email).toEqual(userObj.email)
     await userStore.fetchUsers()
     await waitUntil(() => {
       return userStore.getUsers
@@ -249,7 +249,7 @@ describe('Users Store', () => {
     // Update user Roles
     await userStore.updateRole({ ...user, role: 'Editor' })
     user = await userStore.fetchUser(newUserUID)
-    expect(user.email).toEqual('test228@togo.com')
+    expect(user.email).toEqual(userObj.email)
     userStore.logout()
     await waitUntil(() => {
       return !userStore.isAuthenticated
@@ -260,7 +260,7 @@ describe('Users Store', () => {
     await waitUntil(() => {
       return userStore.isAuthenticated
     })
-    expect(userStore.getUser.role).toEqual('Editor' )
+    expect(userStore.getUser.role).toEqual('Editor')
     expect(userStore.isAuthenticated).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
     expect(userStore.isWriterOrAbove).toEqual(true)
