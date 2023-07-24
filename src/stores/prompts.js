@@ -24,7 +24,7 @@ export const usePromptStore = defineStore('prompts', {
     async fetchPrompts() {
       const userStore = useUserStore()
 
-      if (!userStore.getUsers.length) {
+      if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 
@@ -33,7 +33,7 @@ export const usePromptStore = defineStore('prompts', {
         const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const prompt of prompts) {
-          prompt.author = userStore.getUserById(prompt.author.id)
+          prompt.author = userStore.getUserById(prompt.author.id) || prompt.author
           prompt.entries = prompt.entries?.map((entry) => entry.id)
         }
 
