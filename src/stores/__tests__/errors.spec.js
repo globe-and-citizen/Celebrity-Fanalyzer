@@ -3,10 +3,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import fs from 'fs'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
-import { reactive } from 'vue'
 
 //Load an image to use
 
@@ -50,31 +48,30 @@ describe('Errors Store', async () => {
     await errorStore.fetchErrors()
     await waitUntil(() => {
       return errorStore.getErrors
-    }).catch((e)=>{
-      console.log("errorStore.getErrors", e)
+    }).catch((e) => {
+      console.log('errorStore.getErrors', e)
     })
-    const initialLength=errorStore.getErrors.length
-    try{
+    const initialLength = errorStore.getErrors.length
+    try {
       throw new Error('Error number')
-    } catch (e){
+    } catch (e) {
       await errorStore.throwError(e)
     }
     await waitUntil(() => {
       return errorStore.getErrors?.length > initialLength
-    }).catch((e)=>{
-      console.log("errorStore.getErrors?.length > initialLength", e)
+    }).catch((e) => {
+      console.log('errorStore.getErrors?.length > initialLength', e)
     })
 
     expect(errorStore.getErrors.length).toBeGreaterThan(initialLength)
     await errorStore.deleteError(errorStore.getErrors[0].id)
     await waitUntil(() => {
       return errorStore.isLoading === initialLength
-    }).catch((e)=>{
-      console.log("errorStore.getErrors?.length === initialLength", e)
+    }).catch((e) => {
+      console.log('errorStore.getErrors?.length === initialLength', e)
     })
     expect(errorStore.isLoading).toBe(false)
     expect(errorStore.getErrors.length).toBe(initialLength)
-
   })
 })
 

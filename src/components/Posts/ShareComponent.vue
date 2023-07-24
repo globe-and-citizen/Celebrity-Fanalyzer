@@ -1,5 +1,14 @@
 <template>
-  <q-btn :data-test="disable ? '' : 'share-button'" flat icon="share" :label="label" :disable="disable" rounded size="0.75rem" @click="onShare()">
+  <q-btn
+    :data-test="disable ? '' : 'share-button'"
+    :disable="disable"
+    flat
+    icon="share"
+    :label="label"
+    rounded
+    size="0.75rem"
+    @click="onShare()"
+  >
     <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
   </q-btn>
 </template>

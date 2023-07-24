@@ -167,16 +167,14 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
-      })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async updateRole(user) {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', user.uid), user)
-      })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     logout() {
