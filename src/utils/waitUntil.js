@@ -1,7 +1,7 @@
 export const waitUntil = (callback) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      if(!callback()){
+      if (!callback()) {
         reject()
       }
     }, 5000)

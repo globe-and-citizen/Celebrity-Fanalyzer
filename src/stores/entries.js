@@ -52,7 +52,7 @@ export const useEntryStore = defineStore('entries', {
         const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const entry of entries) {
-          entry.author = userStore.getUserById(entry.author.id) ||  entry.author
+          entry.author = userStore.getUserById(entry.author.id) || entry.author
           entry.prompt = entry.prompt.id
         }
 
