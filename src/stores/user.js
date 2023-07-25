@@ -38,7 +38,8 @@ export const useUserStore = defineStore('user', {
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
     isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    getUserId:(getters)=>getters.isAuthenticated ? getters?.getters?.id : getters.getUserIpHash
   },
 
   actions: {
