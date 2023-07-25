@@ -30,7 +30,7 @@ function compute() {
       left: 'center'
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'axis'
     },
     legend: {
       data: ['Likes', 'Dislikes'],
@@ -125,7 +125,7 @@ watchEffect(() => {
   dislikes.value = info.map((obj) => Object.values(obj)[0].dislikes)
 
   countLikes.value = likes.value.reduce((acc, item) => acc + item, 0)
-  countDislikes.value = dislikes.value.reduce((acc, item) => acc + item, 0)
+  countDislikes.value = dislikes.value.reduce((acc, item) => acc - item, 0)
 
   compute()
 })

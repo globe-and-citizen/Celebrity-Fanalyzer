@@ -1,5 +1,5 @@
 <template>
-  <TheHeader :backButton="false" logo :notificationButton="userStore.isAuthenticated" />
+  <TheHeader :backButton="false" logo notificationButton />
 
   <q-page-container>
     <q-page class="q-pa-md">
@@ -90,7 +90,7 @@
       <section class="q-my-xl text-body1 text-center" style="max-width: 100%" data-test="roadmap">
         <h3 class="text-bold text-h5">Development Roadmap</h3>
         <q-list bordered class="q-ma-md rounded-borders">
-          <q-expansion-item expand-separator icon="stars" label="Build Celebrity Fanalyzer" caption="2022/23">
+          <q-expansion-item caption="2022/23" expand-separator icon="stars" label="Build Celebrity Fanalyzer">
             <q-card>
               <q-card-section>
                 Celebrity Fanalyzer is an iteration engine: give us your feedback! We try to release a new version every month. We are
@@ -99,7 +99,16 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item expand-separator icon="language" label="Make it a DAPP" caption="2023">
+          <q-expansion-item caption="2023/24" default-opened expand-separator header-class="text-primary" icon="code" label="Build Layer 8">
+            <q-card>
+              <q-card-section>
+                Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
+                development in late 2023 that we call “Layer 8.”
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
+
+          <q-expansion-item caption="2024" expand-separator icon="language" label="Make it a DAPP">
             <q-card>
               <q-card-section>
                 Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity
@@ -109,16 +118,7 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item expand-separator icon="code" label="Build Layer 8" caption="2023/24">
-            <q-card>
-              <q-card-section>
-                Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
-                development in late 2023 that we call “Layer 8.”
-              </q-card-section>
-            </q-card>
-          </q-expansion-item>
-
-          <q-expansion-item icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8" caption="2024">
+          <q-expansion-item caption="2024" expand-separator icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8">
             <q-card>
               <q-card-section>
                 How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
@@ -130,7 +130,7 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item icon="rocket_launch" label="Launch Globe & Citizen" caption="2025">
+          <q-expansion-item caption="2025" expand-separator icon="rocket_launch" label="Launch Globe & Citizen">
             <q-card>
               <q-card-section>
                 Deep fakes, fake media, toxic hate speech, and a consolidated media industry: this is the reality of the internet today. How

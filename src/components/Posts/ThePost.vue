@@ -1,6 +1,6 @@
 <template>
   <q-page-container style="padding-bottom: 0">
-    <q-page class="bg-white" style="min-height: auto; padding-bottom: 7rem">
+    <q-page class="bg-white" style="min-height: auto">
       <TheHeader feedbackButton :title="title" />
       <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
       <section class="q-pa-md q-pb-none" style="margin-top: 100%">
@@ -73,7 +73,11 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
+          <ShareComponent
+            :label="shareStore.isLoaded ? shareStore.getShares.length : 0"
+            :disable="!shareStore.isLoaded"
+            @share="share($event)"
+          />
           <q-btn
             v-if="userStore.isAuthenticated"
             color="blue"

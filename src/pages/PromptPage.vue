@@ -6,8 +6,8 @@
   </q-tabs>
   <q-tab-panels v-if="prompt" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
-    <q-tab-panel v-if="prompt" name="post" style="padding: 0">
-      <ThePost collectionName="prompts" v-if="shareStore.getShares" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
+    <q-tab-panel name="post" style="padding: 0">
+      <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
       <TheEntries v-if="entries" :entries="entries" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -66,7 +66,7 @@ const prompt = computed(() => {
 })
 
 const entries = computed(() => {
-  return entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
+  return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
 
 onMounted(async () => {
@@ -87,14 +87,16 @@ onMounted(async () => {
 
   await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
 
-  shareIsLoading.value = true
-  await shareStore
-    .fetchShares('prompts', prompt.value.id)
-    .catch((error) => errorStore.throwError(error))
-    .finally(() => {
-      shareIsLoading.value = false
-      shareIsLoaded.value = true
-    })
+  if (prompt.value?.id) {
+    shareIsLoading.value = true
+    await shareStore
+      .fetchShares('prompts', prompt.value.id)
+      .catch((error) => errorStore.throwError(error))
+      .finally(() => {
+        shareIsLoading.value = false
+        shareIsLoaded.value = true
+      })
+  }
 })
 
 onUnmounted(() => {

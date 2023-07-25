@@ -8,7 +8,7 @@
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
     <q-tab-panel v-if="entry" name="post" style="padding: 0">
-      <ThePost collectionName="entries" :post="entry" title="Entry Page" @clickComments="tab = 'comments'" />
+      <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
@@ -40,7 +40,7 @@ const shareStore = useShareStore()
 const tab = ref(entryStore.tab)
 
 const entry = computed(() => {
-  return entryStore.getEntries.find((entry) => entry.slug === router.currentRoute.value.href)
+  return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
 
 onMounted(async () => {
@@ -59,7 +59,9 @@ onMounted(async () => {
 
   await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
 
-  await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+  if (entry.value?.id) {
+    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+  }
 })
 
 onUnmounted(() => {

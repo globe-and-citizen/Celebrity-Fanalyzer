@@ -21,8 +21,9 @@ import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, use
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
+    _entries: undefined,
     _isLoading: false,
+    _unSubscribe: undefined,
     _tab: 'post'
   }),
 
@@ -38,16 +39,20 @@ export const useEntryStore = defineStore('entries', {
     async fetchEntries() {
       const userStore = useUserStore()
 
-      if (!userStore.getUsers.length) {
+      if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 
       this._isLoading = true
-      onSnapshot(collection(db, 'entries'), (querySnapshot) => {
+
+      if (this._unSubscribe) {
+        this._unSubscribe()
+      }
+      this._unSubscribe = onSnapshot(collection(db, 'entries'), (querySnapshot) => {
         const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const entry of entries) {
-          entry.author = userStore.getUserById(entry.author.id)
+          entry.author = userStore.getUserById(entry.author.id) || entry.author
           entry.prompt = entry.prompt.id
         }
 

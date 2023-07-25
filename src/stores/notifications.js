@@ -38,7 +38,7 @@ export const useNotificationStore = defineStore('notification', {
             )
           }
           if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) =>
+            entryStore._entries = entryStore.getEntries?.map((entry) =>
               entry.id === documentId ? { ...entry, subscribers: removeFromArray(entry.subscribers, userStore.getUser.uid) } : entry
             )
           }
@@ -54,7 +54,7 @@ export const useNotificationStore = defineStore('notification', {
           }
 
           if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) =>
+            entryStore._entries = entryStore.getEntries?.map((entry) =>
               entry.id === documentId ? { ...entry, subscribers: addToArray(entry.subscribers || [], userStore.getUser.uid) } : entry
             )
           }
@@ -68,6 +68,8 @@ export const useNotificationStore = defineStore('notification', {
      * @param {*} notification - Notification object
      */
     async create(subscribers, notification) {
+      if (!subscribers?.length) return
+
       const userStore = useUserStore()
 
       notification.created = Date.now()

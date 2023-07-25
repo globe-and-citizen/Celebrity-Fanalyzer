@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar'
 import { db } from 'src/firebase'
@@ -6,31 +6,32 @@ import { useUserStore } from 'src/stores'
 
 export const useErrorStore = defineStore('errors', {
   state: () => ({
-    _errors: [],
-    _isLoading: false
+    _errors: undefined,
+    _isLoading: false,
+    _unSubscribe: undefined
   }),
 
   getters: {
     getErrors: (state) => state._errors,
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    isLoaded: (state) => !!state._errors
   },
 
   actions: {
     async fetchErrors() {
       this._isLoading = true
-      await getDocs(collection(db, 'errors'))
-        .then(async (querySnapshot) => {
-          const errors = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      this._unSubscribe = onSnapshot(collection(db, 'errors'), async (querySnapshot) => {
+        const errors = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const error of errors) {
-            if (typeof error.user === 'object') {
-              error.user = await getDoc(error.user).then((doc) => doc.data())
-            }
+        for (const error of errors) {
+          if (typeof error.user === 'object') {
+            error.user = await getDoc(error.user).then((doc) => doc.data())
           }
+        }
 
-          this.$patch({ _errors: errors })
-        })
-        .finally(() => (this._isLoading = false))
+        this.$patch({ _errors: errors })
+      })
+      this._isLoading = false
     },
 
     async throwError(error, message) {
@@ -57,7 +58,6 @@ export const useErrorStore = defineStore('errors', {
     async deleteError(id) {
       this._isLoading = true
       await deleteDoc(doc(db, 'errors', id))
-        .then(() => this.$patch({ _errors: this._errors.filter((error) => error.id !== id) }))
         .catch((e) => console.error(e))
         .finally(() => (this._isLoading = false))
     }

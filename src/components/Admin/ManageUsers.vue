@@ -23,7 +23,7 @@
         <q-btn color="negative" flat icon="do_not_disturb_on" round @click="requestStore.denyWriter(props.row.id)">
           <q-tooltip>Deny as a Writer</q-tooltip>
         </q-btn>
-        <q-btn color="positive" flat icon="verified" round @click="acceptWriter(props.row.id)">
+        <q-btn color="positive" flat icon="verified" round @click="requestStore.acceptWriter(props.row.id)">
           <q-tooltip>Approve as a Writer</q-tooltip>
         </q-btn>
       </q-td>
@@ -35,7 +35,7 @@
     flat
     :filter="filter"
     hide-bottom
-    :loading="userStore.isLoading"
+    :loading="userStore.isLoading || !userStore.getUsers"
     :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
     row-key="email"
     :rows="userStore.getUsers"
