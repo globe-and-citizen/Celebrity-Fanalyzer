@@ -1,7 +1,7 @@
 # Celebrity Fanalyzer
 
 <p align="center">
-<a href="https://livrolog.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Flivrolog.com" /></a>
+<a href="https://celebrityfanalyzer.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Fcelebrityfanalyzer.com" /></a>
 <img alt="GitHub Release" src="https://img.shields.io/github/v/release/globe-and-citizen/Celebrity-Fanalyzer">
 <img alt="GitHub License" src="https://img.shields.io/github/license/globe-and-citizen/Celebrity-Fanalyzer" />
 <img alt="Repository Size" src="https://img.shields.io/github/repo-size/globe-and-citizen/Celebrity-Fanalyzer" />
