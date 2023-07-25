@@ -1,6 +1,6 @@
 <template>
-  <q-separator inset/>
-  <div ref="excludedDiv" class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
+  <q-separator inset />
+  <div class="q-gutter-xs q-pa-md text-center" ref="excludedDiv" @click.stop="openDialog = true">
     <q-img
       v-for="(art, index) in showcase?.arts"
       class="art-img"
@@ -14,23 +14,23 @@
     <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
-  <q-dialog ref="dialogRef" :seamless="true" position="top" v-model="openDialog" style="background-color: rgba(0, 0, 0, 0.4) !important;">
+  <q-dialog position="top" ref="dialogRef" :seamless="true" style="background-color: rgba(0, 0, 0, 0.4) !important" v-model="openDialog">
     <q-carousel
-    animated
-    control-color="primary"
-    height="auto"
-    ref="carouselRef"
-    style="max-height: 100%; max-width: 90vw; width: 50rem;"
-    swipeableF
-    transition-prev="jump-right"
-    transition-next="jump-left"
-    v-model="slide"
+      animated
+      control-color="primary"
+      height="auto"
+      ref="carouselRef"
+      style="max-height: 100%; max-width: 90vw; width: 50rem"
+      swipeable
+      transition-prev="jump-right"
+      transition-next="jump-left"
+      v-model="slide"
     >
-    <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
-        <q-img class="rounded-borders custom-dialog" fit="contain" :src="art"/>
+      <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
+        <q-img class="rounded-borders" fit="contain" :src="art" />
       </q-carousel-slide>
       <q-carousel-slide class="q-pa-none row h-full" :name="showcase?.arts.length">
-        <q-img class="col-sm-6 col-xs-12 rounded-borders " :src="showcase.artist.photo" />
+        <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
         <p class="col-sm-6 col-xs-12 flex items-center q-pa-md bg-white h-full q-mb-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
@@ -38,38 +38,35 @@
 </template>
 
 <script setup>
-import { onUnmounted, onMounted , ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 defineProps({
   showcase: { type: Object, required: true, default: () => {} }
 })
 
 const carouselRef = ref(null)
+const dialogRef = ref(false)
 const openDialog = ref(false)
 const slide = ref(0)
-const dialogRef = ref(false);
 
 const handleClickOutside = (event) => {
-  // if (dialogRef.value && !dialogRef.value.contains(event.target)) {
-    openDialog.value = false;
-  // }
-};
+  openDialog.value = false
+}
 
 onMounted(() => {
   watch(
     openDialog,
     (newValue) => {
       if (newValue) {
-        window.addEventListener('click', handleClickOutside);
+        window.addEventListener('click', handleClickOutside)
       } else {
-        window.removeEventListener('click', handleClickOutside);
+        window.removeEventListener('click', handleClickOutside)
       }
     },
     { immediate: true }
-  );
+  )
 }),
-
-document.addEventListener('keyup', handleKeyPress)
+  document.addEventListener('keyup', handleKeyPress)
 
 function handleKeyPress(e) {
   const event = (window.event ??= e)
@@ -94,7 +91,6 @@ onUnmounted(() => {
 }
 
 p {
-  margin-bottom: 0px!important;
+  margin-bottom: 0px !important;
 }
-
 </style>
