@@ -1,6 +1,6 @@
 <template>
-  <q-separator inset />
-  <div class="q-gutter-xs q-pa-md text-center" @click="openDialog = true">
+  <q-separator inset/>
+  <div ref="excludedDiv" class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
     <q-img
       v-for="(art, index) in showcase?.arts"
       class="art-img"
@@ -14,32 +14,31 @@
     <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
-  <q-dialog :seamless="true" position="top" v-model="openDialog">
+  <q-dialog ref="dialogRef" :seamless="true" position="top" v-model="openDialog" style="background-color: rgba(0, 0, 0, 0.4) !important;">
     <q-carousel
-      animated
-      control-color="primary"
-      height="auto"
-      ref="carouselRef"
-      style="max-height: 100%; max-width: 90vw; width: 50rem"
-      swipeable
-      transition-prev="jump-right"
-      transition-next="jump-left"
-      v-model="slide"
+    animated
+    control-color="primary"
+    height="auto"
+    ref="carouselRef"
+    style="max-height: 100%; max-width: 90vw; width: 50rem;"
+    swipeableF
+    transition-prev="jump-right"
+    transition-next="jump-left"
+    v-model="slide"
     >
-      <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
-        <q-img class="rounded-borders" fit="contain" :src="art"/>
-        <q-btn @click="openDialog = null">Buytton</q-btn>
+    <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
+        <q-img class="rounded-borders custom-dialog" fit="contain" :src="art"/>
       </q-carousel-slide>
-      <q-carousel-slide class="q-pa-none row" :name="showcase?.arts.length">
-        <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md" style="white-space: pre-line">{{ showcase.artist.info }}</p>
+      <q-carousel-slide class="q-pa-none row h-full" :name="showcase?.arts.length">
+        <q-img class="col-sm-6 col-xs-12 rounded-borders " :src="showcase.artist.photo" />
+        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md bg-white h-full q-mb-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
   </q-dialog>
 </template>
 
 <script setup>
-import { onUnmounted, onBeforeUnmount , ref } from 'vue'
+import { onUnmounted, onMounted , ref, watch } from 'vue'
 
 defineProps({
   showcase: { type: Object, required: true, default: () => {} }
@@ -48,6 +47,27 @@ defineProps({
 const carouselRef = ref(null)
 const openDialog = ref(false)
 const slide = ref(0)
+const dialogRef = ref(false);
+
+const handleClickOutside = (event) => {
+  // if (dialogRef.value && !dialogRef.value.contains(event.target)) {
+    openDialog.value = false;
+  // }
+};
+
+onMounted(() => {
+  watch(
+    openDialog,
+    (newValue) => {
+      if (newValue) {
+        window.addEventListener('click', handleClickOutside);
+      } else {
+        window.removeEventListener('click', handleClickOutside);
+      }
+    },
+    { immediate: true }
+  );
+}),
 
 document.addEventListener('keyup', handleKeyPress)
 
@@ -59,19 +79,7 @@ function handleKeyPress(e) {
 
 onUnmounted(() => {
   document.removeEventListener('keyup', handleKeyPress)
-  openDialog.value = false
-  console.log(openDialog.value);
 })
-
-// if(openDialog.value = false) {
-//   document.addEventListener('click', function() {
-//     openDialog.value = true
-//   });
-// } else {
-//   document.addEventListener('click', function() {
-//     openDialog.value = false
-//   });
-// }
 </script>
 
 <style lang="scss" scoped>
@@ -84,11 +92,9 @@ onUnmounted(() => {
 .art-img:hover {
   filter: grayscale(0%);
 }
-/*.q-dialoginner{
-  pointer-events: auto !important;
-  background: rgba(0,0,0,0.4);
-  position: absolute;
-  width: 100%!important;
-  height: 100%!important;
-} */
+
+p {
+  margin-bottom: 0px!important;
+}
+
 </style>
