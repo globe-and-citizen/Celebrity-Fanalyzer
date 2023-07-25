@@ -1,4 +1,4 @@
-import {addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, Timestamp} from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar'
 import { db } from 'src/firebase'

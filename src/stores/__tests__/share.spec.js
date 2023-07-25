@@ -1,11 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { useEntryStore, useShareStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
-import {createPinia, setActivePinia} from "pinia";
-import { useEntryStore, useShareStore, useUserStore} from "src/stores";
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-describe("Unit Test Share Store", ()=>{
-  beforeEach(async ()=>{
-
+describe('Unit Test Share Store', () => {
+  beforeEach(async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
     // In the Pinia store user.js, the call to fetch to get the user IP breaks. This is a mock to prevent breaking.
@@ -51,29 +50,28 @@ describe("Unit Test Share Store", ()=>{
     await waitUntil(() => {
       return entryStore.getEntries
     })
-    const firstEntry= entryStore.getEntries[0]
+    const firstEntry = entryStore.getEntries[0]
 
     await shareStore.fetchShares('entries', firstEntry.id)
     // await shareStore.fetchShares('entries', entryStore.getEntries[1].id)
 
     await waitUntil(() => {
-      return shareStore.isLoaded ===true
+      return shareStore.isLoaded === true
     })
     expect(shareStore.isLoaded).toBe(true)
 
-    let initialLength= shareStore.getShares.length
-    if(initialLength>0){
+    let initialLength = shareStore.getShares.length
+    if (initialLength > 0) {
       // Delete All Share to have an empty share list
       await shareStore.deleteAllShares('entries', firstEntry.id)
 
       await waitUntil(() => {
-        return shareStore.getShares.length ===0
+        return shareStore.getShares.length === 0
       })
       expect(shareStore.getShares.length).toBe(0)
     }
 
-     initialLength= shareStore.getShares.length
-
+    initialLength = shareStore.getShares.length
 
     expect(shareStore.getShares.length).toBe(0)
     shareStore.addShare('entries', firstEntry.id, 'instagram')
@@ -84,17 +82,16 @@ describe("Unit Test Share Store", ()=>{
     await waitUntil(() => {
       return !shareStore.isLoading
     })
-    expect(shareStore.getShares.length).toBe(initialLength+1)
+    expect(shareStore.getShares.length).toBe(initialLength + 1)
 
     await shareStore.deleteAllShares('entries', firstEntry.id)
     await waitUntil(() => {
-      return shareStore.getShares.length ===0
+      return shareStore.getShares.length === 0
     })
     expect(shareStore.getShares.length).toBe(0)
 
     // Reload fetch Share with another entries
     await shareStore.fetchShares('entries', entryStore.getEntries[1].id)
     expect(shareStore.isLoaded).toBe(true)
-
   })
 })

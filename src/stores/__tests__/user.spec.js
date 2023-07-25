@@ -1,6 +1,7 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { deleteUser, getAuth } from 'firebase/auth'
 
 // Necessary Components
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
@@ -22,10 +23,88 @@ describe('Users Store', () => {
     global.fetch = vi.fn(async () => {
       return {
         text: () => {
-          return '255.255.255.255'
+          return 'ip=255.255.255.255'
         }
       }
     })
+  })
+  it('Should Access the store initial state with the getter as an anonymous user', async () => {
+    const userStore = useUserStore()
+    expect(userStore.getAdmins).toEqual([])
+    expect(userStore.getAdminsAndWriters).toEqual([])
+    expect(userStore.getProfileTab).toEqual('profile')
+    expect(userStore.getSubscriptions).toEqual(undefined)
+    expect(userStore.getUser).toEqual({})
+    expect(userStore.getUserById('abcd')).toEqual(undefined)
+    expect(userStore.getUserIp).toEqual('')
+    expect(userStore.getUserIpHash).toEqual('da39a3ee5e6b4b0d3255bfef95601890afd80709')
+    expect(userStore.getUserRef).toEqual(undefined)
+    expect(userStore.getUsers).toEqual(undefined)
+    expect(userStore.isAdmin).toEqual(false)
+    expect(userStore.isEditorOrAbove).toEqual(false)
+    expect(userStore.isWriterOrAbove).toEqual(false)
+    expect(userStore.isAnonymous).toEqual(undefined)
+    expect(userStore.isLoading).toEqual(false)
+    expect(userStore.isAuthenticated).toEqual(false)
+    userStore.setProfileTab('feedback')
+    expect(userStore.getProfileTab).toEqual('feedback')
+  })
+
+  it('Should Login Then logout', async () => {
+    const userStore = useUserStore()
+
+    // Part 1: Login The user
+    // Login the test@test.com user
+    let userObj = {
+      email: import.meta.env.VITE_TEST_USER,
+      password: import.meta.env.VITE_TEST_PASSWORD
+    }
+    userStore.emailSignIn(userObj)
+
+    // Check the Start loading of data
+    await waitUntil(() => {
+      return userStore.isLoading
+    }).catch((e) => console.log('Error : Should be loading', e))
+    expect(userStore.isLoading).toEqual(true)
+
+    // Check the End loading of data
+    await waitUntil(() => {
+      return userStore.isLoading === false
+    }).catch((e) => console.log('Error : Should Not be loading', e))
+    expect(userStore.isLoading).toEqual(false)
+
+    // wait the user to be authenticated
+    await waitUntil(() => {
+      return userStore.isAuthenticated
+    }).catch((e) => console.log('Error : Should be authenticated', e))
+
+    // Check the state
+    expect(userStore.getUser.displayName).toEqual('Cypress Tester')
+    expect(!!userStore.getUserRef).toEqual(true)
+    expect(userStore.isAdmin).toEqual(true)
+    expect(userStore.isEditorOrAbove).toEqual(true)
+    expect(userStore.isWriterOrAbove).toEqual(true)
+    expect(userStore.isAnonymous).toEqual(undefined)
+    expect(userStore.isAuthenticated).toEqual(true)
+    await userStore.updateProfile(userStore.getUser)
+
+    // Part 1: Logout The user
+    try {
+      userStore.logout()
+    } catch (e) {
+      console.log('Error', e)
+    }
+
+    await waitUntil(() => {
+      return !userStore.isAuthenticated
+    })
+    expect(userStore.getUser.displayName).toEqual(undefined)
+    expect(userStore.getUserRef).toEqual(undefined)
+    expect(userStore.isAdmin).toEqual(false)
+    expect(userStore.isEditorOrAbove).toEqual(false)
+    expect(userStore.isWriterOrAbove).toEqual(false)
+    expect(userStore.isAnonymous).toEqual(undefined)
+    expect(userStore.isAuthenticated).toEqual(false)
   })
 
   it('Access a non-existing public profile', async () => {
@@ -88,13 +167,140 @@ describe('Users Store', () => {
   it('Should fetch all user', async () => {
     const userStore = useUserStore()
     await userStore.fetchUsers()
+    await waitUntil(() => {
+      return userStore.getUsers
+    })
+
     expect(userStore.getUsers.length).toBeGreaterThan(0)
+    expect(userStore.getAdmins.length).toBeGreaterThan(0)
+    expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
   })
 
-  // it('Should Sign up with email then remove the acount', async () => {
-  //   await userStore.emailSignUp({ email: 'newTest@test.com', name: 'NewName', password: '123456' })
-  //   await userStore.emailSignIn({ email: 'newTest@test.com', password: '123456' })
+  it('queryUsers', async () => {
+    const userStore = useUserStore()
+    await userStore.queryUsers('Cypr')
+    expect(userStore.getUsers.length).toEqual(1)
+  })
+
+  it('Should Fetch user by ID', async () => {
+    const userStore = useUserStore()
+    const user = await userStore.fetchUser('r8oT5vFDyFQJtZHg7Kvn906KE9o2')
+    expect(user.displayName).toMatchInlineSnapshot('"Cypress Tester"')
+  })
+
+  it('Should emailSignUp user then update user role then remove user', async () => {
+    const userStore = useUserStore()
+    let userObj = {
+      email: Math.random().toString(36).substring(5, 10) + '@cypress.com',
+      name: 'Unit Tester',
+      password: import.meta.env.VITE_TEST_PASSWORD
+    }
+
+    // Check the user exit
+    try {
+      await userStore.emailSignIn(userObj).then(async () => {
+        // Success mean user exist
+        expect(userStore.isAuthenticated).toEqual(true)
+        const auth = getAuth()
+        const user = auth.currentUser
+        await deleteUser(user)
+      })
+    } catch (e) {
+      console.log('Error Mean User does not exist')
+    }
+
+    // Register User
+    expect(userStore.isAuthenticated).toEqual(false)
+    await userStore.emailSignUp(userObj)
+
+    // Remove User
+    await waitUntil(() => {
+      return userStore.isAuthenticated
+    })
+    expect(userStore.isAuthenticated).toEqual(true)
+    const auth = getAuth()
+    let user = auth.currentUser
+    expect(user.email).toEqual(userObj.email)
+    const newUserUID = user.uid
+
+    // Logout
+    userStore.logout()
+    await waitUntil(() => {
+      return !userStore.isAuthenticated
+    })
+
+    // Login Admin
+    let adminObj = {
+      email: import.meta.env.VITE_TEST_USER,
+      password: import.meta.env.VITE_TEST_PASSWORD
+    }
+    await userStore.emailSignIn(adminObj)
+    await waitUntil(() => {
+      return userStore.isAuthenticated
+    })
+    expect(userStore.isAuthenticated).toEqual(true)
+    user = await userStore.fetchUser(newUserUID)
+    expect(user.email).toEqual(userObj.email)
+    await userStore.fetchUsers()
+    await waitUntil(() => {
+      return userStore.getUsers
+    })
+
+    // Update user Roles
+    await userStore.updateRole({ ...user, role: 'Editor' })
+    user = await userStore.fetchUser(newUserUID)
+    expect(user.email).toEqual(userObj.email)
+    userStore.logout()
+    await waitUntil(() => {
+      return !userStore.isAuthenticated
+    })
+
+    // Login user
+    await userStore.emailSignIn(userObj)
+    await waitUntil(() => {
+      return userStore.isAuthenticated
+    })
+    expect(userStore.getUser.role).toEqual('Editor')
+    expect(userStore.isAuthenticated).toEqual(true)
+    expect(userStore.isEditorOrAbove).toEqual(true)
+    expect(userStore.isWriterOrAbove).toEqual(true)
+
+    user = auth.currentUser
+    await deleteUser(user)
+
+    expect(auth.currentUser).toEqual(null)
+  })
+  // describe('UnAuthenticated User', () => {
+  //   beforeEach(async () => {
+  //     const userStore = useUserStore()
+  //   })
+  //   // it.fails('Should test UserName Availability', async () => {
+  //   //   const userStore = useUserStore()
+  //   //   expect( () =>  userStore.checkUsernameAvailability('abcd')).toThrowError('ERROR: you need to be authenticated')
+  //   // })
   // })
+  describe('Authenticated User', () => {
+    beforeEach(async () => {
+      const userStore = useUserStore()
+
+      // Part 1: Login The user
+      // Login the test@test.com user
+      let userObj = {
+        email: import.meta.env.VITE_TEST_USER,
+        password: import.meta.env.VITE_TEST_PASSWORD
+      }
+      await userStore.emailSignIn(userObj)
+      // wait the user to be authenticated
+      await waitUntil(() => {
+        return userStore.isAuthenticated
+      }).catch((e) => console.log('Error : Should be authenticated', e))
+    })
+
+    it('Should test UserName Availability', async () => {
+      const userStore = useUserStore()
+      expect(await userStore.checkUsernameAvailability('abcd')).toEqual(false)
+    })
+  })
 })
 
 afterAll(async () => {
