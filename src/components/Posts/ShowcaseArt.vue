@@ -14,7 +14,7 @@
     <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
   </div>
 
-  <q-dialog position="top" ref="dialogRef" :seamless="true" style="background-color: rgba(0, 0, 0, 0.4) !important" v-model="openDialog">
+  <q-dialog position="top" ref="dialogRef" seamless style="background-color: rgba(0, 0, 0, 0.4) !important" v-model="openDialog">
     <q-carousel
       animated
       control-color="primary"
