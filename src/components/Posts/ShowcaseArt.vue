@@ -37,9 +37,9 @@
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
         <q-img class="rounded-borders" fit="contain" :src="art" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none row h-full" :name="showcase?.arts.length">
+      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none row" :name="showcase?.arts.length">
         <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md bg-white h-full q-mb-md">{{ showcase.artist.info }}</p>
+        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
   </q-dialog>
