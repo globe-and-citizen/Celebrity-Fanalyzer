@@ -62,7 +62,6 @@ describe('Entry Store', async () => {
       return promptStore.getPrompts.length > 0
     })
     await waitUntil(() => {
-      // TODO : Default state : find a better way to test it. Should use undefined for default state
       return entryStore.getEntries
     })
     // Step 2: Check the starting number of entries.
@@ -86,7 +85,6 @@ describe('Entry Store', async () => {
 
     await entryStore.addEntry(fakeEntry)
     await waitUntil(() => {
-      // TODO : Default state : find a better way to test it. Should use undefined for default state
       return entryStore.getEntries?.length === startingNumberOfEntries + 1
     })
     expect(entryStore.getEntries?.length).toBe(startingNumberOfEntries + 1)
