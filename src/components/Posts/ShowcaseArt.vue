@@ -1,6 +1,6 @@
 <template>
   <q-separator inset />
-  <div class="q-gutter-xs q-pa-md text-center" @click="openDialog = true">
+  <div class="q-gutter-xs q-pa-md text-center" ref="excludedDiv" @click.stop="openDialog = true">
     <q-img
       v-for="(art, index) in showcase?.arts"
       class="art-img"
@@ -11,10 +11,18 @@
       width="6.5rem"
       @click="slide = index"
     />
-    <q-img class="art-img" fit="cover" :ratio="1" :src="showcase.artist.photo" width="6.5rem" @click="slide = showcase?.arts.length" />
+    <q-img
+      v-if="showcase.artist.info"
+      class="art-img"
+      fit="cover"
+      :ratio="1"
+      :src="showcase.artist.photo"
+      width="6.5rem"
+      @click="slide = showcase?.arts.length"
+    />
   </div>
 
-  <q-dialog position="top" v-model="openDialog">
+  <q-dialog position="top" ref="dialogRef" seamless style="background-color: rgba(0, 0, 0, 0.4) !important" v-model="openDialog">
     <q-carousel
       animated
       control-color="primary"
@@ -29,26 +37,41 @@
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
         <q-img class="rounded-borders" fit="contain" :src="art" />
       </q-carousel-slide>
-      <q-carousel-slide class="q-pa-none row" :name="showcase?.arts.length">
+      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none row h-full" :name="showcase?.arts.length">
         <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md" style="white-space: pre-line">{{ showcase.artist.info }}</p>
+        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md bg-white h-full q-mb-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
   </q-dialog>
 </template>
 
 <script setup>
-import { onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 
 defineProps({
   showcase: { type: Object, required: true, default: () => {} }
 })
 
 const carouselRef = ref(null)
+const dialogRef = ref(false)
 const openDialog = ref(false)
 const slide = ref(0)
 
-document.addEventListener('keyup', handleKeyPress)
+const handleClickOutside = (event) => {
+  openDialog.value = false
+}
+
+watchEffect(() => {
+  if (openDialog.value) {
+    window.addEventListener('click', handleClickOutside)
+  } else {
+    window.removeEventListener('click', handleClickOutside)
+  }
+})
+
+onMounted(() => {
+  document.addEventListener('keyup', handleKeyPress)
+})
 
 function handleKeyPress(e) {
   const event = (window.event ??= e)
@@ -70,5 +93,9 @@ onUnmounted(() => {
 
 .art-img:hover {
   filter: grayscale(0%);
+}
+
+p {
+  margin-bottom: 0px !important;
 }
 </style>
