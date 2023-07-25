@@ -34,7 +34,7 @@ describe('Likes Store', () => {
     // })
   })
 
-  it('', async () => {
+  it('Should Test All Like Store', async () => {
     const likeStore = useLikeStore()
     const entryStore = useEntryStore()
 
@@ -47,7 +47,51 @@ describe('Likes Store', () => {
     expect(likeStore.getDislikes).toBe(undefined)
     await likeStore.getAllLikesDislikes('entries', entryStore.getEntries[0].id)
 
-    expect(likeStore.getLikes?.length).not.toBe(undefined)
-    expect(likeStore.getDislikes?.length).not.toBe(undefined)
+    await waitUntil(() => {
+      return likeStore.getLikes && likeStore.getDislikes
+    })
+    expect(likeStore.getLikes).not.toBe(undefined)
+    expect(likeStore.getDislikes).not.toBe(undefined)
+
+    const initialLikeLenght=likeStore.getLikes.length
+    const initialDislikeLenght=likeStore.getDislikes.length
+
+
+    // Should add a like if not exit
+    await likeStore.addLike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getLikes.length).toBe(initialLikeLenght+1)
+
+    // Should remove like if exit
+    await likeStore.addLike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getLikes.length).toBe(initialLikeLenght)
+
+    // Should add dislike if not exit
+    await likeStore.addDislike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght+1)
+
+    //should remove dislike if exist
+    await likeStore.addDislike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght)
+
+    // Should add dislike if not exit
+    await likeStore.addDislike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght+1)
+    expect(likeStore.getLikes.length).toBe(initialLikeLenght)
+
+    // Should remove dislike after like
+    await likeStore.addLike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getLikes.length).toBe(initialLikeLenght+1)
+    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght)
+
+    // Should add like after dislike
+    await likeStore.addDislike('entries', entryStore.getEntries[0].id)
+    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght+1)
+    expect(likeStore.getLikes.length).toBe(initialLikeLenght)
+
+    await likeStore.deleteAllLikesDislikes('entries', entryStore.getEntries[0].id)
+
+    expect(likeStore.getDislikes.length).toBe(0)
+    expect(likeStore.getLikes.length).toBe(0)
   })
 })
+
