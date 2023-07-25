@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 
 defineProps({
   showcase: { type: Object, required: true, default: () => {} }
@@ -53,20 +53,17 @@ const handleClickOutside = (event) => {
   openDialog.value = false
 }
 
+watchEffect(() => {
+  if (openDialog.value) {
+    window.addEventListener('click', handleClickOutside)
+  } else {
+    window.removeEventListener('click', handleClickOutside)
+  }
+})
+
 onMounted(() => {
-  watch(
-    openDialog,
-    (newValue) => {
-      if (newValue) {
-        window.addEventListener('click', handleClickOutside)
-      } else {
-        window.removeEventListener('click', handleClickOutside)
-      }
-    },
-    { immediate: true }
-  )
-}),
   document.addEventListener('keyup', handleKeyPress)
+})
 
 function handleKeyPress(e) {
   const event = (window.event ??= e)
