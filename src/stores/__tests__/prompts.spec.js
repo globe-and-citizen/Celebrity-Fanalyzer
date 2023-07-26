@@ -130,18 +130,12 @@ describe('Prompt Store', async () => {
       //   author: { label: user.displayName, value: user.uid }
       // })
       // TODO delete Prompt that have entries
-      // 5) Delete fake prompt and check
-      // TODO : Fix delete error
-      // await promptStore.deletePrompt(fakePrompt.id)
-      // await waitUntil(() => {
-      //   return promptStore.getPrompts.length === startingNumberOfPrompts
-      // })
-      // expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts)
-    },
-    { timeout: 50000 }
-  )
-})
 
-afterAll(async () => {
-  // clean up logic.
+    // 5) Delete fake prompt and check
+    await promptStore.deletePrompt(fakeDate)
+    await waitUntil(() => {
+      return promptStore.getPrompts.length === startingNumberOfPrompts
+    })
+    expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts)
+  })
 })
