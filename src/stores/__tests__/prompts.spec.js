@@ -8,7 +8,7 @@ import { usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Prompt Store', async () => {
-  const fakeDate = '2991-01'
+  const fakeDate = `${Math.floor(Math.random() * 9000) + 1000}-01` // Random number between 1000 and 9999 + '-01'
 
   //Load an image to use
   const bitmap = fs.readFileSync('src/assets/cypress.jpg')
