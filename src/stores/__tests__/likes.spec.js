@@ -1,7 +1,7 @@
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import {useEntryStore, useLikeStore, useUserStore} from 'src/stores'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useEntryStore, useLikeStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
-import {createPinia, setActivePinia} from "pinia";
+import { createPinia, setActivePinia } from 'pinia'
 
 describe('Likes Store', () => {
   beforeEach(async () => {
@@ -45,6 +45,7 @@ describe('Likes Store', () => {
     })
     expect(likeStore.getLikes).toBe(undefined)
     expect(likeStore.getDislikes).toBe(undefined)
+    await likeStore.getAllLikesDislikes('entries', entryStore.getEntries[1].id)
     await likeStore.getAllLikesDislikes('entries', entryStore.getEntries[0].id)
 
     await waitUntil(() => {
@@ -53,45 +54,114 @@ describe('Likes Store', () => {
     expect(likeStore.getLikes).not.toBe(undefined)
     expect(likeStore.getDislikes).not.toBe(undefined)
 
-    const initialLikeLenght=likeStore.getLikes.length
-    const initialDislikeLenght=likeStore.getDislikes.length
+    const initialLikeLenght = likeStore.getLikes?.length
+    const initialDislikeLenght = likeStore.getDislikes?.length
 
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
+
+    if (initialLikeLenght !== 0 || initialDislikeLenght !== 0) {
+      await likeStore.deleteAllLikesDislikes('entries', entryStore.getEntries[0].id)
+
+      await waitUntil(() => {
+        return likeStore.getLikes?.length === 0 && likeStore.getDislikes?.length === 0
+      }).catch(() => console.log('Initial State'))
+      expect(likeStore.getDislikes?.length).toBe(0)
+      expect(likeStore.getLikes?.length).toBe(0)
+    }
+
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
 
     // Should add a like if not exit
     await likeStore.addLike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getLikes.length).toBe(initialLikeLenght+1)
+
+    // await waitUntil(() => {
+    //   return likeStore.getLikes?.length === initialLikeLenght + 1
+    // }).catch(() => console.log('1-First Like'))
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght + 1)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
+
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('1')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
 
     // Should remove like if exit
     await likeStore.addLike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getLikes.length).toBe(initialLikeLenght)
+    // await waitUntil(() => {
+    //   return likeStore.getLikes?.length === initialLikeLenght
+    // }).catch(() => console.log('2-Second Like'))
+
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
 
     // Should add dislike if not exit
     await likeStore.addDislike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght+1)
+    // await waitUntil(() => {
+    //   return likeStore.getLikes?.length === initialLikeLenght && likeStore.getDislikes?.length === initialDislikeLenght + 1
+    // }).catch(() => console.log('3-First Dislike'))
+
+    // After
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('1')
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght + 1)
 
     //should remove dislike if exist
     await likeStore.addDislike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght)
+    // After
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
 
     // Should add dislike if not exit
     await likeStore.addDislike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght+1)
-    expect(likeStore.getLikes.length).toBe(initialLikeLenght)
+    // await waitUntil(() => {
+    //   return likeStore.getLikes?.length === initialLikeLenght && likeStore.getDislikes?.length === initialDislikeLenght + 1
+    // })
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('1')
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght + 1)
 
     // Should remove dislike after like
     await likeStore.addLike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getLikes.length).toBe(initialLikeLenght+1)
-    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght)
+    // await waitUntil(() => {
+    //   return likeStore.getLikes?.length === initialLikeLenght + 1 && likeStore.getDislikes?.length === initialDislikeLenght
+    // })
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('1')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght + 1)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
 
     // Should add like after dislike
     await likeStore.addDislike('entries', entryStore.getEntries[0].id)
-    expect(likeStore.getDislikes.length).toBe(initialDislikeLenght+1)
-    expect(likeStore.getLikes.length).toBe(initialLikeLenght)
+
+    // await waitUntil(() => {
+    //   return likeStore.getDislikes?.length === initialDislikeLenght + 1 && likeStore.getLikes?.length === initialLikeLenght
+    // })
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('1')
+
+    expect(likeStore.getLikes?.length).toBe(initialLikeLenght)
+    expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght + 1)
 
     await likeStore.deleteAllLikesDislikes('entries', entryStore.getEntries[0].id)
 
-    expect(likeStore.getDislikes.length).toBe(0)
-    expect(likeStore.getLikes.length).toBe(0)
+    await waitUntil(() => {
+      return likeStore.getLikes?.length === 0 && likeStore.getDislikes?.length === 0
+    })
+    expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
+    expect(likeStore.getDislikes?.length).toBe(0)
+    expect(likeStore.getLikes?.length).toBe(0)
   })
 })
-
