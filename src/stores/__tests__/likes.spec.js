@@ -15,30 +15,8 @@ describe('Likes Store', async () => {
       }
     })
   })
-  it('', async () => {
 
-    const userStore = useUserStore()
-      // Part 1: Authenticate user
-      // Login the test@test.com user
-      let userObj = {
-        email: import.meta.env.VITE_TEST_USER,
-        password: import.meta.env.VITE_TEST_PASSWORD
-      }
-      try {
-
-        await userStore.emailSignIn(userObj)
-        // wait the user to be authenticated
-        await waitUntil(() => {
-          return userStore.isAuthenticated
-        }).catch((e) => console.log('Error : Should be authenticated', e))
-
-      } catch (e) {
-        console.log('Error Mean User does not exist', e)
-      }
-    }
-  )
-
-  it.only('Should Test All Like Store', async () => {
+  it('Should Test All Like Store', async () => {
     const userStore = useUserStore()
     const likeStore = useLikeStore()
     const entryStore = useEntryStore()
