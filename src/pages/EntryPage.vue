@@ -44,9 +44,10 @@ entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
+const myTimeout = ref()
 
 //Handle 404
-setTimeout(() => {
+myTimeout.value = setTimeout(() => {
   if (!entry.value?.id) {
     router.push('/404')
   }
@@ -61,6 +62,7 @@ watchEffect(async () => {
 })
 
 onUnmounted(() => {
+  if (myTimeout.value) clearTimeout(myTimeout.value)
   entryStore.setTab('post')
 })
 </script>

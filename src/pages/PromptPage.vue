@@ -69,9 +69,10 @@ const prompt = computed(() => {
 const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
+const myTimeout = ref()
 
 //Handle 404
-setTimeout(() => {
+myTimeout.value = setTimeout(() => {
   if (!prompt.value?.id) {
     router.push('/404')
   }
@@ -79,13 +80,14 @@ setTimeout(() => {
 
 watchEffect(async () => {
   if (prompt.value?.id) {
-    await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+    const promptId = prompt.value?.id
+    await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
 
-    await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
+    await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
 
     shareIsLoading.value = true
     await shareStore
-      .fetchShares('prompts', prompt.value.id)
+      .fetchShares('prompts', promptId)
       .catch((error) => errorStore.throwError(error))
       .finally(() => {
         shareIsLoading.value = false
@@ -95,6 +97,7 @@ watchEffect(async () => {
 })
 
 onUnmounted(() => {
+  if (myTimeout.value) clearTimeout(myTimeout.value)
   promptStore.setTab('post')
 })
 </script>

@@ -46,7 +46,7 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { dayMonthYear } from 'src/utils/date'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -57,7 +57,7 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 
 // const computedPosts = ref()
-const user = ref({})
+const user = ref()
 
 const socialNetworks = [
   { name: 'facebook', link: 'https://facebook.com/' },
@@ -76,12 +76,21 @@ const computedPosts = computed(() => {
   ].sort((a, b) => b.date - a.date)
 })
 
-onMounted(async () => {
-  await userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then((res) => (user.value = res))
+//Handle 404
+const myTimeout = ref()
 
+//Handle 404
+myTimeout.value = setTimeout(async () => {
   if (!user.value) {
+    console.log('run')
     await router.push('/')
   }
+}, 10000)
+userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
+  user.value = res
+})
+onUnmounted(() => {
+  if (myTimeout.value) clearTimeout(myTimeout.value)
 })
 
 function goToUrl(link) {
