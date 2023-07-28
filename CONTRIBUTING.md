@@ -37,7 +37,21 @@ It is not necessary to configure anything related to this.
 npm run dev
 ```
 
-### Test your code
+### Good commit practices
+
+Use semantic commits like the ones described below:
+
+- Feat: new feature in the project, example: functionality, service, endpoint, etc;
+- Refactor: refactoring some part of the code;
+- Fix: correction of errors that are causing bugs;
+- Test: creating or changing some code of test;
+- Perf: changes made to improve the performance of the project, for example: improve the database query, make a function more performant, etc;
+- Docs: changes in the project's documentation, for example: readme, contributing, etc;
+- Chore: changes that do not influence the system or test files, example: adding files to git ignore, eslint changes, etc;
+- Style: changes in formatting or code style that do not influence the logic of the system;
+- Build: changes that impact the process of build.
+
+## Test your code
 
 Before submitting your PR you need to make sure that nothing has been broken.
 For that, you need to run the tests:
@@ -82,11 +96,3 @@ After your commit and push, the build will be done automatically through a GitHu
 Firebase will then create a unique URL for your Pull Request.
 
 ---
-
-### Customize the configuration
-
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
-
-### Configure Progressive Web App
-
-See [Configuring PWA](https://quasar.dev/quasar-cli-vite/developing-pwa/introduction).
