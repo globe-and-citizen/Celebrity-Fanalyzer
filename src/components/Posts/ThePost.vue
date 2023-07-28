@@ -37,9 +37,9 @@
             :data-test="!likeStore._isLoading && likeStore.getLikes ? 'like-button' : ''"
             flat
             :icon="
-              likeStore.getLikes.find((like) => like.id === userStore.getUserId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
+              likeStore.getLikes?.find((like) => like.id === userStore.getUserId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
             "
-            :label="likeStore.getLikes ? likeStore.getLikes.length : 0 "
+            :label="likeStore.getLikes?.length || 0 "
             rounded
             size="0.75rem"
             @click="like()"
@@ -51,11 +51,11 @@
             :data-test="!likeStore._isLoading && likeStore.getDislikes ? 'dislike-button' : ''"
             flat
             :icon="
-              likeStore.getDislikes.find((dislike) => dislike.id === userStore.getUserId)
+              likeStore.getDislikes?.find((dislike) => dislike.id === userStore.getUserId)
                 ? 'img:/icons/thumbs-down-bolder.svg'
                 : 'img:/icons/thumbs-down.svg'
             "
-            :label="likeStore.getDislikes ? likeStore.getDislikes.length : 0"
+            :label="likeStore.getDislikes?.length || 0"
             rounded
             size="0.75rem"
             @click="dislike()"
