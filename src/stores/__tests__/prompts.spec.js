@@ -10,9 +10,6 @@ import { waitUntil } from 'src/utils/waitUntil'
 describe('Prompt Store', async () => {
   const fakeDate = `${Math.floor(Math.random() * 9000) + 1000}-01` // Random number between 1000 and 9999 + '-01'
 
-  //Load an image to use
-  const bitmap = fs.readFileSync('src/assets/cypress.jpg')
-
   beforeEach(async () => {
     // By declaring the various stores within the "describe" block,
     // you can avoid redeclaring the stores within each "it" block.
@@ -89,8 +86,10 @@ describe('Prompt Store', async () => {
     const startingNumberOfPrompts = promptStore.getPrompts.length
 
     // 3) Add a fake prompt & test it was added successfully added
-    let user = userStore.getUser
-    let imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
+    const bitmap = fs.readFileSync('src/assets/cypress.jpg') //Load an image to use
+    const imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
+
+    const user = userStore.getUser
 
     const fakePrompt = {
       author: { label: user.displayName, value: user.uid },
@@ -115,10 +114,7 @@ describe('Prompt Store', async () => {
 
     const latestPrompt = promptStore.getPrompts.find((prompt) => prompt.id === fakeDate)
 
-    console.log('AAA', latestPrompt)
-
     // 4) Edit the fake prompt
-    // Error with Edit
     // await promptStore.editPrompt({
     //   ...latestPrompt,
     //   description: 'Updated Value of the prompt',
