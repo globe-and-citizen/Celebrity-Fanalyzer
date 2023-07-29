@@ -13,8 +13,6 @@ import { reactive } from 'vue'
 describe('Entry Store', async () => {
   // By declaring the various stores within the "describe" block,
   // you can avoid redeclaring the stores within each "it" block.
-  //Load and image to use
-  let bitmap = fs.readFileSync('src/assets/cypress.jpg')
 
   beforeEach(async () => {
     setActivePinia(createPinia())
@@ -72,7 +70,8 @@ describe('Entry Store', async () => {
     // 3) Create a mock entry & test it was successfully added
     const prompts = promptStore.getPrompts
     const aPrompt = prompts[0]
-    let imgAddress = await storageStore.uploadFile(bitmap, `images/entry-${aPrompt.date}`)
+    const bitmap = fs.readFileSync('src/assets/cypress.jpg') // Load and image to use
+    const imgAddress = await storageStore.uploadFile(bitmap, `images/entry-${aPrompt.date}`)
 
     const fakeEntry = reactive({
       id: `${aPrompt.date}T${Date.now()}`,
