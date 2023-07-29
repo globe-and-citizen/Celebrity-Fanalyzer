@@ -64,7 +64,7 @@ describe('Entry Store', async () => {
       return entryStore.getEntries
     })
     // Step 2: Check the starting number of entries.
-    let entries = entryStore.getEntries
+    const entries = entryStore.getEntries
     const startingNumberOfEntries = entries.length
 
     // 3) Create a mock entry & test it was successfully added
@@ -98,8 +98,6 @@ describe('Entry Store', async () => {
     // 5) Delete fake entry and check
     await entryStore.deleteEntry(fakeEntry.id)
     await entryStore.fetchEntries()
-    let entryArrayAfterDelete = entryStore.getEntries
-    let endingNumberOfEntries = entryArrayAfterDelete.length
-    expect(endingNumberOfEntries).toBe(startingNumberOfEntries)
+    expect(entryStore.getEntries.length).toBe(startingNumberOfEntries)
   })
 })
