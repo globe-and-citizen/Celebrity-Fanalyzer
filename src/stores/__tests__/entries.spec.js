@@ -94,11 +94,11 @@ describe('Entry Store', async () => {
     // 4) Edit the fake entry
 
     // 5) Delete fake entry and check
-    // await entryStore.deleteEntry(fakeEntry.id)
-    // await entryStore.fetchEntries()
-    // let entryArrayAfterDelete = entryStore.getEntries
-    // let endingNumberOfEntries = entryArrayAfterDelete.length
-    // expect(endingNumberOfEntries).toBe(startingNumberOfEntries)
+    await entryStore.deleteEntry(fakeEntry.id)
+    await entryStore.fetchEntries()
+    let entryArrayAfterDelete = entryStore.getEntries
+    let endingNumberOfEntries = entryArrayAfterDelete.length
+    expect(endingNumberOfEntries).toBe(startingNumberOfEntries)
   })
 })
 
