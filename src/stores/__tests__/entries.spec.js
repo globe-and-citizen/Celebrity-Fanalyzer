@@ -1,6 +1,6 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
 import fs from 'fs'
@@ -102,8 +102,4 @@ describe('Entry Store', async () => {
     let endingNumberOfEntries = entryArrayAfterDelete.length
     expect(endingNumberOfEntries).toBe(startingNumberOfEntries)
   })
-})
-
-afterAll(async () => {
-  // clean up logic.
 })
