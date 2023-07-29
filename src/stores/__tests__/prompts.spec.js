@@ -112,14 +112,10 @@ describe('Prompt Store', async () => {
     // Check Prompts length increase
     expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts + 1)
 
-    const latestPrompt = promptStore.getPrompts.find((prompt) => prompt.id === fakeDate)
-
     // 4) Edit the fake prompt
-    // await promptStore.editPrompt({
-    //   ...latestPrompt,
-    //   description: 'Updated Value of the prompt',
-    //   author: { label: user.displayName, value: user.uid }
-    // })
+    fakePrompt.author = { label: user.displayName, value: user.uid }
+    fakePrompt.description = 'Updated Value of the prompt'
+    await promptStore.editPrompt(fakePrompt)
 
     // 5) Delete fake prompt and check
     await promptStore.deletePrompt(fakeDate)
