@@ -92,6 +92,9 @@ describe('Entry Store', async () => {
     expect(entryStore.getEntries?.length).toBe(startingNumberOfEntries + 1)
 
     // 4) Edit the fake entry
+    fakeEntry.title = 'Edited Fake Entry'
+    fakeEntry.description = 'Edited description of a fake entry'
+    await entryStore.editEntry(fakeEntry)
 
     // 5) Delete fake entry and check
     await entryStore.deleteEntry(fakeEntry.id)
