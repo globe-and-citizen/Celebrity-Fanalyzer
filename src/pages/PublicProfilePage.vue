@@ -39,6 +39,7 @@
         </q-card-section>
       </q-card>
     </q-page>
+    <q-spinner v-else class="absolute-center" color="primary" size="3em" />
   </q-page-container>
 </template>
 
@@ -46,8 +47,9 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { dayMonthYear } from 'src/utils/date'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import {useQuasar} from "quasar";
 
 const router = useRouter()
 
@@ -55,6 +57,7 @@ const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
+const $q = useQuasar()
 
 // const computedPosts = ref()
 const user = ref()
@@ -82,8 +85,19 @@ const myTimeout = ref()
 //Handle 404
 myTimeout.value = setTimeout(async () => {
   if (!user.value) {
-    console.log('run')
-    await router.push('/')
+    $q.notify({
+      type: 'info',
+      message: 'There is not user with the username : ' + router.currentRoute.value.params.username
+    })
+    setTimeout(async () => {
+      $q.notify({
+        type: 'info',
+        message: 'You will be redirected in 3 second'
+      })
+    }, 3000)
+    setTimeout(async () => {
+      await router.push('/404')
+    }, 6000)
   }
 }, 10000)
 userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
