@@ -9,7 +9,7 @@ describe('Home page', () => {
   context('Roadmap Section', () => {
     it('Testing accordion', () => {
       cy.viewport('macbook-16')
-      cy.visit('/lost-series-from-2000s')
+      cy.visit('/2023/07/lorem-ipsum')
       cy.get('[data-test="entries"]')
     })
   })
