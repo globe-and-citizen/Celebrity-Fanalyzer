@@ -17,6 +17,6 @@ describe('Accessing a Public Profile', () => {
     // Visits the month page
     cy.visit('/fan/cypressNotExist')
     cy.get('.q-notification__message').contains('There is not user with the username :')
-    cy.location('pathname').should('eq', '/')
+    cy.location('pathname').should('eq', '/404')
   })
 })
