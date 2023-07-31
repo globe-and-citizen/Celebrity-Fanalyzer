@@ -1,11 +1,12 @@
 # Celebrity Fanalyzer
 
 <p align="center">
-<a href="https://livrolog.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Flivrolog.com" /></a>
-<img alt="GitHub Release" src="https://img.shields.io/github/v/release/globe-and-citizen/Celebrity-Fanalyzer">
-<img alt="GitHub License" src="https://img.shields.io/github/license/globe-and-citizen/Celebrity-Fanalyzer" />
-<img alt="Repository Size" src="https://img.shields.io/github/repo-size/globe-and-citizen/Celebrity-Fanalyzer" />
+<a href="https://codecov.io/gh/globe-and-citizen/Celebrity-Fanalyzer"><img src="https://codecov.io/gh/globe-and-citizen/Celebrity-Fanalyzer/branch/develop/graph/badge.svg?token=U370QTMYZ6" /></a>
 <img alt="GitHub Commit Activity" src="https://img.shields.io/github/commit-activity/m/globe-and-citizen/Celebrity-Fanalyzer" />
+<img alt="GitHub License" src="https://img.shields.io/github/license/globe-and-citizen/Celebrity-Fanalyzer" />
+<img alt="GitHub Release" src="https://img.shields.io/github/v/release/globe-and-citizen/Celebrity-Fanalyzer">
+<img alt="Repository Size" src="https://img.shields.io/github/repo-size/globe-and-citizen/Celebrity-Fanalyzer" />
+<a href="https://celebrityfanalyzer.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Fcelebrityfanalyzer.com" /></a>
 <br />
 <img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/firebase" />
 <img src="https://img.shields.io/github/package-json/dependency-version/globe-and-citizen/Celebrity-Fanalyzer/pinia" />
