@@ -45,9 +45,7 @@ const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
 
-const myTimeout = ref()
-
-myTimeout.value = setTimeout(() => {
+const myTimeout = setTimeout(() => {
   if (!entry.value?.id) {
     router.push('/404')
   }
@@ -62,7 +60,7 @@ watchEffect(async () => {
 })
 
 onUnmounted(() => {
-  if (myTimeout.value) clearTimeout(myTimeout.value)
+  if (myTimeout) clearTimeout(myTimeout)
   entryStore.setTab('post')
 })
 </script>

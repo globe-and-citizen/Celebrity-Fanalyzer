@@ -72,9 +72,7 @@ const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
 
-const myTimeout = ref()
-
-myTimeout.value = setTimeout(() => {
+const myTimeout = setTimeout(() => {
   if (!prompt.value?.id) {
     router.push('/404')
   }
@@ -99,7 +97,7 @@ watchEffect(async () => {
 })
 
 onUnmounted(() => {
-  if (myTimeout.value) clearTimeout(myTimeout.value)
+  if (myTimeout) clearTimeout(myTimeout)
   promptStore.setTab('post')
 })
 </script>
