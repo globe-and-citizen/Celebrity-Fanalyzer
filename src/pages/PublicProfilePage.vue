@@ -49,7 +49,7 @@ import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/
 import { dayMonthYear } from 'src/utils/date'
 import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import {useQuasar} from "quasar";
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
@@ -80,19 +80,16 @@ const computedPosts = computed(() => {
 })
 
 //Handle 404
-const myTimeout = ref()
-
-//Handle 404
-myTimeout.value = setTimeout(async () => {
+const myTimeout = setTimeout(async () => {
   if (!user.value) {
     $q.notify({
       type: 'info',
-      message: 'There is not user with the username : ' + router.currentRoute.value.params.username
+      message: 'There is no user with the username: ' + router.currentRoute.value.params.username
     })
     setTimeout(async () => {
       $q.notify({
         type: 'info',
-        message: 'You will be redirected in 3 second'
+        message: 'You will be redirected in 3 seconds'
       })
     }, 3000)
     setTimeout(async () => {
