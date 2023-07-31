@@ -81,7 +81,9 @@ export const useUserStore = defineStore('user', {
 
     async fetchAdminsAndWriters() {
       this._isLoading = true
-      await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('population', '==', 'Writer'))))
+      await getDocs(
+        query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'), where('population', '==', 'Writer')))
+      )
         .then((querySnapshot) => {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })
