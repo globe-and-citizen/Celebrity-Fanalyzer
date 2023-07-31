@@ -59,7 +59,6 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const $q = useQuasar()
 
-// const computedPosts = ref()
 const user = ref()
 
 const socialNetworks = [
@@ -72,6 +71,7 @@ const socialNetworks = [
 
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 promptStore.fetchPrompts()
+
 const computedPosts = computed(() => {
   return [
     ...(promptStore.getPrompts?.filter((prompt) => prompt.author?.uid === user.value.uid) || []),
@@ -79,7 +79,6 @@ const computedPosts = computed(() => {
   ].sort((a, b) => b.date - a.date)
 })
 
-//Handle 404
 const myTimeout = setTimeout(async () => {
   if (!user.value) {
     $q.notify({
@@ -97,9 +96,11 @@ const myTimeout = setTimeout(async () => {
     }, 6000)
   }
 }, 10000)
+
 userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
   user.value = res
 })
+
 onUnmounted(() => {
   if (myTimeout.value) clearTimeout(myTimeout.value)
 })

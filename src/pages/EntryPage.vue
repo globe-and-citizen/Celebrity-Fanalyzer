@@ -44,9 +44,9 @@ entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
+
 const myTimeout = ref()
 
-//Handle 404
 myTimeout.value = setTimeout(() => {
   if (!entry.value?.id) {
     router.push('/404')

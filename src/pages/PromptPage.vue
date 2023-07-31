@@ -45,8 +45,10 @@ const shareStore = useShareStore()
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
+
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+
 const prompt = computed(() => {
   const { href, params, path } = router.currentRoute.value
   const currentMonth = currentYearMonth()
@@ -69,9 +71,9 @@ const prompt = computed(() => {
 const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
+
 const myTimeout = ref()
 
-//Handle 404
 myTimeout.value = setTimeout(() => {
   if (!prompt.value?.id) {
     router.push('/404')
