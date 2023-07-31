@@ -14,7 +14,7 @@
           {{ item.author.displayName?.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
         </p>
       </div>
-      <div class="cursor-pointer" @click="goToUrl()">
+      <div class="cursor-pointer" @click="goToUrl()" data-test="item-link">
         <h2 class="q-mb-none text-body1 text-bold">
           {{ item.title?.length > 40 ? item.title.substring(0, 40) + '...' : item.title }}
         </h2>
