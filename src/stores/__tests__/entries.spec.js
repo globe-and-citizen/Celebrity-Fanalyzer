@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import fs from 'fs'
 import { useEntryStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
-import { reactive } from 'vue'
 
 //Load an image to use
 
@@ -62,40 +61,45 @@ describe('Entry Store', async () => {
     await waitUntil(() => {
       return entryStore.getEntries
     })
-    // Step 2: Check the starting number of entries.
-    const entries = entryStore.getEntries
-    const startingNumberOfEntries = entries.length
 
     // 3) Create a mock entry & test it was successfully added
     const prompts = promptStore.getPrompts
     const aPrompt = prompts[1]
     const bitmap = fs.readFileSync('src/assets/cypress.jpg') // Load and image to use
     const imgAddress = await storageStore.uploadFile(bitmap, `images/entry-${aPrompt.date}`)
-
-    const fakeEntry = reactive({
-      id: `${aPrompt.date}T${Date.now()}`,
+    const id = `${aPrompt.date}T${Date.now()}`
+    const fakeEntry = {
+      id: id,
       author: { label: userStore.getUser.displayName, value: userStore.getUser.uid },
       description: 'The description of a fake entry',
       image: imgAddress,
       title: 'Fake Entry',
       prompt: { label: `${aPrompt.date} - ${aPrompt.title}`, value: aPrompt.date },
       slug: `/${aPrompt.date.replace(/-/g, '/')}/fake-entry`
-    })
+    }
 
     await entryStore.addEntry(fakeEntry)
     await waitUntil(() => {
-      return entryStore.getEntries?.length === startingNumberOfEntries + 1
+      return entryStore.getEntries?.find((entry) => entry.id === id)
     })
-    expect(entryStore.getEntries?.length).toBe(startingNumberOfEntries + 1)
+    expect(entryStore.getEntries?.find((entry) => entry.id === id)?.id).toBe(fakeEntry.id)
+    expect(entryStore.getEntries?.find((entry) => entry.id === id)?.title).toBe(fakeEntry.title)
 
     // 4) Edit the fake entry
     fakeEntry.title = 'Edited Fake Entry'
     fakeEntry.description = 'Edited description of a fake entry'
     await entryStore.editEntry(fakeEntry)
 
+    await waitUntil(() => {
+      return entryStore.getEntries?.find((entry) => entry.id === id)?.title==='Edited Fake Entry'
+    }).catch(()=>console.log("can't 'Have Edited Fake Entry'"))
+    expect(entryStore.getEntries?.find((entry) => entry.id === id)?.title).toBe('Edited Fake Entry')
+
     // 5) Delete fake entry and check
     await entryStore.deleteEntry(fakeEntry.id)
-    await entryStore.fetchEntries()
-    expect(entryStore.getEntries.length).toBe(startingNumberOfEntries)
+    await waitUntil(() => {
+      return !entryStore.getEntries?.find((entry) => entry.id === id)
+    }).catch(()=>console.log("Entry Still exist"))
+    expect(entryStore.getEntries?.find((entry) => entry.id === id)?.id).toBe(undefined)
   })
 })
