@@ -49,7 +49,7 @@ import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/
 import { dayMonthYear } from 'src/utils/date'
 import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import {useQuasar} from "quasar";
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
@@ -59,7 +59,6 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const $q = useQuasar()
 
-// const computedPosts = ref()
 const user = ref()
 
 const socialNetworks = [
@@ -72,6 +71,7 @@ const socialNetworks = [
 
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 promptStore.fetchPrompts()
+
 const computedPosts = computed(() => {
   return [
     ...(promptStore.getPrompts?.filter((prompt) => prompt.author?.uid === user.value.uid) || []),
@@ -79,20 +79,16 @@ const computedPosts = computed(() => {
   ].sort((a, b) => b.date - a.date)
 })
 
-//Handle 404
-const myTimeout = ref()
-
-//Handle 404
-myTimeout.value = setTimeout(async () => {
+const myTimeout = setTimeout(async () => {
   if (!user.value) {
     $q.notify({
       type: 'info',
-      message: 'There is not user with the username : ' + router.currentRoute.value.params.username
+      message: 'There is no user with the username: ' + router.currentRoute.value.params.username
     })
     setTimeout(async () => {
       $q.notify({
         type: 'info',
-        message: 'You will be redirected in 3 second'
+        message: 'You will be redirected in 3 seconds'
       })
     }, 3000)
     setTimeout(async () => {
@@ -100,9 +96,11 @@ myTimeout.value = setTimeout(async () => {
     }, 6000)
   }
 }, 10000)
+
 userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
   user.value = res
 })
+
 onUnmounted(() => {
   if (myTimeout.value) clearTimeout(myTimeout.value)
 })
