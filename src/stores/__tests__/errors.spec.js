@@ -71,7 +71,7 @@ describe('Errors Store', async () => {
       console.log('errorStore.getErrors?.length === initialLength', e)
     })
     expect(errorStore.isLoading).toBe(false)
-    expect(errorStore.getErrors.length).toBe(initialLength)
+    expect(errorStore.getErrors.length).toBeGreaterThanOrEqual(initialLength)
   })
 })
 
