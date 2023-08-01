@@ -30,7 +30,7 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -45,6 +45,9 @@ const shareStore = useShareStore()
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
+
+promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const prompt = computed(() => {
   const { href, params, path } = router.currentRoute.value
@@ -69,28 +72,22 @@ const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
 
-onMounted(async () => {
-  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-
-  if (!prompt.value?.id) {
-    await new Promise((resolve) => setTimeout(resolve, 2000)) // wait 2 seconds before continue
-  }
-
+const myTimeout = setTimeout(() => {
   if (!prompt.value?.id) {
     router.push('/404')
-    return
   }
+}, 30000)
 
-  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-
-  await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
+watchEffect(async () => {
   if (prompt.value?.id) {
+    const promptId = prompt.value?.id
+    await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
+
+    await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
+
     shareIsLoading.value = true
     await shareStore
-      .fetchShares('prompts', prompt.value.id)
+      .fetchShares('prompts', promptId)
       .catch((error) => errorStore.throwError(error))
       .finally(() => {
         shareIsLoading.value = false
@@ -100,6 +97,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  if (myTimeout) clearTimeout(myTimeout)
   promptStore.setTab('post')
 })
 </script>

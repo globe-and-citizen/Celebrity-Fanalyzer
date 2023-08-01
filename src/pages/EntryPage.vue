@@ -26,7 +26,7 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -39,32 +39,28 @@ const shareStore = useShareStore()
 
 const tab = ref(entryStore.tab)
 
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+
 const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
 
-onMounted(async () => {
-  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-
-  if (!entry.value?.id) {
-    await new Promise((resolve) => setTimeout(resolve, 2000)) // wait 2 seconds before continue
-  }
-
+const myTimeout = setTimeout(() => {
   if (!entry.value?.id) {
     router.push('/404')
-    return
   }
+}, 30000)
 
-  await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-
-  await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-
+watchEffect(async () => {
   if (entry.value?.id) {
+    await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
     await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   }
 })
 
 onUnmounted(() => {
+  if (myTimeout) clearTimeout(myTimeout)
   entryStore.setTab('post')
 })
 </script>
