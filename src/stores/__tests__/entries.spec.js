@@ -69,7 +69,7 @@ describe('Entry Store', async () => {
 
     // 3) Create a mock entry & test it was successfully added
     const prompts = promptStore.getPrompts
-    const aPrompt = prompts[0]
+    const aPrompt = prompts[1]
     const bitmap = fs.readFileSync('src/assets/cypress.jpg') // Load and image to use
     const imgAddress = await storageStore.uploadFile(bitmap, `images/entry-${aPrompt.date}`)
 
