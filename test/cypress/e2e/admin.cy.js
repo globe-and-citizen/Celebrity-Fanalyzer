@@ -38,4 +38,23 @@ describe('Manage Error', () => {
     cy.getByData('confirm-button').click()
     cy.get('.q-notification__message').contains('Can\'t remove the Error')
   })
+
+  it('Should Manage feedback', ()=>{
+    //
+    const feedback = 'Feedback Subject' +  Math.floor(Math.random() * 1_000)
+    cy.visit('/profile')
+    cy.getByData('tab-feedback').click({force: true})
+    cy.getByData('feedback-subject').type(feedback)
+    cy.getByData('feedback-message').type('Feedback Message')
+    cy.get('.q-form > .q-btn').click()
+    cy.get('.q-notification__message').contains('Feedback submitted!')
+
+
+    cy.visit('/admin')
+    cy.getByData('feedbacks-tab').click()
+    cy.getByData('feedbacks').should('be.visible')
+    cy.getByData(feedback).eq(0).find('.q-card > .q-card__section.text-center > .q-btn > .q-btn__content').click()
+    cy.get('.text-negative').click()
+    cy.getByData('Feedback Subject').should('not.exist')
+  })
 })

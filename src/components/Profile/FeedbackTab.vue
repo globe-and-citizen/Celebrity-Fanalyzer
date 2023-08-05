@@ -1,8 +1,8 @@
 <template>
   <h3 class="text-bold text-h5 text-secondary">Give us feedback!</h3>
   <q-form class="q-gutter-y-md" greedy @submit="onSubmit">
-    <q-input label="Subject" required v-model="feedback.subject" />
-    <q-input label="Message" required type="textarea" v-model="feedback.message" />
+    <q-input label="Subject" required v-model="feedback.subject" data-test="feedback-subject" />
+    <q-input label="Message" required type="textarea" v-model="feedback.message" data-test="feedback-message" />
     <q-btn class="full-width" color="primary" label="Submit" :loading="feedbackStore.isLoading" padding="12px" rounded type="submit" />
   </q-form>
 </template>

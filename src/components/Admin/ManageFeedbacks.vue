@@ -1,5 +1,5 @@
 <template>
-  <h5 v-if="!feedbackStore.getFeedbacks" class="text-center">There are no feedbacks yet.</h5>
+  <h5 v-if="!feedbackStore.isLoading && !feedbackStore.getFeedbacks?.length>0" class="text-center">There are no feedbacks yet.</h5>
   <q-table
     v-else
     :columns="columns"
@@ -9,11 +9,12 @@
     :pagination="pagination"
     row-key="created"
     :rows="feedbackStore.getFeedbacks"
+    :data-test="feedbackStore.getFeedbacks ? 'feedbacks': ''"
     style="left: 0; right: 0"
     title="Manage Feedbacks"
   >
     <template v-slot:item="props">
-      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 q-pa-sm">
+      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 q-pa-sm" :data-test="props.row.subject">
         <q-card class="feedback">
           <q-card-section class="text-center">
             <div class="text-body1">{{ props.row.author.displayName }}</div>
