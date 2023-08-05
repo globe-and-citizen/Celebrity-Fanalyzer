@@ -23,6 +23,8 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Prompt Not found')
     cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
     cy.location('pathname').should('eq', '/404')
+    cy.get('.q-btn').click()
+    cy.location('pathname').should('eq', '/')
   })
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
