@@ -28,9 +28,11 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
 import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import {useQuasar} from "quasar";
 
 const router = useRouter()
 
+const $q = useQuasar()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
@@ -45,13 +47,22 @@ const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
 
-const myTimeout = setTimeout(() => {
-  if (!entry.value?.id) {
-    router.push('/404')
-  }
-}, 30000)
-
 watchEffect(async () => {
+  if(entryStore.getEntries && !entry.value?.id){
+    $q.notify({
+      type: 'info',
+      message: 'Entry Not found'
+    })
+    setTimeout(async () => {
+      $q.notify({
+        type: 'info',
+        message: 'You will be redirected in 3 seconds'
+      })
+    }, 3000)
+    setTimeout(async () => {
+      await router.push('/404')
+    }, 6000)
+  }
   if (entry.value?.id) {
     await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
     await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
@@ -60,7 +71,6 @@ watchEffect(async () => {
 })
 
 onUnmounted(() => {
-  if (myTimeout) clearTimeout(myTimeout)
   entryStore.setTab('post')
 })
 </script>
