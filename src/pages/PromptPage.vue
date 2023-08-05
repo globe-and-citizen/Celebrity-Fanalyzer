@@ -32,9 +32,11 @@ import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptS
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import {useQuasar} from "quasar";
 
 const router = useRouter()
 
+const $q = useQuasar()
 const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -72,13 +74,22 @@ const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
 
-const myTimeout = setTimeout(() => {
-  if (!prompt.value?.id) {
-    router.push('/404')
-  }
-}, 30000)
-
 watchEffect(async () => {
+  if(promptStore.getPrompts && !prompt.value?.id){
+        $q.notify({
+          type: 'info',
+          message: 'Prompt Not found'
+        })
+        setTimeout(async () => {
+          $q.notify({
+            type: 'info',
+            message: 'You will be redirected in 3 seconds'
+          })
+        }, 3000)
+        setTimeout(async () => {
+          await router.push('/404')
+        }, 6000)
+  }
   if (prompt.value?.id) {
     const promptId = prompt.value?.id
     await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
@@ -97,7 +108,6 @@ watchEffect(async () => {
 })
 
 onUnmounted(() => {
-  if (myTimeout) clearTimeout(myTimeout)
   promptStore.setTab('post')
 })
 </script>
