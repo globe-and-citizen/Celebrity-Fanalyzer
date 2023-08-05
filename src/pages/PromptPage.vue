@@ -30,7 +30,7 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { computed, onUnmounted, ref, watchEffect } from 'vue'
+import {computed, onMounted, onUnmounted, ref, watchEffect} from 'vue'
 import { useRouter } from 'vue-router'
 import {useQuasar} from "quasar";
 
@@ -73,23 +73,7 @@ const prompt = computed(() => {
 const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
-
 watchEffect(async () => {
-  if(promptStore.getPrompts && !prompt.value?.id){
-        $q.notify({
-          type: 'info',
-          message: 'Prompt Not found'
-        })
-        setTimeout(async () => {
-          $q.notify({
-            type: 'info',
-            message: 'You will be redirected in 3 seconds'
-          })
-        }, 3000)
-        setTimeout(async () => {
-          await router.push('/404')
-        }, 6000)
-  }
   if (prompt.value?.id) {
     const promptId = prompt.value?.id
     await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
@@ -104,6 +88,24 @@ watchEffect(async () => {
         shareIsLoading.value = false
         shareIsLoaded.value = true
       })
+  }
+})
+
+onMounted(()=>{
+  if(promptStore.getPrompts && !prompt.value?.id){
+      $q.notify({
+        type: 'info',
+        message: 'Prompt Not found'
+      })
+      setTimeout(async () => {
+        $q.notify({
+          type: 'info',
+          message: 'You will be redirected in 3 seconds'
+        })
+      }, 3000)
+      setTimeout(async () => {
+        await router.push('/404')
+      }, 6000)
   }
 })
 
