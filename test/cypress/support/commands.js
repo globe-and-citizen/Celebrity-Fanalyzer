@@ -30,7 +30,7 @@ import { registerCommands } from '@quasar/quasar-app-extension-testing-e2e-cypre
 import 'cypress-wait-until'
 registerCommands()
 Cypress.Commands.add('getByData', (selector) => {
-  return cy.get(`[data-test=${selector}]`)
+  return cy.get(`[data-test="${selector}"]`)
 })
 Cypress.Commands.add('login', () => {
   cy.session('login', () => {
