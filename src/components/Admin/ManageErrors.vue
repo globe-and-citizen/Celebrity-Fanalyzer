@@ -9,6 +9,7 @@
     :pagination="pagination"
     :rows="errorStore.getErrors"
     style="left: 0; right: 0"
+    :data-test="errorStore.isLoaded ? 'errors-loaded' : ''"
     title="Manage Errors"
   >
     <template v-slot:body="props">
@@ -19,7 +20,7 @@
           {{ props.row.error.split('\n')[0] }}
         </q-td>
         <q-td key="action" :props="props">
-          <q-btn color="negative" :disable="errorStore.isLoading" flat icon="delete" round size="sm" @click="confirmDelete(props.row)" />
+          <q-btn data-test="delete-button" color="negative" :disable="errorStore.isLoading" flat icon="delete" round size="sm" @click="confirmDelete(props.row)" />
         </q-td>
         <q-tooltip style="font-size: 0.8rem; white-space: pre">
           {{ props.row.error }}
@@ -28,7 +29,7 @@
     </template>
   </q-table>
 
-  <q-dialog v-model="deleteDialog.show" persistent>
+  <q-dialog v-model="deleteDialog.show" persistent data-test="dialog">
     <q-card>
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Delete Error?</h6>
@@ -36,7 +37,7 @@
       <q-card-section>Are you sure you want to delete this error?</q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeleteError(deleteDialog.id)" />
+        <q-btn flat label="Delete" color="negative" @click="onDeleteError(deleteDialog.id)" data-test="confirm-button"/>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -46,7 +47,9 @@
 import { useErrorStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
+import {useQuasar} from "quasar";
 
+const $q = useQuasar()
 const errorStore = useErrorStore()
 
 const columns = [
@@ -68,7 +71,12 @@ function confirmDelete(error) {
 }
 
 function onDeleteError(id) {
-  errorStore.deleteError(id).catch((error) => errorStore.throwError(error, 'Failed to delete error'))
+  errorStore.deleteError(id).then(()=>{
+    $q.notify({
+      type: 'info',
+      message: 'Error removed'
+    })
+  }).catch((error) => errorStore.throwError(error, 'Failed to delete error'))
   deleteDialog.value.show = false
 }
 </script>
