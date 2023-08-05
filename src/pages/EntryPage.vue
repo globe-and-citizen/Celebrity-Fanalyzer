@@ -26,9 +26,9 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { computed, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-import {useQuasar} from "quasar";
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
@@ -48,7 +48,15 @@ const entry = computed(() => {
 })
 
 watchEffect(async () => {
-  if(entryStore.getEntries && !entry.value?.id){
+  if (entry.value?.id) {
+    await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+  }
+})
+
+onMounted(() => {
+  if (entryStore.getEntries && !entry.value?.id) {
     $q.notify({
       type: 'info',
       message: 'Entry Not found'
@@ -63,13 +71,7 @@ watchEffect(async () => {
       await router.push('/404')
     }, 6000)
   }
-  if (entry.value?.id) {
-    await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-  }
 })
-
 onUnmounted(() => {
   entryStore.setTab('post')
 })
