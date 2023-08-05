@@ -10,6 +10,9 @@ describe('Commenting', async () => {
     cy.viewport('iphone-x')
     cy.login()
 
+  })
+
+  it('Comment : Create, like dislike', () => {
     // Visits the prompt of the month
     cy.visit('/month')
 
@@ -18,9 +21,6 @@ describe('Commenting', async () => {
 
     // Wait all comments to be loaded
     cy.getByData('comment-loaded')
-  })
-
-  it('Comment : Create, like dislike', () => {
     // navigate to the comment input form.
     cy.getByData('comment-main-box').type(comment + '{enter}')
 
@@ -35,6 +35,14 @@ describe('Commenting', async () => {
   })
 
   it('Reply comment', () => {
+    // Visits the prompt of the month
+    cy.visit('/month')
+
+    // Programmatically change the q-tab-panel to the comments section
+    cy.getByData('panel-3-navigator').click()
+
+    // Wait all comments to be loaded
+    cy.getByData('comment-loaded')
     // expand the add reply form
     cy.getByData(comment + '-add-reply').click()
 
@@ -72,6 +80,14 @@ describe('Commenting', async () => {
   })
 
   it('Comment Edit & Delete', () => {
+    // Visits the prompt of the month
+    cy.visit('/month')
+
+    // Programmatically change the q-tab-panel to the comments section
+    cy.getByData('panel-3-navigator').click()
+
+    // Wait all comments to be loaded
+    cy.getByData('comment-loaded')
     // Editing comment
     cy.getByData(comment + '-option-button').click()
 
