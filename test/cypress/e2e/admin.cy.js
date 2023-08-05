@@ -19,4 +19,23 @@ describe('Manage Error', () => {
     cy.getByData('confirm-button').click()
     cy.get('.q-notification__message').contains('Error removed')
   })
+
+  // TODO find a way to check when error occure
+  it.skip('should have error', () => {
+    cy.getByData('errors-tab').click()
+    cy.getByData('errors-loaded').should('be.visible')
+    cy.get(':nth-child(1) > .text-right > .q-btn > .q-btn__content')
+    cy.getByData('delete-button').eq(0).click()
+    cy.getByData('dialog').should('be.visible')
+    cy.intercept('https://firestore.googleapis.com/**', {
+      statusCode: 404,
+      body: '404 Not Found!',
+      headers: {
+        'x-not-found': 'true',
+      },
+    }).as('firestore')
+    // cy.get('@firestore')
+    cy.getByData('confirm-button').click()
+    cy.get('.q-notification__message').contains('Can\'t remove the Error')
+  })
 })
