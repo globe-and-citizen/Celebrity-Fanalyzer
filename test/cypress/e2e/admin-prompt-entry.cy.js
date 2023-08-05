@@ -12,9 +12,12 @@ describe('Admin Prompt & Entry', () => {
     cy.login()
     cy.visit('/admin')
   })
-  // it.only('display', () => {
-  //   cy.get('[data-test="entriesFetched"]')
-  // })
+  it('Try To access non existing prompt page', () => {
+    cy.visit('/not-exist-prompt')
+    cy.get('.q-notification__message').contains('Prompt Not found')
+    cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
+    cy.location('pathname').should('eq', '/404')
+  })
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="button-dropdown"]').click()
