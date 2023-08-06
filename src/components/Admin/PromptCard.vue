@@ -119,7 +119,7 @@
             </div>
           </q-card-section>
         </q-step>
-        <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
+        <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel" data-test="artist-carrousel">
           <ShowcaseCard
             collectionName="prompt"
             :date="prompt.date"

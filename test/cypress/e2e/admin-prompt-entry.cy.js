@@ -15,7 +15,7 @@ describe('Admin Prompt & Entry', () => {
   // it.only('display', () => {
   //   cy.get('[data-test="entriesFetched"]')
   // })
-  it('Should create a prompt', () => {
+  it.only('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="button-dropdown"]').click()
 
@@ -40,6 +40,15 @@ describe('Admin Prompt & Entry', () => {
 
     // Get the categories select and choose add 'Cypress' and 'Test' categories
     cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
+    cy.get('.q-stepper__header > :nth-child(2)').click()
+
+    // cy.getByData('upload-art').click()
+    // cy.getByData('upload-artist').selectFile(['src/assets/artist.jpg'])
+
+    cy.getByData('upload-art').selectFile(['src/assets/04.jpg', 'src/assets/01.jpg', 'src/assets/02.jpg'], { force: true })
+    cy.getByData('upload-artist').selectFile(['src/assets/artist.jpg'], { force: true })
+    cy.getByData('remove-art').eq(0).click({ timeout: 120000 , force: true})
+    cy.getByData('artist-info').type('Cypress artist')
 
     // Get the submit button and click it
     cy.get('[data-test="button-submit"] > .q-btn__content').click()

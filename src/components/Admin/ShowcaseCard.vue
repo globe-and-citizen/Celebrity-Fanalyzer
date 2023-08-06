@@ -1,21 +1,21 @@
 <template>
   <section class="text-center">
-    <q-file class="hidden" multiple ref="artsFileRef" v-model="modelFileArt" @update:model-value="addArts" />
+    <q-file class="hidden" multiple ref="artsFileRef" v-model="modelFileArt" @update:model-value="addArts" :data-test="storageStore.isLoading ? '' : 'upload-art'"/>
     <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
     <div class="items-center justify-around q-my-md q-pa-md rounded-borders row shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArts.length" class="q-mx-auto" color="primary" size="3em" />
       <div v-for="(art, index) in modelArts" class="art-img q-ma-xs relative-position" :key="index">
         <q-img class="rounded-borders" fit="cover" :ratio="1" :src="art" style="width: 10rem" />
-        <q-btn class="trash-icon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" />
+        <q-btn class="trash-icon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" data-test="remove-art"/>
       </div>
     </div>
 
-    <q-file class="hidden" multiple ref="artistFileRef" v-model="modelFileArtist" @update:model-value="addArtistPhoto" />
+    <q-file class="hidden" multiple ref="artistFileRef" v-model="modelFileArtist" @update:model-value="addArtistPhoto"  :data-test="storageStore.isLoading ? '' : 'upload-artist'" />
     <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
     <div class="items-center no-wrap q-my-md q-pa-md rounded-borders row shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
       <q-img v-else class="artist-img q-mr-md rounded-borders" fit="contain" :src="modelArtistPhoto" spinner-color="primary" />
-      <q-input autogrow class="col-grow" label="Artist info" v-model="modelArtistInfo" @update:model-value="addArtistInfo" />
+      <q-input autogrow class="col-grow" label="Artist info" v-model="modelArtistInfo" @update:model-value="addArtistInfo" data-test="artist-info" />
     </div>
   </section>
 </template>
