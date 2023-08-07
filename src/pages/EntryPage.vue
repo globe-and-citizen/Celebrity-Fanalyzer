@@ -7,7 +7,7 @@
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
-    <q-tab-panel v-if="entry" name="post" style="padding: 0">
+    <q-tab-panel v-if="entry" name="post" style="padding: 0" data-test="entry-page">
       <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
