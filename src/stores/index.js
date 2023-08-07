@@ -1,6 +1,7 @@
 import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { store } from 'quasar/wrappers'
+import SecureLS from 'secure-ls'
 import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
 import { useErrorStore } from './errors'
@@ -25,8 +26,18 @@ import { useVisitorStore } from './visitors'
 export default store((/* { ssrContext } */) => {
   const pinia = createPinia()
 
-  pinia.use(piniaPluginPersistedstate)
-
+  pinia.use(
+    createPersistedState({
+      storage: {
+        getItem: (key) => {
+          return new SecureLS().get(key)
+        },
+        setItem: (key, value) => {
+          new SecureLS().set(key, value)
+        }
+      }
+    })
+  )
   // You can add Pinia plugins here
   // pinia.use(SomePiniaPlugin)
 
