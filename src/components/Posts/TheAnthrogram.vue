@@ -10,7 +10,11 @@
         </q-tabs>
         <VisitorsBar :data="visitorStore.getVisitors" :interval="interval" />
         <q-separator spaced="xl" />
-        <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="interval" />
+        <LikesBar
+          v-if="likeStore.getLikes && likeStore.getDislikes"
+          :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
+          :interval="interval"
+        />
         <q-separator spaced="xl" />
         <SharesPie v-if="shareStore.isLoaded" :data="shareStore.getShares" :interval="interval" />
         <q-separator spaced="xl" />
