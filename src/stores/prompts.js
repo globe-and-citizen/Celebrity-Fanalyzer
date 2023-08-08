@@ -2,7 +2,16 @@ import { collection, deleteDoc, doc, onSnapshot, runTransaction, setDoc, Timesta
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
+import {
+  useCommentStore,
+  useEntryStore,
+  useErrorStore,
+  useLikeStore,
+  useNotificationStore,
+  useShareStore,
+  useUserStore,
+  useVisitorStore
+} from 'src/stores'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
@@ -78,6 +87,7 @@ export const usePromptStore = defineStore('prompts', {
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
+      const visitorStore = useVisitorStore()
 
       const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
 
@@ -94,8 +104,9 @@ export const usePromptStore = defineStore('prompts', {
         const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
+        const deleteVisitors = visitorStore.deleteAllVisitors('entries', entryId)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc])
+        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
       } catch (error) {
         errorStore.throwError(error)
       }

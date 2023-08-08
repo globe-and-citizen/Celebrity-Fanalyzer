@@ -17,7 +17,16 @@ import {
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import {
+  useCommentStore,
+  useErrorStore,
+  useLikeStore,
+  useNotificationStore,
+  usePromptStore,
+  useShareStore,
+  useUserStore,
+  useVisitorStore
+} from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
@@ -116,6 +125,7 @@ export const useEntryStore = defineStore('entries', {
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
+      const visitorStore = useVisitorStore()
 
       const promptId = entryId.split('T')[0]
       const entryRef = doc(db, 'entries', entryId)
@@ -126,10 +136,11 @@ export const useEntryStore = defineStore('entries', {
         const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
         const deleteLikes = likeStore.deleteAllLikesDislikes('entries', entryId)
         const deleteShares = shareStore.deleteAllShares('entries', entryId)
+        const deleteVisitors = visitorStore.deleteAllVisitors('entries', entryId)
         const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
-        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares])
+        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
       } catch (error) {
         errorStore.throwError(error)
       }
