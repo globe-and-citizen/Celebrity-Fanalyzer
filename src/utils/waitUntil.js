@@ -3,6 +3,8 @@ export const waitUntil = (callback, timeout=5000) => {
     setTimeout(() => {
       if (!callback()) {
         reject("waitUntil Timeout after" + timeout)
+        console.log("waitUntil Timeout after" + timeout)
+        console.log("Try to increase you default timeout")
       }
     }, timeout)
     if (callback()) {
