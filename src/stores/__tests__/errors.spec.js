@@ -47,11 +47,11 @@ describe('Errors Store', async () => {
     // 1) Load entries & prompts into the store
     await errorStore.fetchErrors()
     await waitUntil(() => {
-      return errorStore.getErrors
-    }).catch((e) => {
+      return errorStore.isLoaded
+    }, 50000).catch((e) => {
       console.log('errorStore.getErrors', e)
     })
-    const initialLength = errorStore.getErrors.length
+    const initialLength = errorStore.getErrors?.length
     try {
       throw new Error('Error number')
     } catch (e) {
