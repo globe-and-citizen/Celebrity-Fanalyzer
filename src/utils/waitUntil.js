@@ -1,10 +1,10 @@
-export const waitUntil = (callback) => {
+export const waitUntil = (callback, timeout=5000) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (!callback()) {
-        reject()
+        reject("waitUntil Timeout after" + timeout)
       }
-    }, 5000)
+    }, timeout)
     if (callback()) {
       resolve()
     } else {
