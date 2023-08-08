@@ -21,6 +21,7 @@
       <q-toolbar-title>
         <q-input
           class="q-pb-lg text-black"
+          data-test="search-input"
           dense
           label="Search"
           rounded
