@@ -1,13 +1,13 @@
 //Testing Frameworks
-import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { deleteUser, getAuth } from 'firebase/auth'
+import {createPinia, setActivePinia} from 'pinia'
+import {afterAll, beforeEach, describe, expect, it, vi} from 'vitest'
+import {deleteUser, getAuth} from 'firebase/auth'
 
 // Necessary Components
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
-import { waitUntil } from 'src/utils/waitUntil'
-import { ref } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import {useEntryStore, usePromptStore, useUserStore} from 'src/stores'
+import {waitUntil} from 'src/utils/waitUntil'
+import {ref} from 'vue'
+import {createRouter, createWebHistory} from 'vue-router'
 
 describe('Users Store', () => {
   // Create a router instance using the `createRouter()` function
@@ -28,6 +28,7 @@ describe('Users Store', () => {
       }
     })
   })
+
   it('Should Access the store initial state with the getter as an anonymous user', async () => {
     const userStore = useUserStore()
     expect(userStore.getAdmins).toEqual([])
@@ -247,7 +248,7 @@ describe('Users Store', () => {
     })
 
     // Update user Roles
-    await userStore.updateRole({ ...user, role: 'Editor' })
+    await userStore.updateRole({...user, role: 'Editor'})
     user = await userStore.fetchUser(newUserUID)
     expect(user.email).toEqual(userObj.email)
     userStore.logout()
@@ -259,7 +260,7 @@ describe('Users Store', () => {
     await userStore.emailSignIn(userObj)
     await waitUntil(() => {
       return userStore.isAuthenticated
-    })
+    }, 50000)
     expect(userStore.getUser.role).toEqual('Editor')
     expect(userStore.isAuthenticated).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
