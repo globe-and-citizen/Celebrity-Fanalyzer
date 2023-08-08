@@ -43,7 +43,7 @@
         </q-tab-panel>
       </q-tab-panels>
       <TransitionGroup tag="div">
-        <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
+        <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
       </TransitionGroup>
     </q-page>
   </q-page-container>
@@ -74,7 +74,7 @@ promptStore.$subscribe((_mutation, state) => {
   prompts.value = state._prompts
 
   if (router.currentRoute.value.params.year) {
-    prompts.value = prompts.value.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
+    prompts.value = prompts.value?.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
   }
 })
 
@@ -86,7 +86,7 @@ const computedCategories = computed(() => {
 })
 
 const computedPrompts = computed(() => {
-  return prompts.value.filter((item) =>
+  return prompts.value?.filter((item) =>
     [item.title, item.description, item.author?.displayName, ...item.categories].some((str) =>
       str?.toLowerCase().includes(search.value.toLowerCase())
     )
@@ -94,7 +94,7 @@ const computedPrompts = computed(() => {
 })
 
 const computedEntries = computed(() => {
-  return entryStore.getEntries.filter((item) =>
+  return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })
