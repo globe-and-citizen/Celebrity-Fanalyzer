@@ -79,8 +79,10 @@ const computedPosts = computed(() => {
   ].sort((a, b) => b.date - a.date)
 })
 
-const myTimeout = setTimeout(async () => {
-  if (!user.value) {
+
+userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
+  user.value = res
+  if(!res){
     $q.notify({
       type: 'info',
       message: 'There is no user with the username: ' + router.currentRoute.value.params.username
@@ -95,15 +97,8 @@ const myTimeout = setTimeout(async () => {
       await router.push('/404')
     }, 6000)
   }
-}, 10000)
-
-userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
-  user.value = res
 })
 
-onUnmounted(() => {
-  if (myTimeout.value) clearTimeout(myTimeout.value)
-})
 
 function goToUrl(link) {
   const normalizedLink = link.startsWith('/') ? link : `/${link}`
