@@ -33,6 +33,7 @@
           <TransitionGroup name="prompt" tag="div">
             <ItemCard
               v-for="prompt in computedPrompts"
+              data-test="prompt-card"
               :item="prompt"
               :key="prompt?.id"
               :link="prompt?.slug"
