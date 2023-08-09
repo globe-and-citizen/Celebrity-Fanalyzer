@@ -47,10 +47,12 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { useErrorStore, useFeedbackStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 
+const $q = useQuasar()
 const errorStore = useErrorStore()
 const feedbackStore = useFeedbackStore()
 
@@ -72,7 +74,10 @@ function confirmDelete(feedback) {
 }
 
 function onDeleteFeedback(id) {
-  feedbackStore.deleteFeedback(id).catch((error) => errorStore.throwError(error, 'Failed to delete feedback'))
+  feedbackStore
+    .deleteFeedback(id)
+    .then(() => $q.notify({ color: 'positive', message: 'Feedback deleted successfully' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to delete feedback'))
   deleteDialog.value.show = false
 }
 </script>
