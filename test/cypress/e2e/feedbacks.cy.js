@@ -14,7 +14,6 @@ describe('Feedback page', () => {
     cy.get('[data-test="subject-input"]').type('Test subject')
     cy.get('[data-test="message-input"]').type('Test message')
     cy.get('[data-test="submit-button"]').click()
-    cy.wait(1000)
 
     cy.get('.q-notification').should('be.visible')
   })
@@ -23,7 +22,6 @@ describe('Feedback page', () => {
     cy.visit('/admin')
 
     cy.get('[data-test="feedbacks-tab"]').click()
-    cy.wait(1000)
 
     cy.get('[data-test="user-div"]').first().should('have.text', 'Cypress Tester')
     cy.get('[data-test="feedback-message"]').first().should('have.text', 'Test message')
