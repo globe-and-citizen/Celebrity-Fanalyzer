@@ -1,3 +1,4 @@
+/* eslint-disable cypress/no-unnecessary-waiting */
 /// <reference types="cypress" />
 
 describe('Search page', () => {
@@ -7,6 +8,7 @@ describe('Search page', () => {
 
     cy.get('[data-test="search-input"]').type(' ')
     cy.get('[data-test="prompt-card"] > :first-child').click()
+    cy.wait(1000)
     cy.get('[data-test="title"]').should('have.text', 'Prompt Page')
   })
 })
