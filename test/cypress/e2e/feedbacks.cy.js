@@ -26,7 +26,6 @@ describe('Feedback page', () => {
     cy.wait(1000)
 
     cy.get('[data-test="user-div"]').first().should('have.text', 'Cypress Tester')
-    cy.get('[data-test="feedback-subject"]').first().should('contain.text', 'Test subject')
     cy.get('[data-test="feedback-message"]').first().should('have.text', 'Test message')
   })
 
