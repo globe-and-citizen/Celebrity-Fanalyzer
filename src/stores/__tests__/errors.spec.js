@@ -48,9 +48,7 @@ describe('Errors Store', async () => {
     await errorStore.fetchErrors()
     await waitUntil(() => {
       return errorStore.isLoaded
-    }, 50000).catch((e) => {
-      console.log('errorStore.getErrors', e)
-    })
+    }, 50000)
     const initialLength = errorStore.getErrors?.length
     try {
       throw new Error('Error number')
@@ -59,16 +57,12 @@ describe('Errors Store', async () => {
     }
     await waitUntil(() => {
       return errorStore.getErrors?.length > initialLength
-    }).catch((e) => {
-      console.log('errorStore.getErrors?.length > initialLength', e)
     })
 
     expect(errorStore.getErrors.length).toBeGreaterThan(initialLength)
     await errorStore.deleteError(errorStore.getErrors[0].id)
     await waitUntil(() => {
-      return errorStore.isLoading === initialLength
-    }).catch((e) => {
-      console.log('errorStore.getErrors?.length === initialLength', e)
+      return errorStore.isLoading === false
     })
     expect(errorStore.isLoading).toBe(false)
     expect(errorStore.getErrors.length).toBeGreaterThanOrEqual(initialLength)

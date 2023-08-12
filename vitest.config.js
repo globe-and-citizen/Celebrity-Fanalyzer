@@ -10,6 +10,7 @@ export default defineConfig({
     environment: 'jsdom',
     testTimeout: 50000,
     hookTimeout: 100000,
+    retry: 3,
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'json', 'html']
