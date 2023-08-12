@@ -259,7 +259,7 @@ describe('Users Store', () => {
     // Login user
     await userStore.emailSignIn(userObj)
     await waitUntil(() => {
-      return userStore.isAuthenticated
+      return userStore.isAuthenticated && userStore.getUser.role === 'Editor'
     }, 50000)
     expect(userStore.getUser.role).toEqual('Editor')
     expect(userStore.isAuthenticated).toEqual(true)
