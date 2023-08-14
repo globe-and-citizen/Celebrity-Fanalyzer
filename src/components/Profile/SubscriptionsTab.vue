@@ -31,8 +31,8 @@ const columns = [
 ]
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-const filteredPrompts = computed(() => promptStore.getPrompts?.filter((prompt) => userStore.getSubscriptions.includes(prompt.id)))
-const filteredEntries = computed(() => entryStore.getEntries?.filter((entry) => userStore.getSubscriptions.includes(entry.id)))
+const filteredPrompts = computed(() => promptStore.getPrompts?.filter((prompt) => userStore.getSubscriptions?.includes(prompt.id)))
+const filteredEntries = computed(() => entryStore.getEntries?.filter((entry) => userStore.getSubscriptions?.includes(entry.id)))
 
 function unsubscribe(collectionName, documentId) {
   notificationStore.toggleSubscription(collectionName, documentId)
