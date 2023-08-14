@@ -30,10 +30,14 @@ export default store((/* { ssrContext } */) => {
     createPersistedState({
       storage: {
         getItem: (key) => {
-          return new SecureLS().get(key)
+          return new SecureLS({
+            encryptionSecret: import.meta.env.VITE_LS_SECRET_KEY
+          }).get(key)
         },
         setItem: (key, value) => {
-          new SecureLS().set(key, value)
+          new SecureLS({
+            encryptionSecret: import.meta.env.VITE_LS_SECRET_KEY
+          }).set(key, value)
         }
       }
     })
