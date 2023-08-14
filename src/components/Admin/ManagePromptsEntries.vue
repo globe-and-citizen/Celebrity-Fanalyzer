@@ -39,6 +39,7 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">
           <q-btn
+            v-if="userStore.isEditorOrAbove"
             color="warning"
             data-test="button-edit"
             :disable="promptStore.isLoading"
@@ -49,6 +50,7 @@
             @click="$emit('openPromptDialog', props.row)"
           />
           <q-btn
+            v-if="userStore.isEditorOrAbove"
             color="negative"
             data-test="button-delete-prompt"
             :disable="promptStore.isLoading"
@@ -92,7 +94,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 
 defineEmits(['openPromptDialog'])
@@ -101,6 +103,7 @@ const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
 const columns = [
   {},
