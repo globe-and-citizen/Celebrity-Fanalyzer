@@ -7,7 +7,7 @@ import { monthDayYear } from 'src/utils/date'
 export const useVisitorStore = defineStore('visitors', {
   state: () => ({
     _isLoading: false,
-    _visitors: []
+    _visitors: undefined
   }),
 
   persist: true,
