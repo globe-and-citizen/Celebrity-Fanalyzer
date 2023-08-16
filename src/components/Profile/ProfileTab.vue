@@ -49,11 +49,11 @@
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input debounce="400" label="Facebook" prefix="https://facebook.com/" v-model.trim="user.facebook" />
-    <q-input debounce="400" label="Instagram" prefix="https://instagram.com/" v-model.trim="user.instagram" />
-    <q-input debounce="400" label="Linkedin" prefix="https://linkedin.com/in/" v-model.trim="user.linkedin" />
-    <q-input debounce="400" label="Telegram" prefix="https://web.telegram.org/a/#" v-model.trim="user.telegram" />
-    <q-input debounce="400" label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
+    <q-input label="Facebook" prefix="https://facebook.com/" v-model.trim="user.facebook" />
+    <q-input label="Instagram" prefix="https://instagram.com/" v-model.trim="user.instagram" />
+    <q-input label="Linkedin" prefix="https://linkedin.com/in/" v-model.trim="user.linkedin" />
+    <q-input label="Telegram" prefix="https://web.telegram.org/a/#" v-model.trim="user.telegram" />
+    <q-input label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
