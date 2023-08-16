@@ -22,7 +22,7 @@ export const useRequestStore = defineStore('request', {
 
       this._isLoading = true
       onSnapshot(collection(db, 'requests'), async (querySnapshot) => {
-        const requests = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        const requests = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter((request) => request.status === 'pending')
 
         for (const request of requests) {
           request.user = userStore.getUserById(request.id) || (await userStore.fetchUser(request.id))
