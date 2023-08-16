@@ -1,13 +1,13 @@
 <template>
   <q-table
-    v-if="computedRequests.length"
+    v-if="requestStore.getRequests.length"
     :columns="columnsRequests"
     flat
     hide-bottom
     :loading="userStore.isLoading"
     :pagination="{ rowsPerPage: 0 }"
     row-key="email"
-    :rows="computedRequests"
+    :rows="requestStore.getRequests"
     title="Manage Requests"
   >
     <template v-slot:body-cell-message="props">
@@ -74,8 +74,8 @@ const requestStore = useRequestStore()
 const userStore = useUserStore()
 
 const columnsRequests = [
-  { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
-  { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
+  { name: 'displayName', label: 'Name', field: (row) => row.user.displayName, sortable: true, align: 'left' },
+  { name: 'email', label: 'Email', field: (row) => row.user.email, sortable: true, align: 'left' },
   { name: 'message', label: 'Message', field: 'message', sortable: true, align: 'left' },
   { name: 'actions', label: '', field: 'actions', sortable: true }
 ]
@@ -86,10 +86,4 @@ const columnsUser = [
 ]
 const filter = ref('')
 const options = ['Admin', 'Editor', 'Writer', 'User']
-
-const computedRequests = computed(() => {
-  return requestStore.getRequests
-    .filter((request) => request.status === 'pending')
-    .map((request) => ({ ...request, displayName: request.user?.displayName, email: request.user?.email, role: request.user?.role }))
-})
 </script>
