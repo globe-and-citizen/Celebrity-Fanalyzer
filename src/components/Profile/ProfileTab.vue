@@ -24,7 +24,13 @@
           </div>
         </q-img>
       </q-avatar>
-      <q-input class="col-grow q-pl-sm" label="Name" v-model="user.displayName" />
+      <q-input
+        class="col-grow q-pl-sm"
+        label="Name"
+        required
+        :rules="[(val) => val.length || 'Name is required']"
+        v-model="user.displayName"
+      />
     </div>
     <q-input
       class="non-selectable"
@@ -87,6 +93,7 @@ async function uploadPhoto() {
 }
 
 async function usernameValidator(username) {
+  if (!username) return true
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
   const isAvailable = !(await userStore.checkUsernameAvailability(username))
   if (!isAvailable) return 'Username already taken'
