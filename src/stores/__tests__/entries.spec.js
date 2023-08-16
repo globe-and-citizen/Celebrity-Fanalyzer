@@ -56,7 +56,7 @@ describe('Entry Store', async () => {
 
     await waitUntil(() => {
       // TODO : Default state
-      return promptStore.getPrompts.length > 0
+      return promptStore.getPrompts
     })
     await waitUntil(() => {
       return entryStore.getEntries

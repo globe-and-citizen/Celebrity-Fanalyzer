@@ -1,6 +1,6 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
 import fs from 'fs'
@@ -45,8 +45,7 @@ describe('Prompt Store', async () => {
     await promptStore.fetchPrompts()
 
     await waitUntil(() => {
-      // TODO : Default state
-      return promptStore.getPrompts.length > 0
+      return promptStore.getPrompts
     })
     let prompts = promptStore.getPrompts
     if (prompts.some((prompt) => prompt.id === fakeDate)) {
@@ -78,8 +77,7 @@ describe('Prompt Store', async () => {
     // 1) Load prompts into the store
     await promptStore.fetchPrompts()
     await waitUntil(() => {
-      // TODO : Default state
-      return promptStore.getPrompts.length > 0
+      return promptStore.getPrompts
     })
 
     // Step 2: Check the starting number of comments.

@@ -149,10 +149,9 @@ describe('Users Store', () => {
     // 4) Get the user's prompts and entries
     await promptStore.fetchPrompts()
     await waitUntil(() => {
-      // TODO : Default state
-      return promptStore.getPrompts.length > 0
+      return promptStore.getPrompts
     })
-    const filteredPrompts = promptStore.getPrompts.filter((prompt) => prompt.author?.uid === user.value.uid)
+    const filteredPrompts = promptStore.getPrompts?.filter((prompt) => prompt.author?.uid === user.value.uid)
 
     await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 

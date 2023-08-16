@@ -56,7 +56,7 @@ const prompt = computed(() => {
   const currentMonth = currentYearMonth()
   const previousMonth = previousYearMonth()
 
-  return promptStore.getPrompts.find((prompt) => {
+  return promptStore.getPrompts?.find((prompt) => {
     switch (href) {
       case '/month':
         return [currentMonth, previousMonth].includes(prompt.date)
