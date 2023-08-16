@@ -78,7 +78,7 @@ promptStore.$subscribe((_mutation, state) => {
 })
 
 const computedCategories = computed(() => {
-  const allPromptCategories = computedPrompts.value.flatMap(({ categories }) => categories)
+  const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
   const uniqueCategories = Array.from(new Set(allPromptCategories), (category) => ({ label: category, value: category }))
   const allCategory = { label: 'All', value: 'All' }
   return [allCategory, ...uniqueCategories]
