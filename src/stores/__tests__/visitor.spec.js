@@ -24,7 +24,7 @@ describe('Users Store', () => {
     const visitorStore = useVisitorStore()
 
     await promptStore.fetchPrompts()
-    await waitUntil(() => promptStore.getPrompts.length)
+    await waitUntil(() => promptStore.getPrompts)
     const firstPrompt = promptStore.getPrompts[0]
 
     await visitorStore.readVisitors('prompts', firstPrompt.id)
