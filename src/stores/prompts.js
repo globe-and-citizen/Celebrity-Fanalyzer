@@ -16,7 +16,7 @@ import {
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
-    _prompts: [],
+    _prompts: undefined,
     _tab: 'post'
   }),
 

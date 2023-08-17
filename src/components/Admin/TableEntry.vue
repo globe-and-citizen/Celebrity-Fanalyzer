@@ -80,7 +80,7 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
   entry.value = props
-  entry.value.prompt = promptStore.getPrompts.find((prompt) => prompt.id === props.id.split('T')[0])
+  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0])
   entry.value.dialog = true
 }
 
