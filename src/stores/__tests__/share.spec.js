@@ -97,7 +97,7 @@ describe('Unit Test Share Store', () => {
     // 1) Load prompts into the store
     await promptStore.fetchPrompts()
     await waitUntil(() => {
-      return promptStore.getPrompts.length > 0
+      return promptStore.getPrompts
     })
     await shareStore.fetchShares('prompt', promptStore.getPrompts[0].id)
     expect(shareStore.isLoaded).toBe(true)

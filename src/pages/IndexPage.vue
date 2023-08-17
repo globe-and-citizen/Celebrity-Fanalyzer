@@ -174,7 +174,7 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 
 const monthPrompt = computed(() =>
-  promptStore.getPrompts.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
+  promptStore.getPrompts?.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
 )
 onMounted(async () => {
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))

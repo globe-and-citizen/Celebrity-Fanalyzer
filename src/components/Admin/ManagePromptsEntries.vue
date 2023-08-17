@@ -4,7 +4,7 @@
     :filter="filter"
     flat
     hide-bottom
-    :loading="promptStore.isLoading || entryStore.isLoading"
+    :loading="isLoading"
     :pagination="pagination"
     :rows="prompts"
     style="left: 0; right: 0"
@@ -12,7 +12,7 @@
   >
     <template v-slot:top-right>
       <q-input
-        :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'input-search'"
+        :data-test="isLoading ? '' : 'input-search'"
         debounce="300"
         dense
         placeholder="Search"
@@ -120,6 +120,16 @@ onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
 })
+/**
+ * @description computed property that returns if prompts and entries are loaded
+ * @type {ComputedRef<Boolean>}
+ */
+const isLoaded = computed(() => promptStore.getPrompts && entryStore.getEntries)
+/**
+ * @description computed property that returns if prompts and entries are loading
+ * @type {ComputedRef<Boolean>}
+ */
+const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
 const prompts = computed(() => {
   return promptStore.getPrompts?.map((prompt) => ({

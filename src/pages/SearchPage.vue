@@ -22,7 +22,7 @@
         />
       </q-scroll-area>
       <q-separator class="q-mb-none q-mt-xs" />
-      <section v-if="!prompts.length && promptStore.isLoading">
+      <section v-if="!promptStore.getPrompts && promptStore.isLoading">
         <ArticleSkeleton />
         <ArticleSkeleton />
         <ArticleSkeleton />
@@ -63,30 +63,29 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const category = ref('All')
-const prompts = ref(promptStore.getPrompts)
 const router = useRouter()
 const search = ref('')
 
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
-promptStore.$subscribe((_mutation, state) => {
-  prompts.value = state._prompts
-
-  if (router.currentRoute.value.params.year) {
-    prompts.value = prompts.value?.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
-  }
-})
+// promptStore.$subscribe((_mutation, state) => {
+//   promptStore.getPrompts.value = state._prompts
+//
+//   if (router.currentRoute.value.params.year) {
+//     promptStore.getPrompts.value = promptStore.getPrompts.value?.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
+//   }
+// })
 
 const computedCategories = computed(() => {
-  const allPromptCategories = computedPrompts.value.flatMap(({ categories }) => categories)
+  const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
   const uniqueCategories = Array.from(new Set(allPromptCategories), (category) => ({ label: category, value: category }))
   const allCategory = { label: 'All', value: 'All' }
   return [allCategory, ...uniqueCategories]
 })
 
 const computedPrompts = computed(() => {
-  return prompts.value?.filter((item) =>
+  return promptStore.getPrompts?.filter((item) =>
     [item.title, item.description, item.author?.displayName, ...item.categories].some((str) =>
       str?.toLowerCase().includes(search.value.toLowerCase())
     )
