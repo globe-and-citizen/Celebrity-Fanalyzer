@@ -8,7 +8,7 @@
             <q-avatar size="7rem">
               <q-img :src="user.photoURL" />
             </q-avatar>
-            <h5 class="q-my-none">{{ user.displayName }}</h5>
+            <h5 class="q-my-none" data-test="user-displayName">{{ user.displayName }}</h5>
           </div>
           <div class="col text-right">
             <span v-for="(socialNetwork, index) in socialNetworks" :key="index">
@@ -28,7 +28,7 @@
         </q-card-section>
         <q-separator spaced inset />
         <q-card-section class="justify-center row">
-          <div v-for="post in computedPosts" class="col-sm-4 col-xs-6" data-test="posts-section" :key="post.id" @click="goToUrl(post.slug)">
+          <div v-for="post in computedPosts" class="col-sm-4 col-xs-6" :key="post.id" @click="goToUrl(post.slug)">
             <div class="cursor-pointer q-mx-xs">
               <q-img class="rounded-borders" height="12rem" :ratio="1" :src="post.image" />
               <p class="q-mb-none text-caption">{{ dayMonthYear(post.created) }} &bullet; {{ post.title }}</p>
@@ -79,10 +79,9 @@ const computedPosts = computed(() => {
   ].sort((a, b) => b.date - a.date)
 })
 
-
 userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then(async (res) => {
   user.value = res
-  if(!res){
+  if (!res) {
     $q.notify({
       type: 'info',
       message: 'There is no user with the username: ' + router.currentRoute.value.params.username
@@ -98,7 +97,6 @@ userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then
     }, 6000)
   }
 })
-
 
 function goToUrl(link) {
   const normalizedLink = link.startsWith('/') ? link : `/${link}`
