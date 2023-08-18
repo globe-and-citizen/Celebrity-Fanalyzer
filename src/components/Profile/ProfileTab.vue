@@ -9,7 +9,7 @@
             <q-file
               accept="image/*"
               borderless
-              class="absolute-bottom cursor-pointer"
+              class="absolute-full cursor-pointer"
               dense
               max-file-size="5242880"
               style="height: 5rem"

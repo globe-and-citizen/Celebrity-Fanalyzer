@@ -39,17 +39,17 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       onSnapshot(collection(db, 'prompts'), async (querySnapshot) => {
-        const prompts = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}))
+        const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const prompt of prompts) {
-          prompt.author = userStore.getUserById(prompt.author.id) || await userStore.fetchUser(prompt.author.id)
+          prompt.author = userStore.getUserById(prompt.author.id) || (await userStore.fetchUser(prompt.author.id))
           prompt.entries = prompt.entries?.map((entry) => entry.id)
         }
 
         prompts.reverse()
 
         this._prompts = []
-        this.$patch({_prompts: prompts})
+        this.$patch({ _prompts: prompts })
       })
       this._isLoading = false
     },
@@ -104,7 +104,7 @@ export const usePromptStore = defineStore('prompts', {
         const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
-        const deleteVisitors = visitorStore.deleteAllVisitors('entries', entryId)
+        const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
       } catch (error) {
