@@ -21,11 +21,11 @@ export const useRequestStore = defineStore('request', {
       const userStore = useUserStore()
 
       this._isLoading = true
-      onSnapshot(collection(db, 'requests'), (querySnapshot) => {
-        const requests = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      onSnapshot(collection(db, 'requests'), async (querySnapshot) => {
+        const requests = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter((request) => request.status === 'pending')
 
         for (const request of requests) {
-          request.user = userStore.getUserById(request.id)
+          request.user = userStore.getUserById(request.id) || (await userStore.fetchUser(request.id))
         }
 
         this.$patch({ _requests: requests })
@@ -40,7 +40,8 @@ export const useRequestStore = defineStore('request', {
         createdAt: new Date(),
         message: message,
         status: 'pending',
-        request: 'writer'
+        request: 'writer',
+        requester: userStore.getUserRef
       }
 
       this._isLoading = true

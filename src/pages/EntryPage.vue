@@ -7,8 +7,8 @@
   <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
-    <q-tab-panel name="post" style="padding: 0">
-      <ThePost collectionName="entries" :post="entry" title="Entry Page" @clickComments="tab = 'comments'" />
+    <q-tab-panel v-if="entry" name="post" style="padding: 0" data-test="entry-page">
+      <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
@@ -26,48 +26,54 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
+const $q = useQuasar()
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const entryStore = useEntryStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 
-const entry = ref({})
 const tab = ref(entryStore.tab)
 
-onMounted(async () => {
-  if (router.currentRoute.value.params.id) {
-    await entryStore
-      .fetchEntryBySlug(router.currentRoute.value.href)
-      .then((res) => (entry.value = res))
-      .catch(() => (entry.value = null))
-  }
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
-  if (!entry.value) {
-    router.push('/404')
-    return
-  }
-
-  await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-
-  await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-
-  await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+const entry = computed(() => {
+  return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
 })
 
+watchEffect(async () => {
+  if (entry.value?.id) {
+    await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+  }
+})
+
+onMounted(() => {
+  if (entryStore.getEntries && !entry.value?.id) {
+    $q.notify({
+      type: 'info',
+      message: 'Entry Not found'
+    })
+    setTimeout(async () => {
+      $q.notify({
+        type: 'info',
+        message: 'You will be redirected in 3 seconds'
+      })
+    }, 3000)
+    setTimeout(async () => {
+      await router.push('/404')
+    }, 6000)
+  }
+})
 onUnmounted(() => {
   entryStore.setTab('post')
-})
-
-entryStore.$subscribe((_mutation, state) => {
-  if (entry.value.id) {
-    entry.value = state._entries.find((res) => res.id === entry.value.id)
-  }
 })
 </script>
 

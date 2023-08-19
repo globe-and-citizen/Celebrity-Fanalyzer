@@ -27,11 +27,10 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
-    getCommentById: (state) => {
-      return (commentId) => {
-        return state._comments ? state._comments?.find((comment) => comment.id === commentId) : []
-      }
-    },
+    /**
+     * @returns undefined|Object
+     */
+    getCommentById: (state) => (commentId) => state._comments?.find((comment) => comment.id === commentId),
     isLoading: (state) => state._isLoading,
     isLoaded: (state) => !!state._comments,
     /**
@@ -39,11 +38,7 @@ export const useCommentStore = defineStore('comments', {
      * @param state
      * @returns {function(*): T[]|*[]}
      */
-    getCommentChildren: (state) => {
-      return (commentId) => {
-        return state._comments ? state._comments.filter((comment) => comment.parentId === commentId) : []
-      }
-    },
+    getCommentChildren: (state) => (commentId) => state._comments?.filter((comment) => comment.parentId === commentId) || [],
     getReplyTo: (state) => state._replyTo,
     haveToReply: (state) => state._replyTo !== ''
   },
@@ -51,18 +46,35 @@ export const useCommentStore = defineStore('comments', {
   actions: {
     async fetchComments(collectionName, documentId) {
       const userStore = useUserStore()
+      if (!userStore.getUsers) {
+        await userStore.fetchUsers()
+      }
       if (this._unSubscribe) {
         this._unSubscribe()
       }
-      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), (querySnapshot) => {
+      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), async (querySnapshot) => {
         const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const comment of comments) {
           if (!comment.isAnonymous) {
-            comment.author = userStore.getUserById(comment.author.id)
+            comment.author = userStore.getUserById(comment.author.id) || comment.author.id
           }
-          comment.likes = comment.likes?.map((like) => like.id || like)
-          comment.dislikes = comment.dislikes?.map((dislike) => dislike.id || dislike)
+          comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
+          comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
+        }
+
+        const authors = await Promise.all(
+          comments
+            .filter((comment) => !comment.isAnonymous && typeof comment.author === 'string')
+            .map((comment) => comment.author)
+            .filter((author, index, self) => self.indexOf(author) === index)
+            .map((author) => userStore.fetchUser(author))
+        )
+
+        for (const comment of comments) {
+          if (!comment.isAnonymous && typeof comment.author === 'string') {
+            comment.author = authors.find((author) => author.uid === comment.author)
+          }
         }
         this.$patch({ _comments: comments })
       })

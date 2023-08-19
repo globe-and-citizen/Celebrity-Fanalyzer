@@ -1,8 +1,8 @@
 <template>
-  <section class="bg-white q-mb-xl q-pa-md q-page-container" style="padding-bottom: 7rem">
+  <section class="bg-white q-mb-xl q-pa-md q-page-container" :data-test="props.entries ? 'entries' : ''" style="padding-bottom: 7rem">
     <h2 class="q-my-auto text-bold text-h5">Entries</h2>
     <q-separator />
-    <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" />
+    <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" data-test="entry"/>
     <q-spinner v-if="entryStore.isLoading" color="primary" size="3em" class="block q-mx-auto q-my-xl" />
     <h6 v-else-if="!entries?.length" class="text-center">NO ENTRIES</h6>
   </section>

@@ -10,17 +10,27 @@
       </q-toolbar-title>
       <q-toolbar-title v-if="backButton || title || subtitle">
         <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
-        <b class="text-secondary">{{ title }}</b>
+        <b class="text-secondary" data-test="title">{{ title }}</b>
         <span class="float-right text-secondary">{{ subtitle }}</span>
       </q-toolbar-title>
-      <q-btn v-if="feedbackButton" color="secondary" flat icon="feedback" round size="1rem" @click="goToFeedback" />
-      <NotificationBubble v-if="notificationButton" />
+      <NotificationBubble v-if="notificationButton && userStore.isAuthenticated" />
+      <q-btn
+        v-if="feedbackButton"
+        color="secondary"
+        data-test="feedback-button"
+        flat
+        icon="feedback"
+        round
+        size="1rem"
+        @click="goToFeedback"
+      />
       <slot />
     </q-toolbar>
     <q-toolbar v-if="searchInput">
       <q-toolbar-title>
         <q-input
           class="q-pb-lg text-black"
+          data-test="search-input"
           dense
           label="Search"
           rounded

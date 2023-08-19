@@ -1,6 +1,6 @@
 <template>
   <q-page-container style="padding-bottom: 0">
-    <q-page class="bg-white" style="min-height: auto; padding-bottom: 7rem">
+    <q-page class="bg-white" style="min-height: auto">
       <TheHeader feedbackButton :title="title" />
       <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
       <section class="q-pa-md q-pb-none" style="margin-top: 100%">
@@ -34,12 +34,12 @@
         <div class="text-center">
           <q-btn
             color="green"
-            :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'like-button' : ''"
+            :data-test="!likeStore._isLoading && likeStore.getLikes ? 'like-button' : ''"
             flat
             :icon="
-              likeStore.getLikes.find((post) => post.author.id === userId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
+              likeStore.getLikes?.find((like) => like.id === userStore.getUserId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
             "
-            :label="likeStore.getLikes.length"
+            :label="likeStore.getLikes?.length || 0 "
             rounded
             size="0.75rem"
             @click="like()"
@@ -48,14 +48,14 @@
           </q-btn>
           <q-btn
             color="red"
-            :data-test="!likeStore._isLoading && likeStore._isLoaded ? 'dislike-button' : ''"
+            :data-test="!likeStore._isLoading && likeStore.getDislikes ? 'dislike-button' : ''"
             flat
             :icon="
-              likeStore.getDislikes.find((post) => post.author.id === userId)
+              likeStore.getDislikes?.find((dislike) => dislike.id === userStore.getUserId)
                 ? 'img:/icons/thumbs-down-bolder.svg'
                 : 'img:/icons/thumbs-down.svg'
             "
-            :label="likeStore.getDislikes.length"
+            :label="likeStore.getDislikes?.length || 0"
             rounded
             size="0.75rem"
             @click="dislike()"
@@ -73,7 +73,11 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.getShares.length" @share="share($event)" />
+          <ShareComponent
+            :label="shareStore.isLoaded ? shareStore.getShares.length : 0"
+            :disable="!shareStore.isLoaded"
+            @share="share($event)"
+          />
           <q-btn
             v-if="userStore.isAuthenticated"
             color="blue"
@@ -124,11 +128,9 @@ const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 
-const userId = ref('')
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-  userId.value = userStore.isAuthenticated ? userStore?.getUserRef?.id : userStore.getUserIpHash
 
   visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 

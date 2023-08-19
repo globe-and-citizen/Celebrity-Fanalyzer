@@ -2,12 +2,21 @@ import { collection, deleteDoc, doc, onSnapshot, runTransaction, setDoc, Timesta
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useNotificationStore, useShareStore, useUserStore } from 'src/stores'
+import {
+  useCommentStore,
+  useEntryStore,
+  useErrorStore,
+  useLikeStore,
+  useNotificationStore,
+  useShareStore,
+  useUserStore,
+  useVisitorStore
+} from 'src/stores'
 
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
-    _prompts: [],
+    _prompts: undefined,
     _tab: 'post'
   }),
 
@@ -24,16 +33,16 @@ export const usePromptStore = defineStore('prompts', {
     async fetchPrompts() {
       const userStore = useUserStore()
 
-      if (!userStore.getUsers.length) {
+      if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 
       this._isLoading = true
-      onSnapshot(collection(db, 'prompts'), (querySnapshot) => {
+      onSnapshot(collection(db, 'prompts'), async (querySnapshot) => {
         const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const prompt of prompts) {
-          prompt.author = userStore.getUserById(prompt.author.id)
+          prompt.author = userStore.getUserById(prompt.author.id) || (await userStore.fetchUser(prompt.author.id))
           prompt.entries = prompt.entries?.map((entry) => entry.id)
         }
 
@@ -78,6 +87,7 @@ export const usePromptStore = defineStore('prompts', {
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
+      const visitorStore = useVisitorStore()
 
       const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
 
@@ -94,8 +104,9 @@ export const usePromptStore = defineStore('prompts', {
         const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
+        const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc])
+        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
       } catch (error) {
         errorStore.throwError(error)
       }

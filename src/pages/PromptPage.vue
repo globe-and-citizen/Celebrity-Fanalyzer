@@ -7,8 +7,8 @@
   <q-tab-panels v-if="prompt" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
-      <ThePost collectionName="prompts" v-if="shareStore.getShares" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries v-if="prompt?.entries" :entries="prompt.entries" />
+      <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
+      <TheEntries v-if="entries" :entries="entries" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -30,11 +30,13 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
+const $q = useQuasar()
 const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -46,12 +48,15 @@ const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
+promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+
+const { href, params, path } = router.currentRoute.value
 const prompt = computed(() => {
-  const { href, params, path } = router.currentRoute.value
   const currentMonth = currentYearMonth()
   const previousMonth = previousYearMonth()
 
-  return promptStore.getPrompts.find((prompt) => {
+  return promptStore.getPrompts?.find((prompt) => {
     switch (href) {
       case '/month':
         return [currentMonth, previousMonth].includes(prompt.date)
@@ -65,37 +70,59 @@ const prompt = computed(() => {
   })
 })
 
-onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-    await new Promise((resolve) => setTimeout(resolve, 5000)) // wait 2 seconds before continue
-  }
-
-  setTimeout(() => {
-    if (!prompt.value) {
-      router.push('/404')
-    }
-  }, 5000)
-
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-  }
-
-  prompt.value.entries = entryStore.getEntries.filter((entry) => entry.prompt === prompt.value?.id)
-
-  await commentStore.fetchComments('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  await likeStore.getAllLikesDislikes('prompts', prompt.value.id).catch((error) => errorStore.throwError(error))
-
-  shareIsLoading.value = true
-  await shareStore
-    .fetchShares('prompts', prompt.value.id)
-    .catch((error) => errorStore.throwError(error))
-    .finally(() => {
-      shareIsLoading.value = false
-      shareIsLoaded.value = true
-    })
+const entries = computed(() => {
+  return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
 })
+
+watchEffect(async () => {
+  if (prompt.value?.id) {
+    const promptId = prompt.value?.id
+    await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
+
+    await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
+
+    shareIsLoading.value = true
+    await shareStore
+      .fetchShares('prompts', promptId)
+      .catch((error) => errorStore.throwError(error))
+      .finally(() => {
+        shareIsLoading.value = false
+        shareIsLoaded.value = true
+      })
+  }
+
+  let isPromptPageRoute = false
+  switch (href) {
+    case '/month':
+      isPromptPageRoute = true
+      break
+    case `/${params.year}/${params.month}`:
+      isPromptPageRoute = true
+      break
+    case `/${params.slug}`:
+      isPromptPageRoute = true
+      break
+    default:
+      isPromptPageRoute = false
+  }
+
+  if (isPromptPageRoute && promptStore.getPrompts && !prompt.value?.id) {
+    $q.notify({
+      type: 'info',
+      message: 'Prompt Not found'
+    })
+    setTimeout(async () => {
+      $q.notify({
+        type: 'info',
+        message: 'You will be redirected in 3 seconds'
+      })
+    }, 3000)
+    setTimeout(async () => {
+      await router.push('/404')
+    }, 6000)
+  }
+})
+
 
 onUnmounted(() => {
   promptStore.setTab('post')

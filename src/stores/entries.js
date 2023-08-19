@@ -17,12 +17,22 @@ import {
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { useCommentStore, useErrorStore, useLikeStore, useNotificationStore, usePromptStore, useShareStore, useUserStore } from 'src/stores'
+import {
+  useCommentStore,
+  useErrorStore,
+  useLikeStore,
+  useNotificationStore,
+  usePromptStore,
+  useShareStore,
+  useUserStore,
+  useVisitorStore
+} from 'src/stores'
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: [],
+    _entries: undefined,
     _isLoading: false,
+    _unSubscribe: undefined,
     _tab: 'post'
   }),
 
@@ -38,20 +48,24 @@ export const useEntryStore = defineStore('entries', {
     async fetchEntries() {
       const userStore = useUserStore()
 
-      if (!userStore.getUsers.length) {
+      if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 
       this._isLoading = true
-      onSnapshot(collection(db, 'entries'), (querySnapshot) => {
-        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+      if (this._unSubscribe) {
+        this._unSubscribe()
+      }
+      this._unSubscribe = onSnapshot(collection(db, 'entries'), async (querySnapshot) => {
+        const entries = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}))
 
         for (const entry of entries) {
-          entry.author = userStore.getUserById(entry.author.id)
+          entry.author = userStore.getUserById(entry.author.id) || await userStore.fetchUser(entry.author.id)
           entry.prompt = entry.prompt.id
         }
 
-        this.$patch({ _entries: entries })
+        this.$patch({_entries: entries})
       })
       this._isLoading = false
     },
@@ -111,6 +125,7 @@ export const useEntryStore = defineStore('entries', {
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
+      const visitorStore = useVisitorStore()
 
       const promptId = entryId.split('T')[0]
       const entryRef = doc(db, 'entries', entryId)
@@ -121,10 +136,11 @@ export const useEntryStore = defineStore('entries', {
         const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
         const deleteLikes = likeStore.deleteAllLikesDislikes('entries', entryId)
         const deleteShares = shareStore.deleteAllShares('entries', entryId)
+        const deleteVisitors = visitorStore.deleteAllVisitors('entries', entryId)
         const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
-        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares])
+        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
       } catch (error) {
         errorStore.throwError(error)
       }

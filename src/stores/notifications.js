@@ -30,15 +30,17 @@ export const useNotificationStore = defineStore('notification', {
         if (userStore.getUser.subscriptions?.includes(documentId)) {
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(userStore.getUser.uid) })
           transaction.update(userStore.getUserRef, { subscriptions: arrayRemove(documentId) })
+
+          // TODO : This is not a good practice to update a store outside of the store
           userStore._user.subscriptions = removeFromArray(userStore.getUser.subscriptions, documentId)
 
           if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
+            promptStore._prompts = promptStore.getPrompts?.map((prompt) =>
               prompt.id === documentId ? { ...prompt, subscribers: removeFromArray(prompt.subscribers, userStore.getUser.uid) } : prompt
             )
           }
           if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) =>
+            entryStore._entries = entryStore.getEntries?.map((entry) =>
               entry.id === documentId ? { ...entry, subscribers: removeFromArray(entry.subscribers, userStore.getUser.uid) } : entry
             )
           }
@@ -48,13 +50,13 @@ export const useNotificationStore = defineStore('notification', {
           userStore._user.subscriptions = addToArray(userStore.getUser.subscriptions || [], documentId)
 
           if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
+            promptStore._prompts = promptStore.getPrompts?.map((prompt) =>
               prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers || [], userStore.getUser.uid) } : prompt
             )
           }
 
           if (collectionName === 'entries') {
-            entryStore._entries = entryStore.getEntries.map((entry) =>
+            entryStore._entries = entryStore.getEntries?.map((entry) =>
               entry.id === documentId ? { ...entry, subscribers: addToArray(entry.subscribers || [], userStore.getUser.uid) } : entry
             )
           }
@@ -68,6 +70,8 @@ export const useNotificationStore = defineStore('notification', {
      * @param {*} notification - Notification object
      */
     async create(subscribers, notification) {
+      if (!subscribers?.length) return
+
       const userStore = useUserStore()
 
       notification.created = Date.now()

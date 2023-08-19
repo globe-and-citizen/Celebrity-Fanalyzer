@@ -9,7 +9,7 @@
             <q-file
               accept="image/*"
               borderless
-              class="absolute-bottom cursor-pointer"
+              class="absolute-full cursor-pointer"
               dense
               max-file-size="5242880"
               style="height: 5rem"
@@ -24,17 +24,36 @@
           </div>
         </q-img>
       </q-avatar>
-      <q-input class="col-grow q-pl-sm" label="Name" v-model="user.displayName" />
+      <q-input
+        class="col-grow q-pl-sm"
+        label="Name"
+        required
+        :rules="[(val) => val.length || 'Name is required']"
+        v-model="user.displayName"
+      />
     </div>
-    <q-input debounce="400" label="Username" :prefix="origin" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username" />
+    <q-input
+      class="non-selectable"
+      debounce="400"
+      label="Username"
+      :prefix="origin + 'fan/'"
+      :rules="[(val) => usernameValidator(val)]"
+      v-model.trim="user.username"
+    >
+      <template v-slot:append>
+        <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
+          <q-tooltip>Copy</q-tooltip>
+        </q-btn>
+      </template>
+    </q-input>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input debounce="400" label="Facebook" prefix="https://facebook.com/" v-model.trim="user.facebook" />
-    <q-input debounce="400" label="Instagram" prefix="https://instagram.com/" v-model.trim="user.instagram" />
-    <q-input debounce="400" label="Linkedin" prefix="https://linkedin.com/in/" v-model.trim="user.linkedin" />
-    <q-input debounce="400" label="Telegram" prefix="https://web.telegram.org/a/#" v-model.trim="user.telegram" />
-    <q-input debounce="400" label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
+    <q-input label="Facebook" prefix="https://facebook.com/" v-model.trim="user.facebook" />
+    <q-input label="Instagram" prefix="https://instagram.com/" v-model.trim="user.instagram" />
+    <q-input label="Linkedin" prefix="https://linkedin.com/in/" v-model.trim="user.linkedin" />
+    <q-input label="Telegram" prefix="https://web.telegram.org/a/#" v-model.trim="user.telegram" />
+    <q-input label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
@@ -74,9 +93,15 @@ async function uploadPhoto() {
 }
 
 async function usernameValidator(username) {
+  if (!username) return true
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
   const isAvailable = !(await userStore.checkUsernameAvailability(username))
   if (!isAvailable) return 'Username already taken'
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(origin + 'fan/' + user.value.username)
+  Notify.create({ type: 'positive', message: 'Link copied to clipboard' })
 }
 
 function save() {

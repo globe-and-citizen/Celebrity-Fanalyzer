@@ -1,5 +1,14 @@
 <template>
-  <q-btn data-test="share-button" flat icon="share" :label="label" rounded size="0.75rem" @click="onShare()">
+  <q-btn
+    :data-test="disable ? '' : 'share-button'"
+    :disable="disable"
+    flat
+    icon="share"
+    :label="label"
+    rounded
+    size="0.75rem"
+    @click="onShare()"
+  >
     <q-tooltip anchor="bottom middle" self="center middle">Share</q-tooltip>
   </q-btn>
 </template>
@@ -10,7 +19,7 @@ import { copyToClipboard, useQuasar } from 'quasar'
 const $q = useQuasar()
 
 const emit = defineEmits(['share'])
-defineProps(['label'])
+defineProps(['label', 'disable'])
 
 function onShare() {
   $q.bottomSheet({

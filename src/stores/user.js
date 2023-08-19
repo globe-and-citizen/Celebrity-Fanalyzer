@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth'
 import { collection, doc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { LocalStorage } from 'quasar'
+import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
 
@@ -17,40 +17,48 @@ export const useUserStore = defineStore('user', {
     _profileTab: 'profile',
     _user: {},
     _userIp: '',
-    _users: [],
+    _users: undefined,
     _isLoading: false
   }),
 
   persist: true,
 
   getters: {
-    getAdmins: (getters) => getters.getUsers.filter((user) => user.role === 'Admin'),
-    getAdminsAndWriters: (getters) => getters.getUsers.filter((user) => user.role === 'Admin' || user.role === 'Writer'),
+    getAdmins: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin') || [],
+    getAdminsAndWriters: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin' || user.role === 'Writer') || [],
     getProfileTab: (state) => state._profileTab,
     getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
-    getUserById: (getters) => (id) => getters.getUsers.find((user) => user.uid === id),
+    getUserById: (getters) => (id) => getters.getUsers?.find((user) => user.uid === id),
     getUserIp: (state) => state._userIp,
     getUserIpHash: (state) => sha1(state._userIp),
-    getUserRef: (getters) => doc(db, 'users', getters.getUser.uid),
+    getUserRef: (getters) => (getters.getUser.uid ? doc(db, 'users', getters.getUser.uid) : undefined),
     getUsers: (state) => state._users,
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
     isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
-    isAnonymous: (getters) => getters.getUser.isAnonymous,
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    getUserId:(getters)=>getters.isAuthenticated && getters.getUser ? getters.getUser.uid : getters.getUserIpHash
   },
 
   actions: {
-    async fetchUsers() {
+    async fetchUser(uid) {
       this._isLoading = true
-      await getDocs(query(collection(db, 'users'), where('role', '!=', 'User')))
-        .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
+      return await getDoc(doc(db, 'users', uid))
+        .then((document) => {
+          return { uid: document.id, ...document.data() }
         })
         .finally(() => (this._isLoading = false))
+    },
+
+    async fetchUsers() {
+      this._isLoading = true
+      onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {
+        const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+        this.$patch({ _users: users })
+      })
+      this._isLoading = false
     },
 
     async queryUsers(search) {
@@ -74,7 +82,9 @@ export const useUserStore = defineStore('user', {
 
     async fetchAdminsAndWriters() {
       this._isLoading = true
-      await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('population', '==', 'Writer'))))
+      await getDocs(
+        query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'), where('population', '==', 'Writer')))
+      )
         .then((querySnapshot) => {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })
@@ -103,8 +113,12 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.displayName, email: user.email })
+          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email })
+            .then(() => this.emailSignIn(user))
+            .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
+            .catch((error) => console.error(error))
         })
+        .catch((error) => console.error(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -156,42 +170,30 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
-      })
-        .then(() => this.$patch({ _user: { ...this.getUser, ...user } }))
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     async updateRole(user) {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', user.uid), user)
-      })
-        .then(() => {
-          const users = this.getUsers
-          const index = users.findIndex((u) => u.uid === user.uid)
-          users[index].role = user.role
-          this.$patch({ _users: users })
-        })
-        .finally(() => (this._isLoading = false))
+      }).finally(() => (this._isLoading = false))
     },
 
     logout() {
       signOut(auth).then(() => {
         this.$reset()
         LocalStorage.remove('user')
-        this.router.go(0)
+        try {
+          this.router.go(0)
+        } catch (e) {
+          console.log('Error', e)
+        }
       })
     },
 
     setProfileTab(tab) {
       this.$patch({ _profileTab: tab })
-    },
-
-    async testing_loadUserProfile(user) {
-      await getDoc(doc(db, 'users', user.uid)).then((document) => {
-        this.$patch({ _user: { uid: document.id, ...document.data() } })
-        localStorage.setItem('user', JSON.stringify({ uid: document.id, ...document.data() }))
-      })
     }
   }
 })

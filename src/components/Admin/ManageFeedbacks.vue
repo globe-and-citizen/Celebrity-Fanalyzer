@@ -1,6 +1,9 @@
 <template>
+  <h5 v-if="!feedbackStore.getFeedbacks" class="text-center">There are no feedbacks yet.</h5>
   <q-table
+    v-else
     :columns="columns"
+    data-test="feedback-table"
     grid
     hide-header
     :loading="feedbackStore.isLoading"
@@ -14,13 +17,15 @@
       <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 q-pa-sm">
         <q-card class="feedback">
           <q-card-section class="text-center">
-            <div class="text-body1">{{ props.row.author.displayName }}</div>
-            <q-btn color="negative" icon="delete" round size="sm" @click="confirmDelete(props.row)" />
+            <div class="text-body1" data-test="user-div">{{ props.row.author.displayName }}</div>
+            <q-btn color="negative" data-test="trash-button" icon="delete" round size="sm" @click="confirmDelete(props.row)" />
           </q-card-section>
           <q-separator />
           <q-card-section>
-            <p class="text-body2 text-bold">{{ shortMonthDayTime(props.row.created) }} ~ {{ props.row.subject }}</p>
-            <span style="white-space: pre-line">{{ props.row.message }}</span>
+            <p class="text-body2 text-bold" data-test="feedback-subject">
+              {{ shortMonthDayTime(props.row.created) }} ~ {{ props.row.subject }}
+            </p>
+            <span data-test="feedback-message" style="white-space: pre-line">{{ props.row.message }}</span>
           </q-card-section>
         </q-card>
       </div>
@@ -35,17 +40,19 @@
       <q-card-section>Are you sure you want to delete this feedback from {{ deleteDialog.author.displayName }}?</q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeleteFeedback(deleteDialog.id)" />
+        <q-btn data-test="delete-button" flat label="Delete" color="negative" @click="onDeleteFeedback(deleteDialog.id)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import { useErrorStore, useFeedbackStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { onMounted, ref } from 'vue'
 
+const $q = useQuasar()
 const errorStore = useErrorStore()
 const feedbackStore = useFeedbackStore()
 
@@ -67,7 +74,10 @@ function confirmDelete(feedback) {
 }
 
 function onDeleteFeedback(id) {
-  feedbackStore.deleteFeedback(id).catch((error) => errorStore.throwError(error, 'Failed to delete feedback'))
+  feedbackStore
+    .deleteFeedback(id)
+    .then(() => $q.notify({ color: 'positive', message: 'Feedback deleted successfully' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to delete feedback'))
   deleteDialog.value.show = false
 }
 </script>

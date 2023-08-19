@@ -12,7 +12,20 @@ describe('Admin Prompt & Entry', () => {
     cy.login()
     cy.visit('/admin')
   })
-
+  it('Try To access non existing prompt page', () => {
+    cy.visit('/not-exist-prompt')
+    cy.get('.q-notification__message').contains('Prompt Not found')
+    cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
+    cy.location('pathname').should('eq', '/404')
+  })
+  it('Try To access non existing Entry page', () => {
+    cy.visit('/not-exist-prompt')
+    cy.get('.q-notification__message').contains('Prompt Not found')
+    cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
+    cy.location('pathname').should('eq', '/404')
+    cy.get('.q-btn').click()
+    cy.location('pathname').should('eq', '/')
+  })
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="button-dropdown"]').click()
@@ -71,6 +84,78 @@ describe('Admin Prompt & Entry', () => {
 
     // Check the Entry is submitted successfully
     cy.get('.q-notification__message').contains('Entry successfully submitted')
+  })
+
+  it('Should Navigate  in prompt and entry', () => {
+    cy.visit('/2022/01')
+    cy.contains('Hello World!')
+    cy.get('[data-test="like-button"]').click()
+    cy.get('[data-test="like-button"]').click()
+    cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
+    cy.get('[data-test="entry-page"]').eq(0).click()
+    cy.get('[data-test="like-button"]').click()
+    cy.get('[data-test="like-button"]').click()
+  })
+
+  it('Should display the prompt and interact', () => {
+    // cy.visit('/hello-world-')
+    cy.visit('/2022/01')
+    cy.contains('Hello World!')
+
+    cy.get('[data-test="entries"]')
+    const likedIcon = '/icons/thumbs-up-bolder.svg'
+    const likeIcon = '/icons/thumbs-up.svg'
+    const dislikedIcon = '/icons/thumbs-down-bolder.svg'
+    const dislikeIcon = '/icons/thumbs-down.svg'
+    cy.get('[data-test="like-button"]')
+      .find('img')
+      .then(($img) => {
+        /**
+         * Like if isLiked
+         */
+        if ($img.attr('src') === likedIcon) {
+          cy.get('[data-test="like-button"]').click()
+        }
+        cy.get('[data-test="like-button"]').find('img').should('have.attr', 'src').should('include', likeIcon)
+      })
+    cy.get('[data-test="dislike-button"]')
+      .find('img')
+      .then(($img) => {
+        /**
+         * Dislike if isDisliked
+         */
+        if ($img.attr('src') === dislikedIcon) {
+          cy.get('[data-test="dislike-button"]').click()
+        }
+        cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
+      })
+
+    // Like then Like Aigain
+    cy.get('[data-test="like-button"]').click()
+    cy.get('[data-test="like-button"]').find('img').should('have.attr', 'src').should('include', likedIcon)
+    cy.get('[data-test="like-button"]').click()
+    cy.get('[data-test="like-button"]').find('img').should('have.attr', 'src').should('include', likeIcon)
+
+    // Dislike then Dislike Aigain
+    cy.get('[data-test="dislike-button"]').click()
+    cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikedIcon)
+    cy.get('[data-test="dislike-button"]').click()
+    cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
+
+    // Dislike Then Like
+    cy.get('[data-test="dislike-button"]').click()
+    cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikedIcon)
+    cy.get('[data-test="like-button"]').click()
+    cy.get('[data-test="like-button"]').find('img').should('have.attr', 'src').should('include', likedIcon)
+    cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
+
+    // Dislike A liked prompt
+    cy.get('[data-test="dislike-button"]').click()
+    cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikedIcon)
+
+    // Dislike To have a not liked & not disliked prompt
+    cy.get('[data-test="dislike-button"]').click()
+    cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
   })
 
   it('Should delete the entry', () => {

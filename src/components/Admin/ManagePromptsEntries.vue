@@ -4,7 +4,7 @@
     :filter="filter"
     flat
     hide-bottom
-    :loading="promptStore.isLoading || entryStore.isLoading"
+    :loading="isLoading"
     :pagination="pagination"
     :rows="prompts"
     style="left: 0; right: 0"
@@ -12,7 +12,7 @@
   >
     <template v-slot:top-right>
       <q-input
-        :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'input-search'"
+        :data-test="isLoading ? '' : 'input-search'"
         debounce="300"
         dense
         placeholder="Search"
@@ -39,6 +39,7 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">
           <q-btn
+            v-if="userStore.isEditorOrAbove"
             color="warning"
             data-test="button-edit"
             :disable="promptStore.isLoading"
@@ -49,6 +50,7 @@
             @click="$emit('openPromptDialog', props.row)"
           />
           <q-btn
+            v-if="userStore.isEditorOrAbove"
             color="negative"
             data-test="button-delete-prompt"
             :disable="promptStore.isLoading"
@@ -61,7 +63,7 @@
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
-        <q-td colspan="100%" style="padding: 0 !important">
+        <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
           <TableEntry v-else :filter="filter" :rows="props.row.entries" />
         </q-td>
@@ -92,8 +94,8 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { onMounted, ref, watchEffect } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
 defineEmits(['openPromptDialog'])
 
@@ -101,6 +103,7 @@ const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
 const columns = [
   {},
@@ -110,28 +113,28 @@ const columns = [
   {}
 ]
 const deleteDialog = ref({})
-const entries = ref(entryStore.getEntries)
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
-const prompts = ref(promptStore.getPrompts)
 
 onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
 })
+/**
+ * @description computed property that returns if prompts and entries are loaded
+ * @type {ComputedRef<Boolean>}
+ */
+const isLoaded = computed(() => promptStore.getPrompts && entryStore.getEntries)
+/**
+ * @description computed property that returns if prompts and entries are loading
+ * @type {ComputedRef<Boolean>}
+ */
+const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
-promptStore.$subscribe((_mutation, state) => {
-  prompts.value = state._prompts
-})
-
-entryStore.$subscribe((_mutation, state) => {
-  entries.value = state._entries
-})
-
-watchEffect(() => {
-  prompts.value = prompts.value.map((prompt) => ({
+const prompts = computed(() => {
+  return promptStore.getPrompts?.map((prompt) => ({
     ...prompt,
-    entries: entries.value?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id)) || []
+    entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
   }))
 })
 

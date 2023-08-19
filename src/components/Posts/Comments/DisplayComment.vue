@@ -8,18 +8,18 @@
             <q-img
               v-else
               class="cursor-pointer"
-              :src="comment.author.photoURL"
+              :src="comment.author?.photoURL"
               @click="router.push(`/fan/${comment.author.username || comment.author.uid}`)"
             />
           </q-avatar>
         </q-item-section>
 
         <q-item-section>
-          <q-item-label>{{ comment.author.displayName || 'Anonymous' }}</q-item-label>
+          <q-item-label>{{ comment.author?.displayName || 'Anonymous' }}</q-item-label>
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
         <q-item-section v-if="(comment.author?.uid || comment.author) === userId" side>
-          <q-btn-dropdown color="secondary" :data-test="comment.text + '-reply-button'" dense dropdown-icon="more_vert" flat rounded>
+          <q-btn-dropdown color="secondary" :data-test="comment.text + '-option-button'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
               <q-item clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
                 <q-item-section>Edit</q-item-section>
@@ -51,12 +51,16 @@
       </q-form>
 
       <!-- Parent comment -->
-      <div v-else class="q-my-sm text-body2">
-        {{ comment.text }}
+      <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
+        <span v-if="comment.text.includes('@')">
+          <span v-for="item of comment.text.split(' ')" :key="item">
+            <span :class="item.includes('@') ? 'cursor-pointer text-bold' : ''">{{ item }}&nbsp;</span>
+          </span>
+        </span>
+        <span v-else>{{ comment.text }}</span>
       </div>
 
       <!-- Parent Like, Dislike, Reply buttons -->
-
       <div class="row">
         <q-btn
           :data-test="'like' + comment.text"
@@ -185,5 +189,3 @@ function editInput(commentId) {
   inputEdit.value = commentId
 }
 </script>
-
-<style scoped></style>
