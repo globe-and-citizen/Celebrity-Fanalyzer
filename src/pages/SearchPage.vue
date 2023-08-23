@@ -22,17 +22,18 @@
         />
       </q-scroll-area>
       <q-separator class="q-mb-none q-mt-xs" />
-      <section v-if="!prompts.length && promptStore.isLoading">
+      <section v-if="!promptStore.getPrompts && promptStore.isLoading">
         <ArticleSkeleton />
         <ArticleSkeleton />
         <ArticleSkeleton />
         <ArticleSkeleton />
       </section>
-      <q-tab-panels animated swipeable v-model="category" data-test="prompt-list">
+      <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
           <TransitionGroup name="prompt" tag="div">
             <ItemCard
               v-for="prompt in computedPrompts"
+              data-test="prompt-card"
               :item="prompt"
               :key="prompt?.id"
               :link="prompt?.slug"
@@ -42,7 +43,7 @@
         </q-tab-panel>
       </q-tab-panels>
       <TransitionGroup tag="div">
-        <TheEntries v-if="search && computedEntries.length > 0" :entries="computedEntries" />
+        <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
       </TransitionGroup>
     </q-page>
   </q-page-container>
@@ -62,30 +63,29 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
 const category = ref('All')
-const prompts = ref(promptStore.getPrompts)
 const router = useRouter()
 const search = ref('')
 
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
-promptStore.$subscribe((_mutation, state) => {
-  prompts.value = state._prompts
-
-  if (router.currentRoute.value.params.year) {
-    prompts.value = prompts.value.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
-  }
-})
+// promptStore.$subscribe((_mutation, state) => {
+//   promptStore.getPrompts.value = state._prompts
+//
+//   if (router.currentRoute.value.params.year) {
+//     promptStore.getPrompts.value = promptStore.getPrompts.value?.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
+//   }
+// })
 
 const computedCategories = computed(() => {
-  const allPromptCategories = computedPrompts.value.flatMap(({ categories }) => categories)
+  const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
   const uniqueCategories = Array.from(new Set(allPromptCategories), (category) => ({ label: category, value: category }))
   const allCategory = { label: 'All', value: 'All' }
   return [allCategory, ...uniqueCategories]
 })
 
 const computedPrompts = computed(() => {
-  return prompts.value.filter((item) =>
+  return promptStore.getPrompts?.filter((item) =>
     [item.title, item.description, item.author?.displayName, ...item.categories].some((str) =>
       str?.toLowerCase().includes(search.value.toLowerCase())
     )
@@ -93,7 +93,7 @@ const computedPrompts = computed(() => {
 })
 
 const computedEntries = computed(() => {
-  return entryStore.getEntries.filter((item) =>
+  return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })

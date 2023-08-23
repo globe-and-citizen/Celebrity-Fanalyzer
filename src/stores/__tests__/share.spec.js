@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { useEntryStore, useShareStore, useUserStore } from 'src/stores'
+import {useEntryStore, usePromptStore, useShareStore, useStorageStore, useUserStore} from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -91,7 +91,15 @@ describe('Unit Test Share Store', () => {
     expect(shareStore.getShares.length).toBe(0)
 
     // Reload fetch Share with another entries
-    await shareStore.fetchShares('entries', entryStore.getEntries[1].id)
+
+    const promptStore = usePromptStore()
+
+    // 1) Load prompts into the store
+    await promptStore.fetchPrompts()
+    await waitUntil(() => {
+      return promptStore.getPrompts
+    })
+    await shareStore.fetchShares('prompt', promptStore.getPrompts[0].id)
     expect(shareStore.isLoaded).toBe(true)
   })
 })

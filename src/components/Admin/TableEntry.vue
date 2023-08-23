@@ -3,8 +3,25 @@
   <q-table v-else :columns="columns" dense flat :filter="filter" hide-bottom hide-header :pagination="pagination" :rows="rows">
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
-        <q-btn color="warning" flat icon="edit" round size="sm" @click="onEditDialog(props.row)" />
-        <q-btn color="negative" data-test="button-delete-entry" flat icon="delete" round size="sm" @click="onDeleteDialog(props.row)" />
+        <q-btn
+          color="warning"
+          :disable="userStore.getUser.role === 'Writer' && userStore.getUser.uid !== props.row.author.uid"
+          flat
+          icon="edit"
+          round
+          size="sm"
+          @click="onEditDialog(props.row)"
+        />
+        <q-btn
+          color="negative"
+          :disable="userStore.getUser.role === 'Writer' && userStore.getUser.uid !== props.row.author.uid"
+          data-test="button-delete-entry"
+          flat
+          icon="delete"
+          round
+          size="sm"
+          @click="onDeleteDialog(props.row)"
+        />
       </td>
     </template>
   </q-table>
@@ -35,7 +52,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
 import { ref } from 'vue'
 import EntryCard from './EntryCard.vue'
@@ -49,6 +66,7 @@ const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 
 const columns = [
   { name: 'created', align: 'center', label: 'Created', field: (row) => shortMonthDayTime(row.created) },
@@ -62,7 +80,7 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
   entry.value = props
-  entry.value.prompt = promptStore.getPrompts.find((prompt) => prompt.id === props.id.split('T')[0])
+  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0])
   entry.value.dialog = true
 }
 

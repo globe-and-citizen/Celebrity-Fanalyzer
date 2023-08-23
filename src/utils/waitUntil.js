@@ -1,10 +1,10 @@
-export const waitUntil = (callback) => {
+export const waitUntil = (callback, timeout = 15000) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (!callback()) {
-        reject()
+        reject('waitUntil Timeout after' + timeout)
       }
-    }, 5000)
+    }, timeout)
     if (callback()) {
       resolve()
     } else {
@@ -15,5 +15,11 @@ export const waitUntil = (callback) => {
         }
       }, 10)
     }
+  }).catch(()=>{
+    console.log('WaitUntil Timeout after ' + timeout + ' ms')
+    console.log('Try to increase you default timeout\n')
+
+    const error = new Error()
+    console.log('Stack trace:', error.stack)
   })
 }

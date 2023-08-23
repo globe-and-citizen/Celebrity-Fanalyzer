@@ -3,89 +3,106 @@
 // Use `cy.dataCy` custom command for more robust tests
 
 describe('Commenting', async () => {
-  beforeEach(() => {
+  const rand = Math.floor(Math.random() * 1_000)
+  let comment = 'Comment ' + rand
+  let reply = 'Reply ' + rand
+
+  it('Comment CRUD : Create, like dislike ...', () => {
     cy.viewport('iphone-x')
     cy.login()
-
     // Visits the prompt of the month
-    cy.visit('/month').wait(3000)
+    cy.visit('/month')
 
     // Programmatically change the q-tab-panel to the comments section
-    cy.get('[data-test="panel-3-navigator"]').click()
+    cy.getByData('panel-3-navigator').click()
 
     // Wait all comments to be loaded
     cy.getByData('comment-loaded')
-  })
-
-  it('creating comment ', () => {
     // navigate to the comment input form.
-    cy.get('[data-test="comment-main-box"]').type('Cypress-testing{enter}')
+    cy.getByData('comment-main-box').type(comment + '{enter}')
 
     //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Comment successfully submitted')
-  })
 
-  it('like comment', () => {
-    cy.get('[data-test="likeCypress-testing"]').eq(0).click({ force: true })
-  })
+    // Like Comment
+    cy.getByData('like' + comment).click()
 
-  it('dislike comment', () => {
-    cy.get('[data-test="dislikeCypress-testing"]').eq(0).click({ force: true })
-  })
-
-  it('add reply comment', () => {
+    // dislike comment
+    cy.getByData('dislike' + comment + '').click()
+  // })
+  //
+  // it('Reply comment', () => {
+  //   // Visits the prompt of the month
+  //   cy.visit('/month')
+  //
+  //   // Programmatically change the q-tab-panel to the comments section
+  //   cy.getByData('panel-3-navigator').click()
+  //
+  //   // Wait all comments to be loaded
+  //   cy.getByData('comment-loaded')
     // expand the add reply form
-    cy.get('[data-test="Cypress-testing-add-reply"]').eq(0).click({ force: true })
+    cy.getByData(comment + '-add-reply').click()
 
     // fill add reply form input
-    cy.get('[data-test="fill-add-reply"]').type('Added-Reply')
+    cy.getByData('fill-add-reply').type(reply)
 
     // submit filled add reply form
-    cy.get('[data-test="submit-fill-add-reply"]').click({ timeout: 5000 })
+    cy.getByData('submit-fill-add-reply').click()
 
     //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Reply successfully submitted')
-  })
 
-  // it('editing reply text', () => {
-  //   // expand the add reply form
-  //   cy.get('[data-test="Cypress-testing-add-reply"]').click({ multiple: true })
-  //
-  //   cy.get('[data-test="Added-Reply-open-reply-edit-delete"]').click({ multiple: true, force: true }).wait(1000)
-  //
-  //   cy.get('[data-test="Added-Reply-open-reply-edit"]').click({ multiple: true, force: true })
-  //
-  //   cy.get('[data-test="Added-Reply-fillEditReply"]').eq(0).type('Edited-Reply', { multiple: true, force: true })
-  //
-  //   cy.get('[data-test="Added-ReplyEdited-Reply-submit-reply-edit"]').eq(0).click({ multiple: true, force: true })
-  //
-  //   //Check the form is submitted successfully
-  //   cy.get('.q-notification__message').contains('Comment successfully edited!')
-  // })
-  //
-  // it('deleting reply text', () => {
-  //   cy.get('[data-test="Cypress-testing-add-reply"]').click()
-  //
-  //   cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-edit-delete"]').eq(0).click({ multiple: true, force: true })
-  //
-  //   cy.get('[data-test="Added-ReplyEdited-Reply-open-reply-delete"]').click()
-  // })
+    // Editing reply text
 
-  it('editing comment', () => {
-    cy.get('[data-test="Cypress-testing-reply-button"]').eq(0).click({ force: true })
 
-    cy.get('[data-test="comment-select-edit"]').click()
+    // Editing reply
+    cy.getByData(reply + '-option-button').click()
 
-    cy.get('[data-test="Cypress-testing-comment-edit"]').type('-EDITED')
+    cy.getByData('comment-select-edit').click()
+    const oldReply= reply
+    reply = 'Reply EDITED' + rand
 
-    cy.get('[data-test="submit-edited-comment"]').click()
+    cy.getByData(oldReply + '-comment-edit')
+      .clear()
+      .type(reply)
+
+    cy.getByData('submit-edited-comment').click()
     cy.get('.q-notification__message').contains('Comment successfully edited!')
-  })
 
-  it('deleting comment', () => {
-    cy.get('[data-test="Cypress-testing-EDITED-reply-button"]').eq(0).click({ force: true })
+    // deleting comment
+    cy.getByData(reply + '-option-button').click()
 
-    cy.get('[data-test = "comment-select-delete"]').click()
+    cy.getByData('comment-select-delete').click()
+    cy.get('.q-notification__message').contains('Comment successfully deleted')
+  // })
+  //
+  // it('Comment Edit & Delete', () => {
+  //   // Visits the prompt of the month
+  //   cy.visit('/month')
+  //
+  //   // Programmatically change the q-tab-panel to the comments section
+  //   cy.getByData('panel-3-navigator').click()
+  //
+  //   // Wait all comments to be loaded
+  //   cy.getByData('comment-loaded')
+    // Editing comment
+    cy.getByData(comment + '-option-button').click()
+
+    cy.getByData('comment-select-edit').click()
+    const oldComment= comment
+    comment = 'Comment EDITED' + rand
+
+    cy.getByData(oldComment + '-comment-edit')
+      .clear()
+      .type(comment)
+
+    cy.getByData('submit-edited-comment').click()
+    cy.get('.q-notification__message').contains('Comment successfully edited!')
+
+    // deleting comment
+    cy.getByData(comment + '-option-button').click()
+
+    cy.getByData('comment-select-delete').click()
     cy.get('.q-notification__message').contains('Comment successfully deleted')
   })
 })

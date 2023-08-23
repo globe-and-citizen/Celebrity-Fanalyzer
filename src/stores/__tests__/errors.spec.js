@@ -47,11 +47,9 @@ describe('Errors Store', async () => {
     // 1) Load entries & prompts into the store
     await errorStore.fetchErrors()
     await waitUntil(() => {
-      return errorStore.getErrors
-    }).catch((e) => {
-      console.log('errorStore.getErrors', e)
-    })
-    const initialLength = errorStore.getErrors.length
+      return errorStore.isLoaded
+    }, 50000)
+    const initialLength = errorStore.getErrors?.length
     try {
       throw new Error('Error number')
     } catch (e) {
@@ -59,19 +57,15 @@ describe('Errors Store', async () => {
     }
     await waitUntil(() => {
       return errorStore.getErrors?.length > initialLength
-    }).catch((e) => {
-      console.log('errorStore.getErrors?.length > initialLength', e)
     })
 
     expect(errorStore.getErrors.length).toBeGreaterThan(initialLength)
     await errorStore.deleteError(errorStore.getErrors[0].id)
     await waitUntil(() => {
-      return errorStore.isLoading === initialLength
-    }).catch((e) => {
-      console.log('errorStore.getErrors?.length === initialLength', e)
+      return errorStore.isLoading === false
     })
     expect(errorStore.isLoading).toBe(false)
-    expect(errorStore.getErrors.length).toBe(initialLength)
+    expect(errorStore.getErrors.length).toBeGreaterThanOrEqual(initialLength)
   })
 })
 

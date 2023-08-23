@@ -30,10 +30,12 @@ export const useNotificationStore = defineStore('notification', {
         if (userStore.getUser.subscriptions?.includes(documentId)) {
           transaction.update(doc(db, collectionName, documentId), { subscribers: arrayRemove(userStore.getUser.uid) })
           transaction.update(userStore.getUserRef, { subscriptions: arrayRemove(documentId) })
+
+          // TODO : This is not a good practice to update a store outside of the store
           userStore._user.subscriptions = removeFromArray(userStore.getUser.subscriptions, documentId)
 
           if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
+            promptStore._prompts = promptStore.getPrompts?.map((prompt) =>
               prompt.id === documentId ? { ...prompt, subscribers: removeFromArray(prompt.subscribers, userStore.getUser.uid) } : prompt
             )
           }
@@ -48,7 +50,7 @@ export const useNotificationStore = defineStore('notification', {
           userStore._user.subscriptions = addToArray(userStore.getUser.subscriptions || [], documentId)
 
           if (collectionName === 'prompts') {
-            promptStore._prompts = promptStore.getPrompts.map((prompt) =>
+            promptStore._prompts = promptStore.getPrompts?.map((prompt) =>
               prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers || [], userStore.getUser.uid) } : prompt
             )
           }

@@ -1,6 +1,6 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
 import fs from 'fs'
@@ -8,10 +8,7 @@ import { usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Prompt Store', async () => {
-  const fakeDate = '2991-01'
-
-  //Load an image to use
-  const bitmap = fs.readFileSync('src/assets/cypress.jpg')
+  const fakeDate = `${Math.floor(Math.random() * 9000) + 1000}-01` // Random number between 1000 and 9999 + '-01'
 
   beforeEach(async () => {
     // By declaring the various stores within the "describe" block,
@@ -20,9 +17,7 @@ describe('Prompt Store', async () => {
     // In the store user.js, the call to fetch to get the user IP address breaks without this mock. This is a mock to prevent breaking.
     global.fetch = vi.fn(async () => {
       return {
-        text: () => {
-          return '255.255.255.255'
-        }
+        text: () => '255.255.255.255'
       }
     })
 
@@ -50,8 +45,7 @@ describe('Prompt Store', async () => {
     await promptStore.fetchPrompts()
 
     await waitUntil(() => {
-      // TODO : Default state
-      return promptStore.getPrompts.length > 0
+      return promptStore.getPrompts
     })
     let prompts = promptStore.getPrompts
     if (prompts.some((prompt) => prompt.id === fakeDate)) {
@@ -75,73 +69,57 @@ describe('Prompt Store', async () => {
   //   expect(promptStore.getMonthPrompt).not.toBeNull()
   // })
 
-  it(
-    'Creates and then deletes a fake prompt.',
-    async () => {
-      const promptStore = usePromptStore()
-      const storageStore = useStorageStore()
-      const userStore = useUserStore()
+  it('Creates and then deletes a fake prompt.', async () => {
+    const promptStore = usePromptStore()
+    const storageStore = useStorageStore()
+    const userStore = useUserStore()
 
-      // 1) Load prompts into the store
-      await promptStore.fetchPrompts()
-      await waitUntil(() => {
-        // TODO : Default state
-        return promptStore.getPrompts.length > 0
-      })
+    // 1) Load prompts into the store
+    await promptStore.fetchPrompts()
+    await waitUntil(() => {
+      return promptStore.getPrompts
+    })
 
-      function getLatestPrompt() {
-        return promptStore.getPrompts.find((prompt) => prompt.id === fakeDate)
-      }
+    // Step 2: Check the starting number of comments.
+    const startingNumberOfPrompts = promptStore.getPrompts.length
 
-      // Step 2: Check the starting number of comments.
-      const startingNumberOfPrompts = promptStore.getPrompts.length
+    // 3) Add a fake prompt & test it was added successfully added
+    const bitmap = fs.readFileSync('src/assets/cypress.jpg') //Load an image to use
+    const imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
 
-      // 3) Add a fake prompt & test it was added successfully added
-      let user = userStore.getUser
-      let imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
+    const user = userStore.getUser
 
-      const fakePrompt = {
-        author: { label: user.displayName, value: user.uid },
-        categories: ['1_CategoryFake', '2_CategoryFake', '3_CategoryFake'],
-        date: fakeDate,
-        description: 'Let it be known: THIS is my fake entry!',
-        id: fakeDate,
-        image: imgAddress,
-        showcase: null,
-        slug: 'this-be-a-fake-prompt',
-        title: 'This Be A Fake Prompt',
-        created: null
-      }
+    const fakePrompt = {
+      author: { label: user.displayName, value: user.uid },
+      categories: ['1_CategoryFake', '2_CategoryFake', '3_CategoryFake'],
+      date: fakeDate,
+      description: 'Let it be known: THIS is my fake entry!',
+      id: fakeDate,
+      image: imgAddress,
+      showcase: null,
+      slug: 'this-be-a-fake-prompt',
+      title: 'This Be A Fake Prompt',
+      created: null
+    }
 
-      await promptStore.addPrompt(fakePrompt)
-      await waitUntil(() => {
-        return promptStore.getPrompts.length > startingNumberOfPrompts
-      })
+    await promptStore.addPrompt(fakePrompt)
+    await waitUntil(() => {
+      return promptStore.getPrompts.length > startingNumberOfPrompts
+    })
 
-      // Check Prompts length increase
-      expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts + 1)
-      console.log('here')
-      const latestPrompt = getLatestPrompt()
-      // 4) Edit the fake prompt
-      // Error with Edit
-      // await promptStore.editPrompt({
-      //   ...latestPrompt,
-      //   description: 'Updated Value of the prompt',
-      //   author: { label: user.displayName, value: user.uid }
-      // })
-      // TODO delete Prompt that have entries
-      // 5) Delete fake prompt and check
-      // TODO : Fix delete error
-      // await promptStore.deletePrompt(fakePrompt.id)
-      // await waitUntil(() => {
-      //   return promptStore.getPrompts.length === startingNumberOfPrompts
-      // })
-      // expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts)
-    },
-    { timeout: 50000 }
-  )
-})
+    // Check Prompts length increase
+    expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts + 1)
 
-afterAll(async () => {
-  // clean up logic.
+    // 4) Edit the fake prompt
+    fakePrompt.author = { label: user.displayName, value: user.uid }
+    fakePrompt.description = 'Updated Value of the prompt'
+    await promptStore.editPrompt(fakePrompt)
+
+    // 5) Delete fake prompt and check
+    await promptStore.deletePrompt(fakeDate)
+    await waitUntil(() => {
+      return promptStore.getPrompts.length === startingNumberOfPrompts
+    })
+    expect(promptStore.getPrompts.length).toBe(startingNumberOfPrompts)
+  })
 })

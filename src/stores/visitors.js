@@ -1,4 +1,4 @@
-import { arrayUnion, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import { arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -7,7 +7,7 @@ import { monthDayYear } from 'src/utils/date'
 export const useVisitorStore = defineStore('visitors', {
   state: () => ({
     _isLoading: false,
-    _visitors: []
+    _visitors: undefined
   }),
 
   persist: true,
@@ -45,6 +45,18 @@ export const useVisitorStore = defineStore('visitors', {
         const visitors = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
         this._visitors = visitors
       })
+    },
+
+    async deleteAllVisitors(collectionName, documentId) {
+      this._isLoading = true
+      const visitorsCollection = collection(db, collectionName, documentId, 'visitors')
+
+      const snapshot = await getDocs(visitorsCollection)
+
+      snapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref)
+      })
+      this._isLoading = false
     }
   }
 })
