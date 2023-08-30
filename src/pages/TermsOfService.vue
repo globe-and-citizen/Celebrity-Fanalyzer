@@ -2,7 +2,10 @@
   <TheHeader :backButton="false" logo notificationButton />
   <q-page-container>
     <q-page padding>
-      <h1 class="text-center text-h4">Terms of Service</h1>
+      <h1 class="text-center text-h4">
+        Terms of Service
+        <p class="text-caption text-center">(WORK IN PROGRESS)</p>
+      </h1>
 
       <p>
         <b>Effective Date:</b>
