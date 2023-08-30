@@ -168,7 +168,7 @@
         >
           <q-tooltip anchor="bottom middle" self="center middle">Contribute</q-tooltip>
         </q-btn>
-        <q-btn flat to="/terms-of-service" icon="local_police" round size="lg">
+        <q-btn data-test="terms-of-service-button" flat to="/terms-of-service" icon="local_police" round size="lg">
           <q-tooltip anchor="bottom middle" self="center middle">Terms of Service</q-tooltip>
         </q-btn>
       </section>
