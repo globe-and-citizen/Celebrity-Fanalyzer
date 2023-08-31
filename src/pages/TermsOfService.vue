@@ -55,7 +55,7 @@
 
       <b>7. Future Developments</b>
       <p>
-        Celebrity Fanalyzer is a stepping stone to the development of "Globe & Citizen," an anthroscope news platform. Your use of Celebrity
+        Celebrity Fanalyzer is a stepping stone in the development of "Globe & Citizen," a Web3.0 enabled news platform. Your use of Celebrity
         Fanalyzer may contribute to the refinement of this future platform.
       </p>
 
