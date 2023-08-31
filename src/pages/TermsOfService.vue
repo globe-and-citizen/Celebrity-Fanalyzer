@@ -84,7 +84,7 @@
       </p>
 
       <b>12. Governing Law</b>
-      <p>These Terms of Service shall be governed by and construed in accordance with the laws of [Insert Jurisdiction].</p>
+      <p>These Terms of Service shall be governed by and construed in accordance with those laws which are applicable.</p>
       <p>If you have any questions or concerns about these Terms of Service, please contact us at [Insert Contact Information].</p>
       <p>By using Celebrity Fanalyzer, you acknowledge that you have read, understood, and agreed to these Terms of Service.</p>
     </q-page>
