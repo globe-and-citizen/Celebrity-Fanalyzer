@@ -4,18 +4,18 @@
     <q-page padding>
       <h1 class="text-center text-h4">
         Terms of Service
-        <p class="text-caption text-center">(WORK IN PROGRESS)</p>
+        <p class="text-caption text-center">Terms and Website Under Active Developement</p>
       </h1>
 
       <p>
-        <b>Effective Date:</b>
-        [Insert Effective Date]
+        <b>Last Updated:</b>
+        September 5, 2023
       </p>
 
       <b>1. Acceptance of Terms</b>
       <p>
-        Welcome to Celebrity Fanalyzer! By using our website (celebrityfanalyzer.com) and its services, you agree to abide by these Terms of
-        Service. If you do not agree with these terms, please refrain from using our services.
+        Welcome to Celebrity Fanalyzer! By using our website (celebrityfanalyzer.com) and its services, you agree to our simple Terms of
+        Service. If you do not agree with these terms, please refrain from using our services (or reach out to us and explain the problem!)
       </p>
 
       <b>2. Description of Service</b>
@@ -49,7 +49,7 @@
       <b>6. Privacy and Data</b>
       <p>
         Celebrity Fanalyzer is committed to user privacy. We do not collect or store personal information beyond what is necessary for
-        account creation and participation. We will work towards implementing an anonymizing HTTP reverse proxy called "Layer 8" to further
+        account creation and participation. We are daily working towards implementing an anonymizing HTTP E2E Encryption proxy called "Layer 8" to further
         protect user identity.
       </p>
 
@@ -61,7 +61,7 @@
 
       <b>8. Disclaimers</b>
       <p>
-        Celebrity Fanalyzer provides content submitted by users, and the opinions expressed therein do not necessarily reflect the views of
+        Celebrity Fanalyzer provides content submitted by users, and the opinions expressed therein do not reflect the views of
         the platform. We do not guarantee the accuracy, completeness, or reliability of user-submitted content.
       </p>
 
