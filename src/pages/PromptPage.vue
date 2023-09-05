@@ -56,10 +56,11 @@ const prompt = computed(() => {
   const currentMonth = currentYearMonth()
   const previousMonth = previousYearMonth()
 
-  return promptStore.getPrompts?.find((prompt) => {
+  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+  return promptStore.getPrompts?.sort((a, b) => a.id - b.id)?.find((prompt) => {
     switch (href) {
       case '/month':
-        return [currentMonth, previousMonth].includes(prompt.date)
+        return prompt.id <= currentYearMonth()
       case `/${params.year}/${params.month}`:
         return prompt.date === params.year + '-' + params.month
       case `/${params.slug}`:
