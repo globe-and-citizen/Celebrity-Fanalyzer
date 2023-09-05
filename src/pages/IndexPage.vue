@@ -165,7 +165,7 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { currentYearMonth, previousYearMonth } from 'src/utils/date'
+import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted } from 'vue'
 
 const entryStore = useEntryStore()
@@ -173,9 +173,13 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 
-const monthPrompt = computed(() =>
-  promptStore.getPrompts?.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
-)
+const monthPrompt = computed(() =>{
+  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+  const sortedPrompts = promptStore.getPrompts?.sort((a, b) => a.id - b.id)
+  return sortedPrompts?.find((prompt) => prompt.id <= currentYearMonth())
+})
+
+
 onMounted(async () => {
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
