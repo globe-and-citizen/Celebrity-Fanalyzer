@@ -2,16 +2,16 @@ import { useUserStore } from 'stores'
 
 const routes = [
   {
+    path: '/sitemap.xml',
+    component: '/sitemap.xml'
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
         path: '',
         component: () => import('pages/IndexPage.vue')
-      },
-      {
-        path: 'sitemap.xml',
-        component: '/sitemap.xml'
       },
       {
         path: 'search|:year(\\d{4})',
