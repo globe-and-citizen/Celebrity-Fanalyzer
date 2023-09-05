@@ -5,7 +5,7 @@
 
       <q-responsive :ratio="1" :style="{ backgroundImage: `url(${post?.image})` }">
         <div  class="bg-blur flex" >
-          <q-img fit="contain" tspinner-color="primary" :src="post?.image" />
+          <q-img fit="contain" ratio="1" tspinner-color="primary" :src="post?.image" />
         </div>
       </q-responsive>
       <section class="q-pa-md q-pb-none">
@@ -115,7 +115,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { monthYear } from 'src/utils/date'
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
