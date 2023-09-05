@@ -10,6 +10,10 @@ const routes = [
         component: () => import('pages/IndexPage.vue')
       },
       {
+        path: 'sitemap.xml',
+        component: '/sitemap.xml'
+      },
+      {
         path: 'search|:year(\\d{4})',
         component: () => import('pages/SearchPage.vue')
       },
