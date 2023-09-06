@@ -29,8 +29,8 @@ import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
-import { currentYearMonth, previousYearMonth } from 'src/utils/date'
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { currentYearMonth } from 'src/utils/date'
+import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
@@ -51,23 +51,23 @@ const shareIsLoaded = ref(false)
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
-const { href, params, path } = router.currentRoute.value
+const { href, params, path, name } = router.currentRoute.value
 const prompt = computed(() => {
-  const currentMonth = currentYearMonth()
-  const previousMonth = previousYearMonth()
-
-  return promptStore.getPrompts?.find((prompt) => {
-    switch (href) {
-      case '/month':
-        return [currentMonth, previousMonth].includes(prompt.date)
-      case `/${params.year}/${params.month}`:
-        return prompt.date === params.year + '-' + params.month
-      case `/${params.slug}`:
-        return [params.slug, path].includes(prompt.slug)
-      default:
-        return false
-    }
-  })
+  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+  return promptStore.getPrompts
+    ?.sort((a, b) => a.id - b.id)
+    ?.find((prompt) => {
+      switch (name) {
+        case 'month':
+          return prompt.id <= currentYearMonth()
+        case 'year-month':
+          return prompt.date === params.year + '-' + params.month
+        case 'slug':
+          return prompt.slug.includes(params.slug)
+        default:
+          return false
+      }
+    })
 })
 
 const entries = computed(() => {
@@ -122,7 +122,6 @@ watchEffect(async () => {
     }, 6000)
   }
 })
-
 
 onUnmounted(() => {
   promptStore.setTab('post')
