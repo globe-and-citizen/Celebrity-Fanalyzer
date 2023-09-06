@@ -19,14 +19,17 @@ const routes = [
       },
       {
         path: 'month',
+        name: 'month',
         component: () => import('pages/PromptPage.vue')
       },
       {
         path: ':slug',
+        name: 'slug',
         component: () => import('pages/PromptPage.vue')
       },
       {
         path: ':year(\\d{4})/:month(\\d{2})',
+        name: 'year-month',
         component: () => import('pages/PromptPage.vue')
       },
       {
