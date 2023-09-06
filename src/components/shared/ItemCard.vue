@@ -1,11 +1,10 @@
 <template>
-  <article class="q-pt-md relative-position row" v-ripple:primary>
-    <div class="col-8">
-      <div
+  <article class="q-pt-md relative-position row">
+    <div class="col-8 flex column">
+      <router-link
         v-if="item.author"
-        class="cursor-pointer flex items-center"
-        @click="router.push(`/fan/${item.author.username || item.author.uid}`)"
-      >
+        class="flex items-center link"
+        :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
           <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />
           <q-img v-else src="/icons/user_raiting_premium_member.svg" :ratio="1" width="28px" />
@@ -13,8 +12,8 @@
         <p class="q-mb-none q-ml-sm text-body1">
           {{ item.author.displayName?.length > 20 ? item.author.displayName.substring(0, 20) + '...' : item.author.displayName }}
         </p>
-      </div>
-      <div class="cursor-pointer" @click="goToUrl()" data-test="item-link">
+      </router-link>
+      <router-link class="link " :to="link" data-test="item-link">
         <h2 class="q-mb-none text-body1 text-bold">
           {{ item.title?.length > 40 ? item.title.substring(0, 40) + '...' : item.title }}
         </h2>
@@ -25,9 +24,11 @@
         <div v-if="item.categories">
           <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
         </div>
-      </div>
+      </router-link>
     </div>
-    <q-img class="col-4 cursor-pointer" :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
+    <router-link :to="link"  class="col-4">
+      <q-img :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
+    </router-link>
     <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
     <q-separator class="full-width q-mt-md" />
   </article>
@@ -58,3 +59,10 @@ function goToUrl() {
   router.push(props.link)
 }
 </script>
+
+<style scoped lang="scss">
+.link {
+  text-decoration: none;
+  color: black;
+}
+</style>
