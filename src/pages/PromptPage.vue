@@ -53,8 +53,6 @@ entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const { href, params, path, name } = router.currentRoute.value
 const prompt = computed(() => {
-  console.log('params.slug', params.slug)
-  // console.log(name)
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
   return promptStore.getPrompts
     ?.sort((a, b) => a.id - b.id)

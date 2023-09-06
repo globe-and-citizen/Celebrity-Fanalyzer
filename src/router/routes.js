@@ -2,6 +2,14 @@ import { useUserStore } from 'stores'
 
 const routes = [
   {
+    path: '/robots.txt',
+    component: '/robots.txt'
+  },
+  {
+    path: '/sitemap.xml',
+    component: '/sitemap.xml'
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
