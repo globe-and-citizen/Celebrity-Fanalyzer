@@ -26,7 +26,7 @@
         </div>
       </router-link>
     </div>
-    <router-link :to="link"  class="col-4">
+    <router-link :to="link"  class="col-4 text-primary">
       <q-img :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
     </router-link>
     <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
