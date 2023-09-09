@@ -2,6 +2,14 @@ import { useUserStore } from 'stores'
 
 const routes = [
   {
+    path: '/robots.txt',
+    component: '/robots.txt'
+  },
+  {
+    path: '/sitemap.xml',
+    component: '/sitemap.xml'
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
@@ -10,19 +18,26 @@ const routes = [
         component: () => import('pages/IndexPage.vue')
       },
       {
+        path: 'terms-of-service',
+        component: () => import('pages/TermsOfService.vue')
+      },
+      {
         path: 'search|:year(\\d{4})',
         component: () => import('pages/SearchPage.vue')
       },
       {
         path: 'month',
+        name: 'month',
         component: () => import('pages/PromptPage.vue')
       },
       {
         path: ':slug',
+        name: 'slug',
         component: () => import('pages/PromptPage.vue')
       },
       {
         path: ':year(\\d{4})/:month(\\d{2})',
+        name: 'year-month',
         component: () => import('pages/PromptPage.vue')
       },
       {

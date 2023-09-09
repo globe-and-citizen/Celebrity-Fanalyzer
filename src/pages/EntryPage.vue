@@ -44,7 +44,7 @@ const tab = ref(entryStore.tab)
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const entry = computed(() => {
-  return entryStore.getEntries?.find((entry) => entry.slug === router.currentRoute.value.href)
+  return entryStore.getEntries?.find((entry) =>  router.currentRoute.value.href.includes(entry.slug))
 })
 
 watchEffect(async () => {
@@ -66,7 +66,7 @@ onMounted(() => {
         type: 'info',
         message: 'You will be redirected in 3 seconds'
       })
-    }, 3000)
+    }, 30000)
     setTimeout(async () => {
       await router.push('/404')
     }, 6000)

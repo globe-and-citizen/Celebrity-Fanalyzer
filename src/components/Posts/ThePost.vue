@@ -2,8 +2,13 @@
   <q-page-container style="padding-bottom: 0">
     <q-page class="bg-white" style="min-height: auto">
       <TheHeader feedbackButton :title="title" />
-      <q-img class="parallax q-page-container" :ratio="1" spinner-color="primary" spinner-size="82px" :src="post?.image" />
-      <section class="q-pa-md q-pb-none" style="margin-top: 100%">
+
+      <q-responsive :ratio="1" :style="{ backgroundImage: `url(${post?.image})` }">
+        <div  class="bg-blur flex" >
+          <q-img fit="contain" ratio="1" tspinner-color="primary" :src="post?.image" />
+        </div>
+      </q-responsive>
+      <section class="q-pa-md q-pb-none">
         <div class="flex justify-between">
           <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
           <div>
@@ -110,7 +115,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { monthYear } from 'src/utils/date'
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -159,5 +164,9 @@ async function subscribe() {
   position: fixed;
   top: 65px;
   z-index: -1;
+}
+// add a blur effect to the background image
+.bg-blur {
+  backdrop-filter: blur(60px);
 }
 </style>
