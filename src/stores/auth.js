@@ -8,20 +8,22 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     _isLoading: false,
     _message: null,
-    _signature: null
+    _signature: null,
+    _wallets: null
   }),
 
   getters: {
     isLoading: (state) => state._isLoading,
     message: (state) => state._message,
-    signature: (state) => state._signature
+    signature: (state) => state._signature,
+    wallets: (state) => state._wallets
   },
 
   actions: {
     connectWallet() {
       provider
         .send('eth_requestAccounts', [])
-        .then((res) => console.log(res))
+        .then((res) => (this._wallets = res))
         .catch(() => console.log('user rejected request'))
     },
 
