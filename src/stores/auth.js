@@ -11,14 +11,17 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async signInWithEthereum(address) {
+    async createSiweMessage(address) {
+      const nonce = generateNonce()
+
       const message = new SiweMessage({
-        domain: 'localhost:8080',
+        domain: window.location.host,
         address: address,
-        statement: 'This is a test statement',
-        uri: 'http://localhost:8080',
+        statement: 'Sign in with Ethereum to the app.',
+        uri: window.location.origin,
         version: '1',
-        chainId: '1'
+        chainId: '1',
+        nonce: nonce
       })
 
       const siweMessage = message.prepareMessage()
