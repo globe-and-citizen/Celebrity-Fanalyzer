@@ -57,7 +57,7 @@
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-btn
-      class="full-width q-mb-lg"
+      class="full-width"
       color="secondary"
       :disabled="authStore.signature"
       icon="img:/icons/ethereum.svg"
@@ -71,6 +71,7 @@
         </div>
       </q-tooltip>
     </q-btn>
+    <q-btn class="full-width q-mb-lg" color="secondary" icon="wallet" label="Connect Wallet" rounded @click="authStore.connectWallet()" />
     <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
 </template>
