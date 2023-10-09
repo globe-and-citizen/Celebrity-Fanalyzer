@@ -1,3 +1,4 @@
+import { BrowserProvider } from 'ethers'
 import { defineStore } from 'pinia'
 import { generateNonce, SiweMessage } from 'siwe'
 
@@ -38,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
 
       this._message = await this.createSiweMessage(signer.address)
 
-      console.log(siweMessage)
+      this._signature = await signer.signMessage(message)
     }
   }
 })
