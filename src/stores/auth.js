@@ -39,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
 
       this._message = await this.createSiweMessage(signer.address)
 
-      this._signature = await signer.signMessage(message)
+      this._signature = await signer.signMessage(this._message)
     }
   }
 })

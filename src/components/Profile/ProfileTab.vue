@@ -112,9 +112,9 @@ function copyLink() {
 
 function onSignInWithEthereum() {
   authStore
-    .signInWithEthereum(user.value.data1)
+    .signInWithEthereum()
     .then(() => $q.notify({ message: 'Successfully signed in with Ethereum', type: 'positive' }))
-  // .catch((error) => errorStore.throwError(error, 'Error signing in with Ethereum'))
+    .catch((error) => errorStore.throwError(error, 'Error signing in with Ethereum'))
 }
 
 function save() {
