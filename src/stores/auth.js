@@ -5,11 +5,15 @@ const provider = new BrowserProvider(window.ethereum)
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    _isLoading: false
+    _isLoading: false,
+    _message: null,
+    _signature: null
   }),
 
   getters: {
-    isLoading: (state) => state._isLoading
+    isLoading: (state) => state._isLoading,
+    message: (state) => state._message,
+    signature: (state) => state._signature
   },
 
   actions: {
