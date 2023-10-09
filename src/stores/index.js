@@ -2,6 +2,7 @@ import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { store } from 'quasar/wrappers'
 import SecureLS from 'secure-ls'
+import { useAuthStore } from './auth'
 import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
 import { useErrorStore } from './errors'
@@ -49,6 +50,7 @@ export default store((/* { ssrContext } */) => {
 })
 
 export {
+  useAuthStore,
   useCommentStore,
   useEntryStore,
   useErrorStore,
