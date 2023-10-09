@@ -18,6 +18,13 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    connectWallet() {
+      provider
+        .send('eth_requestAccounts', [])
+        .then((res) => console.log(res))
+        .catch(() => console.log('user rejected request'))
+    },
+
     async createSiweMessage(address) {
       const nonce = generateNonce()
 
