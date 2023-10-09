@@ -23,6 +23,7 @@
     "@quasar/extras": "^1.16.7",
     "dotenv": "^16.3.1",
     "echarts": "^5.4.3",
+    "ethers": "^6.7.1",
     "firebase": "^10.4.0",
     "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
