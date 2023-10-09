@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import { SiweMessage } from 'siwe'
+import { generateNonce, SiweMessage } from 'siwe'
+
+const provider = new BrowserProvider(window.ethereum)
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -24,7 +26,13 @@ export const useAuthStore = defineStore('auth', {
         nonce: nonce
       })
 
-      const siweMessage = message.prepareMessage()
+      return message.prepareMessage()
+    },
+
+    async signInWithEthereum() {
+      const signer = await provider.getSigner()
+
+      this._message = await this.createSiweMessage(signer.address)
 
       console.log(siweMessage)
     }
