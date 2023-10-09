@@ -56,13 +56,21 @@
     <q-input label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
-    <q-input label="Ethereum Address" v-model="user.data1">
-      <template v-slot:append>
-        <q-btn flat icon="img:/icons/ethereum.svg" round size="md" @click="onSignInWithEthereum">
-          <q-tooltip>Sign In With Ethereum</q-tooltip>
-        </q-btn>
-      </template>
-    </q-input>
+    <q-btn
+      class="full-width q-mb-lg"
+      color="secondary"
+      :disabled="authStore.signature"
+      icon="img:/icons/ethereum.svg"
+      :label="authStore.signature ? 'Signed In With Ethereum' : 'Sign In With Ethereum'"
+      rounded
+      @click="onSignInWithEthereum"
+    >
+      <q-tooltip v-if="authStore.signature">
+        <div class="text-center">
+          <span class="text-caption">Signature: {{ authStore.signature }}</span>
+        </div>
+      </q-tooltip>
+    </q-btn>
     <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
 </template>
