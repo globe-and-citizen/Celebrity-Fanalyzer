@@ -56,19 +56,25 @@
     <q-input label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
-    <q-input label="Data 1" v-model="user.data1" />
-    <q-input label="Data 2" v-model="user.data2" />
+    <q-input label="Ethereum Address" v-model="user.data1">
+      <template v-slot:append>
+        <q-btn flat icon="img:/icons/ethereum.svg" round size="md" @click="onSignInWithEthereum">
+          <q-tooltip>Sign In With Ethereum</q-tooltip>
+        </q-btn>
+      </template>
+    </q-input>
     <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
 </template>
 
 <script setup>
-import { useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
+import { useAuthStore, useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
 import { Notify, useQuasar } from 'quasar'
 import { ref } from 'vue'
 
 const $q = useQuasar()
 
+const authStore = useAuthStore()
 const errorStore = useErrorStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
@@ -102,6 +108,13 @@ async function usernameValidator(username) {
 function copyLink() {
   navigator.clipboard.writeText(origin + 'fan/' + user.value.username)
   Notify.create({ type: 'positive', message: 'Link copied to clipboard' })
+}
+
+function onSignInWithEthereum() {
+  authStore
+    .signInWithEthereum(user.value.data1)
+    .then(() => $q.notify({ message: 'Successfully signed in with Ethereum', type: 'positive' }))
+  // .catch((error) => errorStore.throwError(error, 'Error signing in with Ethereum'))
 }
 
 function save() {
