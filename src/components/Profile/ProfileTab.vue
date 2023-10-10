@@ -90,8 +90,8 @@
 </template>
 
 <script setup>
-import { useAuthStore, useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
 import { Notify, useQuasar } from 'quasar'
+import { useAuthStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
 const $q = useQuasar()
