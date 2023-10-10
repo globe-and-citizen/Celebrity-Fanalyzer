@@ -7,6 +7,7 @@ const provider = new BrowserProvider(window.ethereum)
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
+    _address: null,
     _isLoading: false,
     _message: null,
     _signature: null,
@@ -14,6 +15,7 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
+    address: (state) => state._address,
     isLoading: (state) => state._isLoading,
     message: (state) => state._message,
     signature: (state) => state._signature,
@@ -48,7 +50,9 @@ export const useAuthStore = defineStore('auth', {
     async signInWithEthereum() {
       const signer = await provider.getSigner()
 
-      this._message = await this.createSiweMessage(signer.address)
+        this._address = signer.address
+
+        this._message = await this.createSiweMessage(this._address)
 
       this._signature = await signer.signMessage(this._message)
     }
