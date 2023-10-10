@@ -56,35 +56,36 @@
     <q-input label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
-    <q-btn
-      class="full-width"
-      color="secondary"
-      :disabled="authStore.signature"
-      icon="img:/icons/ethereum.svg"
-      :label="authStore.signature ? 'Signed In With Ethereum' : 'Sign In With Ethereum'"
-      rounded
-      @click="onSignInWithEthereum"
-    >
-      <q-tooltip v-if="authStore.signature">
-        <div class="text-center">
-          <span class="text-caption">Signature: {{ authStore.signature }}</span>
-        </div>
-      </q-tooltip>
-    </q-btn>
-    <q-btn
-      class="full-width q-mb-lg"
-      color="secondary"
-      :disabled="authStore.wallets.length"
-      icon="wallet"
-      label="Connect Wallet"
-      rounded
-      @click="authStore.connectWallet()"
-    >
-      <q-tooltip v-for="(wallet, index) in authStore.wallets" :key="index">
-        <div class="text-caption">{{ wallet }}</div>
-      </q-tooltip>
-    </q-btn>
-    <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
+    <div class="q-gutter-x-md">
+      <q-btn
+        color="secondary"
+        :disabled="authStore.signature"
+        icon="img:/icons/ethereum.svg"
+        :label="authStore.signature ? 'Signed In With Ethereum' : 'Sign In With Ethereum'"
+        rounded
+        @click="onSignInWithEthereum"
+      >
+        <q-tooltip anchor="bottom middle" self="center middle">
+          <p v-if="userStore.getUser?.eth" class="text-caption q-mb-none">Address: {{ userStore.getUser?.eth || '–' }}</p>
+          <p v-if="authStore.signature" class="text-caption q-mb-none">Signature: {{ authStore.signature || 'Not Signed' }}</p>
+        </q-tooltip>
+      </q-btn>
+      <q-btn
+        class=""
+        color="secondary"
+        :disabled="authStore.wallets?.length"
+        icon="wallet"
+        label="Connect Wallet"
+        rounded
+        @click="authStore.connectWallet()"
+      >
+        <q-tooltip v-for="(wallet, index) in authStore.wallets" :key="index" anchor="bottom middle" self="center middle">
+          <div class="text-caption">{{ wallet }}</div>
+        </q-tooltip>
+      </q-btn>
+    </div>
+
+    <q-btn class="full-width q-mt-xl" color="primary" size="1rem" label="Save" rounded type="submit" />
   </q-form>
 </template>
 
