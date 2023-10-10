@@ -71,16 +71,16 @@
         </q-tooltip>
       </q-btn>
       <q-btn
-        class=""
         color="secondary"
         :disabled="authStore.wallets?.length"
         icon="wallet"
-        label="Connect Wallet"
+        :label="authStore.wallets?.length ? 'Wallet Connected' : 'Connect Wallet'"
         rounded
         @click="authStore.connectWallet()"
       >
-        <q-tooltip v-for="(wallet, index) in authStore.wallets" :key="index" anchor="bottom middle" self="center middle">
-          <div class="text-caption">{{ wallet }}</div>
+        <q-tooltip anchor="bottom middle" self="center middle">
+          Wallets:
+          <div v-for="(wallet, index) in authStore.wallets" :key="index" class="text-caption">&bullet; {{ wallet }}&semi;</div>
         </q-tooltip>
       </q-btn>
     </div>
