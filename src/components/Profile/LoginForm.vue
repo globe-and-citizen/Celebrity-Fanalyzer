@@ -45,14 +45,21 @@
       <div class="text-center q-py-md">
         <q-btn data-test="google-button" icon="img:/icons/google.svg" label="Sign with Google" rounded @click="googleSign" />
       </div>
+
+      <q-separator inset />
+
+      <div class="text-center q-py-md">
+        <q-btn color="secondary" icon="img:/icons/ethereum.svg" label="Sign In With Ethereum" rounded @click="onSignInWithEthereum" />
+      </div>
     </q-card>
   </q-page>
 </template>
 
 <script setup>
-import { useErrorStore, useUserStore } from 'src/stores'
+import { useAuthStore, useErrorStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 
+const authStore = useAuthStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
@@ -71,5 +78,9 @@ async function emailSign() {
 
 async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+}
+
+function onSignInWithEthereum() {
+  authStore.onSignInAnonymously()
 }
 </script>

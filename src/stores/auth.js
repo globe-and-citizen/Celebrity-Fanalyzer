@@ -1,8 +1,11 @@
 import { BrowserProvider } from 'ethers'
+import { signInAnonymously } from 'firebase/auth'
+import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar'
 import { generateNonce, SiweMessage } from 'siwe'
-import { useErrorStore } from 'src/stores'
+import { auth, db } from 'src/firebase'
+import { useErrorStore, useUserStore } from 'src/stores'
 
 const provider = new BrowserProvider(window.ethereum)
 
@@ -24,6 +27,26 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    onSignInAnonymously() {
+      const errorStore = useErrorStore()
+      const userStore = useUserStore()
+
+      signInAnonymously(auth)
+        .then(async ({ user }) => {
+          await this.signInWithEthereum()
+
+          await setDoc(doc(db, 'users', user.uid), { eth: this._address, uid: user.uid })
+            .then(() => {
+              onSnapshot(doc(db, 'users', user.uid), (doc) => {
+                userStore.$patch({ _user: { uid: doc.id, ...doc.data() } })
+              })
+            })
+            .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
+            .catch((error) => errorStore.throwError(error, 'Error creating account'))
+        })
+        .catch((error) => errorStore.throwError(error, 'Error signing in anonymously'))
+    },
+
     connectWallet() {
       provider
         .send('eth_requestAccounts', [])
