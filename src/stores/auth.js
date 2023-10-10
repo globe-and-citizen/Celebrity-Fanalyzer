@@ -1,5 +1,6 @@
 import { BrowserProvider } from 'ethers'
 import { defineStore } from 'pinia'
+import { Notify } from 'quasar'
 import { generateNonce, SiweMessage } from 'siwe'
 
 const provider = new BrowserProvider(window.ethereum)
@@ -24,6 +25,7 @@ export const useAuthStore = defineStore('auth', {
       provider
         .send('eth_requestAccounts', [])
         .then((res) => (this._wallets = res))
+        .then(() => Notify.create({ message: 'Wallet connected', type: 'positive' }))
         .catch(() => console.log('user rejected request'))
     },
 
