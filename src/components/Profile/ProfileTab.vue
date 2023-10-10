@@ -131,11 +131,11 @@ function copyLink() {
   Notify.create({ type: 'positive', message: 'Link copied to clipboard' })
 }
 
-function onSignInWithEthereum() {
-  authStore
+async function onSignInWithEthereum() {
+  await authStore
     .signInWithEthereum()
-    .then(() => $q.notify({ message: 'Successfully signed in with Ethereum', type: 'positive' }))
-    .catch((error) => errorStore.throwError(error, 'Error signing in with Ethereum'))
+    .then(() => (user.value.eth = authStore.address))
+    .then(() => save())
 }
 
 function save() {
