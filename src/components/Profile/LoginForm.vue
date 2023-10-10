@@ -42,7 +42,7 @@
 
       <q-separator inset />
 
-      <div class="column items-center q-gutter-md q-py-md">
+      <div class="text-center q-py-md">
         <q-btn data-test="google-button" icon="img:/icons/google.svg" label="Sign with Google" rounded @click="googleSign" />
       </div>
     </q-card>
