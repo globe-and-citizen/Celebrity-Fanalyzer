@@ -2,6 +2,7 @@ import { BrowserProvider } from 'ethers'
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar'
 import { generateNonce, SiweMessage } from 'siwe'
+import { useErrorStore } from 'src/stores'
 
 const provider = new BrowserProvider(window.ethereum)
 
@@ -48,13 +49,24 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async signInWithEthereum() {
-      const signer = await provider.getSigner()
+      this._isLoading = true
+      try {
+        const signer = await provider.getSigner()
 
         this._address = signer.address
 
         this._message = await this.createSiweMessage(this._address)
 
-      this._signature = await signer.signMessage(this._message)
+        this._signature = await signer.signMessage(this._message)
+
+        Notify.create({ message: 'Successfully signed in with Ethereum', type: 'positive' })
+      } catch (error) {
+        const errorStore = useErrorStore()
+
+        errorStore.throwError(error, 'Error signing in with Ethereum')
+      } finally {
+        this._isLoading = false
+      }
     }
   }
 })
