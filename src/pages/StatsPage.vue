@@ -69,7 +69,7 @@ const rowSummary = computed(() => {
   const totalRow = { type: 'Total' }
 
   Object.keys(fields).forEach((field) => {
-    averageRow[field] = stats.reduce((acc, stat) => acc + stat[field], 0) / stats.length
+    averageRow[field] = (stats.reduce((acc, stat) => acc + stat[field], 0) / stats.length).toFixed(1)
     totalRow[field] = stats.reduce((acc, stat) => acc + stat[field], 0)
   })
 
