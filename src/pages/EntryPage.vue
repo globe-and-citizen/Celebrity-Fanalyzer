@@ -28,8 +28,8 @@ import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore } from 'src/stores'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
-import { computed, onBeforeUpdate, onMounted, onUnmounted, ref, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -76,7 +76,7 @@ onMounted(() => {
   }
 })
 
-onBeforeUpdate(async () => {
+onBeforeRouteLeave(async () => {
   const stats = stopTracking()
   await statStore.addStats('entries', entry.value.id, stats)
 })
