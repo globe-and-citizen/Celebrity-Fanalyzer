@@ -22,29 +22,31 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore } from 'src/stores'
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore } from 'src/stores'
+import { startTracking, stopTracking } from 'src/utils/activityTracker'
+import { computed, onBeforeUpdate, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
 const $q = useQuasar()
 const commentStore = useCommentStore()
-const errorStore = useErrorStore()
 const entryStore = useEntryStore()
+const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
+const statStore = useStatStore()
 
 const tab = ref(entryStore.tab)
 
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const entry = computed(() => {
-  return entryStore.getEntries?.find((entry) =>  router.currentRoute.value.href.includes(entry.slug))
+  return entryStore.getEntries?.find((entry) => router.currentRoute.value.href.includes(entry.slug))
 })
 
 watchEffect(async () => {
@@ -56,6 +58,7 @@ watchEffect(async () => {
 })
 
 onMounted(() => {
+  startTracking()
   if (entryStore.getEntries && !entry.value?.id) {
     $q.notify({
       type: 'info',
@@ -72,6 +75,12 @@ onMounted(() => {
     }, 6000)
   }
 })
+
+onBeforeUpdate(async () => {
+  const stats = stopTracking()
+  await statStore.addStats('entries', entry.value.id, stats)
+})
+
 onUnmounted(() => {
   entryStore.setTab('post')
 })
