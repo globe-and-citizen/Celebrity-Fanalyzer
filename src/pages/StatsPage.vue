@@ -8,7 +8,7 @@
         hide-bottom
         :pagination="pagination"
         :rows="rowSummary"
-        :title="`Summary Data: ${visitors} visitors`"
+        :title="`Summary Data: ${visitors === 1 ? '1 visitor' : `${visitors} visitors`}`"
       />
       <q-table
         class="q-ma-md"
@@ -16,7 +16,7 @@
         hide-bottom
         :pagination="pagination"
         :rows="statStore.getStats"
-        :title="`Detailed Data: ${visits} visits`"
+        :title="`Detailed Data: ${visits === 1 ? '1 visit' : `${visits} visits`}`"
       />
     </q-page>
   </q-page-container>
