@@ -26,7 +26,7 @@ export const useStatStore = defineStore('stats', {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      stats.author = userStore.getUserRef
+      stats.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       stats.created = Timestamp.fromDate(new Date())
 
       this._isLoading = true
