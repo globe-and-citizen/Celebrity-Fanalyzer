@@ -4,8 +4,8 @@
       <TheHeader feedbackButton :title="title" />
 
       <q-responsive :ratio="1" :style="{ backgroundImage: `url(${post?.image})` }">
-        <div  class="bg-blur flex" >
-          <q-img fit="contain" ratio="1" tspinner-color="primary" :src="post?.image" />
+        <div class="bg-blur flex">
+          <q-img fit="contain" ratio="1" spinner-color="primary" :src="post?.image" />
         </div>
       </q-responsive>
       <section class="q-pa-md q-pb-none">
@@ -42,9 +42,11 @@
             :data-test="!likeStore._isLoading && likeStore.getLikes ? 'like-button' : ''"
             flat
             :icon="
-              likeStore.getLikes?.find((like) => like.id === userStore.getUserId) ? 'img:/icons/thumbs-up-bolder.svg' : 'img:/icons/thumbs-up.svg'
+              likeStore.getLikes?.find((like) => like.id === userStore.getUserId)
+                ? 'img:/icons/thumbs-up-bolder.svg'
+                : 'img:/icons/thumbs-up.svg'
             "
-            :label="likeStore.getLikes?.length || 0 "
+            :label="likeStore.getLikes?.length || 0"
             rounded
             size="0.75rem"
             @click="like()"
@@ -132,7 +134,6 @@ const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
-
 
 onMounted(async () => {
   await userStore.fetchUserIp()
