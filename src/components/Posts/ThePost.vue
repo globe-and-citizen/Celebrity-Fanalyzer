@@ -161,11 +161,6 @@ async function subscribe() {
 </script>
 
 <style scoped lang="scss">
-.parallax {
-  position: fixed;
-  top: 65px;
-  z-index: -1;
-}
 // add a blur effect to the background image
 .bg-blur {
   backdrop-filter: blur(60px);
