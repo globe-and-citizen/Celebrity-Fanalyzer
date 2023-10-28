@@ -24,16 +24,17 @@ The following user stories should be runnable without error in production.
 
 1. Navigate to https://celebrity-fanalyzer.pages.dev/
 2. Navigate to the profile page and choose `SIGN UP`
-3. Navigate to the `ADMIN` panel.
-4. Chose `New Entry`
+3. Navigate to the `SETTINGS PANE` of the profile panel & request access as a writer.
+4. (Use a separate Admin account to then grant privileges to the new user.) 
+5. As the newly created user once again, chose `New Entry`
    - Chose the appropriate month prompt
    - Add a title
    - Write my description
    - Add an image
    - Submit entry which shows a green `Enstry Successfully Submitted` drop down. The "Edit Entry Dialogue Card" then closes so that I can't re-submit accidentally the same entry.
-5. When I navigate to `Search`, and chose the appropriate month prompt, I can see my own entry
-6. I `Like` my own entry and see the icon go bold.
-7. I `Share` my own entry, and successfully post the link to my `Facebook`.
+6. When I navigate to `Search`, and chose the appropriate month prompt, I can see my own entry
+7. I `Like` my own entry and see the icon go bold.
+8. I `Share` my own entry, and successfully post the link to my `Facebook`.
 
 ## Story 2
 

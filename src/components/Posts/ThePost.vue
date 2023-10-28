@@ -5,7 +5,7 @@
 
       <q-responsive :ratio="1" :style="{ backgroundImage: `url(${post?.image})` }">
         <div class="bg-blur flex">
-          <q-img fit="contain" ratio="1" tspinner-color="primary" :src="post?.image" />
+          <q-img fit="contain" ratio="1" spinner-color="primary" :src="post?.image" />
         </div>
       </q-responsive>
       <section class="q-pa-md q-pb-none">
@@ -161,11 +161,6 @@ async function subscribe() {
 </script>
 
 <style scoped lang="scss">
-.parallax {
-  position: fixed;
-  top: 65px;
-  z-index: -1;
-}
 // add a blur effect to the background image
 .bg-blur {
   backdrop-filter: blur(60px);

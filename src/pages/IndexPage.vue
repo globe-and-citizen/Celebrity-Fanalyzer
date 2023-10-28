@@ -154,8 +154,22 @@
           opinion, suggest a topic, or give feedback. We would love to hear from you! Celebrity Fanalyzer is a work in progress. If you want
           to get involved in shaping the future of the application, reach out to us via Discord:
         </p>
-        <q-btn flat href="https://discord.gg/z4P3UrhhSH" icon="img:/icons/discord.svg" round size="xl" target="_blank">
+        <q-btn flat href="https://discord.gg/z4P3UrhhSH" icon="img:/icons/discord.svg" round size="lg" target="_blank">
           <q-tooltip anchor="bottom middle" self="center middle">Community on Discord</q-tooltip>
+        </q-btn>
+        <q-btn
+          class="q-mx-md"
+          flat
+          href="https://github.com/globe-and-citizen/celebrity-fanalyzer"
+          icon="img:/icons/github.svg"
+          round
+          size="lg"
+          target="_blank"
+        >
+          <q-tooltip anchor="bottom middle" self="center middle">Contribute</q-tooltip>
+        </q-btn>
+        <q-btn data-test="terms-of-service-button" flat to="/terms-of-service" icon="local_police" round size="lg">
+          <q-tooltip anchor="bottom middle" self="center middle">Terms of Service</q-tooltip>
         </q-btn>
       </section>
     </q-page>
@@ -164,18 +178,21 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { currentYearMonth, previousYearMonth } from 'src/utils/date'
+import { currentYearMonth } from 'src/utils/date'
+import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted } from 'vue'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
-const userStore = useUserStore()
 
-const monthPrompt = computed(() =>
-  promptStore.getPrompts?.find((prompt) => prompt.id === currentYearMonth() || prompt.id === previousYearMonth())
-)
+const monthPrompt = computed(() =>{
+  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+  const sortedPrompts = promptStore.getPrompts?.sort((a, b) => a.id - b.id)
+  return sortedPrompts?.find((prompt) => prompt.id <= currentYearMonth())
+})
+
+
 onMounted(async () => {
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
   await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
