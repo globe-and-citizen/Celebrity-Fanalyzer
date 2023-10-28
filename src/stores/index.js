@@ -11,6 +11,7 @@ import { useNotificationStore } from './notifications'
 import { usePromptStore } from './prompts'
 import { useRequestStore } from './requests'
 import { useShareStore } from './shares'
+import { useStatStore } from './stats'
 import { useStorageStore } from './storage'
 import { useUserStore } from './user'
 import { useVisitorStore } from './visitors'
@@ -58,6 +59,7 @@ export {
   usePromptStore,
   useRequestStore,
   useShareStore,
+  useStatStore,
   useStorageStore,
   useUserStore,
   useVisitorStore
