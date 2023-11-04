@@ -46,7 +46,7 @@ const tab = ref(entryStore.tab)
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const entry = computed(() => {
-  return entryStore.getEntries?.find((entry) => router.currentRoute.value.href.includes(entry.slug))
+  return entryStore.getEntries?.find((entry) => router.currentRoute.value.href === entry.slug)
 })
 
 watchEffect(async () => {
