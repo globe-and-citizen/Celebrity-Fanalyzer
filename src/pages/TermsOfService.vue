@@ -49,20 +49,20 @@
       <b>6. Privacy and Data</b>
       <p>
         Celebrity Fanalyzer is committed to user privacy. We do not collect or store personal information beyond what is necessary for
-        account creation and participation. We are daily working towards implementing an anonymizing HTTP E2E Encryption proxy called "Layer 8" to further
-        protect user identity.
+        account creation and participation. We are daily working towards implementing an anonymizing HTTP E2E Encryption proxy called "Layer
+        8" to further protect user identity.
       </p>
 
       <b>7. Future Developments</b>
       <p>
-        Celebrity Fanalyzer is a stepping stone in the development of "Globe & Citizen," a Web3.0 enabled news platform. Your use of Celebrity
-        Fanalyzer may contribute to the refinement of this future platform.
+        Celebrity Fanalyzer is a stepping stone in the development of "Globe & Citizen," a Web3.0 enabled news platform. Your use of
+        Celebrity Fanalyzer may contribute to the refinement of this future platform.
       </p>
 
       <b>8. Disclaimers</b>
       <p>
-        Celebrity Fanalyzer provides content submitted by users, and the opinions expressed therein do not reflect the views of
-        the platform. We do not guarantee the accuracy, completeness, or reliability of user-submitted content.
+        Celebrity Fanalyzer provides content submitted by users, and the opinions expressed therein do not reflect the views of the
+        platform. We do not guarantee the accuracy, completeness, or reliability of user-submitted content.
       </p>
 
       <b>9. Limitation of Liability</b>

@@ -29,17 +29,17 @@ describe('Commenting', async () => {
 
     // dislike comment
     cy.getByData('dislike' + comment + '').click()
-  // })
-  //
-  // it('Reply comment', () => {
-  //   // Visits the prompt of the month
-  //   cy.visit('/month')
-  //
-  //   // Programmatically change the q-tab-panel to the comments section
-  //   cy.getByData('panel-3-navigator').click()
-  //
-  //   // Wait all comments to be loaded
-  //   cy.getByData('comment-loaded')
+    // })
+    //
+    // it('Reply comment', () => {
+    //   // Visits the prompt of the month
+    //   cy.visit('/month')
+    //
+    //   // Programmatically change the q-tab-panel to the comments section
+    //   cy.getByData('panel-3-navigator').click()
+    //
+    //   // Wait all comments to be loaded
+    //   cy.getByData('comment-loaded')
     // expand the add reply form
     cy.getByData(comment + '-add-reply').click()
 
@@ -54,12 +54,11 @@ describe('Commenting', async () => {
 
     // Editing reply text
 
-
     // Editing reply
     cy.getByData(reply + '-option-button').click()
 
     cy.getByData('comment-select-edit').click()
-    const oldReply= reply
+    const oldReply = reply
     reply = 'Reply EDITED' + rand
 
     cy.getByData(oldReply + '-comment-edit')
@@ -74,22 +73,22 @@ describe('Commenting', async () => {
 
     cy.getByData('comment-select-delete').click()
     cy.get('.q-notification__message').contains('Comment successfully deleted')
-  // })
-  //
-  // it('Comment Edit & Delete', () => {
-  //   // Visits the prompt of the month
-  //   cy.visit('/month')
-  //
-  //   // Programmatically change the q-tab-panel to the comments section
-  //   cy.getByData('panel-3-navigator').click()
-  //
-  //   // Wait all comments to be loaded
-  //   cy.getByData('comment-loaded')
+    // })
+    //
+    // it('Comment Edit & Delete', () => {
+    //   // Visits the prompt of the month
+    //   cy.visit('/month')
+    //
+    //   // Programmatically change the q-tab-panel to the comments section
+    //   cy.getByData('panel-3-navigator').click()
+    //
+    //   // Wait all comments to be loaded
+    //   cy.getByData('comment-loaded')
     // Editing comment
     cy.getByData(comment + '-option-button').click()
 
     cy.getByData('comment-select-edit').click()
-    const oldComment= comment
+    const oldComment = comment
     comment = 'Comment EDITED' + rand
 
     cy.getByData(oldComment + '-comment-edit')

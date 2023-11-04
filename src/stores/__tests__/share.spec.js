@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import {useEntryStore, usePromptStore, useShareStore, useStorageStore, useUserStore} from 'src/stores'
+import { useEntryStore, usePromptStore, useShareStore, useStorageStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 

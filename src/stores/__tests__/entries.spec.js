@@ -91,15 +91,15 @@ describe('Entry Store', async () => {
     await entryStore.editEntry(fakeEntry)
 
     await waitUntil(() => {
-      return entryStore.getEntries?.find((entry) => entry.id === id)?.title==='Edited Fake Entry'
-    }).catch(()=>console.log("can't 'Have Edited Fake Entry'"))
+      return entryStore.getEntries?.find((entry) => entry.id === id)?.title === 'Edited Fake Entry'
+    }).catch(() => console.log("can't 'Have Edited Fake Entry'"))
     expect(entryStore.getEntries?.find((entry) => entry.id === id)?.title).toBe('Edited Fake Entry')
 
     // 5) Delete fake entry and check
     await entryStore.deleteEntry(fakeEntry.id)
     await waitUntil(() => {
       return !entryStore.getEntries?.find((entry) => entry.id === id)
-    }).catch(()=>console.log("Entry Still exist"))
+    }).catch(() => console.log('Entry Still exist'))
     expect(entryStore.getEntries?.find((entry) => entry.id === id)?.id).toBe(undefined)
   })
 })
