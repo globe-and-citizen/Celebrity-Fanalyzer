@@ -1,37 +1,35 @@
 <template>
-  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent"
-          v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="post" :ripple="false"/>
-    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false"/>
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false"/>
+  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
+    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="post" :ripple="false" />
+    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em"/>
+  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
   <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
     <q-tab-panel v-if="entry" name="post" style="padding: 0" data-test="entry-page">
-      <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem"
-               @clickComments="tab = 'comments'"/>
+      <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
-      <TheAnthrogram :post="entry"/>
+      <TheAnthrogram :post="entry" />
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
-      <TheComments collectionName="entries" :post="entry"/>
+      <TheComments collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
 </template>
 
 <script setup>
-import {useQuasar} from 'quasar'
+import { useQuasar } from 'quasar'
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
-import {useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore} from 'src/stores'
-import {startTracking, stopTracking} from 'src/utils/activityTracker'
-import {computed, onMounted, onUnmounted, ref, watchEffect} from 'vue'
-import {onBeforeRouteLeave, useRouter} from 'vue-router'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore } from 'src/stores'
+import { startTracking, stopTracking } from 'src/utils/activityTracker'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -48,7 +46,7 @@ const tab = ref(entryStore.tab)
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const entry = computed(() => {
-  return entryStore.getEntries?.find((entry) => router.currentRoute.value.params.id === entry.slug)
+  return entryStore.getEntries?.find((entry) => router.currentRoute.value.href === entry.slug)
 })
 
 watchEffect(async () => {
