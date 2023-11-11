@@ -33,8 +33,8 @@ export const useStatStore = defineStore('stats', {
        */
       const fetchData = async (pageToken) => {
         const url = pageToken
-          ? `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageToken=${pageToken}`
-          : `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats`
+          ? `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageSize=100&pageToken=${pageToken}`
+          : `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageSize=100`
 
         const response = await fetch(url) // Using native JavaScript fetch API
         const stats = await response.json() // Parsing the JSON data
