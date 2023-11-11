@@ -1,4 +1,4 @@
-import {collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, Timestamp} from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -29,13 +29,13 @@ export const useLikeStore = defineStore('likes', {
       if (this._unSubscribeLike || this._unSubscribeDislike) {
         this._unSubscribeLike()
         this._unSubscribeDislike()
-        this._likes=undefined
-        this._dislikes=undefined
+        this._likes = undefined
+        this._dislikes = undefined
       }
-      this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot)=>{
+      this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot) => {
         this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       })
-      this._unSubscribeDislike = onSnapshot(dislikesCollection, (dislikesSnapshot)=>{
+      this._unSubscribeDislike = onSnapshot(dislikesCollection, (dislikesSnapshot) => {
         this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       })
       this._isLoading = false
@@ -74,7 +74,6 @@ export const useLikeStore = defineStore('likes', {
       this._isLoading = true
       const userStore = useUserStore()
       await userStore.fetchUserIp()
-
 
       const dislikesRef = doc(db, collectionName, documentId, 'dislikes', userStore.getUserId)
       const dislikesSnap = await getDoc(dislikesRef)

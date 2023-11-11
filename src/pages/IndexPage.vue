@@ -186,12 +186,11 @@ const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
-const monthPrompt = computed(() =>{
+const monthPrompt = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
   const sortedPrompts = promptStore.getPrompts?.sort((a, b) => a.id - b.id)
   return sortedPrompts?.find((prompt) => prompt.id <= currentYearMonth())
 })
-
 
 onMounted(async () => {
   await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))

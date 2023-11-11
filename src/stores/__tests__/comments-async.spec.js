@@ -87,7 +87,7 @@ describe('Async watcher ', () => {
     }).catch((e) => console.log('Error :  2- Check Fetch Comment', e))
 
     const startingNumberOfComments = commentStore.getComments.length
-    expect( !!commentStore.getComments).toBe(true)
+    expect(!!commentStore.getComments).toBe(true)
 
     // 3- Check Add comment
     let myComment = { text: 'Test comment' }

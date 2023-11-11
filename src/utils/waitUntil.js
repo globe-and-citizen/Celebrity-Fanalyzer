@@ -15,7 +15,7 @@ export const waitUntil = (callback, timeout = 15000) => {
         }
       }, 10)
     }
-  }).catch(()=>{
+  }).catch(() => {
     console.log('WaitUntil Timeout after ' + timeout + ' ms')
     console.log('Try to increase you default timeout\n')
 

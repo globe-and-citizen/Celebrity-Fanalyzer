@@ -119,7 +119,8 @@ const entry = reactive({
   title: ''
 })
 const imageModel = ref([])
-const promptOptions = promptStore.getPrompts?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse() || []
+const promptOptions =
+  promptStore.getPrompts?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse() || []
 
 onMounted(() => {
   userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))

@@ -25,7 +25,7 @@ The following user stories should be runnable without error in production.
 1. Navigate to https://celebrity-fanalyzer.pages.dev/
 2. Navigate to the profile page and choose `SIGN UP`
 3. Navigate to the `SETTINGS PANE` of the profile panel & request access as a writer.
-4. (Use a separate Admin account to then grant privileges to the new user.) 
+4. (Use a separate Admin account to then grant privileges to the new user.)
 5. As the newly created user once again, chose `New Entry`
    - Chose the appropriate month prompt
    - Add a title
@@ -102,22 +102,18 @@ The following user stories should be runnable without error in production.
 
 **I want to:** I want to subscribe to an entry and a prompt and see the notifications.
 
-**So that:** I can be notified when there are notifications. 
+**So that:** I can be notified when there are notifications.
 
 **When I Do => I Get:**
 
 1. Navigate directly to a prompt https://celebrity-fanalyzer.pages.dev/<prompt> as a logged in user
 2. I see a blue bell icon that allows me to toggle it on / off to receive or not receive notifications.
 3. When I toggle it on, I see visual feedback that it is on and likewise when I toggle it off.
-4. When someone else comments on the prompt, I receive a notification. 
+4. When someone else comments on the prompt, I receive a notification.
 5. Next I view an interesting entry. I see the same notificaiton button.
-6. When I click the notification button, I see visual feedback that I have clicked it / unclicked it. 
+6. When I click the notification button, I see visual feedback that I have clicked it / unclicked it.
 7. When someone else comments on the entry, I see a notification appear in my notification inbox.
 8. When I navigate to my subscriptions @ https://celebrity-fanalyzer.pages.dev/profile, I see all my notifications.
-9. I can delete notifications that I have read and I see these notifications taken from the list. 
-10. I can click the notifications to go to where the notification comes from. 
+9. I can delete notifications that I have read and I see these notifications taken from the list.
+10. I can click the notifications to go to where the notification comes from.
 11. I can easily navigate back to the subscriptions page where I can see which notifications I have clicked and reviewed.
-
-
-
- 

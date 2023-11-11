@@ -20,8 +20,8 @@ describe('groupInfoByWeek', () => {
     expect(result).toEqual([{ '6/22-24': { visitors: 1, visits: 1 } }, { '6/25-30': { visitors: 1, visits: 6 } }])
   })
 
-// Unitest for groupInfoByMonth
-// use vitest to run the test
+  // Unitest for groupInfoByMonth
+  // use vitest to run the test
   it('groupInfoByMonth : should group data by month', () => {
     const data = [
       { '6/22/2023': { visitors: 1, visits: 1 } },

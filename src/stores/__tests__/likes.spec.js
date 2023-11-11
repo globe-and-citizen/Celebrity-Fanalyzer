@@ -1,7 +1,7 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest'
-import {useEntryStore, useLikeStore, useUserStore} from 'src/stores'
-import {waitUntil} from 'src/utils/waitUntil'
-import {createPinia, setActivePinia} from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useEntryStore, useLikeStore, useUserStore } from 'src/stores'
+import { waitUntil } from 'src/utils/waitUntil'
+import { createPinia, setActivePinia } from 'pinia'
 
 describe('Likes Store', async () => {
   beforeEach(async () => {
@@ -29,7 +29,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getLikes).toBe(undefined)
     expect(likeStore.getDislikes).toBe(undefined)
     await likeStore.getAllLikesDislikes('entries', entryStore.getEntries[1].id)
-    let entyId = entryStore.getEntries[0].id;
+    let entyId = entryStore.getEntries[0].id
     await likeStore.getAllLikesDislikes('entries', entyId)
 
     await waitUntil(() => {
@@ -144,13 +144,11 @@ describe('Likes Store', async () => {
       password: import.meta.env.VITE_TEST_PASSWORD
     }
     try {
-
       await userStore.emailSignIn(userObj)
       // wait the user to be authenticated
       await waitUntil(() => {
         return userStore.isAuthenticated
       }).catch((e) => console.log('Error : Should be authenticated', e))
-
     } catch (e) {
       console.log('Error Mean User does not exist', e)
     }
