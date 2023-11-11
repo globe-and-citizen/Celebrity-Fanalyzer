@@ -5,7 +5,7 @@ import { useUserStore } from 'src/stores'
 
 export const useStatStore = defineStore('stats', {
   state: () => ({
-    _stats: undefined
+    _stats: []
   }),
 
   getters: {
@@ -17,6 +17,23 @@ export const useStatStore = defineStore('stats', {
       onSnapshot(collection(db, collectionName, documentId, 'stats'), (querySnapshot) => {
         this._stats = querySnapshot.docs.map((doc) => doc.data())
       })
+
+      const fetchData = async (pageToken) => {
+        const url = pageToken
+          ? `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageToken=${pageToken}`
+          : `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats`
+
+        const response = await fetch(url)
+        const stats = await response.json()
+        this._stats.push(...stats.data)
+        return stats.nextPageToken
+      }
+
+      let nextPageToken = await fetchData()
+
+      while (nextPageToken) {
+        nextPageToken = await fetchData(nextPageToken)
+      }
     },
 
     async addStats(collectionName, documentId, stats) {
