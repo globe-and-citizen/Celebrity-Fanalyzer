@@ -2,22 +2,8 @@
   <TheHeader feedbackButton title="Stats" />
   <q-page-container style="max-width: none">
     <q-page>
-      <q-table
-        class="q-ma-md"
-        :columns="columnsSummary"
-        hide-bottom
-        :pagination="pagination"
-        :rows="rowSummary"
-        :title="`Summary Data: ${visitors === 1 ? '1 visitor' : `${visitors} visitors`}`"
-      />
-      <q-table
-        class="q-ma-md"
-        :columns="columnsDetailed"
-        hide-bottom
-        :pagination="pagination"
-        :rows="statStore.getStats"
-        :title="`Detailed Data: ${visits === 1 ? '1 visit' : `${visits} visits`}`"
-      />
+      <q-table class="q-ma-md" :columns="columnsSummary" hide-bottom :pagination="pagination" :rows="rowSummary" :title="visitors" />
+      <q-table class="q-ma-md" :columns="columnsDetailed" hide-bottom :pagination="pagination" :rows="statStore.getStats" :title="visits" />
     </q-page>
   </q-page-container>
 </template>
@@ -53,10 +39,18 @@ const columnsSummary = [
 const entry = computed(() => entryStore.getEntries?.find((entry) => router.currentRoute.value.href.includes(entry.slug)))
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-const visits = computed(() => statStore.getStats?.length || 0)
+const visits = computed(() => {
+  const visits = statStore.getStats || 0
+  const anonymous = visits.filter((stat) => stat.author.length === 40).map((stat) => stat.author)
+
+  return `Detailed Data: ${visits.length === 1 ? '1 visit' : `${visits.length} visits`} (${anonymous.length} anonymous)`
+})
+
 const visitors = computed(() => {
-  const authorIds = new Set(statStore.getStats?.map((stat) => stat.author.id))
-  return authorIds.size
+  const authors = new Set(statStore.getStats?.map((stat) => stat.author))
+  const anonymous = new Set(statStore.getStats?.filter((stat) => stat.author.length === 40).map((stat) => stat.author))
+
+  return `Summary Data: ${authors.size === 1 ? '1 visitor' : `${authors.size} visitors`} (${anonymous.size} anonymous)`
 })
 
 const rowSummary = computed(() => {
