@@ -42,11 +42,11 @@ export const useStatStore = defineStore('stats', {
         return stats.nextPageToken
       }
 
-      let nextPageToken = await fetchData()
+      let nextPageToken = undefined
 
-      while (nextPageToken) {
+      do {
         nextPageToken = await fetchData(nextPageToken)
-      }
+      } while (nextPageToken)
     },
 
     async addStats(collectionName, documentId, stats) {
