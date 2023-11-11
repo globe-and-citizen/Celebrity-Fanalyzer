@@ -14,10 +14,6 @@ export const useStatStore = defineStore('stats', {
 
   actions: {
     async fetchStats(collectionName, documentId) {
-      onSnapshot(collection(db, collectionName, documentId, 'stats'), (querySnapshot) => {
-        this._stats = querySnapshot.docs.map((doc) => doc.data())
-      })
-
       const fetchData = async (pageToken) => {
         const url = pageToken
           ? `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageToken=${pageToken}`
