@@ -13,15 +13,32 @@ export const useStatStore = defineStore('stats', {
   },
 
   actions: {
+    /**
+     * Fetches statistics data from an API for a given collection and document ID.
+     * Paginates through the data by making multiple requests until all the data is retrieved.
+     * Stores the fetched data in the _stats array.
+     *
+     * @async
+     * @param {string} collectionName - The name of the collection.
+     * @param {string} documentId - The ID of the document.
+     * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
+     */
     async fetchStats(collectionName, documentId) {
+      /**
+       * Fetches data from the API based on the provided page token.
+       *
+       * @async
+       * @param {string} pageToken - The page token for pagination.
+       * @returns {Promise<string>} - A promise that resolves with the next page token.
+       */
       const fetchData = async (pageToken) => {
         const url = pageToken
           ? `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageToken=${pageToken}`
           : `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats`
 
-        const response = await fetch(url)
-        const stats = await response.json()
-        this._stats.push(...stats.data)
+        const response = await fetch(url) // Using native JavaScript fetch API
+        const stats = await response.json() // Parsing the JSON data
+        this._stats.push(...stats.data) // Adding the data to the store
         return stats.nextPageToken
       }
 
