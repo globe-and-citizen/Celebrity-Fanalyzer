@@ -23,18 +23,18 @@ const statStore = useStatStore()
 const fields = {
   clicks: { label: 'Clicks' },
   keypresses: { label: 'Keypresses' },
-  mouseMovements: { label: 'Mouse Movements' },
-  scrolls: { label: 'Scrolls' },
-  totalTime: { label: 'Time Spent' }
+  mouseMovements: { label: 'Mouse Movements', field: (row) => row.mouseMovements + 'px' },
+  scrolls: { label: 'Scrolls', field: (row) => row.scrolls + 'px' },
+  totalTime: { label: 'Time Spent', field: (row) => row.totalTime + 's' }
 }
 
 const columnsDetailed = [
   { name: 'created', align: 'center', label: 'Date', field: (row) => shortMonthDayTime(row.created), sortable: true },
-  ...Object.keys(fields).map((fieldName) => ({ name: fieldName, label: fields[fieldName].label, field: fieldName, sortable: true }))
+  ...Object.keys(fields).map((field) => ({ name: field, label: fields[field].label, field: fields[field].field || field, sortable: true }))
 ]
 const columnsSummary = [
   { name: 'type', align: 'center', label: '', field: 'type', sortable: true },
-  ...Object.keys(fields).map((fieldName) => ({ name: fieldName, label: fields[fieldName].label, field: fieldName, sortable: true }))
+  ...Object.keys(fields).map((field) => ({ name: field, label: fields[field].label, field: fields[field].field || field, sortable: true }))
 ]
 const entry = computed(() => entryStore.getEntries?.find((entry) => router.currentRoute.value.href.includes(entry.slug)))
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
