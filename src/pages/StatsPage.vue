@@ -55,8 +55,8 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 const visits = computed(() => statStore.getStats?.length || 0)
 const visitors = computed(() => {
-  const authorIds = new Set(statStore.getStats?.map((stat) => stat.author.id))
-  return authorIds.size
+  const authors = new Set(statStore.getStats?.map((stat) => stat.author))
+  return authors.size
 })
 
 const rowSummary = computed(() => {
