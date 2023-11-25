@@ -21,34 +21,23 @@ export const useStatStore = defineStore('stats', {
      * Stores the fetched data in the _stats array.
      *
      * @async
-     * @param {string} collectionName - The name of the collection.
      * @param {string} documentId - The ID of the document.
      * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
      */
-    async fetchStats(collectionName, documentId) {
-      /**
-       * Fetches data from the API based on the provided page token.
-       *
-       * @async
-       * @param {string} pageToken - The page token for pagination.
-       * @returns {Promise<string>} - A promise that resolves with the next page token.
-       */
-      const fetchData = async (pageToken) => {
-        const url = pageToken
-          ? `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageSize=100&pageToken=${pageToken}`
-          : `https://api.celebrityfanalyzer.com/${collectionName}/${documentId}/stats?pageSize=100`
+    async fetchStats(documentId) {
+      const response = await fetch(baseURL, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          post_id: documentId
+        })
+      })
 
-        const response = await fetch(url) // Using native JavaScript fetch API
-        const stats = await response.json() // Parsing the JSON data
-        this._stats.push(...stats.data) // Adding the data to the store
-        return stats.nextPageToken
-      }
-
-      let nextPageToken = undefined
-
-      do {
-        nextPageToken = await fetchData(nextPageToken)
-      } while (nextPageToken)
+      const stats = await response.json() // Parsing the JSON data
+      this._stats.push(...stats)
+      console.log(this._stats)
     },
 
     async addStats(_collectionName, documentId, stats) {
