@@ -40,7 +40,7 @@ export const useStatStore = defineStore('stats', {
       console.log(this._stats)
     },
 
-    async addStats(_collectionName, documentId, stats) {
+    async addStats(documentId, stats) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
