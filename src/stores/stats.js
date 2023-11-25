@@ -35,7 +35,6 @@ export const useStatStore = defineStore('stats', {
 
       const stats = await response.json() // Parsing the JSON data
       this._stats.push(...stats)
-      console.log(this._stats)
     },
 
     /**
