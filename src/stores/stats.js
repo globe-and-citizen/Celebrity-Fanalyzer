@@ -51,14 +51,20 @@ export const useStatStore = defineStore('stats', {
       } while (nextPageToken)
     },
 
-    async addStats(collectionName, documentId, stats) {
+    async addStats(_collectionName, documentId, stats) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
-      stats.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
-      stats.created = Timestamp.fromDate(new Date())
+      stats.user_id = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash
+      stats.post_id = documentId
 
-      await addDoc(collection(db, collectionName, documentId, 'stats'), stats)
+      await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(stats)
+      })
     }
   }
 })
