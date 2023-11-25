@@ -23,14 +23,11 @@ export const useStatStore = defineStore('stats', {
      * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
      */
     async fetchStats(documentId) {
-      const response = await fetch(baseURL, {
+      const response = await fetch(`${baseURL}?post_id=${documentId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          post_id: documentId
-        })
+        }
       })
 
       const stats = await response.json() // Parsing the JSON data
