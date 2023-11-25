@@ -1,6 +1,4 @@
-import { Timestamp, addDoc, collection, onSnapshot } from 'firebase/firestore'
 import { defineStore } from 'pinia'
-import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 
 const baseURL = 'https://stats-api.up.railway.app/v1/stats'
