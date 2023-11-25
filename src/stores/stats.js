@@ -40,6 +40,14 @@ export const useStatStore = defineStore('stats', {
       console.log(this._stats)
     },
 
+    /**
+     * Adds statistics to a collection for a specific document.
+     *
+     * @async
+     * @param {string} documentId - The ID of the document.
+     * @param {object} stats - The statistics to be added.
+     * @returns {Promise<void>} - A promise that resolves when the statistics are successfully added.
+     */
     async addStats(documentId, stats) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
