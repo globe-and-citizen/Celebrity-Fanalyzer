@@ -23,9 +23,9 @@ const statStore = useStatStore()
 const fields = {
   clicks: { label: 'Clicks' },
   keypresses: { label: 'Keypresses' },
-  mouseMovements: { label: 'Mouse Movements', field: (row) => row.mouseMovements + 'px' },
+  mousemovements: { label: 'Mouse Movements', field: (row) => row.mousemovements + 'px' },
   scrolls: { label: 'Scrolls', field: (row) => row.scrolls + 'px' },
-  totalTime: { label: 'Time Spent', field: (row) => row.totalTime + 's' }
+  totaltime: { label: 'Time Spent', field: (row) => row.totaltime + 's' }
 }
 
 const columnsDetailed = [
@@ -41,14 +41,14 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 const visits = computed(() => {
   const visits = statStore.getStats || 0
-  const anonymous = visits.filter((stat) => stat.author.length === 40).map((stat) => stat.author)
+  const anonymous = visits.filter((stat) => stat.user_id.length === 40).map((stat) => stat.user_id)
 
   return `Detailed Data: ${visits.length === 1 ? '1 visit' : `${visits.length} visits`} (${anonymous.length} anonymous)`
 })
 
 const visitors = computed(() => {
-  const authors = new Set(statStore.getStats?.map((stat) => stat.author))
-  const anonymous = new Set(statStore.getStats?.filter((stat) => stat.author.length === 40).map((stat) => stat.author))
+  const authors = new Set(statStore.getStats?.map((stat) => stat.user_id))
+  const anonymous = new Set(statStore.getStats?.filter((stat) => stat.user_id.length === 40).map((stat) => stat.user_id))
 
   return `Summary Data: ${authors.size === 1 ? '1 visitor' : `${authors.size} visitors`} (${anonymous.size} anonymous)`
 })
@@ -75,6 +75,6 @@ onMounted(async () => {
     await entryStore.fetchEntries()
   }
 
-  await statStore.fetchStats('entries', entry.value.id)
+  await statStore.fetchStats(entry.value.id)
 })
 </script>
