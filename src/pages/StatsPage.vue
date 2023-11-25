@@ -23,9 +23,9 @@ const statStore = useStatStore()
 const fields = {
   clicks: { label: 'Clicks' },
   keypresses: { label: 'Keypresses' },
-  mouseMovements: { label: 'Mouse Movements', field: (row) => row.mouseMovements + 'px' },
+  mousemovements: { label: 'Mouse Movements', field: (row) => row.mousemovements + 'px' },
   scrolls: { label: 'Scrolls', field: (row) => row.scrolls + 'px' },
-  totalTime: { label: 'Time Spent', field: (row) => row.totalTime + 's' }
+  totaltime: { label: 'Time Spent', field: (row) => row.totaltime + 's' }
 }
 
 const columnsDetailed = [
