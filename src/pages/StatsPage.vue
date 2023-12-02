@@ -2,6 +2,7 @@
   <TheHeader :backButton="false" feedbackButton title="Stats" />
   <q-page-container style="max-width: none">
     <q-page padding>
+      <h6 class="q-my-md">Data on average for each user</h6>
       <q-select
         label="Prompts"
         optionLabel="title"
@@ -20,7 +21,7 @@
           :loading="statStore.isLoading"
           :pagination="pagination"
           :rows="statStore.getSummary"
-          title="Data on average for each user"
+          :title="`Entries from ${prompt?.id}`"
           wrap-cells
         />
       </Transition>
