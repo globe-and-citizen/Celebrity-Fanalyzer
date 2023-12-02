@@ -1,18 +1,42 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from 'src/stores'
 
-const baseURL = 'https://stats-api.up.railway.app/v1/stats'
+const baseURL = 'https://stats-api.up.railway.app/v1'
 
 export const useStatStore = defineStore('stats', {
   state: () => ({
-    _stats: []
+    _isLoading: false,
+    _stats: [],
+    _summary: []
   }),
 
   getters: {
-    getStats: (state) => state._stats
+    isLoading: (state) => state._isLoading,
+    getStats: (state) => state._stats,
+    getSummary: (state) => state._summary
   },
 
   actions: {
+    /**
+     * Fetches summary data from an API for a given collection and document ID.
+     *
+     * @async
+     * @param {string} documentId - The ID of the document.
+     * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
+     */
+    async fetchSummary(documentId) {
+      this._isLoading = true
+      const response = await fetch(`${baseURL}/summary?prompt_id=${documentId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      this._summary = await response.json() // Parsing the JSON data
+      this._isLoading = false
+    },
+
     /**
      * Fetches statistics data from an API for a given collection and document ID.
      * Paginates through the data by making multiple requests until all the data is retrieved.
@@ -23,7 +47,7 @@ export const useStatStore = defineStore('stats', {
      * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
      */
     async fetchStats(documentId) {
-      const response = await fetch(`${baseURL}?post_id=${documentId}`, {
+      const response = await fetch(`${baseURL}/stats?post_id=${documentId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -49,7 +73,7 @@ export const useStatStore = defineStore('stats', {
       stats.user_id = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash
       stats.post_id = documentId
 
-      await fetch(baseURL, {
+      await fetch(`${baseURL}/stats`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
