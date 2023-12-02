@@ -31,6 +31,10 @@ const routes = [
         component: () => import('pages/PromptPage.vue')
       },
       {
+        path: 'stats',
+        component: () => import('pages/StatsPage.vue')
+      },
+      {
         path: ':slug',
         name: 'slug',
         component: () => import('pages/PromptPage.vue')
