@@ -2,7 +2,6 @@
   <TheHeader :backButton="false" feedbackButton title="Stats" />
   <q-page-container style="max-width: none">
     <q-page padding>
-      <h6 class="q-my-md">Select a prompt to check its stats</h6>
       <q-select
         label="Prompts"
         optionLabel="title"
@@ -21,6 +20,8 @@
           :loading="statStore.isLoading"
           :pagination="pagination"
           :rows="statStore.getSummary"
+          title="Data on average for each user"
+          wrap-cells
         />
       </Transition>
     </q-page>
@@ -30,28 +31,47 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, usePromptStore, useStatStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const statStore = useStatStore()
 
 const colums = ref([
-  { name: 'post_id', align: 'center', label: 'Entry', field: (row) => row.post_id, sortable: true },
+  {
+    name: 'post_id',
+    align: 'left',
+    label: 'Entry',
+    field: (row) => entries.value?.find((entry) => entry.id === row.post_id)?.title ?? 'Deleted',
+    sortable: true
+  },
+  { name: 'visits', label: 'Visits', field: 'visits', sortable: true },
+  { name: 'visitors', label: 'Visitors', field: 'visitors', sortable: true },
   { name: 'clicks', label: 'Clicks', field: 'clicks', sortable: true },
   { name: 'keypresses', label: 'Keypresses', field: 'keypresses', sortable: true },
   { name: 'mousemovements', label: 'Mouse Movements', field: (row) => row.mousemovements + 'px', sortable: true },
   { name: 'scrolls', label: 'Scrolls', field: (row) => row.scrolls + 'px', sortable: true },
   { name: 'totaltime', label: 'Time Spent', field: (row) => row.totaltime + 's', sortable: true }
 ])
+const entries = computed(() => {
+  return (
+    entryStore.getEntries
+      ?.filter((entry) => entry.prompt === prompt.value?.id)
+      ?.map((entry) => ({ id: entry.id, title: entry.title, author: entry.author.username, slug: entry.slug })) ?? []
+  )
+})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 const prompt = ref(null)
 
 onMounted(async () => {
-  if (!promptStore.getPrompts.length) {
+  if (!promptStore.getPrompts?.length) {
     await promptStore.fetchPrompts()
   }
-  if (!entryStore.getEntries.length) {
+
+  prompt.value = promptStore.getPrompts[0]
+  onFetchSummary()
+
+  if (!entryStore.getEntries?.length) {
     await entryStore.fetchEntries()
   }
 })
