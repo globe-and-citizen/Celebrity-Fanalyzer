@@ -27,6 +27,9 @@
               <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
                 <q-item-section>Delete</q-item-section>
               </q-item>
+              <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput(comment.id)">
+                <q-item-section>Report</q-item-section>
+              </q-item>
             </q-list>
           </q-btn-dropdown>
         </q-item-section>
@@ -48,6 +51,41 @@
         >
           <q-btn data-test="submit-edited-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
         </q-input>
+      </q-form>
+
+      <!-- Parent comment editing -->
+      <q-form v-if="isReporting && comment.id === inputReport" greedy @submit.prevent="reportComment(comment.id, reportMessage)">
+        <q-input
+          :data-test="comment.text + '-comment-report'"
+          class="q-px-sm"
+          autogrow
+          dense
+          label="Write your report message"
+          lazy-rules
+          required
+          rounded
+          :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
+          standout="bg-secondary text-white"
+          v-model="reportMessage"
+        >
+          <q-btn data-test="submit-reported-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
+        </q-input>
+        <q-dialog v-model="showReportOptions">
+          <q-card>
+            <q-card-section>
+              <q-option-group v-model="selectedOption" inline>
+                <q-option label="Option 1" value="option1" />
+                <q-option label="Option 2" value="option2" />
+                <!-- Add more options as needed -->
+              </q-option-group>
+            </q-card-section>
+
+            <q-card-actions align="right">
+              <q-btn label="Cancel" color="primary" @click="closeReportOptions" />
+              <q-btn label="OK" color="positive" @click="submitReportOptions" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
       </q-form>
 
       <!-- Parent comment -->
@@ -111,12 +149,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { shortMonthDayTime } from 'src/utils/date'
-import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useUserStore, useReportStore } from 'src/stores'
 import { useQuasar } from 'quasar'
 
 const router = useRouter()
 const userStore = useUserStore()
 const commentStore = useCommentStore()
+const reportStore = useReportStore()
 const errorStore = useErrorStore()
 
 const props = defineProps({
@@ -127,8 +166,11 @@ const props = defineProps({
 
 const userId = ref('')
 const inputEdit = ref('')
+const inputReport = ref('')
 const isEditing = ref(false)
+const isReporting = ref(false)
 const newComment = ref(props.comment.text)
+const reportMessage = ref("")
 
 const $q = useQuasar()
 onMounted(async () => {
@@ -144,6 +186,20 @@ async function editComment(commentId, editedComment) {
     .then(() => $q.notify({ type: 'info', message: 'Comment successfully edited!' }))
     .catch((error) => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
+}
+
+async function reportComment(commentId, reportMessage) {
+  const report = {
+    collectionName: props.collectionName,
+    documentId: props.documentId,
+    commentId: commentId,
+    reportMessage: reportMessage
+  }
+  await reportStore
+    .addReports(report)
+    .then(() => $q.notify({ type: 'info', message: 'Comment successfully reported!' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to report comment'))
+    .finally(() => (isReporting.value = false))
 }
 
 async function deleteComment(commentId) {
@@ -187,5 +243,10 @@ function handleKeydown(event) {
 function editInput(commentId) {
   isEditing.value = !isEditing.value
   inputEdit.value = commentId
+}
+
+function reportInput(commentId) {
+  isReporting.value = !isReporting.value
+  inputReport.value = commentId
 }
 </script>

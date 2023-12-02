@@ -37,6 +37,7 @@
         <q-tab v-if="userStore.isAdmin" data-test="users-tab" name="users" icon="people" label="Users" />
         <q-tab v-if="userStore.isEditorOrAbove" data-test="feedbacks-tab" name="feedbacks" icon="feedback" label="Feedbacks" />
         <q-tab v-if="userStore.isAdmin" data-test="errors-tab" name="errors" icon="error" label="Errors" />
+        <q-tab v-if="userStore.isEditorOrAbove" data-test="reports-tab" name="reports" icon="report" label="Reports" />
       </q-tabs>
 
       <q-tab-panels animated style="padding-bottom: 2rem" swipeable v-model="tab">
@@ -55,6 +56,10 @@
         <q-tab-panel v-if="userStore.isAdmin" name="errors">
           <ManageErrors />
         </q-tab-panel>
+
+        <q-tab-panel v-if="userStore.isEditorOrAbove" name="reports">
+          <ManageReports />
+        </q-tab-panel>
       </q-tab-panels>
 
       <q-dialog full-width position="bottom" v-model="prompt.dialog">
@@ -72,6 +77,7 @@
 import EntryCard from 'src/components/Admin/EntryCard.vue'
 import ManageErrors from 'src/components/Admin/ManageErrors.vue'
 import ManageFeedbacks from 'src/components/Admin/ManageFeedbacks.vue'
+import ManageReports from 'src/components/Admin/ManageReports.vue'
 import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
 import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
