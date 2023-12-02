@@ -27,13 +27,14 @@
               <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
                 <q-item-section>Delete</q-item-section>
               </q-item>
-              <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput(comment.id)">
+              <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput">
                 <q-item-section>Report</q-item-section>
               </q-item>
             </q-list>
           </q-btn-dropdown>
         </q-item-section>
       </q-item>
+
       <!-- Parent comment editing -->
       <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, newComment)">
         <q-input
@@ -53,40 +54,6 @@
         </q-input>
       </q-form>
 
-      <!-- Parent comment editing -->
-      <q-form v-if="isReporting && comment.id === inputReport" greedy @submit.prevent="reportComment(comment.id, reportMessage)">
-        <q-input
-          :data-test="comment.text + '-comment-report'"
-          class="q-px-sm"
-          autogrow
-          dense
-          label="Write your report message"
-          lazy-rules
-          required
-          rounded
-          :rules="[(val) => val.length > 1 || 'Please type at least 2 characters']"
-          standout="bg-secondary text-white"
-          v-model="reportMessage"
-        >
-          <q-btn data-test="submit-reported-comment" class="cursor-pointer" color="grey-6" flat icon="send" round type="submit" />
-        </q-input>
-        <q-dialog v-model="showReportOptions">
-          <q-card>
-            <q-card-section>
-              <q-option-group v-model="selectedOption" inline>
-                <q-option label="Option 1" value="option1" />
-                <q-option label="Option 2" value="option2" />
-                <!-- Add more options as needed -->
-              </q-option-group>
-            </q-card-section>
-
-            <q-card-actions align="right">
-              <q-btn label="Cancel" color="primary" @click="closeReportOptions" />
-              <q-btn label="OK" color="positive" @click="submitReportOptions" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-      </q-form>
 
       <!-- Parent comment -->
       <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
@@ -97,6 +64,28 @@
         </span>
         <span v-else>{{ comment.text }}</span>
       </div>
+
+      <!-- Parent comment reporting -->
+      <q-dialog v-model="isReporting">
+        <q-card style="width: 400px">
+          <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">Report comment</div>
+            <q-space />
+            <q-btn icon="close" flat round dense @click="reportInput" />
+          </q-card-section>
+          <q-card-section>
+            <q-option-group
+              :options="reportOptions"
+              type="radio"
+              v-model="reportOption"
+            />
+          </q-card-section>
+          <q-card-actions class="q-mb-sm" align="right">
+            <q-btn label="Cancel" color="primary" @click="reportInput" />
+            <q-btn label="Report" color="positive"  @click="reportComment(comment.id, comment.text, reportOption)" :disable="reportOption === null" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
 
       <!-- Parent Like, Dislike, Reply buttons -->
       <div class="row">
@@ -171,6 +160,17 @@ const isEditing = ref(false)
 const isReporting = ref(false)
 const newComment = ref(props.comment.text)
 const reportMessage = ref("")
+const reportOption = ref(null);
+const reportOptions = [
+  { label: 'Unwanted commercial content or spam', value: 'Unwanted commercial content or spam' },
+  { label: 'Pornography or sexually explicit material', value: 'Pornography or sexually explicit material' },
+  { label: 'Child abuse', value: 'Child abuse' },
+  { label: 'Hate speech or graphic violence', value: 'Hate speech or graphic violence' },
+  { label: 'Promotes terrorism', value: 'Promotes terrorism' },
+  { label: 'Harassment or bullying', value: 'Harassment or bullying' },
+  { label: 'Suicide or self injury', value: 'Suicide or self injury' },
+  { label: 'Misinformation', value: 'Misinformation' },
+];
 
 const $q = useQuasar()
 onMounted(async () => {
@@ -188,18 +188,22 @@ async function editComment(commentId, editedComment) {
     .finally(() => (isEditing.value = false))
 }
 
-async function reportComment(commentId, reportMessage) {
+async function reportComment(commentId, commentText, reportMessage) {
   const report = {
     collectionName: props.collectionName,
     documentId: props.documentId,
     commentId: commentId,
+    commentText: commentText,
     reportMessage: reportMessage
   }
+
   await reportStore
-    .addReports(report)
-    .then(() => $q.notify({ type: 'info', message: 'Comment successfully reported!' }))
-    .catch((error) => errorStore.throwError(error, 'Failed to report comment'))
-    .finally(() => (isReporting.value = false))
+  .addReports(report)
+  .then(() => $q.notify({ type: 'info', message: 'Comment successfully reported!' }))
+  .catch((error) => errorStore.throwError(error, 'Failed to report comment'))
+  .finally(() => (isReporting.value = false))
+
+  reportOption.value = null
 }
 
 async function deleteComment(commentId) {
@@ -245,8 +249,8 @@ function editInput(commentId) {
   inputEdit.value = commentId
 }
 
-function reportInput(commentId) {
+function reportInput() {
   isReporting.value = !isReporting.value
-  inputReport.value = commentId
+  reportOption.value = null
 }
 </script>

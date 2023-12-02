@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, onSnapshot, updateDoc, Timestamp, setDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from './user'
@@ -33,27 +33,71 @@ export const useReportStore = defineStore('reports', {
       this._isLoading = false
     },
 
-    async addReports(report) {
-      const userStore = useUserStore()
-
-      report.author = userStore.getUserRef
-      report.created = Timestamp.fromDate(new Date())
-      report.id = Date.now() + '-' + (report.author.id || report.author)
-
-      this._isLoading = true
-      await addDoc(collection(db, 'reports'), report).finally(() => (this._isLoading = false))
+    async addReports(payload) {
+      try {
+        const userStore = useUserStore();
+        this._isLoading = true;
+        const report = {
+          ...payload,
+          author: userStore.getUserRef,
+          created: Timestamp.fromDate(new Date()),
+          id: Date.now() + '-' + (payload.author?.id || payload.author),
+          status: 'New',
+        };
+        const reportRef = doc(db, 'reports', report.id);
+        await setDoc(reportRef, report);
+      } catch (error) {
+        console.error('Error adding report:', error.message);
+      } finally {
+        this._isLoading = false;
+      }
     },
 
     async deleteReport(id) {
-      this._isLoading = true
-      await deleteDoc(doc(db, 'reports', id)).finally(() => (this._isLoading = false))
+      try {
+        this._isLoading = true;
+        const reportRef = doc(db, 'reports', id);
+        await deleteDoc(reportRef);
+      } catch (error) {
+        console.error('Error deleting document:', error.message);
+      } finally {
+        this._isLoading = false;
+      }
     },
 
-    async deleteComment(commentId) {
-      const commentStore = useCommentStore()
-      this._isLoading = true
-      await commentStore.deleteComment("entries", "2023-12T1701010519528", commentId)
-      this._isLoading = false
+    async editStatusReport(id) {
+      const reportRef = doc(db, 'reports', id);
+
+      try {
+        const reportSnapshot = await getDoc(reportRef);
+        if (reportSnapshot.exists()) {
+          const updatedTimestamp = Timestamp.fromDate(new Date());
+          await updateDoc(reportRef, {
+            status: 'Deleted',
+            updated: updatedTimestamp,
+          });
+        } else {
+          console.error('Document does not exist');
+        }
+      } catch (error) {
+        console.error('Error updating document status:', error.message);
+      } finally {
+        this._isLoading = false;
+      }
+    },
+
+    async deleteComment(collectionName, documentId, commentId, reportId) {
+      try {
+        this._isLoading = true;
+        const commentStore = useCommentStore();
+        await commentStore.deleteComment(collectionName, documentId, commentId);
+        await this.editStatusReport(reportId);
+      } catch (error) {
+        console.error('Error deleting comment:', error.message);
+      } finally {
+        this._isLoading = false;
+      }
     }
+
   }
 })
