@@ -23,7 +23,13 @@
           :rows="statStore.getSummary"
           :title="`Entries from ${prompt?.id}`"
           wrap-cells
-        />
+        >
+          <template v-slot:body-cell-slug="props">
+            <q-td :props="props">
+              <q-btn dense flat icon="link" :to="entries?.find((entry) => entry.id === props.row.post_id)?.slug" rounded target="_blank" />
+            </q-td>
+          </template>
+        </q-table>
       </Transition>
     </q-page>
   </q-page-container>
@@ -39,8 +45,9 @@ const promptStore = usePromptStore()
 const statStore = useStatStore()
 
 const colums = ref([
+  { name: 'slug', align: 'center', label: '', field: 'slug' },
   {
-    name: 'post_id',
+    name: 'entry',
     align: 'left',
     label: 'Entry',
     field: (row) => entries.value?.find((entry) => entry.id === row.post_id)?.title ?? 'Deleted',
