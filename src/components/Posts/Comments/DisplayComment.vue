@@ -18,13 +18,13 @@
           <q-item-label>{{ comment.author?.displayName || 'Anonymous' }}</q-item-label>
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
-        <q-item-section v-if="(comment.author?.uid || comment.author) === userId" side>
+        <q-item-section side>
           <q-btn-dropdown color="secondary" :data-test="comment.text + '-option-button'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
-              <q-item clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
+              <q-item v-if="(comment.author?.uid || comment.author) === userId" clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
+              <q-item v-if="(comment.author?.uid || comment.author) === userId" clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
                 <q-item-section>Delete</q-item-section>
               </q-item>
               <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput">
