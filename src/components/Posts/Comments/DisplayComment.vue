@@ -18,19 +18,23 @@
           <q-item-label>{{ comment.author?.displayName || 'Anonymous' }}</q-item-label>
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
-        <q-item-section v-if="(comment.author?.uid || comment.author) === userId" side>
+        <q-item-section side>
           <q-btn-dropdown color="secondary" :data-test="comment.text + '-option-button'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
-              <q-item clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
+              <q-item v-if="(comment.author?.uid || comment.author) === userId" clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
+              <q-item v-if="(comment.author?.uid || comment.author) === userId" clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
                 <q-item-section>Delete</q-item-section>
+              </q-item>
+              <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput">
+                <q-item-section>Report</q-item-section>
               </q-item>
             </q-list>
           </q-btn-dropdown>
         </q-item-section>
       </q-item>
+
       <!-- Parent comment editing -->
       <q-form v-if="isEditing && comment.id === inputEdit" greedy @submit.prevent="editComment(comment.id, newComment)">
         <q-input
@@ -50,6 +54,7 @@
         </q-input>
       </q-form>
 
+
       <!-- Parent comment -->
       <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
         <span v-if="comment.text.includes('@')">
@@ -59,6 +64,28 @@
         </span>
         <span v-else>{{ comment.text }}</span>
       </div>
+
+      <!-- Parent comment reporting -->
+      <q-dialog v-model="isReporting">
+        <q-card style="width: 400px">
+          <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">Report comment</div>
+            <q-space />
+            <q-btn icon="close" flat round dense @click="reportInput" />
+          </q-card-section>
+          <q-card-section>
+            <q-option-group
+              :options="reportOptions"
+              type="radio"
+              v-model="reportOption"
+            />
+          </q-card-section>
+          <q-card-actions class="q-mb-sm" align="right">
+            <q-btn label="Cancel" color="primary" @click="reportInput" />
+            <q-btn label="Report" color="positive"  @click="reportComment(comment.id, comment.text, reportOption)" :disable="reportOption === null" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
 
       <!-- Parent Like, Dislike, Reply buttons -->
       <div class="row">
@@ -111,12 +138,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { shortMonthDayTime } from 'src/utils/date'
-import { useCommentStore, useErrorStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useUserStore, useReportStore } from 'src/stores'
 import { useQuasar } from 'quasar'
 
 const router = useRouter()
 const userStore = useUserStore()
 const commentStore = useCommentStore()
+const reportStore = useReportStore()
 const errorStore = useErrorStore()
 
 const props = defineProps({
@@ -127,8 +155,22 @@ const props = defineProps({
 
 const userId = ref('')
 const inputEdit = ref('')
+const inputReport = ref('')
 const isEditing = ref(false)
+const isReporting = ref(false)
 const newComment = ref(props.comment.text)
+const reportMessage = ref("")
+const reportOption = ref(null);
+const reportOptions = [
+  { label: 'Unwanted commercial content or spam', value: 'Unwanted commercial content or spam' },
+  { label: 'Pornography or sexually explicit material', value: 'Pornography or sexually explicit material' },
+  { label: 'Child abuse', value: 'Child abuse' },
+  { label: 'Hate speech or graphic violence', value: 'Hate speech or graphic violence' },
+  { label: 'Promotes terrorism', value: 'Promotes terrorism' },
+  { label: 'Harassment or bullying', value: 'Harassment or bullying' },
+  { label: 'Suicide or self injury', value: 'Suicide or self injury' },
+  { label: 'Misinformation', value: 'Misinformation' },
+];
 
 const $q = useQuasar()
 onMounted(async () => {
@@ -144,6 +186,24 @@ async function editComment(commentId, editedComment) {
     .then(() => $q.notify({ type: 'info', message: 'Comment successfully edited!' }))
     .catch((error) => errorStore.throwError(error, 'Failed to edit comment'))
     .finally(() => (isEditing.value = false))
+}
+
+async function reportComment(commentId, commentText, reportMessage) {
+  const report = {
+    collectionName: props.collectionName,
+    documentId: props.documentId,
+    commentId: commentId,
+    commentText: commentText,
+    reportMessage: reportMessage
+  }
+
+  await reportStore
+  .addReports(report)
+  .then(() => $q.notify({ type: 'info', message: 'Comment successfully reported!' }))
+  .catch((error) => errorStore.throwError(error, 'Failed to report comment'))
+  .finally(() => (isReporting.value = false))
+
+  reportOption.value = null
 }
 
 async function deleteComment(commentId) {
@@ -187,5 +247,10 @@ function handleKeydown(event) {
 function editInput(commentId) {
   isEditing.value = !isEditing.value
   inputEdit.value = commentId
+}
+
+function reportInput() {
+  isReporting.value = !isReporting.value
+  reportOption.value = null
 }
 </script>
