@@ -18,7 +18,7 @@
           <q-item-label>{{ comment.author?.displayName || 'Anonymous' }}</q-item-label>
           <q-item-label caption>{{ shortMonthDayTime(comment.created) }}</q-item-label>
         </q-item-section>
-        <q-item-section side>
+        <q-item-section v-if="!comment.isDeleted" side>
           <q-btn-dropdown color="secondary" :data-test="comment.text + '-option-button'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
               <q-item
@@ -100,7 +100,7 @@
       </q-dialog>
 
       <!-- Parent Like, Dislike, Reply buttons -->
-      <div class="row">
+      <div class="row" v-if="!comment.isDeleted">
         <q-btn
           :data-test="'like' + comment.text"
           flat

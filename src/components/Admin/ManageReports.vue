@@ -19,7 +19,7 @@
           <q-card-section class="text-center flex justify-between">
             <div class="text-body1 text-left self-center" data-test="user-div">
               <span class="text-bold">Author:</span>
-              {{ props.row.author.displayName }}
+              {{ props.row.author ? props.row.author.displayName : 'Anonymously' }}
             </div>
             <div
               class="text-body1 text-right text-white q-pa-sm q-btn--rounded"

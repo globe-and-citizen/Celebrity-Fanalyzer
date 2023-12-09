@@ -20,13 +20,21 @@ export const useReportStore = defineStore('reports', {
   actions: {
     async fetchReports() {
       this._isLoading = true
+      const userStore = useUserStore()
+      if (!userStore.getUsers) {
+        await userStore.fetchUsers()
+      }
 
       if (!this._unSubscribe)
         this._unSubscribe = onSnapshot(collection(db, 'reports'), async (querySnapshot) => {
           const reports = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
           for (const report of reports) {
-            report.author = await getDoc(report.author).then((doc) => doc.data())
+            if (!report.isAnonymous) {
+              report.author = await getDoc(report.author).then((doc) => doc.data())
+            } else {
+              report.author = userStore.getUserById(report.author.id) || report.author.id
+            }
           }
           this.$patch({ _reports: reports })
         })
@@ -39,10 +47,11 @@ export const useReportStore = defineStore('reports', {
         this._isLoading = true
         const report = {
           ...payload,
-          author: userStore.getUserRef,
+          author: userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash,
           created: Timestamp.fromDate(new Date()),
-          id: Date.now() + '-' + (payload.author?.id || payload.author),
-          status: 'New'
+          id: Date.now() + '-' + (userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash),
+          status: 'New',
+          isAnonymous: !userStore.isAuthenticated
         }
         const reportRef = doc(db, 'reports', report.id)
         await setDoc(reportRef, report)
