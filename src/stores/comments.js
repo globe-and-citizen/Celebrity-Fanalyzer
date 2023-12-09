@@ -168,9 +168,6 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async deleteComment(collectionName, documentId, commentId) {
-      console.log('Collection name: ', collectionName)
-      console.log('Document ID: ', documentId)
-      console.log('Comment ID: ', commentId)
       const userStore = useUserStore()
       await userStore.fetchUserIp()
 
