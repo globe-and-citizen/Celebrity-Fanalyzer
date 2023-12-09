@@ -19,9 +19,14 @@
           <q-card-section class="text-center flex justify-between">
             <div class="text-body1 text-left self-center" data-test="user-div">
               <span class="text-bold">Author:</span>
-              {{ props.row.author.displayName }}
+              {{ props.row.author ? props.row.author.displayName : 'Anonymously' }}
             </div>
-            <div class="text-body1 text-right text-white q-pa-sm q-btn--rounded" :class="props.row.status === 'New' ? 'bg-positive' : 'bg-negative'">{{ props.row.status }}</div>
+            <div
+              class="text-body1 text-right text-white q-pa-sm q-btn--rounded"
+              :class="props.row.status === 'New' ? 'bg-positive' : 'bg-negative'"
+            >
+              {{ props.row.status }}
+            </div>
           </q-card-section>
           <q-separator />
           <q-card-section>
@@ -39,8 +44,18 @@
             </p>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn :disable="props.row.status === 'New'" label="Delete report" color="primary" @click="confirmDelete(props.row, 'report')"/>
-            <q-btn :disable="props.row.status === 'Deleted'" label="Delete comment" color="primary" @click="confirmDelete(props.row, 'comment')"/>
+            <q-btn
+              :disable="props.row.status === 'New'"
+              label="Delete report"
+              color="primary"
+              @click="confirmDelete(props.row, 'report')"
+            />
+            <q-btn
+              :disable="props.row.status === 'Deleted'"
+              label="Delete comment"
+              color="primary"
+              @click="confirmDelete(props.row, 'comment')"
+            />
           </q-card-actions>
         </q-card>
       </div>
@@ -110,5 +125,4 @@ function onDeleteReport() {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
