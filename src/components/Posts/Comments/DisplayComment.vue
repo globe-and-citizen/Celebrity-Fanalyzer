@@ -21,10 +21,22 @@
         <q-item-section side>
           <q-btn-dropdown color="secondary" :data-test="comment.text + '-option-button'" dense dropdown-icon="more_vert" flat rounded>
             <q-list>
-              <q-item v-if="(comment.author?.uid || comment.author) === userId" clickable data-test="comment-select-edit" v-close-popup @click="editInput(comment.id)">
+              <q-item
+                v-if="(comment.author?.uid || comment.author) === userId"
+                clickable
+                data-test="comment-select-edit"
+                v-close-popup
+                @click="editInput(comment.id)"
+              >
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item v-if="(comment.author?.uid || comment.author) === userId" clickable data-test="comment-select-delete" v-close-popup @click="deleteComment(comment.id)">
+              <q-item
+                v-if="(comment.author?.uid || comment.author) === userId"
+                clickable
+                data-test="comment-select-delete"
+                v-close-popup
+                @click="deleteComment(comment.id)"
+              >
                 <q-item-section>Delete</q-item-section>
               </q-item>
               <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput">
@@ -54,7 +66,6 @@
         </q-input>
       </q-form>
 
-
       <!-- Parent comment -->
       <div v-else class="q-my-sm text-body2" style="white-space: pre-line">
         <span v-if="comment.text.includes('@')">
@@ -74,15 +85,16 @@
             <q-btn icon="close" flat round dense @click="reportInput" />
           </q-card-section>
           <q-card-section>
-            <q-option-group
-              :options="reportOptions"
-              type="radio"
-              v-model="reportOption"
-            />
+            <q-option-group :options="reportOptions" type="radio" v-model="reportOption" />
           </q-card-section>
           <q-card-actions class="q-mb-sm" align="right">
             <q-btn label="Cancel" color="primary" @click="reportInput" />
-            <q-btn label="Report" color="positive"  @click="reportComment(comment.id, comment.text, reportOption)" :disable="reportOption === null" />
+            <q-btn
+              label="Report"
+              color="positive"
+              @click="reportComment(comment.id, comment.text, reportOption)"
+              :disable="reportOption === null"
+            />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -159,8 +171,8 @@ const inputReport = ref('')
 const isEditing = ref(false)
 const isReporting = ref(false)
 const newComment = ref(props.comment.text)
-const reportMessage = ref("")
-const reportOption = ref(null);
+const reportMessage = ref('')
+const reportOption = ref(null)
 const reportOptions = [
   { label: 'Unwanted commercial content or spam', value: 'Unwanted commercial content or spam' },
   { label: 'Pornography or sexually explicit material', value: 'Pornography or sexually explicit material' },
@@ -169,8 +181,8 @@ const reportOptions = [
   { label: 'Promotes terrorism', value: 'Promotes terrorism' },
   { label: 'Harassment or bullying', value: 'Harassment or bullying' },
   { label: 'Suicide or self injury', value: 'Suicide or self injury' },
-  { label: 'Misinformation', value: 'Misinformation' },
-];
+  { label: 'Misinformation', value: 'Misinformation' }
+]
 
 const $q = useQuasar()
 onMounted(async () => {
@@ -198,10 +210,10 @@ async function reportComment(commentId, commentText, reportMessage) {
   }
 
   await reportStore
-  .addReports(report)
-  .then(() => $q.notify({ type: 'info', message: 'Comment successfully reported!' }))
-  .catch((error) => errorStore.throwError(error, 'Failed to report comment'))
-  .finally(() => (isReporting.value = false))
+    .addReports(report)
+    .then(() => $q.notify({ type: 'info', message: 'Comment successfully reported!' }))
+    .catch((error) => errorStore.throwError(error, 'Failed to report comment'))
+    .finally(() => (isReporting.value = false))
 
   reportOption.value = null
 }

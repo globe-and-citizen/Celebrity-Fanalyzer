@@ -35,69 +35,68 @@ export const useReportStore = defineStore('reports', {
 
     async addReports(payload) {
       try {
-        const userStore = useUserStore();
-        this._isLoading = true;
+        const userStore = useUserStore()
+        this._isLoading = true
         const report = {
           ...payload,
           author: userStore.getUserRef,
           created: Timestamp.fromDate(new Date()),
           id: Date.now() + '-' + (payload.author?.id || payload.author),
-          status: 'New',
-        };
-        const reportRef = doc(db, 'reports', report.id);
-        await setDoc(reportRef, report);
+          status: 'New'
+        }
+        const reportRef = doc(db, 'reports', report.id)
+        await setDoc(reportRef, report)
       } catch (error) {
-        console.error('Error adding report:', error.message);
+        console.error('Error adding report:', error.message)
       } finally {
-        this._isLoading = false;
+        this._isLoading = false
       }
     },
 
     async deleteReport(id) {
       try {
-        this._isLoading = true;
-        const reportRef = doc(db, 'reports', id);
-        await deleteDoc(reportRef);
+        this._isLoading = true
+        const reportRef = doc(db, 'reports', id)
+        await deleteDoc(reportRef)
       } catch (error) {
-        console.error('Error deleting document:', error.message);
+        console.error('Error deleting document:', error.message)
       } finally {
-        this._isLoading = false;
+        this._isLoading = false
       }
     },
 
     async editStatusReport(id) {
-      const reportRef = doc(db, 'reports', id);
+      const reportRef = doc(db, 'reports', id)
 
       try {
-        const reportSnapshot = await getDoc(reportRef);
+        const reportSnapshot = await getDoc(reportRef)
         if (reportSnapshot.exists()) {
-          const updatedTimestamp = Timestamp.fromDate(new Date());
+          const updatedTimestamp = Timestamp.fromDate(new Date())
           await updateDoc(reportRef, {
             status: 'Deleted',
-            updated: updatedTimestamp,
-          });
+            updated: updatedTimestamp
+          })
         } else {
-          console.error('Document does not exist');
+          console.error('Document does not exist')
         }
       } catch (error) {
-        console.error('Error updating document status:', error.message);
+        console.error('Error updating document status:', error.message)
       } finally {
-        this._isLoading = false;
+        this._isLoading = false
       }
     },
 
     async deleteComment(collectionName, documentId, commentId, reportId) {
       try {
-        this._isLoading = true;
-        const commentStore = useCommentStore();
-        await commentStore.deleteComment(collectionName, documentId, commentId);
-        await this.editStatusReport(reportId);
+        this._isLoading = true
+        const commentStore = useCommentStore()
+        await commentStore.deleteComment(collectionName, documentId, commentId)
+        await this.editStatusReport(reportId)
       } catch (error) {
-        console.error('Error deleting comment:', error.message);
+        console.error('Error deleting comment:', error.message)
       } finally {
-        this._isLoading = false;
+        this._isLoading = false
       }
     }
-
   }
 })
