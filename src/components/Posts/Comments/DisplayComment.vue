@@ -167,11 +167,9 @@ const props = defineProps({
 
 const userId = ref('')
 const inputEdit = ref('')
-const inputReport = ref('')
 const isEditing = ref(false)
 const isReporting = ref(false)
 const newComment = ref(props.comment.text)
-const reportMessage = ref('')
 const reportOption = ref(null)
 const reportOptions = [
   { label: 'Unwanted commercial content or spam', value: 'Unwanted commercial content or spam' },
