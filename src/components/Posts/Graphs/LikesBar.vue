@@ -105,6 +105,23 @@ function groupLikesAndDislikesByDate(data) {
     return new Date(dateA) - new Date(dateB)
   })
 
+  // Generate missing dates between the first provided date and today's date
+  const uniqueDates = new Set(mergedResult.map((item) => Object.keys(item)[0]))
+  const today = new Date()
+  const firstDate = mergedResult[0] ? Object.keys(mergedResult[0])[0] : null
+  const startDate = firstDate ? new Date(firstDate) : null
+
+  for (let currentDate = startDate; currentDate <= today; currentDate.setDate(currentDate.getDate() + 1)) {
+    const formattedDate = currentDate.toLocaleDateString('en-US')
+
+    if (!uniqueDates.has(formattedDate)) {
+      mergedResult.push({ [formattedDate]: {} })
+      uniqueDates.add(formattedDate)
+    }
+  }
+
+  // Sort the array by date
+  mergedResult.sort((a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0]))
   return mergedResult
 }
 
@@ -121,11 +138,14 @@ watchEffect(() => {
   }
 
   dates.value = info.map((obj) => Object.keys(obj)[0])
-  likes.value = info.map((obj) => Object.values(obj)[0].likes)
-  dislikes.value = info.map((obj) => Object.values(obj)[0].dislikes)
+  likes.value = info.map((obj) => Object.values(obj)[0].likes || 0)
+  dislikes.value = info.map((obj) => {
+    const dislikesValue = Object.values(obj)[0].dislikes || 0
+    return dislikesValue < 0 ? -dislikesValue : dislikesValue
+  })
 
   countLikes.value = likes.value.reduce((acc, item) => acc + item, 0)
-  countDislikes.value = dislikes.value.reduce((acc, item) => acc - item, 0)
+  countDislikes.value = dislikes.value.reduce((acc, item) => acc + item, 0)
 
   compute()
 })
