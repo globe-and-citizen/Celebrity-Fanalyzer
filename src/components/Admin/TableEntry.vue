@@ -4,8 +4,8 @@
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
         <q-btn
+          v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
           color="warning"
-          :disable="userStore.getUser.role === 'Writer' && userStore.getUser.uid !== props.row.author.uid"
           flat
           icon="edit"
           round
