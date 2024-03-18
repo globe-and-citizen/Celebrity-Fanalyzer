@@ -13,8 +13,8 @@
           @click="onEditDialog(props.row)"
         />
         <q-btn
+          v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
           color="negative"
-          :disable="userStore.getUser.role === 'Writer' && userStore.getUser.uid !== props.row.author.uid"
           data-test="button-delete-entry"
           flat
           icon="delete"
