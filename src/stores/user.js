@@ -122,7 +122,7 @@ export const useUserStore = defineStore('user', {
           console.error(error)
           if (error.code === 'auth/email-already-in-use') Notify.create({ type: 'negative', message: 'Email already exists' })
           else {
-            Notify.create({ type: 'negative', message: 'Something went wrong.' })
+            Notify.create({ type: 'negative', message: 'Something went wrong, Please try again' })
           }
         })
         .finally(() => (this._isLoading = false))
