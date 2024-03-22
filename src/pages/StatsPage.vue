@@ -1,80 +1,108 @@
 <template>
-  <TheHeader feedbackButton title="Stats" />
+  <TheHeader :backButton="false" feedbackButton title="Stats" />
   <q-page-container style="max-width: none">
-    <q-page>
-      <q-table class="q-ma-md" :columns="columnsSummary" hide-bottom :pagination="pagination" :rows="rowSummary" :title="visitors" />
-      <q-table class="q-ma-md" :columns="columnsDetailed" hide-bottom :pagination="pagination" :rows="statStore.getStats" :title="visits" />
+    <q-page padding>
+      <h6 class="q-my-md">Data on average for each user</h6>
+      <q-select
+        label="Prompts"
+        optionLabel="title"
+        optionValue="id"
+        :options="promptStore.getPrompts"
+        outlined
+        v-model="prompt"
+        @update:modelValue="onFetchSummary"
+      />
+      <Transition name="slide-fade">
+        <q-table
+          v-if="statStore.getSummary.length"
+          class="q-my-md"
+          :columns="colums"
+          hide-bottom
+          :loading="statStore.isLoading"
+          :pagination="pagination"
+          :rows="statStore.getSummary"
+          :title="`Entries from ${prompt?.id}`"
+          wrap-cells
+        >
+          <template v-slot:body-cell-slug="props">
+            <q-td :props="props">
+              <q-btn dense flat icon="link" :to="entries?.find((entry) => entry.id === props.row.post_id)?.slug" rounded target="_blank" />
+            </q-td>
+          </template>
+        </q-table>
+      </Transition>
     </q-page>
   </q-page-container>
 </template>
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useStatStore } from 'src/stores'
-import { shortMonthDayTime } from 'src/utils/date'
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+import { useEntryStore, usePromptStore, useStatStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
 const entryStore = useEntryStore()
+const promptStore = usePromptStore()
 const statStore = useStatStore()
 
-const fields = {
-  clicks: { label: 'Clicks' },
-  keypresses: { label: 'Keypresses' },
-  mouseMovements: { label: 'Mouse Movements', field: (row) => row.mouseMovements + 'px' },
-  scrolls: { label: 'Scrolls', field: (row) => row.scrolls + 'px' },
-  totalTime: { label: 'Time Spent', field: (row) => row.totalTime + 's' }
-}
-
-const columnsDetailed = [
-  { name: 'created', align: 'center', label: 'Date', field: (row) => shortMonthDayTime(row.created), sortable: true },
-  ...Object.keys(fields).map((field) => ({ name: field, label: fields[field].label, field: fields[field].field || field, sortable: true }))
-]
-const columnsSummary = [
-  { name: 'type', align: 'center', label: '', field: 'type', sortable: true },
-  ...Object.keys(fields).map((field) => ({ name: field, label: fields[field].label, field: fields[field].field || field, sortable: true }))
-]
-const entry = computed(() => entryStore.getEntries?.find((entry) => router.currentRoute.value.href.includes(entry.slug)))
+const colums = ref([
+  { name: 'slug', align: 'center', label: '', field: 'slug' },
+  {
+    name: 'entry',
+    align: 'left',
+    label: 'Entry',
+    field: (row) => entries.value?.find((entry) => entry.id === row.post_id)?.title ?? 'Deleted',
+    sortable: true
+  },
+  { name: 'visits', label: 'Visits', field: 'visits', sortable: true },
+  { name: 'visitors', label: 'Visitors', field: 'visitors', sortable: true },
+  { name: 'clicks', label: 'Clicks', field: 'clicks', sortable: true },
+  { name: 'keypresses', label: 'Keypresses', field: 'keypresses', sortable: true },
+  { name: 'mousemovements', label: 'Mouse Movements', field: (row) => row.mousemovements + 'px', sortable: true },
+  { name: 'scrolls', label: 'Scrolls', field: (row) => row.scrolls + 'px', sortable: true },
+  { name: 'totaltime', label: 'Time Spent', field: (row) => row.totaltime + 's', sortable: true }
+])
+const entries = computed(() => {
+  return (
+    entryStore.getEntries
+      ?.filter((entry) => entry.prompt === prompt.value?.id)
+      ?.map((entry) => ({ id: entry.id, title: entry.title, author: entry.author.username, slug: entry.slug })) ?? []
+  )
+})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
-
-const visits = computed(() => {
-  const visits = statStore.getStats || 0
-  const anonymous = visits.filter((stat) => stat.author.length === 40).map((stat) => stat.author)
-
-  return `Detailed Data: ${visits.length === 1 ? '1 visit' : `${visits.length} visits`} (${anonymous.length} anonymous)`
-})
-
-const visitors = computed(() => {
-  const authors = new Set(statStore.getStats?.map((stat) => stat.author))
-  const anonymous = new Set(statStore.getStats?.filter((stat) => stat.author.length === 40).map((stat) => stat.author))
-
-  return `Summary Data: ${authors.size === 1 ? '1 visitor' : `${authors.size} visitors`} (${anonymous.size} anonymous)`
-})
-
-const rowSummary = computed(() => {
-  const stats = statStore.getStats
-  if (!stats || stats.length === 0) {
-    return []
-  }
-
-  const averageRow = { type: 'Average' }
-  const totalRow = { type: 'Total' }
-
-  Object.keys(fields).forEach((field) => {
-    averageRow[field] = (stats.reduce((acc, stat) => acc + stat[field], 0) / stats.length).toFixed(1)
-    totalRow[field] = stats.reduce((acc, stat) => acc + stat[field], 0)
-  })
-
-  return [averageRow, totalRow]
-})
+const prompt = ref(null)
 
 onMounted(async () => {
-  if (!entryStore.getEntries.length) {
-    await entryStore.fetchEntries()
+  if (!promptStore.getPrompts?.length) {
+    await promptStore.fetchPrompts()
   }
 
-  await statStore.fetchStats('entries', entry.value.id)
+  prompt.value = promptStore.getPrompts[0]
+  onFetchSummary()
+
+  if (!entryStore.getEntries?.length) {
+    await entryStore.fetchEntries()
+  }
 })
+
+async function onFetchSummary() {
+  if (prompt.value) {
+    await statStore.fetchSummary(prompt.value.id)
+  }
+}
 </script>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+</style>

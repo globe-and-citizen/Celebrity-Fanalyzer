@@ -60,6 +60,7 @@
 <script setup>
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
+import { Notify } from 'quasar'
 
 const errorStore = useErrorStore()
 const userStore = useUserStore()
@@ -75,7 +76,11 @@ function toggleVisibility(){
 
 async function emailSign() {
   if (tab.value === 'signin') {
-    await userStore.emailSignIn(user.value).catch((error) => errorStore.throwError(error))
+    await userStore.emailSignIn(user.value).catch((error) => {
+      errorStore.throwError(error)
+      Notify.create({ message: "Wrong username or password", type: 'negative' })
+
+    })
   }
 
   if (tab.value === 'signup') {
