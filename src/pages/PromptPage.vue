@@ -123,8 +123,11 @@ watchEffect(async () => {
   }
 })
 
-onUnmounted(() => {
+onUnmounted(async () => {
   promptStore.setTab('post')
+  likeStore.resetLikes()
+  shareStore.resetShares()
+  commentStore.resetComments()
 })
 </script>
 

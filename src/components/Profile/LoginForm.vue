@@ -34,9 +34,17 @@
           lazy-rules
           required
           :rules="[(val) => /^.{6,}$/.test(val) || 'Invalid Password']"
-          type="password"
+          :type="isVisibleOn ? 'text' : 'password'"
           v-model="user.password"
-        />
+        >
+
+        <template v-slot:append>
+          <q-icon :name="isVisibleOn ? 'visibility': 'visibility_off'" @click.stop.prevent="text = null" class="cursor-pointer"
+          @click="toggleVisibility"
+          />
+        </template>
+      </q-input>
+
         <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
 
@@ -59,6 +67,12 @@ const userStore = useUserStore()
 
 const user = ref({ email: '', name: '', password: '' })
 const tab = ref('signin')
+
+const isVisibleOn = ref(false)
+
+function toggleVisibility(){
+  isVisibleOn.value = !isVisibleOn.value
+}
 
 async function emailSign() {
   if (tab.value === 'signin') {
