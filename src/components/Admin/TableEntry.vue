@@ -62,6 +62,8 @@ defineProps({
   rows: { type: Array, required: true, default: () => [] }
 })
 
+
+
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -74,6 +76,7 @@ const columns = [
   { name: 'title', align: 'left', label: 'Title', field: 'title' },
   { name: 'actions', field: 'actions' }
 ]
+
 const deleteDialog = ref({})
 const entry = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }

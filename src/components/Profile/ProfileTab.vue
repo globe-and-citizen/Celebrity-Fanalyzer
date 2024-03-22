@@ -40,12 +40,43 @@
       :rules="[(val) => usernameValidator(val)]"
       v-model.trim="user.username"
     >
+   
       <template v-slot:append>
         <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
           <q-tooltip>Copy</q-tooltip>
         </q-btn>
       </template>
     </q-input>
+    <div>
+    <span class="text-h8 text-secondary" >Wallet address</span>
+    <q-input
+      v-if="!currentWalletAddress"
+      class="non-selectable"
+      debounce="400"
+      label=""
+      v-model.trim="user.walletAddress"
+      readonly
+    >
+    <Web3ModalComponent page_name="profile"/>
+    </q-input>
+    
+    <q-input
+      v-if="currentWalletAddress"
+      class="non-selectable"
+      debounce="400"
+      label=""
+      v-model.trim="currentWalletAddress"
+      readonly
+    >
+    
+    <Web3ModalComponent page_name="profile"/>
+    </q-input>
+    
+    </div>
+    <!-- <div class="q-mb-lg">
+      <q-btn icon="edit" @click.prevent.stop="modal.open({ view: 'Connect' })" color="secondary" label="update" data-test="Open Connect Modal" inline />
+    </div> -->
+    
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
@@ -65,7 +96,15 @@
 <script setup>
 import { useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
 import { Notify, useQuasar } from 'quasar'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import Web3ModalComponent from './Web3ModalComponent.vue';
+import { useWalletStore } from 'app/src/stores';
+
+const walletStore=useWalletStore()
+let currentWalletAddress=null
+
+currentWalletAddress=computed(()=>walletStore.getWalletInfo.wallet_address);
+
 
 const $q = useQuasar()
 
@@ -73,10 +112,13 @@ const errorStore = useErrorStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
 
+// const modal = useWeb3Modal()
+
 const newPhoto = ref(null)
 const origin = window.location.origin + '/'
 const user = ref(userStore.getUser)
-
+console.log("the current user ===== ",user)
+// const { address, chainId, isConnected } = useWeb3ModalAccount()
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
 })
@@ -105,6 +147,10 @@ function copyLink() {
 }
 
 function save() {
+  if(currentWalletAddress){
+    user.value.walletAddress=currentWalletAddress._value;
+  }
+  
   userStore
     .updateProfile(user.value)
     .then(() => $q.notify({ message: 'Profile successfully updated', type: 'positive' }))
