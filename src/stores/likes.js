@@ -29,8 +29,6 @@ export const useLikeStore = defineStore('likes', {
       if (this._unSubscribeLike || this._unSubscribeDislike) {
         this._unSubscribeLike()
         this._unSubscribeDislike()
-        this._likes = undefined
-        this._dislikes = undefined
       }
       this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot) => {
         this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -112,6 +110,11 @@ export const useLikeStore = defineStore('likes', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
+    },
+
+    async resetLikes() {
+      this._likes = undefined
+      this._dislikes = undefined
     }
   }
 })
