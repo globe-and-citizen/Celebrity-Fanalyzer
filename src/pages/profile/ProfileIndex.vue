@@ -40,10 +40,8 @@ import { ref } from 'vue'
 const userStore = useUserStore()
 
 const user = ref(userStore.getUser)
-const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
-  tab.value = state._profileTab
 })
 </script>
