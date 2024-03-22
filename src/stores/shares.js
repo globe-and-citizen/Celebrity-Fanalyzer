@@ -54,6 +54,10 @@ export const useShareStore = defineStore('shares', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
+    },
+
+    async resetShares() {
+      this._shares = undefined
     }
   }
 })
