@@ -32,40 +32,11 @@
   </TheHeader>
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
-      <!-- <q-tabs align="justify" v-model="tab" class="text-secondary">
-        <q-tab v-if="userStore.isWriterOrAbove" data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" />
-        <q-tab v-if="userStore.isAdmin" data-test="users-tab" name="users" icon="people" label="Users" />
-        <q-tab v-if="userStore.isEditorOrAbove" data-test="feedbacks-tab" name="feedbacks" icon="feedback" label="Feedbacks" />
-        <q-tab v-if="userStore.isAdmin" data-test="errors-tab" name="errors" icon="error" label="Errors" />
-        <q-tab v-if="userStore.isEditorOrAbove" data-test="reports-tab" name="reports" icon="report" label="Reports" />
-      </q-tabs>
-
-      <q-tab-panels animated style="padding-bottom: 2rem" swipeable v-model="tab">
-        <q-tab-panel v-if="userStore.isWriterOrAbove" name="posts">
-          <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isAdmin" name="users">
-          <ManageUsers />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isEditorOrAbove" name="feedbacks">
-          <ManageFeedbacks />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isAdmin" name="errors">
-          <ManageErrors />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isEditorOrAbove" name="reports">
-          <ManageReports />
-        </q-tab-panel>
-      </q-tab-panels> -->
 
       <q-tabs active-color="primary" align="justify">
-        <q-route-tab data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" :to="{ name: 'admin.prompts' }" />
+        <q-route-tab data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" to="prompts" />
         <q-route-tab
-          :to="{ name: 'admin.users' }"
+          to="users"
           exact
           v-if="userStore.isAdmin"
           data-test="users-tab"
@@ -79,13 +50,13 @@
           name="feedbacks"
           icon="feedback"
           label="Feedbacks"
-          :to="{ name: 'admin.feedbacks' }"
+          to="feedbacks"
           exact
         />
 
         <q-route-tab
           v-if="userStore.isAdmin"
-          :to="{ name: 'admin.errors' }"
+          to="errors"
           exact
           data-test="errors-tab"
           name="errors"
@@ -99,7 +70,7 @@
           name="reports"
           icon="report"
           label="Reports"
-          :to="{ name: 'admin.reports' }"
+          to="/reports"
         />
       </q-tabs>
 
