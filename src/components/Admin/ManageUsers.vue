@@ -38,7 +38,7 @@
     :loading="userStore.isLoading || !userStore.getUsers"
     :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
     row-key="email"
-    :rows="userStore.getUsers"
+    :rows="computedUsers"
     title="Manage Users"
   >
     <template v-slot:top-right>
@@ -47,8 +47,8 @@
         data-test="query-input"
         dense
         placeholder="Search"
-        v-model="filter"
-        @update:model-value="userStore.queryUsers(filter)"
+        v-model="userStore._searchQuery"
+
       >
         <template v-slot:append>
           <q-icon name="search" />
@@ -86,4 +86,11 @@ const columnsUser = [
 ]
 const filter = ref('')
 const options = ['Admin', 'Editor', 'Writer', 'User']
+
+const computedUsers = computed(()=>{
+  if(!userStore._searchQuery) return userStore.getUsers
+  return userStore.getUsers.filter(item=>{
+    return item?.displayName.toLowerCase().includes(userStore._searchQuery.toLowerCase())
+  })
+})
 </script>
