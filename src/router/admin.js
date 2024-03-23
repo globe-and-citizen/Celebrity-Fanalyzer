@@ -9,16 +9,14 @@ export default [
       if (userStore.isWriterOrAbove) next()
       else next('/')
     },
-    redirect: { name: 'admin.prompts' },
+    redirect: { path: 'admin/prompts' },
     component: () => import('pages/admin/AdminIndex.vue'),
     children: [
       {
-        name: 'admin.prompts',
         path: 'prompts',
         component: () => import('pages/admin/PromptsIndex.vue')
       },
       {
-        name: 'admin.users',
         path: 'users',
         component: () => import('pages/admin/UsersIndex.vue'),
         beforeEnter: (_to, _from, next) => {
@@ -28,7 +26,6 @@ export default [
         }
       },
       {
-        name: 'admin.feedbacks',
         path: 'feedbacks',
         component: () => import('pages/admin/FeedbacksIndex.vue'),
         beforeEnter: (_to, _from, next) => {
@@ -38,7 +35,6 @@ export default [
         }
       },
       {
-        name: 'admin.errors',
         path: 'errors',
         component: () => import('pages/admin/ErrorsIndex.vue'),
         beforeEnter: (_to, _from, next) => {
@@ -48,7 +44,6 @@ export default [
         }
       },
       {
-        name: 'admin.reports',
         path: 'reports',
         component: () => import('pages/admin/ReportsIndex.vue'),
         beforeEnter: (_to, _from, next) => {
