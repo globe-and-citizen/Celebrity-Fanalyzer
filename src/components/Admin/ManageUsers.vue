@@ -48,7 +48,6 @@
         dense
         placeholder="Search"
         v-model="userStore._searchQuery"
-
       >
         <template v-slot:append>
           <q-icon name="search" />
