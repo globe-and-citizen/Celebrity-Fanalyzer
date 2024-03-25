@@ -70,7 +70,7 @@
           name="reports"
           icon="report"
           label="Reports"
-          to="/reports"
+          to="reports"
         />
       </q-tabs>
 
