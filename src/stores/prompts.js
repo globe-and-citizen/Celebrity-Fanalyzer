@@ -17,7 +17,9 @@ export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
     _prompts: undefined,
-    _tab: 'post'
+    _tab: 'post',
+    promptDialog: false,
+    entryDialog: {}
   }),
 
   persist: true,
