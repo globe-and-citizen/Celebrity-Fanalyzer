@@ -6,7 +6,7 @@
     :title="`${router.currentRoute.value.params.year} Search Archive`"
     v-model="search"
   />
-  <q-page-container>
+  <q-page-container class="search-page-container">
     <q-page class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
@@ -21,7 +21,6 @@
           unelevated
         />
       </q-scroll-area>
-      <q-separator class="q-mb-none q-mt-xs" />
       <section v-if="!promptStore.getPrompts && promptStore.isLoading">
         <ArticleSkeleton />
         <ArticleSkeleton />
@@ -30,7 +29,7 @@
       </section>
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <TransitionGroup name="prompt" tag="div">
+          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
             <ItemCard
               v-for="prompt in computedPrompts"
               data-test="prompt-card"
@@ -118,5 +117,22 @@ const computedEntries = computed(() => {
   opacity: 0;
   height: 0;
   transform: translateY(-90px);
+}
+
+.search-page-container{
+  max-width: 100%;
+}
+
+.card-items-wrapper{
+  display: grid;
+  margin: 0;
+  justify-items: center;
+  row-gap: 16px;
+  column-gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(620px, 1fr));
+
+  @media (max-width: 1320px) {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 }
 </style>
