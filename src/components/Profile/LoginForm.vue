@@ -60,11 +60,11 @@
 </template>
 
 <script setup>
-import { useErrorStore, useUserStore } from 'src/stores'
-import { ref } from 'vue'
 import { Notify } from 'quasar'
+import { useErrorStore, useUserStore } from 'src/stores'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { watch } from 'vue'
+
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
@@ -93,6 +93,7 @@ async function emailSign() {
 async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
+
 watch(
   () => route.query,
   () => {
