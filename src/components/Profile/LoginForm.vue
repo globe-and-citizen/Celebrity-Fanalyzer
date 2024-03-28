@@ -37,13 +37,15 @@
           :type="isVisibleOn ? 'text' : 'password'"
           v-model="user.password"
         >
-
-        <template v-slot:append>
-          <q-icon :name="isVisibleOn ? 'visibility': 'visibility_off'" @click.stop.prevent="text = null" class="cursor-pointer"
-          @click="toggleVisibility"
-          />
-        </template>
-      </q-input>
+          <template v-slot:append>
+            <q-icon
+              :name="isVisibleOn ? 'visibility' : 'visibility_off'"
+              @click.stop.prevent="text = null"
+              class="cursor-pointer"
+              @click="toggleVisibility"
+            />
+          </template>
+        </q-input>
 
         <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
@@ -61,16 +63,17 @@
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
 import { Notify } from 'quasar'
-
+import { useRoute } from 'vue-router'
+import { watch } from 'vue'
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const user = ref({ email: '', name: '', password: '' })
 const tab = ref('signin')
-
+const route = useRoute()
 const isVisibleOn = ref(false)
 
-function toggleVisibility(){
+function toggleVisibility() {
   isVisibleOn.value = !isVisibleOn.value
 }
 
@@ -78,8 +81,7 @@ async function emailSign() {
   if (tab.value === 'signin') {
     await userStore.emailSignIn(user.value).catch((error) => {
       errorStore.throwError(error)
-      Notify.create({ message: "Wrong username or password", type: 'negative' })
-
+      Notify.create({ message: 'Wrong username or password', type: 'negative' })
     })
   }
 
@@ -91,4 +93,13 @@ async function emailSign() {
 async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
+watch(
+  () => route.query,
+  () => {
+    if (route.query.email) {
+      user.value.email = route.query.email
+    }
+  },
+  { immediate: true }
+)
 </script>
