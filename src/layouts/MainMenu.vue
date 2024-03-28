@@ -19,7 +19,7 @@
 
         <q-card-section class="q-pt-none bg-white q-py-lg">
             <div class="text-subtitle1 ">
-              Your role has been updated, please logout and login again.
+              Your role has been updated. Please log out and log in again.
             </div>
         </q-card-section>
 
