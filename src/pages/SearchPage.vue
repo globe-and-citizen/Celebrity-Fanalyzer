@@ -119,20 +119,32 @@ const computedEntries = computed(() => {
   transform: translateY(-90px);
 }
 
-.search-page-container{
+.search-page-container {
   max-width: 100%;
 }
 
-.card-items-wrapper{
+.card-items-wrapper {
   display: grid;
   margin: 0;
   justify-items: center;
   row-gap: 16px;
   column-gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(620px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(619px, 1fr));
 
-  @media (max-width: 1320px) {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  @media (max-width: 1440px) {
+    grid-template-columns: repeat(auto-fill, minmax(590px, 1fr));
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(470px, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  }
+
+  @media (max-width: 425px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 </style>

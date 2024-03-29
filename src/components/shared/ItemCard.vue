@@ -63,14 +63,26 @@ function goToUrl() {
 }
 
 .article-card-item {
-  min-width: 620px;
+  min-width: 619px;
   width: 100%;
   border: 1px solid #e54757;
   border-radius: 24px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 
-  @media (max-width: 1320px) {
-    min-width: 320px;
+  @media (max-width: 1440px) {
+    min-width: 590px;
+  }
+
+  @media (min-width: 1024px) {
+    min-width: 470px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 361px;
+  }
+
+  @media (max-width: 425px) {
+    min-width: 280px;
   }
 }
 </style>
