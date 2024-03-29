@@ -7,6 +7,10 @@
       <q-route-tab v-if="userStore.isWriterOrAbove" exact icon="admin_panel_settings" to="/admin">
         <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
+
+      <q-route-tab v-if="userStore.isAdvertiser" exact icon="campaign" to="/advertiser">
+        <q-tooltip>Advertiser Panel</q-tooltip>
+      </q-route-tab>
     </q-tabs>
   </q-footer>
 </template>

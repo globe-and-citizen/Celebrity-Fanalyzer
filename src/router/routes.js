@@ -68,6 +68,15 @@ const routes = [
           if (userStore.isWriterOrAbove) next()
           else next('/')
         }
+      },
+      {
+        path: 'advertiser',
+        component: () => import('pages/AdvertiserPage.vue'),
+        beforeEnter: (_to, _from, next) => {
+          const userStore = useUserStore()
+          if (userStore.isAdvertiser) next()
+          else next('/')
+        }
       }
     ]
   },
