@@ -5,6 +5,7 @@ export const useWalletStore=defineStore('wallet',{
         wallet_info:{
             wallet_address:"",
             network_id:"",
+            signer:null
         },
         temp_address:""
     }),
@@ -20,6 +21,9 @@ export const useWalletStore=defineStore('wallet',{
         },
         setNetworkId(id){
             this.wallet_info.network_id=id;
+        },
+        setSigner(signer){
+            this.wallet_info.signer=signer;
         },
         setTempAddress(adress){
             this.temp_address=adress;

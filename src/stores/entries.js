@@ -61,7 +61,11 @@ export const useEntryStore = defineStore('entries', {
         const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const entry of entries) {
-          entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          //entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          if(entry.author.id){
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+          
           entry.prompt = entry.prompt.id
         }
 
@@ -106,17 +110,31 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async editEntry(payload) {
+      
       const promptStore = usePromptStore()
 
       const entry = { ...payload }
-
+     
       entry.author = doc(db, 'users', entry.author.value)
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.updated = Timestamp.fromDate(new Date())
-
+      
+      
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
+      }).finally(() => (this._isLoading = false))
+    },
+
+    //update not coming from form submission
+    async dataUpdateEntry(payload) {
+      //console.log("the received payload==== ", payload)
+      const promptStore = usePromptStore()
+      const prompt = promptStore.getPromptRef(payload.entry.prompt)
+      //console.log("thre received prompt =================", prompt)
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'prompts', prompt.id), {hasWinner: payload.isWinner==true?true:false,updated:Timestamp.fromDate(new Date()) })
+        transaction.update(doc(db, 'entries', payload.entry.id), {isWinner: payload.isWinner,updated:Timestamp.fromDate(new Date()) })
       }).finally(() => (this._isLoading = false))
     },
 

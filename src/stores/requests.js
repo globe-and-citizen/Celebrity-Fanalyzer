@@ -37,7 +37,6 @@ export const useRequestStore = defineStore('request', {
     async becomeWriter(message) {
       const userStore = useUserStore()
       const walletStore= useWalletStore()
-      console.log("the wallet adress ",walletStore.getWalletInfo?.wallet_address)
       const walletAddress=walletStore.getWalletInfo.wallet_address
       
       const payload = {

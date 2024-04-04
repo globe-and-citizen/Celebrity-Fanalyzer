@@ -19,6 +19,7 @@ const app = initializeApp(firebaseConfig)
 
 const auth = getAuth(app)
 const db = getFirestore(app)
+//console.log("the db ===", db);
 let messaging
 isSupported().then((res) => {
   if (res) {
