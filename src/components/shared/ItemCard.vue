@@ -1,5 +1,5 @@
 <template>
-  <article class="q-pt-md relative-position row">
+  <article class="q-pa-md relative-position row article-card-item">
     <div class="col-8 flex column">
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
@@ -27,7 +27,6 @@
       <q-img :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
     </router-link>
     <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
-    <q-separator class="full-width q-mt-md" />
   </article>
 </template>
 
@@ -61,5 +60,29 @@ function goToUrl() {
 .link {
   text-decoration: none;
   color: black;
+}
+
+.article-card-item {
+  min-width: 619px;
+  width: 100%;
+  border: 1px solid #e54757;
+  border-radius: 24px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+
+  @media (max-width: 1440px) {
+    min-width: 590px;
+  }
+
+  @media (min-width: 1024px) {
+    min-width: 470px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 361px;
+  }
+
+  @media (max-width: 425px) {
+    min-width: 280px;
+  }
 }
 </style>

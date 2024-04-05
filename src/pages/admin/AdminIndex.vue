@@ -32,35 +32,47 @@
   </TheHeader>
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
-      <q-tabs align="justify" v-model="tab" class="text-secondary">
-        <q-tab v-if="userStore.isWriterOrAbove" data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" />
-        <q-tab v-if="userStore.isAdmin" data-test="users-tab" name="users" icon="people" label="Users" />
-        <q-tab v-if="userStore.isEditorOrAbove" data-test="feedbacks-tab" name="feedbacks" icon="feedback" label="Feedbacks" />
-        <q-tab v-if="userStore.isAdmin" data-test="errors-tab" name="errors" icon="error" label="Errors" />
-        <q-tab v-if="userStore.isEditorOrAbove" data-test="reports-tab" name="reports" icon="report" label="Reports" />
+
+      <q-tabs active-color="primary" align="justify">
+        <q-route-tab data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" to="prompts" />
+        <q-route-tab
+          to="users"
+          exact
+          v-if="userStore.isAdmin"
+          data-test="users-tab"
+          name="users"
+          icon="people"
+          label="Users"
+        />
+        <q-route-tab
+          v-if="userStore.isEditorOrAbove"
+          data-test="feedbacks-tab"
+          name="feedbacks"
+          icon="feedback"
+          label="Feedbacks"
+          to="feedbacks"
+          exact
+        />
+
+        <q-route-tab
+          v-if="userStore.isAdmin"
+          to="errors"
+          exact
+          data-test="errors-tab"
+          name="errors"
+          icon="error"
+          label="Errors"
+        />
+
+        <q-route-tab
+          v-if="userStore.isEditorOrAbove"
+          data-test="reports-tab"
+          name="reports"
+          icon="report"
+          label="Reports"
+          to="reports"
+        />
       </q-tabs>
-
-      <q-tab-panels animated style="padding-bottom: 2rem" swipeable v-model="tab">
-        <q-tab-panel v-if="userStore.isWriterOrAbove" name="posts">
-          <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isAdmin" name="users">
-          <ManageUsers />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isEditorOrAbove" name="feedbacks">
-          <ManageFeedbacks />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isAdmin" name="errors">
-          <ManageErrors />
-        </q-tab-panel>
-
-        <q-tab-panel v-if="userStore.isEditorOrAbove" name="reports">
-          <ManageReports />
-        </q-tab-panel>
-      </q-tab-panels>
 
       <q-dialog full-width position="bottom" v-model="prompt.dialog">
         <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
@@ -69,17 +81,14 @@
       <q-dialog full-width position="bottom" v-model="entry.dialog">
         <EntryCard v-bind="entry" @hideDialog="entry = {}" />
       </q-dialog>
+
+      <router-view @openPromptDialog="openPromptDialog"/>
     </q-page>
   </q-page-container>
 </template>
 
 <script setup>
 import EntryCard from 'src/components/Admin/EntryCard.vue'
-import ManageErrors from 'src/components/Admin/ManageErrors.vue'
-import ManageFeedbacks from 'src/components/Admin/ManageFeedbacks.vue'
-import ManageReports from 'src/components/Admin/ManageReports.vue'
-import ManagePromptsEntries from 'src/components/Admin/ManagePromptsEntries.vue'
-import ManageUsers from 'src/components/Admin/ManageUsers.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, usePromptStore, useRequestStore, useUserStore } from 'src/stores'

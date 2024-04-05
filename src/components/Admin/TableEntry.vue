@@ -39,8 +39,8 @@
           <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
         </q-btn>
         <q-btn
+          v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
           color="warning"
-          :disable="userStore.getUser.role === 'Writer' && userStore.getUser.uid !== props.row.author.uid"
           flat
           icon="edit"
           round
@@ -48,8 +48,8 @@
           @click="onEditDialog(props.row)"
         />
         <q-btn
+          v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
           color="negative"
-          :disable="userStore.getUser.role === 'Writer' && userStore.getUser.uid !== props.row.author.uid"
           data-test="button-delete-entry"
           flat
           icon="delete"

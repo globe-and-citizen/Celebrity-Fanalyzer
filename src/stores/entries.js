@@ -33,7 +33,8 @@ export const useEntryStore = defineStore('entries', {
     _entries: undefined,
     _isLoading: false,
     _unSubscribe: undefined,
-    _tab: 'post'
+    _tab: 'post',
+    entryDialog: {}
   }),
 
   persist: true,
