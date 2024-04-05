@@ -1,22 +1,23 @@
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5'
 
 // 1. Get projectId at https://cloud.walletconnect.com
-const projectId = '9dcf39cb8034882a971d5086066c7f17'
+const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID
 
+const baseUrl = window.location.origin
 // 2. Set chains
 const sepolia = {
   chainId: 11155111,
   name: 'sepolia',
   currency: 'ETH',
-  explorerUrl: 'https://etherscan.io',
+  explorerUrl: 'https://sepolia.etherscan.io',
   rpcUrl: import.meta.env.VITE_ALCHEMY_SEPOLIA_PROVIDER_URL
 }
 
 // 3. Create your application's metadata object
 const metadata = {
-  name: 'My Website',
+  name: 'Celebrity Fanalyser',
   description: 'Celebrity Fanalyser',
-  url: 'http://localhost:9200', // url must match your domain & subdomain
+  url: baseUrl, // url must match your domain & subdomain
   icons: ['']
 }
 

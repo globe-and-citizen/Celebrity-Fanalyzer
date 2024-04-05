@@ -2,7 +2,6 @@ import { collection, doc, getDoc, getDocs, onSnapshot, runTransaction, setDoc, u
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import { useWalletStore } from 'src/stores'
 
 export const useRequestStore = defineStore('request', {
   state: () => ({
@@ -36,9 +35,6 @@ export const useRequestStore = defineStore('request', {
 
     async becomeWriter(message) {
       const userStore = useUserStore()
-      const walletStore= useWalletStore()
-      const walletAddress=walletStore.getWalletInfo.wallet_address
-      
       const payload = {
         createdAt: new Date(),
         message: message,
@@ -46,12 +42,10 @@ export const useRequestStore = defineStore('request', {
         request: 'writer',
         requester: userStore.getUserRef
       }
-
       this._isLoading = true
       await setDoc(doc(db, 'requests', userStore.getUser.uid), payload)
-
       runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'users', userStore.getUser.uid), { askedToBeWriter: true, walletAddress:walletAddress })
+        transaction.update(doc(db, 'users', userStore.getUser.uid), { askedToBeWriter: true })
       }).finally(() => (this._isLoading = false))
     },
 
