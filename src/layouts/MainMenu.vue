@@ -1,11 +1,8 @@
 <template>
   <q-footer class="bg-white" elevated>
     <q-tabs active-class="text-primary" align="justify" class="tabs text-secondary" data-test="main-menu" switch-indicator>
-      <q-route-tab v-for="(route, index) in routes" exact :icon="route.icon" :key="index" :to="route.path">
+      <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route.icon" :to="route.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route.tooltip }}</q-tooltip>
-      </q-route-tab>
-      <q-route-tab v-if="userStore.isWriterOrAbove" exact icon="admin_panel_settings" to="/admin">
-        <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
     </q-tabs>
   </q-footer>
@@ -29,18 +26,23 @@
 import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const updated = ref(false)
 const userStore = useUserStore()
 const router = useRouter()
-const routes = [
+const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
   { icon: 'search', path: '/search', tooltip: 'Search' },
   { icon: 'description', path: '/month', tooltip: "Month's Prompt" },
-  { icon: 'person', path: '/profile', tooltip: 'Profile' }
-]
+  { icon: 'person', path: '/profile', tooltip: 'Profile' },
+  {
+    icon: 'admin_panel_settings',
+    path: `${userStore.isWriterOrAbove && router.currentRoute.value.fullPath.includes('admin') ? '/admin/prompts' : '/admin'}`,
+    tooltip: 'Admin Panel'
+  }
+])
 const email = ref('')
 
 function onLogout() {
