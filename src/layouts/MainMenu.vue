@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { collection, onSnapshot } from 'firebase/firestore'
+import { collection, doc, getDocs, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 import { computed, ref } from 'vue'
@@ -44,6 +44,7 @@ const routes = computed(() => [
   }
 ])
 const email = ref('')
+const currentUserEmail = userStore._user.email
 
 function onLogout() {
   userStore.logout()
@@ -51,17 +52,49 @@ function onLogout() {
   router.push({ path: 'profile', query: { email: email.value } })
 }
 
-onSnapshot(collection(db, 'users'), (snapshot) => {
-  snapshot.docChanges().forEach((change) => {
-    if (change.type === 'modified') {
-      const user = change.doc.data()
+//
+// const userRef = query(collection(db, 'users'), where('email', '==', currentUserEmail))
+// getDocs(userRef)
+//   .then((querySnapshot) => {
+//     querySnapshot.forEach((doc) => {
+//       const user = doc.data()
+//       console.log(user)
+//       if (user.role !== userStore._user.role) {
+//         email.value = currentUserEmail
+//         updated.value = true
+//       }
+//     })
+//   })
+//   .catch((error) => {
+//     console.error('Error getting user documents: ', error)
+//   })
+
+// onSnapshot(collection(db, 'users'), (snapshot) => {
+//   snapshot.docChanges().forEach((change) => {
+//     if (change.type === 'modified') {
+//       const user = change.doc.data()
+//       if (user.email === userStore._user.email && user.role !== userStore._user.role) {
+//         email.value = userStore._user.email
+//         updated.value = true
+//       }
+//     }
+//   })
+// })
+
+const usersRef = collection(db, 'users')
+getDocs(usersRef)
+  .then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+      const user = doc.data()
       if (user.email === userStore._user.email && user.role !== userStore._user.role) {
         email.value = userStore._user.email
         updated.value = true
       }
-    }
+    })
   })
-})
+  .catch((e) => {
+    console.error(e)
+  })
 </script>
 
 <style lang="scss">

@@ -43,7 +43,7 @@ const statStore = useStatStore()
 
 const tab = ref(entryStore.tab)
 
-entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+// entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => router.currentRoute.value.href === entry.slug)

@@ -53,22 +53,32 @@ export const useEntryStore = defineStore('entries', {
         await userStore.fetchAdminsAndWriters()
       }
 
-      this._isLoading = true
+      try {
+        this._isLoading = true
+        const querySnapshot = await getDocs(collection(db, 'entries'))
+        const entries = []
+        for (const doc of querySnapshot.docs) {
+          const entryData = doc.data()
+          const promptId = entryData.prompt.id
 
-      if (this._unSubscribe) {
-        this._unSubscribe()
-      }
-      this._unSubscribe = onSnapshot(collection(db, 'entries'), async (querySnapshot) => {
-        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-        for (const entry of entries) {
-          entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
-          entry.prompt = entry.prompt.id
+          const entry = {
+            id: doc.id,
+            prompt: promptId,
+            ...entryData
+          }
+          entries.push(entry)
         }
-
+        for (const entry of entries) {
+          if (entry.author.id) {
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+        }
         this.$patch({ _entries: entries })
-      })
-      this._isLoading = false
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async fetchEntryBySlug(slug) {

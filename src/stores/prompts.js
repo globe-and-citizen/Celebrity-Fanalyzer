@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, onSnapshot, runTransaction, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, onSnapshot, runTransaction, setDoc, Timestamp } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -39,21 +39,48 @@ export const usePromptStore = defineStore('prompts', {
         await userStore.fetchAdminsAndWriters()
       }
 
-      this._isLoading = true
-      onSnapshot(collection(db, 'prompts'), async (querySnapshot) => {
-        const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      try {
+        this._isLoading = true
+        const querySnapshot = await getDocs(collection(db, 'prompts'))
+        const prompts = []
 
-        for (const prompt of prompts) {
-          prompt.author = userStore.getUserById(prompt.author.id) || (await userStore.fetchUser(prompt.author.id))
-          prompt.entries = prompt.entries?.map((entry) => entry.id)
+        for (const doc of querySnapshot.docs) {
+          const promptData = doc.data()
+          const authorId = promptData.author.id
+          const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
+
+          prompts.push({
+            id: doc.id,
+            ...promptData,
+            author,
+            entries: promptData.entries?.map((entry) => entry.id) || []
+          })
         }
 
         prompts.reverse()
 
-        this._prompts = []
         this.$patch({ _prompts: prompts })
-      })
-      this._isLoading = false
+      } catch (e) {
+        console.error('Error fetching prompts:', e)
+      } finally {
+        this._isLoading = false
+      }
+
+      // this._isLoading = true
+      // onSnapshot(collection(db, 'prompts'), async (querySnapshot) => {
+      //   const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      //
+      //   for (const prompt of prompts) {
+      //     prompt.author = userStore.getUserById(prompt.author.id) || (await userStore.fetchUser(prompt.author.id))
+      //     prompt.entries = prompt.entries?.map((entry) => entry.id)
+      //   }
+      //
+      //   prompts.reverse()
+      //
+      //   this._prompts = []
+      //   this.$patch({ _prompts: prompts })
+      // })
+      // this._isLoading = false
     },
 
     async addPrompt(payload) {

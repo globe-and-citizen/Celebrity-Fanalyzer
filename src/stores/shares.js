@@ -19,29 +19,45 @@ export const useShareStore = defineStore('shares', {
   },
 
   actions: {
+    // async fetchShares(collectionName, documentId) {
+    //   if (this._unSubscribe) {
+    //     this._unSubscribe()
+    //   }
+    //   this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'shares'), (querySnapshot) => {
+    //     this._shares = querySnapshot.docs.map((doc) => doc.data())
+    //   })
+    // },
+
     async fetchShares(collectionName, documentId) {
-      if (this._unSubscribe) {
-        this._unSubscribe()
+      try {
+        const sharesCollection = collection(db, collectionName, documentId, 'shares')
+        const querySnapshot = await getDocs(sharesCollection)
+        this._shares = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      } catch (e) {
+        console.error('Error fetching shares:', e)
       }
-      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'shares'), (querySnapshot) => {
-        this._shares = querySnapshot.docs.map((doc) => doc.data())
-      })
     },
 
     async addShare(collectionName, documentId, socialNetwork) {
-      this._isLoading = true
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
+      try {
+        this._isLoading = true
+        const userStore = useUserStore()
+        await userStore.fetchUserIp()
 
-      const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash)
+        const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash)
 
-      await setDoc(doc(db, collectionName, documentId, 'shares', docId), {
-        author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-        createdAt: Timestamp.fromDate(new Date()),
-        sharedOn: socialNetwork
-      })
-
-      this._isLoading = false
+        await setDoc(doc(db, collectionName, documentId, 'shares', docId), {
+          author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+          createdAt: Timestamp.fromDate(new Date()),
+          sharedOn: socialNetwork
+        })
+        await this.fetchShares(collectionName, documentId)
+        this._isLoading = false
+      } catch (e) {
+        console.error('Error adding share:', e)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async deleteAllShares(collectionName, documentId) {

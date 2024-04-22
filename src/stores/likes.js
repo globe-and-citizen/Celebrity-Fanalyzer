@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -22,76 +22,100 @@ export const useLikeStore = defineStore('likes', {
 
   actions: {
     async getAllLikesDislikes(collectionName, documentId) {
-      this._isLoading = true
-      const likesCollection = collection(db, collectionName, documentId, 'likes')
-      const dislikesCollection = collection(db, collectionName, documentId, 'dislikes')
+      try {
+        this._isLoading = true
+        const likesCollection = collection(db, collectionName, documentId, 'likes')
+        const dislikesCollection = collection(db, collectionName, documentId, 'dislikes')
 
-      if (this._unSubscribeLike || this._unSubscribeDislike) {
-        this._unSubscribeLike()
-        this._unSubscribeDislike()
-      }
-      this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot) => {
+        const likesSnapshot = await getDocs(likesCollection)
         this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      })
-      this._unSubscribeDislike = onSnapshot(dislikesCollection, (dislikesSnapshot) => {
+
+        const dislikesSnapshot = await getDocs(dislikesCollection)
         this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      })
-      this._isLoading = false
+
+        // if (this._unSubscribeLike || this._unSubscribeDislike) {
+        //   this._unSubscribeLike()
+        //   this._unSubscribeDislike()
+        // }
+        // this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot) => {
+        //   this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        // })
+        // this._unSubscribeDislike = onSnapshot(dislikesCollection, (dislikesSnapshot) => {
+        //   this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        // })
+      } catch (e) {
+        console.error('Error fetching likes/dislikes', e)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async addLike(collectionName, documentId) {
-      this._isLoading = true
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
+      try {
+        this._isLoading = true
+        const userStore = useUserStore()
+        await userStore.fetchUserIp()
 
-      // const docId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+        const likesRef = doc(db, collectionName, documentId, 'likes', userStore.getUserId)
+        const likesSnap = await getDoc(likesRef)
 
-      const likesRef = doc(db, collectionName, documentId, 'likes', userStore.getUserId)
-      const likesSnap = await getDoc(likesRef)
-
-      if (likesSnap.exists()) {
-        await deleteDoc(likesRef)
-      } else {
-        const like = {
-          author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-          createdAt: Timestamp.fromDate(new Date())
+        const dislikesRef = doc(db, collectionName, documentId, 'dislikes', userStore.getUserId)
+        const dislikesSnap = await getDoc(dislikesRef)
+        if (dislikesSnap.exists()) {
+          await deleteDoc(dislikesRef)
         }
-        await setDoc(likesRef, like)
-      }
 
-      const dislikesRef = doc(db, collectionName, documentId, 'dislikes', userStore.getUserId)
-      const dislikesSnap = await getDoc(dislikesRef)
+        if (likesSnap.exists()) {
+          await deleteDoc(likesRef)
+        } else {
+          const like = {
+            author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+            createdAt: Timestamp.fromDate(new Date())
+          }
+          await setDoc(likesRef, like)
+        }
 
-      if (dislikesSnap.exists()) {
-        await deleteDoc(dislikesRef)
+        await this.getAllLikesDislikes(collectionName, documentId)
+
+        this._isLoading = false
+      } catch (error) {
+        console.error('Error adding like:', error)
+        this._isLoading = false
       }
-      this._isLoading = false
     },
 
     async addDislike(collectionName, documentId) {
-      this._isLoading = true
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
+      try {
+        this._isLoading = true
+        const userStore = useUserStore()
+        await userStore.fetchUserIp()
 
-      const dislikesRef = doc(db, collectionName, documentId, 'dislikes', userStore.getUserId)
-      const dislikesSnap = await getDoc(dislikesRef)
+        const dislikesRef = doc(db, collectionName, documentId, 'dislikes', userStore.getUserId)
+        const dislikesSnap = await getDoc(dislikesRef)
 
-      if (dislikesSnap.exists()) {
-        await deleteDoc(dislikesRef)
-      } else {
-        const dislike = {
-          author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
-          createdAt: Timestamp.fromDate(new Date())
+        const likesRef = doc(db, collectionName, documentId, 'likes', userStore.getUserId)
+        const likesSnap = await getDoc(likesRef)
+        if (likesSnap.exists()) {
+          await deleteDoc(likesRef)
         }
-        await setDoc(dislikesRef, dislike)
-      }
-      const likesRef = doc(db, collectionName, documentId, 'likes', userStore.getUserId)
-      const likesSnap = await getDoc(likesRef)
 
-      if (likesSnap.exists()) {
-        await deleteDoc(likesRef)
+        if (dislikesSnap.exists()) {
+          await deleteDoc(dislikesRef)
+        } else {
+          const dislike = {
+            author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
+            createdAt: Timestamp.fromDate(new Date())
+          }
+          await setDoc(dislikesRef, dislike)
+        }
+
+        await this.getAllLikesDislikes(collectionName, documentId)
+
+        this._isLoading = false
+      } catch (error) {
+        console.error('Error adding dislike:', error)
+        this._isLoading = false
       }
-      this._isLoading = false
     },
 
     async deleteAllLikesDislikes(collectionName, documentId) {

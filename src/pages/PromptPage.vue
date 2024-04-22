@@ -35,7 +35,6 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
 const router = useRouter()
-
 const $q = useQuasar()
 const commentStore = useCommentStore()
 const entryStore = useEntryStore()
@@ -71,7 +70,7 @@ const prompt = computed(() => {
 })
 
 const entries = computed(() => {
-  return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
+  return entryStore.getEntries?.filter((entry) => entry.prompt?.id === prompt.value?.id)
 })
 
 watchEffect(async () => {
