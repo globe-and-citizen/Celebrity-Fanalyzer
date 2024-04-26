@@ -233,8 +233,8 @@ const dislikeIconClass = computed(() => {
   return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
 })
 
-function likeComment(commentId) {
-  commentStore.likeComment(props.collectionName, props.documentId, commentId)
+async function likeComment(commentId) {
+  await commentStore.likeComment(props.collectionName, props.documentId, commentId)
 }
 
 function dislikeComment(commentId) {

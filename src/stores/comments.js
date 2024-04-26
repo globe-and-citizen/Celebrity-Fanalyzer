@@ -161,6 +161,7 @@ export const useCommentStore = defineStore('comments', {
       if (comment.dislikes?.includes(userId)) {
         await updateDoc(commentRef, { dislikes: arrayRemove(user) })
       }
+      await this.fetchComments(collectionName, documentId)
     },
 
     async dislikeComment(collectionName, documentId, commentId) {
@@ -184,6 +185,7 @@ export const useCommentStore = defineStore('comments', {
       if (comment.likes?.includes(userId)) {
         await updateDoc(commentRef, { likes: arrayRemove(user) })
       }
+      await this.fetchComments(collectionName, documentId)
     },
 
     async deleteComment(collectionName, documentId, commentId) {
@@ -198,7 +200,10 @@ export const useCommentStore = defineStore('comments', {
           text: 'Comment Deleted',
           isDeleted: true
         })
-      }).finally(() => (this._isLoading = false))
+      }).finally(async () => {
+        this._isLoading = false
+        await this.fetchComments(collectionName, documentId)
+      })
     },
 
     async deleteCommentsCollection(collectionName, documentId) {
@@ -222,6 +227,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, documentId, 'comments', reply.id), reply).finally(() => (this._isLoading = false))
+      await this.fetchComments(collectionName, documentId)
     },
 
     async removeCommentFromFirestore(collectionName, documentId, commentId) {

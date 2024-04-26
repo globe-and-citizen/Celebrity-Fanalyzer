@@ -99,6 +99,7 @@ const commenters = computed(() => {
 })
 
 watchEffect(() => {
+  console.log(comments)
   isMention.value = Boolean(
     userStore.getUser &&
       commentValue.value.endsWith('@') &&
