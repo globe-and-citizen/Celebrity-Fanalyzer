@@ -4,7 +4,7 @@
 
 <script setup>
 import { BarChart } from 'echarts/charts'
-import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
+import { GridComponent, TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { monthDayYear } from 'src/utils/date'
@@ -12,7 +12,7 @@ import { groupInfoByMonth, groupInfoByWeek } from 'src/utils/stats'
 import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
-use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
+use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent, LegendComponent])
 
 const props = defineProps(['data', 'interval'])
 
@@ -110,7 +110,7 @@ function groupLikesAndDislikesByDate(data) {
   const today = new Date()
   const firstDate = mergedResult[0] ? Object.keys(mergedResult[0])[0] : null
   const startDate = firstDate ? new Date(firstDate) : null
-
+  console.log(props.data)
   for (let currentDate = startDate; currentDate <= today; currentDate.setDate(currentDate.getDate() + 1)) {
     const formattedDate = currentDate.toLocaleDateString('en-US')
 

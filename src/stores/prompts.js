@@ -1,4 +1,16 @@
-import { collection, deleteDoc, doc, getDocs, onSnapshot, runTransaction, setDoc, Timestamp } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where
+} from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -56,33 +68,34 @@ export const usePromptStore = defineStore('prompts', {
             entries: promptData.entries?.map((entry) => entry.id) || []
           })
         }
-
         prompts.reverse()
-
-        this.$patch({ _prompts: prompts })
+        this._prompts = prompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
         this._isLoading = false
       }
-
-      // this._isLoading = true
-      // onSnapshot(collection(db, 'prompts'), async (querySnapshot) => {
-      //   const prompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      //
-      //   for (const prompt of prompts) {
-      //     prompt.author = userStore.getUserById(prompt.author.id) || (await userStore.fetchUser(prompt.author.id))
-      //     prompt.entries = prompt.entries?.map((entry) => entry.id)
-      //   }
-      //
-      //   prompts.reverse()
-      //
-      //   this._prompts = []
-      //   this.$patch({ _prompts: prompts })
-      // })
-      // this._isLoading = false
     },
 
+    async fetchPromptBySlug(slug) {
+      this._isLoading = true
+      const userStore = useUserStore()
+
+      if (!userStore.getUsers) {
+        await userStore.fetchAdminsAndWriters()
+      }
+
+      const promptRef = await getDocs(query(collection(db, 'prompts'), where('slug', '==', slug)))
+      const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+      this._isLoading = false
+      this._prompts = [
+        {
+          ...promptSnapshot,
+          entries: promptSnapshot.entries?.map((entry) => entry.id) || []
+        }
+      ]
+    },
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
 

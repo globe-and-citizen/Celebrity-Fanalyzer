@@ -70,21 +70,17 @@
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
-            :data-test="commentStore.getComments ? 'panel-3-navigator' : ''"
+            :data-test="commentStore.getCommentsCount ? 'panel-3-navigator' : ''"
             flat
             icon="chat_bubble_outline"
-            :label="commentStore.getComments?.length"
+            :label="commentStore.getCommentsCount"
             rounded
             size="0.75rem"
             @click="$emit('clickComments')"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent
-            :label="shareStore.isLoaded ? shareStore.getShares.length : 0"
-            :disable="!shareStore.isLoaded"
-            @share="share($event)"
-          />
+          <ShareComponent :label="shareStore.isLoaded ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
             v-if="userStore.isAuthenticated"
             color="blue"
@@ -109,6 +105,7 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import {
   useCommentStore,
+  useEntryStore,
   useErrorStore,
   useLikeStore,
   useNotificationStore,
@@ -117,7 +114,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { monthYear } from 'src/utils/date'
-import { onMounted } from 'vue'
+import { onMounted, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -134,12 +131,13 @@ const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
+const entryStore = useEntryStore()
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-
-  visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
-
+  if (props.post?.id) {
+    await likeStore.getTotalLikesCount(props.collectionName, props.post?.id)
+  }
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 })
 

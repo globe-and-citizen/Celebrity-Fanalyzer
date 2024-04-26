@@ -73,7 +73,7 @@ export const useEntryStore = defineStore('entries', {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }
         }
-        this.$patch({ _entries: entries })
+        this._entries = entries
       } catch (e) {
         console.error(e)
       } finally {
@@ -81,18 +81,44 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
+    async fetchPromptsEntries(slugArray) {
+      const userStore = useUserStore()
+      try {
+        if (!userStore.getUsers) {
+          await userStore.fetchAdminsAndWriters()
+        }
+
+        this._isLoading = true
+
+        let allEntries = []
+
+        for (let i = 0; i < slugArray.length; i += 30) {
+          const chunk = slugArray.slice(i, i + 30)
+          const querySnapshot = await getDocs(query(collection(db, 'entries'), where('id', 'in', chunk)))
+          const chunkEntries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          allEntries = allEntries.concat(chunkEntries)
+        }
+        this._entries = allEntries
+        this._isLoading = false
+      } catch (e) {
+        console.error('Error fetching entries entries', e)
+      }
+    },
     async fetchEntryBySlug(slug) {
-      this._isLoading = true
-      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
+      try {
+        this._isLoading = true
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
 
-      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+        const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-      entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
+        entry.author = await getDoc(entry.author).then((doc) => doc.data())
+        entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
 
-      this._isLoading = false
-
-      return entry
+        this._isLoading = false
+        this._entries = [entry]
+      } catch (e) {
+        console.error('Unable to fetch entry', e)
+      }
     },
 
     async addEntry(payload) {

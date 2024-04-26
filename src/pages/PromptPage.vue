@@ -8,11 +8,11 @@
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
       <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries v-if="entries" :entries="entries" />
+      <TheEntries :entries="entries" ref="entriesRef" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
-      <TheAnthrogram :post="prompt" />
+      <TheAnthrogram collectionName="prompts" :post="prompt" />
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white" v-if="prompt">
@@ -30,7 +30,7 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { computed, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
@@ -43,12 +43,11 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
+const entriesRef = ref(null)
+
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
-
-promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const { href, params, path, name } = router.currentRoute.value
 const prompt = computed(() => {
@@ -73,11 +72,19 @@ const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt?.id === prompt.value?.id)
 })
 
+const onScroll = () => {
+  if (entriesRef.value) {
+    const marginTop = entriesRef.value?.getBoundingClientRect().top
+    const windowsHeight = window.innerHeight
+    if ((entries.value === undefined || !entries.value.length) && marginTop - windowsHeight < -50) {
+      entryStore.fetchPromptsEntries(prompt.value.entries).catch((error) => errorStore.throwError(error))
+    }
+  }
+}
+
 watchEffect(async () => {
   if (prompt.value?.id) {
     const promptId = prompt.value?.id
-    await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
-
     await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
 
     shareIsLoading.value = true
@@ -122,11 +129,31 @@ watchEffect(async () => {
   }
 })
 
+onMounted(() => {
+  if (promptStore.getPrompts === undefined && href) {
+    promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
+  }
+
+  entriesRef.value = document.querySelector('.entries-page-container')
+  window.addEventListener('scroll', onScroll)
+})
+
+watch(entriesRef, (newVal) => {
+  if (entriesRef.value) {
+    if (newVal) {
+      entriesRef.value = document.querySelector('.entries-page-container')
+    } else {
+      console.error('EntriesRef error')
+    }
+  }
+})
+
 onUnmounted(async () => {
   promptStore.setTab('post')
-  likeStore.resetLikes()
-  shareStore.resetShares()
-  commentStore.resetComments()
+  await likeStore.resetLikes()
+  await shareStore.resetShares()
+  await commentStore.resetComments()
+  window.removeEventListener('scroll', onScroll)
 })
 </script>
 

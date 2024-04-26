@@ -2,7 +2,7 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.getComments?.length > 0" class="q-pa-md" style="margin-bottom: 6rem">
+      <section v-if="commentStore.getCommentsCount" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
           v-for="comment of comments"
           :collection-name="collectionName"
@@ -90,7 +90,7 @@ const mentionedUsers = ref([])
 const reply = reactive({})
 
 const comments = computed(() => {
-  return commentStore.getComments.filter((comment) => !comment.parentId && comment.author)
+  return commentStore.getComments?.filter((comment) => !comment.parentId && comment.author)
 })
 
 const commenters = computed(() => {
@@ -154,6 +154,10 @@ async function addComment() {
 
 onUnmounted(() => {
   commentStore.setReplyTo('')
+})
+
+watchEffect(async () => {
+  await commentStore.fetchComments('prompts', props.post.id)
 })
 
 commentStore.$subscribe(() => {

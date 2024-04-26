@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -19,22 +19,13 @@ export const useShareStore = defineStore('shares', {
   },
 
   actions: {
-    // async fetchShares(collectionName, documentId) {
-    //   if (this._unSubscribe) {
-    //     this._unSubscribe()
-    //   }
-    //   this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'shares'), (querySnapshot) => {
-    //     this._shares = querySnapshot.docs.map((doc) => doc.data())
-    //   })
-    // },
-
     async fetchShares(collectionName, documentId) {
       try {
-        const sharesCollection = collection(db, collectionName, documentId, 'shares')
-        const querySnapshot = await getDocs(sharesCollection)
-        this._shares = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'shares'))
+        this._shares = totalCountFunc.data().count
+        this._isLoading = false
       } catch (e) {
-        console.error('Error fetching shares:', e)
+        console.error('Failed fetching shares count', e)
       }
     },
 
