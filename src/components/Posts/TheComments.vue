@@ -88,7 +88,6 @@ const inputField = ref()
 const isMention = ref(false)
 const mentionedUsers = ref([])
 const reply = reactive({})
-
 const comments = computed(() => {
   return commentStore.getComments?.filter((comment) => !comment.parentId && comment.author)
 })
@@ -156,10 +155,6 @@ onUnmounted(() => {
   commentStore.setReplyTo('')
 })
 
-watchEffect(async () => {
-  await commentStore.fetchComments('prompts', props.post.id)
-})
-
 commentStore.$subscribe(() => {
   commentStore.haveToReply ? inputField.value.focus() : inputField.value.blur()
 })
@@ -185,6 +180,12 @@ async function addReply() {
   await nextTick()
   inputField.value.blur()
 }
+
+onMounted(async () => {
+  if (commentStore.getCommentsCount) {
+    await commentStore.fetchComments(props.collectionName, props.post?.id)
+  }
+})
 </script>
 
 <style scoped>

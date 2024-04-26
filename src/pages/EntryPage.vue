@@ -26,7 +26,7 @@ import { useQuasar } from 'quasar'
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
-import { useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore } from 'src/stores'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore } from 'src/stores'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
@@ -39,7 +39,7 @@ const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
-
+const commentStore = useCommentStore()
 const tab = ref(entryStore.tab)
 
 const entry = computed(() => {
@@ -50,6 +50,7 @@ watchEffect(async () => {
   if (entry.value?.id) {
     await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
     await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entry.value.id)
   }
 })
 
@@ -57,7 +58,7 @@ onMounted(() => {
   if (entryStore.getEntries === undefined) {
     entryStore.fetchEntryBySlug(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
   }
-  console.log(entry)
+  // console.log(entry)
 
   startTracking()
   if (entryStore.getEntries && !entry.value?.id) {

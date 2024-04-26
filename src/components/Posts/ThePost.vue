@@ -114,7 +114,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { monthYear } from 'src/utils/date'
-import { onMounted, watchEffect } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -137,6 +137,7 @@ onMounted(async () => {
   await userStore.fetchUserIp()
   if (props.post?.id) {
     await likeStore.getTotalLikesCount(props.collectionName, props.post?.id)
+    await commentStore.getTotalComments(props.collectionName, props.post?.id)
   }
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 })

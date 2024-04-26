@@ -64,7 +64,6 @@ export const useCommentStore = defineStore('comments', {
         comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
         comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
       }
-
       const authors = await Promise.all(
         comments
           .filter((comment) => !comment.isAnonymous && typeof comment.author === 'string')
@@ -79,6 +78,7 @@ export const useCommentStore = defineStore('comments', {
         }
       }
       this.$patch({ _comments: comments })
+      console.log(this._comments)
     },
 
     async getTotalComments(collectionName, documentId) {
