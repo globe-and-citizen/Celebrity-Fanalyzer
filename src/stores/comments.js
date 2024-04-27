@@ -53,8 +53,13 @@ export const useCommentStore = defineStore('comments', {
         this._unSubscribe()
       }
       this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), async (querySnapshot) => {
-        const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
+        const comments = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((data) => {
+            if (data.isDeleted) return false
+            else if (data.isAnonymous && data.text == 'Comment Deleted') return false
+            return true
+          })
         for (const comment of comments) {
           if (!comment.isAnonymous) {
             comment.author = userStore.getUserById(comment.author.id) || comment.author.id
@@ -176,7 +181,8 @@ export const useCommentStore = defineStore('comments', {
         transaction.update(doc(db, collectionName, documentId, 'comments', commentId), {
           author: userStore.getUserIpHash,
           isAnonymous: true,
-          text: 'Comment Deleted'
+          text: 'Comment Deleted',
+          isDeleted: true
         })
       }).finally(() => (this._isLoading = false))
     },

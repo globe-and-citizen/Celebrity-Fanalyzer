@@ -74,9 +74,13 @@ const routes = [
         component: () => import('pages/AdvertiserPage.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-          if (userStore.isAdvertiser) next()
+          if (userStore.isAdvertiser || userStore.isAdmin) next()
           else next('/')
         }
+      },
+      {
+        path: 'campaign/:campaignId',
+        component: () => import('pages/CampaignPage.vue')
       }
     ]
   },

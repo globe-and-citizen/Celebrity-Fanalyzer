@@ -10,6 +10,10 @@
         </q-tabs>
         <VisitorsBar :data="visitorStore.getVisitors" :interval="interval" />
         <q-separator spaced="xl" />
+        <template v-if="isAdd">
+          <CTRBar  :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
+          <q-separator spaced="xl" />
+        </template>
         <LikesBar
           v-if="likeStore.getLikes && likeStore.getDislikes"
           :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
@@ -28,14 +32,17 @@ import LikesBar from 'src/components/Posts/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Posts/Graphs/SharesPie.vue'
 import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useLikeStore, useShareStore, useVisitorStore } from 'src/stores'
+import CTRBar from './Graphs/CTRBar.vue'
+import { useLikeStore, useShareStore, useVisitorStore , useClicksStore, useImpressionsStore} from 'src/stores'
 import { ref } from 'vue'
 
-const props = defineProps(['post'])
+const props = defineProps(['post', 'isAdd'])
 
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const visitorStore = useVisitorStore()
+const impressionsStore = useImpressionsStore()
+const clickStore = useClicksStore()
 
 const interval = ref('daily')
 </script>

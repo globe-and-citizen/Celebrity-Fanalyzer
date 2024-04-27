@@ -91,6 +91,7 @@ const transformData = (data) => {
   uniqueDates.sort((a, b) => new Date(a) - new Date(b))
 
   return uniqueDates.map((date) => {
+    console.log(data)
     // Count the number of items with the first visit on the current date
     const visitorsCount = data.filter((item) => item.visits[0] === date).length
 
@@ -112,7 +113,7 @@ watchEffect(() => {
   if (props.interval === 'monthly') {
     info = groupInfoByMonth(info)
   }
-
+console.log(info)
   dates.value = info.map((obj) => Object.keys(obj)[0])
   visitors.value = info.map((obj) => Object.values(obj)[0].visitors)
   visits.value = info.map((obj) => Object.values(obj)[0].visits)

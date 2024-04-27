@@ -44,5 +44,8 @@ service cloud.firestore {
     match /feedbacks/{document=**} {
     	allow read, create, update, delete, write;
     }
+    match /advertises/{document=**} {
+    	allow read, create, update, delete, write;
+    }
   }
 }

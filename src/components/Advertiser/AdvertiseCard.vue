@@ -1,17 +1,19 @@
 <template>
-  <q-card class="q-mt-none" :class="{ loading: advertiseStore.isLoading, 'not-loading': !advertiseStore.isLoading }">
+  <q-card class="q-mt-none full-width" :class="{ loading: advertiseStore.isLoading, 'not-loading': !advertiseStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
       <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Advertise' : 'New Advertise'">
           <q-card-section>
-            <!-- <q-select
-              data-test="select-author"
-              :label="advertise.author.label"
-              :disable="true"
-              v-model="advertise.author"
-            /> -->
             <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="advertise.title" />
-            <q-field counter label="Description" maxlength="400" v-model="advertise.description">
+            <div class="q-py-md">
+              <div class="flex items-center justify-between">
+                <div>Select Add type :</div>
+                <q-radio v-model="advertise.type" val="Banner" label="Banner" />
+                <!-- <q-radio v-model="advertise.type" val="Video" label="Video" /> -->
+                <q-radio v-model="advertise.type" val="Text" label="Text" />
+              </div>
+            </div>
+            <!-- <q-field counter v-if="advertise.type === 'Text'" label="Description" maxlength="400" v-model="advertise.content">
               <template v-slot:control>
                 <q-editor
                   class="q-mt-md"
@@ -39,29 +41,89 @@
                     ],
                     ['undo', 'redo']
                   ]"
-                  v-model="advertise.description"
+                  v-model="advertise.content"
                   @paste="onPaste($event)"
                 />
               </template>
-            </q-field>
-            <!-- <q-file
-              accept=".jpg, image/*"
+            </q-field> -->
+
+            <q-file
+              v-if="advertise.type === 'Banner'"
+              class="q-mb-lg"
+              :accept="advertise.type === 'Banner' ? '.jpg, image/*' : '.mp4, .mkv'"
               counter
               data-test="file-image"
               hide-hint
               hint="Max size is 5MB"
-              label="Image"
+              :label="advertise.type === 'Banner' ? 'Image' : 'Video'"
               :max-total-size="5242880"
               :required="!id"
-              v-model="imageModel"
+              v-model="contentModel"
               @rejected="onRejected()"
               @update:model-value="uploadPhoto()"
             >
               <template v-slot:append>
-                <q-icon name="image" />
+                <q-icon :name="advertise.type === 'Banner' ? 'image' : 'videocam'" />
               </template>
-            </q-file> -->
-            <q-select
+            </q-file>
+            <q-input counter data-test="input-title" hide-hint label="Description" type="textarea" required v-model="advertise.content" />
+
+            <div v-if="isUrlValid(advertise.content) && advertise.type === 'Banner'" class="text-center">
+              <q-img
+                v-if="advertise.content"
+                class="q-mt-md"
+                :src="advertise.content"
+                fit="contain"
+                style="max-height: 40vh; max-width: 80vw"
+              />
+            </div>
+            <q-input
+              class="q-mb-lg"
+              counter
+              hide-hint
+              label="Product URL"
+              maxlength="80"
+              v-model="advertise.productLink"
+              :rules="[(url) => (url ? isUrlValid(url) : true) || 'Please enter a valid url']"
+            />
+            <q-input
+              filled
+              v-model="advertise.publishDate"
+              mask="date"
+              label="Publish date"
+              :rules="['date']"
+              readonly
+              @click="openDatePicker"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy v-model="datePickerVisible" cover transition-show="scale" transition-hide="scale">
+                    <q-date v-model="advertise.publishDate" :options="(date) => date >= getCurrentDate()">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="Close" color="primary" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+            <q-input
+              label="Duration(day's)"
+              class="q-mb-lg"
+              v-model.number="advertise.duration"
+              type="number"
+              :min="1"
+              :rules="[(duration) => duration > 0 || 'Enter a positive number']"
+            />
+            <q-input
+              label="Budget"
+              class="q-mb-lg"
+              v-model.number="advertise.budget"
+              type="number"
+              :min="1"
+              :rules="[(budget) => (budget ? budget > 0 : true || 'Enter a positive number')]"
+            />
+            <!-- <q-select
               behavior="menu"
               counter
               data-test="select-categories"
@@ -76,10 +138,7 @@
               use-chips
               :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
               v-model="advertise.categories"
-            />
-            <div class="text-center">
-              <q-img v-if="advertise.image" class="q-mt-md" :src="advertise.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
-            </div>
+            /> -->
           </q-card-section>
         </q-step>
         <template v-slot:navigation>
@@ -88,9 +147,8 @@
             <q-btn
               color="primary"
               data-test="button-submit"
-              :disable="!advertise.date || !advertise.title || !advertise.description || !advertise.categories?.length || !advertise.image"
+              :disable="!advertise.title || !advertise.content || !advertise.duration || !advertise.publishDate"
               :label="id ? 'Save Edits' : 'Submit '"
-              :loading="advertiseStore.isLoading"
               rounded
               type="submit"
             />
@@ -103,56 +161,85 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
-import { useErrorStore,  useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
+// import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
+import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { reactive, ref, watchEffect } from 'vue'
+import {v4 as uuidV4} from 'uuid'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
+const props = defineProps([
+  'author',
+  'categories',
+  'date',
+  'content',
+  'id',
+  'title',
+  'productLink',
+  'publishDate',
+  'type',
+  'content',
+  'duration',
+  'status',
+  'contentURL'
+])
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
-const advertiseStore =useAdvertiseStore()
+const advertiseStore = useAdvertiseStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
 const dataKey = ref(Date.now())
 const editorRef = ref(null)
-const imageModel = ref([])
+const contentModel = ref([])
+const datePickerVisible = ref(false)
+
+function openDatePicker() {
+  datePickerVisible.value = true
+}
+
 const advertise = reactive({
-  description: '',
-  image: '',
-  showcase: { arts: [], artist: { info: '', photo: '' } },
-  title: ''
+  content: '',
+  title: '',
+  productLink: '',
+  contentURL:''
 })
 const step = ref(1)
 
 watchEffect(() => {
   if (props.id) {
-    advertise.author = { label: props.author.displayName, value: props.author.uid }
+    advertise.author = props.author
     advertise.categories = props.categories
     advertise.date = props.date
-    advertise.description = props.description
+    advertise.content = props.content
     advertise.id = props.id
-    advertise.image = props.image
-    advertise.showcase = props.showcase
     advertise.title = props.title
+    advertise.productLink = props.productLink
+    advertise.publishDate = props.publishDate
+    advertise.type = props.type
+    advertise.duration = props.duration
+    advertise.status = props.status
+    advertise.contentURL=props.contentURL??''
+    console.log(advertise)
   } else {
-    advertise.author = userStore.isWriterOrAbove ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
-    advertise.categories = ["default"]
+    advertise.author = userStore.isAdvertiser ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
+    advertise.categories = []
+    advertise.type = 'Banner'
     advertise.date = currentYearMonth()
+    advertise.status = 'Inactive'
+    // advertise.clicks = 0
+    advertise.cost = 0
+    // advertise.impressions = 0
+    // advertise.budget = 0
+    advertise.id= uuidV4()
   }
 })
 
-function onUpdateMonth() {
-  dataKey.value = Date.now()
-}
-
 function uploadPhoto() {
-  advertise.image = ''
+  advertise.contentURL = ''
   const reader = new FileReader()
-  reader.readAsDataURL(imageModel.value)
-  reader.onload = () => (advertise.image = reader.result)
+  reader.readAsDataURL(contentModel.value)
+  reader.onload = () => (advertise.contentURL = reader.result)
 }
 
 function onRejected() {
@@ -180,27 +267,56 @@ function onPaste(evt) {
   }
 }
 
+function isUrlValid(userInput = '') {
+  var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
+  if (res == null) return false
+  else return true
+}
+
+function calculateEndDate(publishDate, duration) {
+  const publishDayObj = new Date(publishDate)
+  const endDate = new Date(publishDayObj.getTime() + duration * 24 * 60 * 60 * 1000)
+  return endDate.toISOString().slice(0, 10).replaceAll('-', '/')
+}
+
+function getCurrentDate() {
+  const currentDate = new Date()
+  let month = currentDate.getMonth() + 1
+  if (month < 10) {
+    month = '0' + month
+  }
+  let day = currentDate.getDate()
+  if (day < 10) {
+    day = '0' + day
+  }
+  return `${currentDate.getFullYear()}/${month}/${day}`
+}
 async function onSubmit() {
-  advertise.slug = '/' + advertise.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
-
-
-  // if (Object.keys(imageModel.value).length) {
-  //   await storageStore
-  //     .uploadFile(imageModel.value, `images/prompt-${advertise.date}`)
-  //     .then((url) => (advertise.image = url))
-  //     .catch((error) => errorStore.throwError(error))
-  // }
+  if (!advertise.budget) advertise.budget = 0
+  advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
+  if (Object.keys(contentModel.value).length) {
+    await storageStore
+      .uploadFile(contentModel.value, `advertise/content-${advertise.id}`)
+      .then((url) => (advertise.contentURL = url))
+      .catch((error) => errorStore.throwError(error))
+  }
 
   if (props.id) {
     await advertiseStore
-      .editAdvertise(prompt)
-      .then(() => $q.notify({ type: 'info', message: 'Prompt successfully edited' }))
-      .catch((error) => errorStore.throwError(error, 'Prompt edit failed'))
+      .editAdvertise(advertise)
+      .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
+      .catch((error) => {
+        console.log(error)
+        errorStore.throwError(error, 'Advertise edit failed')
+      })
   } else {
     await advertiseStore
-      .addAdvertise(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
-      .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
+      .addAdvertise(advertise)
+      .then(() => $q.notify({ type: 'positive', message: 'Advertise successfully submitted' }))
+      .catch((error) => {
+        console.log(error)
+        errorStore.throwError(error, 'Advertise submission failed')
+      })
   }
 
   emit('hideDialog')

@@ -8,7 +8,7 @@
         <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
 
-      <q-route-tab v-if="userStore.isAdvertiser" exact icon="campaign" to="/advertiser">
+      <q-route-tab v-if="userStore.isAdvertiser || userStore.isAdmin" exact icon="campaign" to="/advertiser">
         <q-tooltip>Advertiser Panel</q-tooltip>
       </q-route-tab>
     </q-tabs>
