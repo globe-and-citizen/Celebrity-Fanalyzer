@@ -78,7 +78,6 @@ export const useCommentStore = defineStore('comments', {
         }
       }
       this.$patch({ _comments: comments })
-      console.log(this._comments)
     },
 
     async getTotalComments(collectionName, documentId) {

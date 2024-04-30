@@ -110,7 +110,7 @@ function groupLikesAndDislikesByDate(data) {
   const today = new Date()
   const firstDate = mergedResult[0] ? Object.keys(mergedResult[0])[0] : null
   const startDate = firstDate ? new Date(firstDate) : null
-  // console.log(props.data)
+
   for (let currentDate = startDate; currentDate <= today; currentDate.setDate(currentDate.getDate() + 1)) {
     const formattedDate = currentDate.toLocaleDateString('en-US')
 

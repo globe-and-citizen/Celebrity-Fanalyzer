@@ -1,16 +1,4 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  runTransaction,
-  setDoc,
-  Timestamp,
-  where
-} from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -92,7 +80,7 @@ export const usePromptStore = defineStore('prompts', {
       this._prompts = [
         {
           ...promptSnapshot,
-          entries: promptSnapshot.entries?.map((entry) => entry.id) || []
+          entries: promptSnapshot?.entries?.map((entry) => entry.id) || []
         }
       ]
     },

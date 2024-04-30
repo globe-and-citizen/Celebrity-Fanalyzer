@@ -58,7 +58,6 @@ onMounted(() => {
   if (entryStore.getEntries === undefined) {
     entryStore.fetchEntryBySlug(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
   }
-  // console.log(entry)
 
   startTracking()
   if (entryStore.getEntries && !entry.value?.id) {

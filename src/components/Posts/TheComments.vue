@@ -69,7 +69,7 @@ import { useQuasar } from 'quasar'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
-import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
 
 const props = defineProps({
   collectionName: { type: String, required: true },
@@ -99,7 +99,6 @@ const commenters = computed(() => {
 })
 
 watchEffect(() => {
-  console.log(comments)
   isMention.value = Boolean(
     userStore.getUser &&
       commentValue.value.endsWith('@') &&

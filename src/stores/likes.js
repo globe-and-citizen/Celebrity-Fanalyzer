@@ -27,11 +27,9 @@ export const useLikeStore = defineStore('likes', {
   actions: {
     async getTotalLikesCount(collectionName, documentId) {
       try {
-        // console.log(documentId)
         const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'likes'))
         const totalLikes = totalCountFunc.data().count
         this.$patch({ _totalLikes: totalLikes })
-        // console.log(totalLikes)
       } catch (e) {
         console.error('Failed fetching likes count', e)
       }

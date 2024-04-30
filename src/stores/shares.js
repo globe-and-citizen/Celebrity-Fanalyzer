@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
