@@ -15,8 +15,8 @@
           :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
           :interval="interval"
         />
-        <q-separator v-if="!!shareStore.getShares.length" :data="shareStore.getShares" spaced="xl" />
-        <SharesPie v-if="!!shareStore.getShares.length" :data="shareStore.getShares" :interval="interval" />
+        <q-separator v-if="!!shareStore.getShares?.length" :data="shareStore.getShares" spaced="xl" />
+        <SharesPie v-if="!!shareStore.getShares?.length" :data="shareStore.getShares" :interval="interval" />
         <q-separator spaced="xl" />
       </section>
     </q-page>

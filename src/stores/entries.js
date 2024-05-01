@@ -4,7 +4,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
   query,
   runTransaction,
@@ -94,8 +93,15 @@ export const useEntryStore = defineStore('entries', {
         for (let i = 0; i < slugArray.length; i += 30) {
           const chunk = slugArray.slice(i, i + 30)
           const querySnapshot = await getDocs(query(collection(db, 'entries'), where('id', 'in', chunk)))
-          const chunkEntries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-          allEntries = allEntries.concat(chunkEntries)
+          const chunkEntries = querySnapshot.docs.map(async (doc) => {
+            const entry = { id: doc.id, ...doc.data() }
+            if (entry.author && entry.author.id) {
+              entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+            }
+            return entry
+          })
+          const resolvedChunkEntries = await Promise.all(chunkEntries)
+          allEntries = allEntries.concat(resolvedChunkEntries)
         }
         this._entries = allEntries
         this._isLoading = false
@@ -103,16 +109,16 @@ export const useEntryStore = defineStore('entries', {
         console.error('Error fetching entries entries', e)
       }
     },
+
     async fetchEntryBySlug(slug) {
+      const userStore = useUserStore()
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
-
         const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-        entry.author = await getDoc(entry.author).then((doc) => doc.data())
-        entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
-
+        if (entry.author.id) {
+          entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+        }
         this._isLoading = false
         this._entries = [entry]
       } catch (e) {

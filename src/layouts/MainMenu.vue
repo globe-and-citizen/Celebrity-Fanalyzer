@@ -34,7 +34,6 @@ import { useRoute, useRouter } from 'vue-router'
 const updated = ref(false)
 const userStore = useUserStore()
 const router = useRouter()
-const route = useRoute()
 const email = ref('')
 const currentPath = ref('')
 const isAdminPromptPath = currentPath.value.includes('/admin/prompts')
@@ -59,44 +58,6 @@ const onAdminTabClick = () => {
     router.push('/admin')
   }
 }
-
-onMounted(() => {
-  currentPath.value = router.currentRoute.value.path
-  const adminTab = document.querySelector('.adminTab')
-  const activeHomeTab = document.querySelector('[href="/"]')
-  const handleHomeTabClasses = () => {
-    activeHomeTab?.classList.remove('q-tab--active')
-    activeHomeTab?.classList.remove('text-primary')
-    activeHomeTab?.classList.add('q-tab--inactive')
-  }
-  if (router.currentRoute.value.fullPath.includes('/admin')) {
-    setTimeout(() => {
-      handleHomeTabClasses()
-    })
-
-    if (adminTab) {
-      adminTab?.classList.add('admin_tab', 'cursor-pointer', 'q-router-link--active')
-      adminTab?.classList.replace('q-tab--inactive', 'q-tab--active')
-    }
-  }
-
-  watch(route, () => {
-    if (router.currentRoute.value.fullPath.includes('/admin')) {
-      setTimeout(() => {
-        handleHomeTabClasses()
-      }, 50)
-
-      if (adminTab) {
-        adminTab?.classList.add('admin_tab', 'cursor-pointer', 'q-router-link--active')
-        adminTab?.classList.replace('q-tab--inactive', 'q-tab--active')
-      }
-    } else {
-      activeHomeTab?.classList.remove('q-tab--inactive')
-      adminTab?.classList.remove('admin_tab', 'cursor-pointer', 'q-router-link--active')
-      adminTab?.classList.replace('q-tab--active', 'q-tab--inactive')
-    }
-  })
-})
 </script>
 
 <style lang="scss">
