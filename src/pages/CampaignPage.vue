@@ -5,15 +5,15 @@
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-tab-panels v-if="advertise" animated class="bg-transparent col-grow" swipeable v-model="tab">
-    <!-- Panel 1: Prompt -->
+
     <q-tab-panel name="post" style="padding: 0">
       <SingleAdvertise :advertise="advertise" title="Campaign Page" @clickComments="tab = 'comments'"/>
     </q-tab-panel>
-    <!-- Panel 2: Anthrogram -->
+
     <q-tab-panel name="anthrogram" class="bg-white">
       <TheAnthrogram :post="advertise" :isAdd="true" />
     </q-tab-panel>
-    <!-- Panel 3: Comments -->
+
     <q-tab-panel name="comments" class="bg-white" v-if="advertise">
       <TheComments collectionName="advertises" :post="advertise" />
     </q-tab-panel>
@@ -72,7 +72,7 @@ watchEffect(async () => {
         shareIsLoaded.value = true
       })
   }
-  // console.log(advertise.value)
+
   if (advertiseStore.getAdvertises && !advertise.value?.id) {
     $q.notify({
       type: 'info',

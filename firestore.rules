@@ -47,5 +47,26 @@ service cloud.firestore {
     match /advertises/{document=**} {
     	allow read, create, update, delete, write;
     }
+    match /advertises/{advertiseId}/visitors/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /advertises/{advertiseId}/likes/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/dislikes/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/comments/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /advertises/{advertiseId}/shares/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/clicks/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/impressions/{document=**} {
+      allow read, create, update, delete;
+    }
   }
 }

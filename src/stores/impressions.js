@@ -27,7 +27,6 @@ export const useImpressionsStore = defineStore('impressions', {
 
       this._isLoading = true
       if (visitorSnap.exists()) {
-        // console.log('Added impression', visitorSnap.data())
         await updateDoc(visitorRef, { impression: visitorSnap.data().impression + 1 })
       } else {
         const visitor = {
@@ -48,9 +47,9 @@ export const useImpressionsStore = defineStore('impressions', {
 
     async deleteAllImpressions(collectionName, documentId) {
       this._isLoading = true
-      const visitorsCollection = collection(db, collectionName, documentId, 'impressions')
+      const impressionsCollection = collection(db, collectionName, documentId, 'impressions')
 
-      const snapshot = await getDocs(visitorsCollection)
+      const snapshot = await getDocs(impressionsCollection)
 
       snapshot.forEach(async (doc) => {
         await deleteDoc(doc.ref)

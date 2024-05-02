@@ -1,20 +1,7 @@
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import {
-  collection,
-  doc,
-  Timestamp,
-  runTransaction,
-  onSnapshot,
-  deleteDoc,
-  addDoc,
-  updateDoc,
-  getDocs,
-  where,
-  query,
-  setDoc
-} from 'firebase/firestore'
-import { deleteObject, ref, getMetadata, updateMetadata } from 'firebase/storage'
+import { collection, doc, Timestamp, runTransaction, onSnapshot, deleteDoc, where, query, setDoc, orderBy } from 'firebase/firestore'
+import { deleteObject, ref } from 'firebase/storage'
 import {
   useCommentStore,
   useErrorStore,
@@ -25,7 +12,6 @@ import {
   useClicksStore,
   useImpressionsStore
 } from 'src/stores'
-import { monthDayYear } from 'src/utils/date'
 
 export const useAdvertiseStore = defineStore('advertises', {
   state: () => ({
@@ -34,17 +20,17 @@ export const useAdvertiseStore = defineStore('advertises', {
     _advertises: [],
     _tab: 'post',
     _activeAdvertises: [],
-    _advertisesMap: new Map()
+    _unSubscribeActive: undefined
   }),
 
   persist: true,
 
   getters: {
-    // getAdvertiseRef: () => (id) => doc(db, 'advertises', id),
     getAdvertises: (state) => state._advertises,
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab,
-    getActiveAdvertises: (state) => state._activeAdvertises
+    getActiveAdvertises: (state) => state._activeAdvertises,
+    getMapAdvertises: (state) => Object.values(state._advertisesMap)
   },
 
   actions: {
@@ -52,22 +38,20 @@ export const useAdvertiseStore = defineStore('advertises', {
       const userStore = useUserStore()
       this._isLoading = true
       if (!this._unSubscribe) {
-        this._unSubscribe = onSnapshot(collection(db, 'advertises'), async (querySnapshot) => {
-          let advertises = querySnapshot.docs
-            .map((doc) => {
-              const data = { id: doc.id, ...doc.data() }
+        const q = query(collection(db, 'advertises'), orderBy('created'))
+        this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
+          let advertises = querySnapshot.docs.map((doc) => {
+            const data = { id: doc.id, ...doc.data() }
+            return data
+          })
 
-              // HashMap implementation complexcity O(1)
-              // this._advertisesMap[doc.id] = data
-              return data
-            })
-            .sort((doc1, doc2) => doc2.created - doc1.created)
-          // console.log(this._advertisesMap)
           if (!userStore.isAdmin) {
             const filterData = advertises.filter((advertise) => {
               if (advertise.author.id === userStore.getUserId) {
                 return true
-              } else return false
+              } else {
+                return false
+              }
             })
             advertises = filterData
           }
@@ -80,12 +64,7 @@ export const useAdvertiseStore = defineStore('advertises', {
               impressionsSnapshot.docs.map((doc) => {
                 computedImpressions += doc.data().impression
               })
-
-              // HashMap implementation complexcity O(1)
-              // this._advertisesMap[advertise.id] = { ...this._advertisesMap[advertise.id], impressions: computedImpressions }
-
-              // Array implementation complexcity O(n)
-              this._advertises = this._advertises.map((element) => {
+              this._advertises = advertises.map((element) => {
                 if (element.id === advertise.id) {
                   element.impressions = computedImpressions
                 }
@@ -98,12 +77,7 @@ export const useAdvertiseStore = defineStore('advertises', {
               clicksSnapshot.docs.map((doc) => {
                 computedClicks += doc.data().clicked
               })
-
-              // HashMap implementation complexcity O(1)
-              // this._advertisesMap[advertise.id] = { ...this._advertisesMap[advertise.id], clicks: computedClicks }
-
-              // Array implementation complexcity O(n)
-              this._advertises = this._advertises.map((element) => {
+              this._advertises = advertises.map((element) => {
                 if (element.id === advertise.id) {
                   element.clicks = computedClicks
                 }
@@ -113,7 +87,6 @@ export const useAdvertiseStore = defineStore('advertises', {
           }
 
           this._advertises = []
-
           this.$patch({ _advertises: advertises })
         })
       }
@@ -128,7 +101,6 @@ export const useAdvertiseStore = defineStore('advertises', {
       this._isLoading = true
       await setDoc(doc(db, 'advertises', advertise.id), advertise)
         .catch((error) => console.log(error))
-        // .then((doc) => doc.id)
         .finally(() => (this._isLoading = false))
     },
 
@@ -147,15 +119,17 @@ export const useAdvertiseStore = defineStore('advertises', {
     async getActiveAdvertise() {
       const q = query(collection(db, 'advertises'), where('status', '==', 'Active'))
 
-      const querySnapshot = await getDocs(q)
-
-      let activeAdvertises = []
-      this._activeAdvertises = querySnapshot.forEach((doc) => {
-        const data = { id: doc.id, ...doc.data(), isAdd: true }
-        activeAdvertises.push(data)
-      })
-      this._activeAdvertises = []
-      this.$patch({ _activeAdvertises: activeAdvertises })
+      if (!this._unSubscribeActive) {
+        this._unSubscribeActive = onSnapshot(q, (querySnapshot) => {
+          const activeAdvertises = []
+          querySnapshot.forEach((doc) => {
+            const data = { id: doc.id, ...doc.data(), isAdd: true }
+            activeAdvertises.push(data)
+          })
+          this._activeAdvertises = []
+          this.$patch({ _activeAdvertises: activeAdvertises })
+        })
+      }
     },
 
     async deleteAdvertise(id, isBanner) {

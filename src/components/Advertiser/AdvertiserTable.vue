@@ -52,13 +52,13 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td @click="goToUrl(props.row.id)">
+          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
             {{ props.row.content?.length > 30 ? props.row.content.substring(0, 30) + '...' : props.row.content }}
           </q-td>
         </template>
         <template #body-cell-name="props">
-          <q-td @click="goToUrl(props.row.id)">
-            {{ props.row.title }}
+          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+            {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title}}
           </q-td>
         </template>
       </q-table>
@@ -83,7 +83,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
+import { useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -95,12 +95,10 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const filter = ref('')
 const openDialog = ref(false)
 const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
-const userStore = useUserStore()
 const alertMessage = ref('')
 
 function checkDurationStatus() {
@@ -117,7 +115,6 @@ function goToUrl(id, type) {
 onMounted(checkDurationStatus)
 
 function onDeleteAdvertise(id, type) {
-  // console.log(id)
   advertiseStore
     .deleteAdvertise(id, type === 'Banner')
     .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))

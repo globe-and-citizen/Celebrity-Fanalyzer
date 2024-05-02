@@ -57,7 +57,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useAdvertiseStore } from 'src/stores'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import CampaignCard from '../components/Advertiser/CampaignCard.vue'
 
@@ -69,9 +69,8 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
-onMounted(() => {
-  advertiseStore.getActiveAdvertise().catch((error) => console.log(error))
-})
+
+advertiseStore.getActiveAdvertise().catch((error) => console.log(error))
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
@@ -90,20 +89,13 @@ const computedCategories = computed(() => {
   return [allCategory, ...uniqueCategories]
 })
 const computedAdvertises = computed(() => {
-  // return advertiseStore.getAdvertises
-  //   .filter((advertise) => advertise.status === 'Active')
-  //   .map((element) => {
-  //     element.isAdd = true
-  //     return element
-  //   })
   return advertiseStore.getActiveAdvertises
 })
 const computedPrompts = computed(() => {
-  return promptStore.getPrompts?.filter((item) =>
-    [item.title, item.description, item.author?.displayName, ...item.categories].some((str) =>
-      str?.toLowerCase().includes(search.value.toLowerCase())
-    )
-  )
+  return promptStore.getPrompts?.filter((item) => {
+    const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
+    return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
+  })
 })
 const computedPromptsAndAdvertises = computed(() => {
   let i = 0,

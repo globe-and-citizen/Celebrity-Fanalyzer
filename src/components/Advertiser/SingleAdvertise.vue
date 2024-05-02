@@ -2,7 +2,7 @@
   <q-page-container style="padding-bottom: 0">
     <q-page class="bg-white" style="min-height: auto">
       <TheHeader feedbackButton :title="'Campaign'" />
-      <div >
+      <div>
         <q-card class="my-card margin-bottom no-border" flat bordered>
           <!-- <q-card-section class="flex justify-between">
         <router-link
@@ -26,10 +26,7 @@
           <q-card-section v-if="advertise.type === 'Banner' && advertise.contentURL" class="col-5 flex flex-center">
             <q-img class="rounded-borders full-width height-auto" :src="advertise.contentURL" />
           </q-card-section>
-          <q-card-section v-else class="col-5 flex flex-center">
-            <q-img class="rounded-borders full-width height-auto" src="https://cdn.quasar.dev/img/parallax2.jpg" />
-          </q-card-section>
-          <q-card-section horizontal class="flex justify-between">
+          <q-card-section horizontal class="flex justify-between" :class="[{'text-margin':advertise.type==='Text'}]">
             <q-card-section class="q-pt-xs flex row justify-evenly full-width">
               <div class="col-2">
                 <div class="date-box">
@@ -37,14 +34,11 @@
                   <span class="date text-primary">{{ getDay(advertise.created) }}</span>
                 </div>
               </div>
-              <pre></pre>
-              <div class="q-my-none col-9">
+              <div class="q-my-none col-9 content-box">
                 <div class="q-mt-sm q-mb-xs">
-                  <p class="text-h5">{{ advertise.title?.length > 40 ? advertise.title.substring(0, 40) + '...' : advertise.title }}</p>
+                  <p class="text-h5">{{ advertise.title }}</p>
                 </div>
-                <template v-if="advertise?.type === 'Text'">
-                  <p class="q-mt-sm text-body1">{{ advertise.content }}</p>
-                </template>
+                <p class="q-mt-sm text-body1">{{ advertise.content }}</p>
               </div>
 
               <div class="full-width" v-if="advertise.categories">
@@ -116,8 +110,8 @@
   </q-page-container>
 </template>
 <script setup>
-import {  useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore, useVisitorStore } from 'src/stores'
-import {  defineEmits, defineProps, onMounted } from 'vue'
+import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore, useVisitorStore } from 'src/stores'
+import { defineEmits, defineProps, onMounted } from 'vue'
 import ShareComponent from '../Posts/ShareComponent.vue'
 import TheHeader from '../shared/TheHeader.vue'
 
@@ -132,8 +126,6 @@ const props = defineProps({
   }
 })
 defineEmits(['clickComments'])
-
-
 
 const commentStore = useCommentStore()
 const errorStore = useErrorStore()
@@ -181,6 +173,10 @@ async function share(socialNetwork) {
   text-decoration: none;
 }
 
+.text-margin{
+  margin-top: 4rem;
+}
+
 .date-box {
   background: white;
   border: 1px solid #e54757;
@@ -212,5 +208,7 @@ async function share(socialNetwork) {
 .margin-bottom {
   margin-bottom: 6rem;
 }
-
+.content-box{
+  overflow-wrap: break-word;
+}
 </style>

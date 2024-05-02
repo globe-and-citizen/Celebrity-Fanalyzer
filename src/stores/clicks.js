@@ -27,7 +27,6 @@ export const useClicksStore = defineStore('clicks', {
 
       this._isLoading = true
       if (visitorSnap.exists()) {
-        // console.log('Added click', visitorSnap.data())
         await updateDoc(visitorRef, { clicked: visitorSnap.data().clicked + 1 })
       } else {
         const visitor = {

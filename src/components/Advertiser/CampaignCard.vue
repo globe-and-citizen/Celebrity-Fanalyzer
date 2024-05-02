@@ -1,10 +1,20 @@
 <template>
-  <article ref="articleRef" id="test" class="blog-card q-my-md" @click="onClick">
-    <img class="post-image" :src="(advertise.type === 'Text'&& !advertise.contentUrl ) ? 'https://cdn.quasar.dev/img/parallax2.jpg' : advertise.contentURL" />
+  <article
+    ref="articleRef"
+    id="test"
+    class="q-my-md"
+    :class="[{ 'blog-card': advertise.type !== 'Text', 'text-blog-card': advertise.type === 'Text' }]"
+    @click="onClick"
+  >
+    <img
+      v-if="advertise.type === 'Banner'"
+      class="post-image"
+      :src="advertise.type === 'Text' && !advertise.contentURl ? 'https://cdn.quasar.dev/img/parallax2.jpg' : advertise.contentURL"
+    />
     <div class="article-details">
       <h4 class="post-category">Advertise</h4>
       <h3 class="post-title">{{ advertise.title?.length > 30 ? advertise.title.substring(0, 30) + '...' : advertise.title }}</h3>
-      <p class="post-description" >
+      <p class="post-description">
         {{ advertise.content?.length > 80 ? advertise.content.substring(0, 80) + '...' : advertise.content }}
       </p>
       <span class="cursor-pointer text-black link" @click="goToUrl">Learn more</span>
@@ -14,7 +24,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import {  useUserStore, useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
+import { useUserStore, useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -24,7 +34,6 @@ const visitorStore = useVisitorStore()
 const errorStore = useErrorStore()
 const clicksStore = useClicksStore()
 const impressionsStore = useImpressionsStore()
-// const lastImpression=ref(null)
 
 const props = defineProps({
   advertise: {
@@ -87,7 +96,14 @@ $shadow: rgba(0, 0, 0, 0.2);
   border-radius: 24px;
   overflow: hidden;
 }
-
+.text-blog-card {
+  display: flex;
+  flex-direction: row;
+  background: $white;
+  filter: drop-shadow(1px 2px 4px $shadow);
+  border-radius: 24px;
+  overflow: hidden;
+}
 .card-link {
   position: relative;
   display: block;
@@ -117,7 +133,9 @@ $shadow: rgba(0, 0, 0, 0.2);
   padding: 0 0 0.25rem 0;
   border-bottom: 0.125rem solid $border;
 }
-
+.post-description {
+  overflow-wrap: break-word;
+}
 .post-title {
   font-size: 1.125rem;
   line-height: 1.4;
@@ -161,10 +179,10 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-rows: 1fr;
   }
 
-  @media (max-width: 40rem) {
+  @media (max-width: 32rem) {
     .blog-card {
       grid-template-columns: auto;
-      grid-template-rows: 12rem 1fr;
+      grid-template-rows: 18rem 1fr;
     }
   }
 }

@@ -9,7 +9,6 @@
               <div class="flex items-center justify-between">
                 <div>Select Add type :</div>
                 <q-radio v-model="advertise.type" val="Banner" label="Banner" />
-                <!-- <q-radio v-model="advertise.type" val="Video" label="Video" /> -->
                 <q-radio v-model="advertise.type" val="Text" label="Text" />
               </div>
             </div>
@@ -54,7 +53,7 @@
               counter
               data-test="file-image"
               hide-hint
-              hint="Max size is 5MB"
+              :hint="fileErrorMessage"
               :label="advertise.type === 'Banner' ? 'Image' : 'Video'"
               :max-total-size="5242880"
               :required="!id"
@@ -66,17 +65,16 @@
                 <q-icon :name="advertise.type === 'Banner' ? 'image' : 'videocam'" />
               </template>
             </q-file>
-            <q-input counter data-test="input-title" hide-hint label="Description" type="textarea" required v-model="advertise.content" />
-
-            <div v-if="isUrlValid(advertise.content) && advertise.type === 'Banner'" class="text-center">
+            <div v-if="advertise.type === 'Banner'" class="text-center">
               <q-img
-                v-if="advertise.content"
+                v-if="advertise.contentURL"
                 class="q-mt-md"
-                :src="advertise.content"
+                :src="advertise.contentURL"
                 fit="contain"
                 style="max-height: 40vh; max-width: 80vw"
               />
             </div>
+            <q-input counter data-test="input-title" hide-hint label="Description" type="textarea" required v-model="advertise.content" />
             <q-input
               class="q-mb-lg"
               counter
@@ -123,22 +121,6 @@
               :min="1"
               :rules="[(budget) => (budget ? budget > 0 : true || 'Enter a positive number')]"
             />
-            <!-- <q-select
-              behavior="menu"
-              counter
-              data-test="select-categories"
-              hide-dropdown-icon
-              hide-hint
-              hint="Click Enter ↵ to add a new category"
-              input-debounce="0"
-              label="Categories"
-              multiple
-              new-value-mode="add-unique"
-              use-input
-              use-chips
-              :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
-              v-model="advertise.categories"
-            /> -->
           </q-card-section>
         </q-step>
         <template v-slot:navigation>
@@ -147,7 +129,13 @@
             <q-btn
               color="primary"
               data-test="button-submit"
-              :disable="!advertise.title || !advertise.content || !advertise.duration || !advertise.publishDate"
+              :disable="
+                !advertise.title ||
+                !advertise.content ||
+                !advertise.duration ||
+                !advertise.publishDate ||
+                (advertise.type === 'Banner' && fileError)
+              "
               :label="id ? 'Save Edits' : 'Submit '"
               rounded
               type="submit"
@@ -161,11 +149,10 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-// import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
-import {v4 as uuidV4} from 'uuid'
+import { v4 as uuidV4 } from 'uuid'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
@@ -181,7 +168,8 @@ const props = defineProps([
   'content',
   'duration',
   'status',
-  'contentURL'
+  'contentURL',
+  'budget'
 ])
 
 const $q = useQuasar()
@@ -189,10 +177,11 @@ const errorStore = useErrorStore()
 const advertiseStore = useAdvertiseStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
-const dataKey = ref(Date.now())
 const editorRef = ref(null)
 const contentModel = ref([])
 const datePickerVisible = ref(false)
+const fileErrorMessage = ref('Max size is 5MB')
+const fileError = ref(false)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -202,7 +191,7 @@ const advertise = reactive({
   content: '',
   title: '',
   productLink: '',
-  contentURL:''
+  contentURL: ''
 })
 const step = ref(1)
 
@@ -219,19 +208,16 @@ watchEffect(() => {
     advertise.type = props.type
     advertise.duration = props.duration
     advertise.status = props.status
-    advertise.contentURL=props.contentURL??''
-    console.log(advertise)
+    advertise.contentURL = props.contentURL ?? ''
+    ;(advertise.budget = props.budget), (advertise.type = props.type)
   } else {
     advertise.author = userStore.isAdvertiser ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
     advertise.categories = []
     advertise.type = 'Banner'
     advertise.date = currentYearMonth()
     advertise.status = 'Inactive'
-    // advertise.clicks = 0
     advertise.cost = 0
-    // advertise.impressions = 0
-    // advertise.budget = 0
-    advertise.id= uuidV4()
+    advertise.id = uuidV4()
   }
 })
 
@@ -240,10 +226,24 @@ function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(contentModel.value)
   reader.onload = () => (advertise.contentURL = reader.result)
+  reader.onloadend = function (e) {
+    let contents = e.target.result
+    let memoryImg = document.createElement('img')
+    memoryImg.src = contents
+    let width = memoryImg.width
+    let height = memoryImg.height
+    if (width < 500 || height < 252) {
+      $q.notify({ type: 'negative', message: `Please select an image with minimum 500px width & 252px height for better view` })
+      fileErrorMessage.value = 'Select an image with minimum 500px width & 252px height '
+      fileError.value = true
+    } else fileError.value = false
+  }
 }
 
 function onRejected() {
   $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
+  fileErrorMessage.value = 'Max file size is 5MB.'
+  fileError.value = true
 }
 
 function onPaste(evt) {
@@ -302,6 +302,11 @@ async function onSubmit() {
   }
 
   if (props.id) {
+    if (props.type === 'Banner' && advertise.type === 'Text') {
+      const imagePath = `advertise/content-${advertise.id}`
+      storageStore.deleteFile(imagePath).catch((error) => console.log(error))
+      advertise.contentURL=''
+    }
     await advertiseStore
       .editAdvertise(advertise)
       .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
