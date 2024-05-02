@@ -1,5 +1,5 @@
 <template>
-  <q-page-container style="padding-bottom: 0">
+  <q-page-container style="padding-bottom: 200px">
     <q-page class="bg-white" style="min-height: auto">
       <TheHeader feedbackButton :title="title" />
 
