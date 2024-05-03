@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
@@ -6,8 +6,6 @@ import { useUserStore } from 'src/stores'
 export const useLikeStore = defineStore('likes', {
   state: () => ({
     _likes: undefined,
-    _totalLikes: undefined,
-    _totalDislikes: undefined,
     _dislikes: undefined,
     _unSubscribeLike: undefined,
     _unSubscribeDislike: undefined,
@@ -19,39 +17,27 @@ export const useLikeStore = defineStore('likes', {
 
   getters: {
     getLikes: (state) => state._likes,
-    getDislikes: (state) => state._dislikes,
-    getLikesCount: (state) => state._totalLikes,
-    getDislikesCount: (state) => state._totalDislikes
+    getDislikes: (state) => state._dislikes
   },
 
   actions: {
-    async getTotalLikesCount(collectionName, documentId) {
-      try {
-        const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'likes'))
-        const totalLikes = totalCountFunc.data().count
-        this.$patch({ _totalLikes: totalLikes })
-      } catch (e) {
-        console.error('Failed fetching likes count', e)
-      }
-    },
-
     async getAllLikesDislikes(collectionName, documentId) {
-      try {
-        this._isLoading = true
-        const likesCollection = collection(db, collectionName, documentId, 'likes')
-        const dislikesCollection = collection(db, collectionName, documentId, 'dislikes')
+      this._isLoading = true
+      const likesCollection = collection(db, collectionName, documentId, 'likes')
+      const dislikesCollection = collection(db, collectionName, documentId, 'dislikes')
 
-        const likesSnapshot = await getDocs(likesCollection)
-        this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        const dislikesSnapshot = await getDocs(dislikesCollection)
-        this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      } catch (e) {
-        console.error('Error fetching likes/dislikes', e)
-      } finally {
-        this._isLoading = false
+      if (this._unSubscribeLike || this._unSubscribeDislike) {
+        this._unSubscribeLike()
+        this._unSubscribeDislike()
       }
+      this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot) => {
+        this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      })
+      this._unSubscribeDislike = onSnapshot(dislikesCollection, (dislikesSnapshot) => {
+        this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      })
+      this._isLoading = false
     },
-
     async addLike(collectionName, documentId) {
       try {
         this._isLoading = true

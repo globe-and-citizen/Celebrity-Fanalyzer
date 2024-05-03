@@ -1,5 +1,5 @@
 <template>
-  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
+  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector q-pb-xs" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="post" :ripple="false" />
     <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
@@ -79,7 +79,7 @@ onMounted(() => {
 
 onBeforeRouteLeave(async () => {
   const stats = stopTracking()
-  await statStore.addStats(entry.value.id, stats)
+  await statStore.addStats(entry?.value?.id, stats)
 })
 
 onUnmounted(() => {
@@ -89,7 +89,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .tab-selector {
-  margin-bottom: 4rem;
+  margin-bottom: 3.5rem;
   z-index: 3;
 }
 </style>

@@ -2,7 +2,7 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.getCommentsCount" class="q-pa-md" style="margin-bottom: 6rem">
+      <section v-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
           v-for="comment of comments"
           :collection-name="collectionName"
@@ -30,7 +30,7 @@
           :required="!commentStore.haveToReply"
           rounded
           standout="bg-secondary text-white"
-          style="margin-bottom: 6.5rem"
+          style="margin-bottom: 7rem"
           v-model="commentValue"
           @blur="isMention = false"
           @keydown.escape="inputField.blur()"
@@ -148,15 +148,21 @@ async function addComment() {
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
-    .finally(() => (commentValue.value = ''))
+    .finally(() => {
+      commentValue.value = ''
+    })
 }
+
+watchEffect(async () => {
+  await commentStore.fetchComments(props.collectionName, props.post.id)
+})
 
 onUnmounted(() => {
   commentStore.setReplyTo('')
 })
 
 commentStore.$subscribe(() => {
-  commentStore.haveToReply ? inputField.value.focus() : inputField.value.blur()
+  commentStore.haveToReply ? inputField.value.focus() : inputField.value?.blur()
 })
 
 async function addReply() {

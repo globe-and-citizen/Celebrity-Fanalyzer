@@ -27,16 +27,19 @@
 </template>
 
 <script setup>
-import { useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const updated = ref(false)
 const userStore = useUserStore()
+const promptStore = usePromptStore()
+const entriesStore = useEntryStore()
 const router = useRouter()
 const email = ref('')
 const currentPath = ref('')
 const isAdminPromptPath = currentPath.value.includes('/admin/prompts')
+const { href, params, path, name } = router.currentRoute.value
 
 const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
@@ -58,6 +61,24 @@ const onAdminTabClick = () => {
     router.push('/admin')
   }
 }
+
+onMounted(async () => {
+  if (params.year && params.month && !params.id) {
+    promptStore.fetchPromptBySlug(`${params.year}-${params.month}`).catch((error) => errorStore.throwError(error))
+  }
+
+  if (params.id) {
+    entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
+  }
+
+  if (href === '/month') {
+    await promptStore.fetchMonthsPrompt()
+  }
+
+  if (params.slug) {
+    promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
+  }
+})
 </script>
 
 <style lang="scss">

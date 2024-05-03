@@ -39,6 +39,7 @@ export const useEntryStore = defineStore('entries', {
 
   getters: {
     getEntries: (state) => state._entries,
+    resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab
   },

@@ -8,15 +8,15 @@
           <q-tab name="weekly" label="Weekly" />
           <q-tab name="monthly" label="Monthly" />
         </q-tabs>
-        <VisitorsBar :data="visitorStore.getVisitors" :interval="interval" />
-        <q-separator spaced="xl" v-if="!!likeStore.getLikes.length && !!likeStore.getDislikes.length" />
+        <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
+        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length && !!likeStore.getDislikes?.length" />
         <LikesBar
-          v-if="!!likeStore.getLikes.length && !!likeStore.getDislikes.length"
+          v-if="!!likeStore.getLikes?.length && !!likeStore.getDislikes?.length"
           :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
           :interval="interval"
         />
-        <q-separator v-if="!!shareStore.getShares?.length" :data="shareStore.getShares" spaced="xl" />
-        <SharesPie v-if="!!shareStore.getShares?.length" :data="shareStore.getShares" :interval="interval" />
+        <q-separator v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" spaced="xl" />
+        <SharesPie v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" :interval="interval" />
         <q-separator spaced="xl" />
       </section>
     </q-page>

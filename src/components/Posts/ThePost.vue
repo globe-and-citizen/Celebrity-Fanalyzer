@@ -26,7 +26,11 @@
           @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
         >
           <q-avatar size="6rem">
-            <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
+            <q-img
+              :src="post.author.photoURL ? post.author.photoURL : '/icons/user_raiting_premium_member.svg'"
+              :srcset="post.author.photoURL"
+              :width="post.author.photoURL ? 'null' : '65px'"
+            />
           </q-avatar>
           <div class="q-ml-md">
             <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
@@ -136,7 +140,6 @@ const entryStore = useEntryStore()
 onMounted(async () => {
   await userStore.fetchUserIp()
   if (props.post?.id) {
-    await likeStore.getTotalLikesCount(props.collectionName, props.post?.id)
     await commentStore.getTotalComments(props.collectionName, props.post?.id)
   }
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))

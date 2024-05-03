@@ -61,7 +61,7 @@ const prompt = computed(() => {
         case 'year-month':
           return prompt.date === params.year + '-' + params.month
         case 'slug':
-          return prompt.slug.includes(params.slug)
+          return prompt.slug?.includes(params.slug)
         default:
           return false
       }
@@ -76,7 +76,7 @@ const onScroll = () => {
   if (entriesRef.value) {
     const marginTop = entriesRef.value?.getBoundingClientRect().top
     const windowsHeight = window.innerHeight
-    if ((entries.value === undefined || !entries.value.length) && marginTop - windowsHeight < -50) {
+    if (!entries.value?.length && marginTop - windowsHeight < -50) {
       entryStore.fetchPromptsEntries(prompt.value.entries).catch((error) => errorStore.throwError(error))
     }
   }
@@ -96,44 +96,10 @@ watchEffect(async () => {
         shareIsLoaded.value = true
       })
   }
-
-  let isPromptPageRoute = false
-  switch (href) {
-    case '/month':
-      isPromptPageRoute = true
-      break
-    case `/${params.year}/${params.month}`:
-      isPromptPageRoute = true
-      break
-    case `/${params.slug}`:
-      isPromptPageRoute = true
-      break
-    default:
-      isPromptPageRoute = false
-  }
-
-  if (isPromptPageRoute && promptStore.getPrompts && !prompt.value?.id) {
-    $q.notify({
-      type: 'info',
-      message: 'Prompt Not found'
-    })
-    setTimeout(async () => {
-      $q.notify({
-        type: 'info',
-        message: 'You will be redirected in 3 seconds'
-      })
-    }, 3000)
-    setTimeout(async () => {
-      await router.push('/404')
-    }, 6000)
-  }
 })
 
-onMounted(() => {
-  if (promptStore.getPrompts === undefined && href) {
-    promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
-  }
-
+onMounted(async () => {
+  await entryStore.resetEntries
   entriesRef.value = document.querySelector('.entries-page-container')
   window.addEventListener('scroll', onScroll)
 })
