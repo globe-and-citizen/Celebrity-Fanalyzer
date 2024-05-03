@@ -33,7 +33,8 @@ export const useEntryStore = defineStore('entries', {
     _entries: undefined,
     _isLoading: false,
     _unSubscribe: undefined,
-    _tab: 'post'
+    _tab: 'post',
+    entryDialog: {}
   }),
 
   persist: true,
@@ -61,7 +62,9 @@ export const useEntryStore = defineStore('entries', {
         const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const entry of entries) {
-          entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          if (entry.author.id) {
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
           entry.prompt = entry.prompt.id
         }
 

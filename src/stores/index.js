@@ -6,6 +6,7 @@ import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
 import { useErrorStore } from './errors'
 import { useFeedbackStore } from './feedbacks'
+import { useReportStore } from './reports'
 import { useLikeStore } from './likes'
 import { useNotificationStore } from './notifications'
 import { usePromptStore } from './prompts'
@@ -58,6 +59,7 @@ export {
   useEntryStore,
   useErrorStore,
   useFeedbackStore,
+  useReportStore,
   useLikeStore,
   useNotificationStore,
   usePromptStore,

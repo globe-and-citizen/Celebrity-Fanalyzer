@@ -7,32 +7,22 @@
     <LoginForm v-if="!user.uid" />
 
     <q-page v-else class="q-pa-sm">
-      <q-tabs v-model="tab" active-color="primary" @update:model-value="userStore.setProfileTab(tab)" data-test="profile-tabs">
-        <q-tab name="profile" label="Profile" data-test="tab-profile" />
-        <q-tab name="subscriptions" label="Subscriptions" data-test="tab-subscriptions" />
-        <q-tab name="feedback" label="Feedback" data-test="tab-feedback" />
-        <q-tab name="settings" label="Settings" data-test="tab-settings" />
+      <q-tabs active-color="primary">
+        <q-route-tab name="profile" label="Profile" data-test="tab-profile" :to="{ name: 'profile' }"  />
+        <q-route-tab
+          name="subscriptions"
+          label="Subscriptions"
+          data-test="tab-subscriptions"
+          :to="{ name: 'profile.subscriptions' }"
+          exact
+        />
+        <q-route-tab name="feedback" label="Feedback" data-test="tab-feedback" :to="{ name: 'profile.feedback' }" exact />
+        <q-route-tab name="settings" label="Settings" data-test="tab-settings" exact :to="{ name: 'profile.settings' }" />
       </q-tabs>
 
       <q-separator />
 
-      <q-tab-panels v-model="tab" animated>
-        <q-tab-panel name="profile">
-          <ProfileTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="subscriptions">
-          <SubscriptionsTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="feedback">
-          <FeedbackTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="settings">
-          <SettingsTab />
-        </q-tab-panel>
-      </q-tab-panels>
+      <router-view />
     </q-page>
   </q-page-container>
 </template>
@@ -50,10 +40,8 @@ import { ref } from 'vue'
 const userStore = useUserStore()
 
 const user = ref(userStore.getUser)
-const tab = ref(userStore.getProfileTab)
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
-  tab.value = state._profileTab
 })
 </script>
