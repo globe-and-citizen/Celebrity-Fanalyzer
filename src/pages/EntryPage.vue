@@ -1,5 +1,5 @@
 <template>
-  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
+  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector q-pb-xs" dense indicator-color="transparent" v-model="tab">
     <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="post" :ripple="false" />
     <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
@@ -12,7 +12,7 @@
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
-      <TheAnthrogram :post="entry" />
+      <TheAnthrogram :post="entry" collectionName="entries" />
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
@@ -34,16 +34,13 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router'
 const router = useRouter()
 
 const $q = useQuasar()
-const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
-
+const commentStore = useCommentStore()
 const tab = ref(entryStore.tab)
-
-entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const entry = computed(() => {
   return entryStore.getEntries?.find((entry) => router.currentRoute.value.href === entry.slug)
@@ -51,13 +48,17 @@ const entry = computed(() => {
 
 watchEffect(async () => {
   if (entry.value?.id) {
-    await commentStore.fetchComments('entries', entry.value.id).catch((error) => errorStore.throwError(error))
     await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
     await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entry.value.id)
   }
 })
 
 onMounted(() => {
+  if (entryStore.getEntries === undefined) {
+    entryStore.fetchEntryBySlug(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
+  }
+
   startTracking()
   if (entryStore.getEntries && !entry.value?.id) {
     $q.notify({
@@ -78,7 +79,7 @@ onMounted(() => {
 
 onBeforeRouteLeave(async () => {
   const stats = stopTracking()
-  await statStore.addStats(entry.value.id, stats)
+  await statStore.addStats(entry?.value?.id, stats)
 })
 
 onUnmounted(() => {
@@ -88,7 +89,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .tab-selector {
-  margin-bottom: 4rem;
+  margin-bottom: 3.5rem;
   z-index: 3;
 }
 </style>

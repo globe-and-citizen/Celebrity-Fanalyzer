@@ -66,15 +66,6 @@ const router = useRouter()
 const search = ref('')
 
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
-
-// promptStore.$subscribe((_mutation, state) => {
-//   promptStore.getPrompts.value = state._prompts
-//
-//   if (router.currentRoute.value.params.year) {
-//     promptStore.getPrompts.value = promptStore.getPrompts.value?.filter((prompt) => prompt.date.split('-')[0] === router.currentRoute.value.params.year)
-//   }
-// })
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)

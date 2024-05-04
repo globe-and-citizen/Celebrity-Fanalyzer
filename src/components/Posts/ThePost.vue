@@ -26,7 +26,11 @@
           @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
         >
           <q-avatar size="6rem">
-            <q-img :src="post.author.photoURL" :srcset="post.author.photoURL" />
+            <q-img
+              :src="post.author.photoURL ? post.author.photoURL : '/icons/user_raiting_premium_member.svg'"
+              :srcset="post.author.photoURL"
+              :width="post.author.photoURL ? 'null' : '65px'"
+            />
           </q-avatar>
           <div class="q-ml-md">
             <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
@@ -70,21 +74,17 @@
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
-            :data-test="commentStore.getComments ? 'panel-3-navigator' : ''"
+            :data-test="commentStore.getCommentsCount ? 'panel-3-navigator' : ''"
             flat
             icon="chat_bubble_outline"
-            :label="commentStore.getComments?.length"
+            :label="commentStore.getCommentsCount"
             rounded
             size="0.75rem"
             @click="$emit('clickComments')"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent
-            :label="shareStore.isLoaded ? shareStore.getShares.length : 0"
-            :disable="!shareStore.isLoaded"
-            @share="share($event)"
-          />
+          <ShareComponent :label="shareStore.isLoaded ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
             v-if="userStore.isAuthenticated"
             color="blue"
@@ -109,6 +109,7 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import {
   useCommentStore,
+  useEntryStore,
   useErrorStore,
   useLikeStore,
   useNotificationStore,
@@ -134,12 +135,13 @@ const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
+const entryStore = useEntryStore()
 
 onMounted(async () => {
   await userStore.fetchUserIp()
-
-  visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
-
+  if (props.post?.id) {
+    await commentStore.getTotalComments(props.collectionName, props.post?.id)
+  }
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 })
 
