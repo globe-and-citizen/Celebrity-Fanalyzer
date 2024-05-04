@@ -8,7 +8,7 @@
 
     <q-page v-else class="q-pa-sm">
       <q-tabs active-color="primary">
-        <q-route-tab name="profile" label="Profile" data-test="tab-profile" :to="{ name: 'profile' }"  />
+        <q-route-tab name="profile" label="Profile" data-test="tab-profile" :to="{ name: 'profile' }" />
         <q-route-tab
           name="subscriptions"
           label="Subscriptions"
@@ -28,11 +28,7 @@
 </template>
 
 <script setup>
-import FeedbackTab from 'src/components/Profile/FeedbackTab.vue'
 import LoginForm from 'src/components/Profile/LoginForm.vue'
-import ProfileTab from 'src/components/Profile/ProfileTab.vue'
-import SettingsTab from 'src/components/Profile/SettingsTab.vue'
-import SubscriptionsTab from 'src/components/Profile/SubscriptionsTab.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useUserStore } from 'src/stores'
 import { ref } from 'vue'

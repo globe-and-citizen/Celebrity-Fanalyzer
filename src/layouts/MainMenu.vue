@@ -1,12 +1,13 @@
 <template>
   <q-footer class="bg-white" elevated>
     <q-tabs active-class="text-primary" align="justify" class="tabs text-secondary" data-test="main-menu" switch-indicator>
-      <q-route-tab v-for="(route, index) in routes" exact :icon="route.icon" :key="index" :to="route.path">
-        <q-tooltip class="text-center" style="white-space: pre-line">{{ route.tooltip }}</q-tooltip>
+      <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route?.icon" :to="route?.path">
+        <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
-      <q-route-tab v-if="userStore.isWriterOrAbove" exact icon="admin_panel_settings" to="/admin">
+      <q-route-tab class="adminTab" v-if="userStore.isWriterOrAbove" icon="admin_panel_settings" @click="onAdminTabClick">
         <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
+      <div class="q-tab__indicator absolute-top"></div>
     </q-tabs>
   </q-footer>
 
@@ -26,22 +27,26 @@
 </template>
 
 <script setup>
-import { collection, onSnapshot } from 'firebase/firestore'
-import { db } from 'src/firebase'
-import { useUserStore } from 'src/stores'
-import { ref } from 'vue'
+import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const updated = ref(false)
 const userStore = useUserStore()
+const promptStore = usePromptStore()
+const entriesStore = useEntryStore()
 const router = useRouter()
-const routes = [
+const email = ref('')
+const currentPath = ref('')
+const isAdminPromptPath = currentPath.value.includes('/admin/prompts')
+const { href, params, path, name } = router.currentRoute.value
+
+const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
   { icon: 'search', path: '/search', tooltip: 'Search' },
   { icon: 'description', path: '/month', tooltip: "Month's Prompt" },
   { icon: 'person', path: '/profile', tooltip: 'Profile' }
-]
-const email = ref('')
+])
 
 function onLogout() {
   userStore.logout()
@@ -49,16 +54,30 @@ function onLogout() {
   router.push({ path: 'profile', query: { email: email.value } })
 }
 
-onSnapshot(collection(db, 'users'), (snapshot) => {
-  snapshot.docChanges().forEach((change) => {
-    if (change.type === 'modified') {
-      const user = change.doc.data()
-      if (user.email === userStore._user.email && user.role !== userStore._user.role) {
-        email.value = userStore._user.email
-        updated.value = true
-      }
-    }
-  })
+const onAdminTabClick = () => {
+  if (!isAdminPromptPath) {
+    router.push('/admin/prompts')
+  } else {
+    router.push('/admin')
+  }
+}
+
+onMounted(async () => {
+  if (params.year && params.month && !params.id) {
+    promptStore.fetchPromptBySlug(`${params.year}-${params.month}`).catch((error) => errorStore.throwError(error))
+  }
+
+  if (params.id) {
+    entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
+  }
+
+  if (href === '/month') {
+    await promptStore.fetchMonthsPrompt()
+  }
+
+  if (params.slug) {
+    promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
+  }
 })
 </script>
 
@@ -67,6 +86,10 @@ onSnapshot(collection(db, 'users'), (snapshot) => {
   display: grid;
   font-size: 2rem;
   height: 3.5rem !important;
+}
+
+.admin_tab {
+  color: #e54757 !important;
 }
 
 .tabs .q-tabs__arrow--left,
