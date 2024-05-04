@@ -116,9 +116,6 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchMonthsPrompt() {
       try {
-        const month = new Date().getMonth() + 1
-        const year = new Date().getFullYear()
-
         this._isLoading = true
         const userStore = useUserStore()
 
@@ -126,8 +123,8 @@ export const usePromptStore = defineStore('prompts', {
           await userStore.fetchAdminsAndWriters()
         }
 
-        const promptRef = await getDocs(query(collection(db, 'prompts'), where('date', '==', `${year}-0${month}`)))
-        const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+        const promptRef = await getDocs(query(collection(db, 'prompts')))
+        const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() })).slice(-1)[0]
         if (promptSnapshot.author.id) {
           promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
         }
