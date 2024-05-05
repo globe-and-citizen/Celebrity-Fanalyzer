@@ -14,6 +14,24 @@ import {
 } from 'src/stores'
 import { Notify } from 'quasar'
 
+const getPrompts = async (querySnapshot, userStore) => {
+  const prompts = []
+
+  for (const doc of querySnapshot.docs) {
+    const promptData = doc.data()
+    const authorId = promptData.author.id
+    const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
+
+    prompts.push({
+      id: doc.id,
+      ...promptData,
+      author,
+      entries: promptData.entries?.map((entry) => entry.id) || []
+    })
+  }
+  return prompts.reverse()
+}
+
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
@@ -59,22 +77,29 @@ export const usePromptStore = defineStore('prompts', {
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(collection(db, 'prompts'))
-        const prompts = []
+        this._prompts = await getPrompts(querySnapshot, userStore)
+      } catch (e) {
+        console.error('Error fetching prompts:', e)
+      } finally {
+        this._isLoading = false
+      }
+    },
 
-        for (const doc of querySnapshot.docs) {
-          const promptData = doc.data()
-          const authorId = promptData.author.id
-          const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
+    async fetchPromptsByYear(slug) {
+      const userStore = useUserStore()
+      const year = new Date(slug).getFullYear()
+      if (!userStore.getUsers) {
+        await userStore.fetchAdminsAndWriters()
+      }
 
-          prompts.push({
-            id: doc.id,
-            ...promptData,
-            author,
-            entries: promptData.entries?.map((entry) => entry.id) || []
-          })
-        }
-        prompts.reverse()
-        this._prompts = prompts
+      try {
+        this._isLoading = true
+        const startDate = new Date(year, 0, 1)
+        const endDate = new Date(year + 1, 0, 1)
+        const querySnapshot = await getDocs(
+          query(collection(db, 'prompts'), where('created', '>=', startDate), where('created', '<', endDate))
+        )
+        this._prompts = await getPrompts(querySnapshot, userStore)
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
