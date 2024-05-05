@@ -24,6 +24,7 @@
     "dotenv": "^16.3.1",
     "echarts": "^5.4.3",
     "firebase": "^10.11.0",
+    "leaflet": "^1.9.4",
     "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
     "quasar": "^2.12.7",

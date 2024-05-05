@@ -17,6 +17,7 @@
         />
         <q-separator v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" spaced="xl" />
         <SharesPie v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" :interval="interval" />
+        <LeafletMap />
         <q-separator spaced="xl" />
       </section>
     </q-page>
@@ -30,6 +31,7 @@ import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useErrorStore, useLikeStore, useShareStore, useVisitorStore } from 'src/stores'
 import { onMounted, ref } from 'vue'
+import LeafletMap from 'components/Posts/Graphs/LeafletMap.vue'
 
 const props = defineProps(['post', 'collectionName'])
 
