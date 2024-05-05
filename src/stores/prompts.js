@@ -46,6 +46,24 @@ const getPrompts = async (querySnapshot, userStore) => {
   return prompts.reverse()
 }
 
+const getPrompts = async (querySnapshot, userStore) => {
+  const prompts = []
+
+  for (const doc of querySnapshot.docs) {
+    const promptData = doc.data()
+    const authorId = promptData.author.id
+    const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
+
+    prompts.push({
+      id: doc.id,
+      ...promptData,
+      author,
+      entries: promptData.entries?.map((entry) => entry.id) || []
+    })
+  }
+  return prompts.reverse()
+}
+
 export const usePromptStore = defineStore('prompts', {
   state: () => ({
     _isLoading: false,
