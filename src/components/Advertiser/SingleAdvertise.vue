@@ -150,8 +150,6 @@ function getMonth(timestamp) {
 onMounted(async () => {
   await userStore.fetchUserIp()
 
-  visitorStore.readVisitors(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
-
   await visitorStore.addVisitor(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
 })
 

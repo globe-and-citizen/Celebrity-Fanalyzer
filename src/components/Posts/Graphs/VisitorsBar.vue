@@ -4,14 +4,14 @@
 
 <script setup>
 import { BarChart } from 'echarts/charts'
-import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components'
+import { GridComponent, TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { groupInfoByWeek, groupInfoByMonth } from 'src/utils/stats'
 import { ref, watchEffect } from 'vue'
 import VChart from 'vue-echarts'
 
-use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent])
+use([CanvasRenderer, BarChart, GridComponent, TitleComponent, TooltipComponent, LegendComponent])
 
 const props = defineProps(['data', 'interval'])
 

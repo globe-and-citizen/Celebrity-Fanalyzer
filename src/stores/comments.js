@@ -5,11 +5,12 @@ import {
   deleteDoc,
   doc,
   getDocs,
-  onSnapshot,
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc
+  updateDoc,
+  getCountFromServer,
+  onSnapshot
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
@@ -18,6 +19,7 @@ import { useUserStore } from 'src/stores'
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: undefined,
+    _commentsCount: 0,
     _unSubscribe: undefined,
     _isLoading: false,
     _replyTo: ''
@@ -27,6 +29,7 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
+    getCommentsCount: (state) => state._commentsCount,
     /**
      * @returns undefined|Object
      */
@@ -62,7 +65,7 @@ export const useCommentStore = defineStore('comments', {
           })
         for (const comment of comments) {
           if (!comment.isAnonymous) {
-            comment.author = userStore.getUserById(comment.author.id) || comment.author.id
+            comment.author = userStore.getUserById(comment.author?.id) || comment.author?.id
           }
           comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
           comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
@@ -83,6 +86,24 @@ export const useCommentStore = defineStore('comments', {
         }
         this.$patch({ _comments: comments })
       })
+    },
+
+    async getTotalComments(collectionName, documentId) {
+      const userStore = useUserStore()
+      if (!userStore.getUsers) {
+        await userStore.fetchUsers()
+      }
+      if (this._unSubscribe) {
+        this._unSubscribe()
+      }
+
+      try {
+        const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'comments'))
+        const totalComments = totalCountFunc.data().count
+        this.$patch({ _commentsCount: totalComments })
+      } catch (e) {
+        console.error('Failed fetching comments count', e)
+      }
     },
 
     async addComment(collectionName, comment, document) {
@@ -147,6 +168,7 @@ export const useCommentStore = defineStore('comments', {
       if (comment.dislikes?.includes(userId)) {
         await updateDoc(commentRef, { dislikes: arrayRemove(user) })
       }
+      await this.fetchComments(collectionName, documentId)
     },
 
     async dislikeComment(collectionName, documentId, commentId) {
@@ -170,6 +192,7 @@ export const useCommentStore = defineStore('comments', {
       if (comment.likes?.includes(userId)) {
         await updateDoc(commentRef, { likes: arrayRemove(user) })
       }
+      await this.fetchComments(collectionName, documentId)
     },
 
     async deleteComment(collectionName, documentId, commentId) {
@@ -184,7 +207,10 @@ export const useCommentStore = defineStore('comments', {
           text: 'Comment Deleted',
           isDeleted: true
         })
-      }).finally(() => (this._isLoading = false))
+      }).finally(async () => {
+        this._isLoading = false
+        await this.fetchComments(collectionName, documentId)
+      })
     },
 
     async deleteCommentsCollection(collectionName, documentId) {
@@ -208,6 +234,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, documentId, 'comments', reply.id), reply).finally(() => (this._isLoading = false))
+      await this.fetchComments(collectionName, documentId)
     },
 
     async removeCommentFromFirestore(collectionName, documentId, commentId) {

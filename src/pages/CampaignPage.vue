@@ -1,6 +1,6 @@
 <template>
   <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-py-sm" data-test="prompt-tab" icon="fiber_manual_record" name="post" :ripple="false" />
+    <q-tab content-class="q-ml-auto q-py-sm" data-test="advertise-tab" icon="fiber_manual_record" name="post" :ripple="false" />
     <q-tab content-class="q-py-sm" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
@@ -11,7 +11,7 @@
     </q-tab-panel>
 
     <q-tab-panel name="anthrogram" class="bg-white">
-      <TheAnthrogram :post="advertise" :isAdd="true" />
+      <TheAnthrogram :post="advertise" :isAdd="true" collectionName="advertises" />
     </q-tab-panel>
 
     <q-tab-panel name="comments" class="bg-white" v-if="advertise">
@@ -55,8 +55,6 @@ const advertise = computed(() => {
 watchEffect(async () => {
   if (advertise.value?.id) {
     const advertiseId = advertise.value?.id
-    await commentStore.fetchComments('advertises', advertiseId).catch((error) => errorStore.throwError(error))
-
     await likeStore.getAllLikesDislikes('advertises', advertiseId).catch((error) => errorStore.throwError(error))
 
     await impressionStore.readImpressions('advertises', advertiseId).catch((error)=>console.log(error) )
@@ -90,8 +88,13 @@ watchEffect(async () => {
   }
 })
 
-onUnmounted(() => {
+onUnmounted(async() => {
   advertiseStore.setTab('post')
+  await likeStore.resetLikes()
+  await shareStore.resetShares()
+  await commentStore.resetComments()
+  await impressionStore.resetImpressions()
+  await likeStore.resetLikes()
 })
 </script>
 

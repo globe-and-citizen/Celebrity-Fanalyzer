@@ -55,6 +55,10 @@ export const useClicksStore = defineStore('clicks', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
+    },
+    async resetClicks() {
+      this._likes = undefined
+      this._dislikes = undefined
     }
   }
 })

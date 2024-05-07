@@ -32,15 +32,13 @@
   </TheHeader>
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
-
       <q-tabs active-color="primary" align="justify">
-        <q-route-tab data-test="posts-tab" name="posts" icon="view_list" label="Prompts & Entries" to="prompts" />
+        <q-route-tab data-test="posts-tab" name="prompts" icon="view_list" label="Prompts & Entries" :to="{ name: 'admin.prompts' }" />
         <q-route-tab
-          to="users"
-          exact
           v-if="userStore.isAdmin"
           data-test="users-tab"
           name="users"
+          :to="{ name: 'admin.users' }"
           icon="people"
           label="Users"
         />
@@ -50,13 +48,13 @@
           name="feedbacks"
           icon="feedback"
           label="Feedbacks"
-          to="feedbacks"
+          :to="{ name: 'admin.feedbacks' }"
           exact
         />
 
         <q-route-tab
           v-if="userStore.isAdmin"
-          to="errors"
+          :to="{ name: 'admin.errors' }"
           exact
           data-test="errors-tab"
           name="errors"
@@ -70,7 +68,7 @@
           name="reports"
           icon="report"
           label="Reports"
-          to="reports"
+          :to="{ name: 'admin.reports' }"
         />
       </q-tabs>
 
@@ -82,7 +80,7 @@
         <EntryCard v-bind="entry" @hideDialog="entry = {}" />
       </q-dialog>
 
-      <router-view @openPromptDialog="openPromptDialog"/>
+      <router-view @openPromptDialog="openPromptDialog" />
     </q-page>
   </q-page-container>
 </template>
@@ -92,7 +90,8 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, usePromptStore, useRequestStore, useUserStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const requestStore = useRequestStore()
 const userStore = useUserStore()
@@ -102,10 +101,49 @@ const prompt = ref({})
 const tab = ref('posts')
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const currentPath = ref('')
 
+const router = useRouter()
+const route = useRoute()
 onMounted(() => {
   userStore.fetchUsers()
   requestStore.readRequests()
+
+  currentPath.value = router.currentRoute.value.path
+  const adminTab = document.querySelector('.adminTab')
+  const activeHomeTab = document.querySelector('[href="/"]')
+  const handleHomeTabClasses = () => {
+    activeHomeTab?.classList.remove('q-tab--active')
+    activeHomeTab?.classList.remove('text-primary')
+    activeHomeTab?.classList.add('q-tab--inactive')
+  }
+  if (router.currentRoute.value.fullPath.includes('/admin')) {
+    setTimeout(() => {
+      handleHomeTabClasses()
+    }, 400)
+
+    if (adminTab) {
+      adminTab?.classList.add('admin_tab', 'cursor-pointer', 'q-router-link--active')
+      adminTab?.classList.replace('q-tab--inactive', 'q-tab--active')
+    }
+  }
+
+  watch(route, () => {
+    if (router.currentRoute.value.fullPath.includes('/admin')) {
+      setTimeout(() => {
+        handleHomeTabClasses()
+      }, 400)
+
+      if (adminTab) {
+        adminTab?.classList.add('admin_tab', 'cursor-pointer', 'q-router-link--active')
+        adminTab?.classList.replace('q-tab--inactive', 'q-tab--active')
+      }
+    } else {
+      activeHomeTab?.classList.remove('q-tab--inactive')
+      adminTab?.classList.remove('admin_tab', 'cursor-pointer', 'q-router-link--active')
+      adminTab?.classList.replace('q-tab--active', 'q-tab--inactive')
+    }
+  })
 })
 
 function openPromptDialog(props) {
