@@ -118,8 +118,8 @@
               class="q-mb-lg"
               v-model.number="advertise.budget"
               type="number"
-              :min="1"
-              :rules="[(budget) => (budget ? budget > 0 : true || 'Enter a positive number')]"
+              :min="0"
+              :rules="[(budget) => (budget ? budget >= 0 : true || 'Enter a positive number')]"
             />
           </q-card-section>
         </q-step>
@@ -227,16 +227,15 @@ function uploadPhoto() {
   reader.readAsDataURL(contentModel.value)
   reader.onload = () => (advertise.contentURL = reader.result)
   reader.onloadend = function (e) {
-    let contents = e.target.result
-    let memoryImg = document.createElement('img')
-    memoryImg.src = contents
-    let width = memoryImg.width
-    let height = memoryImg.height
-    if (width < 500 || height < 252) {
-      $q.notify({ type: 'negative', message: `Please select an image with minimum 500px width & 252px height for better view` })
-      fileErrorMessage.value = 'Select an image with minimum 500px width & 252px height '
-      fileError.value = true
-    } else fileError.value = false
+    let image = new Image()
+    image.src = e.target.result
+    image.onload = function () {
+      if (image.width < 500 || image.height < 252) {
+        $q.notify({ type: 'negative', message: `Please select an image with minimum 500px width & 252px height for better view` })
+        fileErrorMessage.value = 'Select an image with minimum 500px width & 252px height '
+        fileError.value = true
+      } else fileError.value = false
+    }
   }
 }
 
@@ -294,7 +293,8 @@ function getCurrentDate() {
 async function onSubmit() {
   if (!advertise.budget) advertise.budget = 0
   advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
-  if (Object.keys(contentModel.value).length) {
+  if (advertise.type === 'Text') advertise.contentURL = ''
+  else if (Object.keys(contentModel.value).length && advertise.type === 'Banner') {
     await storageStore
       .uploadFile(contentModel.value, `advertise/content-${advertise.id}`)
       .then((url) => (advertise.contentURL = url))
@@ -305,7 +305,7 @@ async function onSubmit() {
     if (props.type === 'Banner' && advertise.type === 'Text') {
       const imagePath = `advertise/content-${advertise.id}`
       storageStore.deleteFile(imagePath).catch((error) => console.log(error))
-      advertise.contentURL=''
+      advertise.contentURL = ''
     }
     await advertiseStore
       .editAdvertise(advertise)

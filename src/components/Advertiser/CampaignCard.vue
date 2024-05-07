@@ -2,7 +2,7 @@
   <article
     ref="articleRef"
     id="test"
-    class="q-my-md"
+    class="q-my-md max-width"
     :class="[{ 'blog-card': advertise.type !== 'Text', 'text-blog-card': advertise.type === 'Text' }]"
     @click="onClick"
   >
@@ -103,6 +103,7 @@ $shadow: rgba(0, 0, 0, 0.2);
   filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
+  min-width: 400px;
 }
 .card-link {
   position: relative;
@@ -143,6 +144,9 @@ $shadow: rgba(0, 0, 0, 0.2);
   font-weight: 700;
   margin: 0 0 0.5rem 0;
 }
+.max-width {
+  max-width: 700px;
+}
 
 @media (max-width: 40rem) {
   #container {
@@ -152,6 +156,9 @@ $shadow: rgba(0, 0, 0, 0.2);
 
   .blog-card {
     flex-wrap: wrap;
+  }
+  .text-blog-card {
+    min-width: auto;
   }
 }
 
