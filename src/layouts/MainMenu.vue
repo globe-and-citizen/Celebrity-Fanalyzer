@@ -30,6 +30,8 @@
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { onSnapshot, collection } from 'firebase/firestore'
+import { db } from 'src/firebase'
 
 const updated = ref(false)
 const userStore = useUserStore()
@@ -51,8 +53,20 @@ const routes = computed(() => [
 function onLogout() {
   userStore.logout()
   updated.value = false
-  router.push({ path: 'profile', query: { email: email.value } })
+  router.push({ path: '/profile', query: { email: email.value } })
 }
+onSnapshot(collection(db, 'users'), (querySnapshot) => {
+  querySnapshot.docChanges().forEach(change=>{
+    if(change.type==='modified'){
+      const user = change.doc.data();
+      if(user.email===userStore._user.email && user.role!==userStore._user.role){
+        localStorage.removeItem('user')
+        email.value=userStore._user.email;
+        updated.value=true;
+      }
+    }
+  })
+  })
 
 const onAdminTabClick = () => {
   if (!isAdminPromptPath) {
