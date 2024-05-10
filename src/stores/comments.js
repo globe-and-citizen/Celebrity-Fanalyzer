@@ -10,7 +10,11 @@ import {
   Timestamp,
   updateDoc,
   getCountFromServer,
-  onSnapshot
+  onSnapshot,
+  query,
+  where,
+  or,
+  and
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
@@ -55,7 +59,11 @@ export const useCommentStore = defineStore('comments', {
       if (this._unSubscribe) {
         this._unSubscribe()
       }
-      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), async (querySnapshot) => {
+      const q = query(
+        collection(db, collectionName, documentId, 'comments'),
+        or(where('isDeleted', '==', false), and(where('isAnonymous', '==', false), where('text', '!=', 'Comment Deleted')))
+      )
+      this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
         const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
         for (const comment of comments) {
@@ -93,7 +101,11 @@ export const useCommentStore = defineStore('comments', {
       }
 
       try {
-        const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'comments'))
+        const q = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('isDeleted', '==', false), and(where('isAnonymous', '==', false), where('text', '!=', 'Comment Deleted')))
+        )
+        const totalCountFunc = await getCountFromServer(q)
         const totalComments = totalCountFunc.data().count
         this.$patch({ _commentsCount: totalComments })
       } catch (e) {
