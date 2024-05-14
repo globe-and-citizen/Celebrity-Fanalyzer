@@ -3,13 +3,13 @@
 
 describe('Feedback page', () => {
   beforeEach(() => {
-    cy.viewport('iphone-se2')
+    cy.viewport('ipad-2')
     cy.login()
   })
 
   it('should send a feedback message to the admin', () => {
     cy.visit('/profile')
-    cy.get('[data-test="feedback-button"]').click()
+    cy.get('.q-icon').contains('feedback').click()
 
     cy.get('[data-test="subject-input"]').type('Test subject')
     cy.get('[data-test="message-input"]').type('Test message')

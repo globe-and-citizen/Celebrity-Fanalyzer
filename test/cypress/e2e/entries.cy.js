@@ -12,6 +12,7 @@ describe('Home page', () => {
       cy.viewport('macbook-16')
       // cy.visit('/2023/07/lorem-ipsum')
       cy.visit('/month')
+      cy.scrollTo('bottom')
       cy.get('[data-test="entries"]')
 
       cy.visit('/month')
