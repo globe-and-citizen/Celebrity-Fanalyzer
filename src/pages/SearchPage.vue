@@ -30,15 +30,12 @@
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
-            <div v-for="prompt in computedPromptsAndAdvertises" :key="prompt?.id">
-              <CampaignCard v-if="prompt.isAdd" :advertise="prompt" />
-              <ItemCard
-                v-else
-                data-test="prompt-card"
-                :item="prompt"
-                :link="prompt?.slug"
-                v-show="prompt?.categories.includes(categ.value) || category === 'All'"
-              />
+            <div
+              v-for="prompt in computedPromptsAndAdvertises"
+              :key="prompt?.id"
+              v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
+            >
+              <ItemCard data-test="prompt-card" :item="prompt" :link="prompt?.slug" />
             </div>
           </TransitionGroup>
         </q-tab-panel>
@@ -58,7 +55,6 @@ import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useAdvertiseStore } from 'src/stores'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import CampaignCard from '../components/Advertiser/CampaignCard.vue'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()

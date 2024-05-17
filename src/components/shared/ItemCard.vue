@@ -1,5 +1,6 @@
 <template>
-  <article class="q-pa-md relative-position row article-card-item">
+  <CampaignCard v-if="item.isAdd" :advertise="item" />
+  <article v-else class="q-pa-md relative-position row article-card-item">
     <div class="col-8 flex column">
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
@@ -31,6 +32,7 @@
 </template>
 
 <script setup>
+import CampaignCard from '../Advertiser/CampaignCard.vue'
 import { dayMonthYear } from 'src/utils/date'
 import { useRouter } from 'vue-router'
 
@@ -63,26 +65,26 @@ function goToUrl() {
 }
 
 .article-card-item {
-  min-width: 619px;
+  max-width: 619px;
   width: 100%;
   border: 1px solid #e54757;
   border-radius: 24px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 
   @media (max-width: 1440px) {
-    min-width: 590px;
+    width: 590px;
   }
 
   @media (min-width: 1024px) {
-    min-width: 470px;
+    width: 470px;
   }
 
   @media (max-width: 768px) {
-    min-width: 361px;
+    width: 361px;
   }
 
   @media (max-width: 425px) {
-    min-width: 280px;
+    width: 280px;
   }
 }
 </style>

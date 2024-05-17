@@ -145,7 +145,22 @@ $shadow: rgba(0, 0, 0, 0.2);
   margin: 0 0 0.5rem 0;
 }
 .max-width {
-  max-width: 700px;
+  max-width: 619px;
+  @media (max-width: 1440px) {
+    width: 590px;
+  }
+
+  @media (min-width: 1024px) {
+    width: 470px;
+  }
+
+  @media (max-width: 768px) {
+    width: 361px;
+  }
+
+  @media (max-width: 425px) {
+    width: 280px;
+  }
 }
 
 @media (max-width: 40rem) {
