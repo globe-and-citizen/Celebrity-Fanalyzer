@@ -8,7 +8,7 @@ import { usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Prompt Store', async () => {
-  const fakeDate = `${Math.floor(Math.random() * 9000) + 1000}-01` // Random number between 1000 and 9999 + '-01'
+  const fakeDate = `2022-01` // Random number between 1000 and 9999 + '-01'
 
   beforeEach(async () => {
     // By declaring the various stores within the "describe" block,
@@ -103,6 +103,7 @@ describe('Prompt Store', async () => {
     }
 
     await promptStore.addPrompt(fakePrompt)
+    await promptStore.fetchPrompts()
     await waitUntil(() => {
       return promptStore.getPrompts.length > startingNumberOfPrompts
     })
@@ -117,6 +118,7 @@ describe('Prompt Store', async () => {
 
     // 5) Delete fake prompt and check
     await promptStore.deletePrompt(fakeDate)
+    await promptStore.fetchPrompts()
     await waitUntil(() => {
       return promptStore.getPrompts.length === startingNumberOfPrompts
     })

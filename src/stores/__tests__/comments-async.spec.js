@@ -125,12 +125,18 @@ describe('Async watcher ', () => {
     expect(comment.dislikes.length).toBe(0)
     // TODO : Like
     await commentStore.likeComment('entries', getFirstEntry().id, firstLevelComment.id)
+    await waitUntil(() => {
+      return comment.likes.length === 1
+    }, 10000)
     comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.likes.length).toBe(1)
     expect(comment.dislikes.length).toBe(0)
     // TODO : Dislike
 
     await commentStore.dislikeComment('entries', getFirstEntry().id, firstLevelComment.id)
+    await waitUntil(() => {
+      return comment.likes.length === 1
+    }, 10000)
     comment = commentStore.getCommentById(firstLevelComment.id)
     expect(comment.dislikes.length).toBe(1)
     expect(comment.likes.length).toBe(0)
