@@ -73,12 +73,16 @@ async function loadCrytptoTransactionDetail() {
     const initiator = userStore.getUserById(props.cryptoTransaction.initiator.id)
 
     const retreivedTransactionDetail = await getTransactionDetails(props.cryptoTransaction?.tHash)
+    console.log("the transaction detail=========== ", retreivedTransactionDetail)
     cryptoTransactionDetail.value.initiatorEmail = initiator?.email
     cryptoTransactionDetail.value.sender = retreivedTransactionDetail?.sender
     cryptoTransactionDetail.value.receiver = retreivedTransactionDetail?.receiver
     cryptoTransactionDetail.value.amount = retreivedTransactionDetail?.amount
     cryptoTransactionDetail.value.status = retreivedTransactionDetail?.status
-    cryptoTransactionDetail.value.checkLink = `https://sepolia.etherscan.io/tx/${props.cryptoTransaction?.tHash}`
+    if(!props.cryptoTransaction?.tHash.includes("polygon")){
+      const sepoliaScan=import.meta.env.VITE_ALCHEMY_SEPOLIA_PROVIDER_URL;
+      cryptoTransactionDetail.value.checkLink = sepoliaScan+props.cryptoTransaction?.tHash 
+    }
   } catch (error) {
     errorStore.throwError(error, 'Error updating profile')
     $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })

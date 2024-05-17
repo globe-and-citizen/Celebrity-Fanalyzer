@@ -41,6 +41,6 @@ Cypress.Commands.add('login', () => {
     cy.get('[data-test="sign-button"]').click()
     // Visits the Admin Page
     cy.get('[href="/admin"]').click()
-    cy.location('pathname').should('eq', '/admin')
+    cy.location('pathname').should('eq', '/admin/prompts')
   })
 })
