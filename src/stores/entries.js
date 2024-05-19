@@ -165,8 +165,12 @@ export const useEntryStore = defineStore('entries', {
 
     //update not coming from form submission
     async dataUpdateEntry(payload) {
+      
       const promptStore = usePromptStore()
-      const prompt = promptStore.getPromptRef(payload.entry.prompt)
+      //console.log('the payload ===', payload.entry.prompt );
+      const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
+       
+      //console.log('the promt ===', prompt );
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), {
           hasWinner: payload.isWinner == true ? true : false,

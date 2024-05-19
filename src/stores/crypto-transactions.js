@@ -5,7 +5,7 @@ import { useEntryStore, useNotificationStore, usePromptStore, useUserStore } fro
 
 export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
   state: () => ({
-    _trnsactions: undefined,
+    _cryptoTransactions: undefined,
     _isLoading: false,
     _unSubscribe: undefined,
     _tab: 'post'
@@ -52,14 +52,17 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
     },
 
     async addCryptoTransaction(payload) {
+      //console.log("the pay load ", payload);
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
 
+      //console.log("the payload === ", payload);
       // Clone the payload to avoid mutating the original object
       const cryptoTransaction = { ...payload }
 
+      
       // Get the prompt reference
-      const promptRef = promptStore.getPromptRef(cryptoTransaction.entry.prompt)
+      const promptRef = promptStore.getPromptRef(cryptoTransaction.entry.prompt?.id)
 
       // Update fields with document references
       cryptoTransaction.entry = doc(db, 'entries', cryptoTransaction.entry.id)
@@ -73,6 +76,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
         await updateDoc(doc(db, 'prompts', promptRef.id), { isTreated: true, updated: Timestamp.fromDate(new Date()) })
         // Add the new transaction document to the 'cryptoTransactions' collection
         const cryptoTransactionRef = await addDoc(collection(db, 'cryptoTransactions'), cryptoTransaction)
+        
       } catch (error) {
         console.error('Error adding transaction:', error)
       } finally {

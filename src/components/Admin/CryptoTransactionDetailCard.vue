@@ -2,6 +2,12 @@
   <q-card>
     <q-card-section class="q-pt-none">
       <q-form>
+        <q-input
+          hide-hint
+          label="Network"
+          v-model="cryptoTransactionDetail.networkName"
+          disable
+        />
         <q-input hide-hint label="Intiator" v-model="cryptoTransactionDetail.initiatorEmail" disable />
 
         <q-input
@@ -32,13 +38,13 @@ import { useQuasar } from 'quasar'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref, onMounted } from 'vue'
 import { getTransactionDetails } from 'app/src/web3/transfers.js'
-
+import { useWalletStore } from 'src/stores'
 const $q = useQuasar()
 
 const errorStore = useErrorStore()
 
 const userStore = useUserStore()
-
+const walletStore=useWalletStore()
 const emit = defineEmits(['hideDialog'])
 const props = defineProps({
   cryptoTransaction: { required: true }
@@ -51,6 +57,7 @@ const cryptoTransactionDetail = ref({
   receiver: '',
   status: '',
   transactionHash: '',
+  networkName: '',
   checkLink: ''
 })
 const _initiator = ref('')
@@ -69,20 +76,18 @@ function openLink(url) {
 
 async function loadCrytptoTransactionDetail() {
   try {
+    
     cryptoTransactionDetail.value.transactionHash = props.cryptoTransaction?.tHash
     const initiator = userStore.getUserById(props.cryptoTransaction.initiator.id)
 
-    const retreivedTransactionDetail = await getTransactionDetails(props.cryptoTransaction?.tHash)
-    console.log("the transaction detail=========== ", retreivedTransactionDetail)
+    const retreivedTransactionDetail = await getTransactionDetails(props.cryptoTransaction?.tHash,props.cryptoTransaction?.networkName)
     cryptoTransactionDetail.value.initiatorEmail = initiator?.email
     cryptoTransactionDetail.value.sender = retreivedTransactionDetail?.sender
     cryptoTransactionDetail.value.receiver = retreivedTransactionDetail?.receiver
     cryptoTransactionDetail.value.amount = retreivedTransactionDetail?.amount
     cryptoTransactionDetail.value.status = retreivedTransactionDetail?.status
-    if(!props.cryptoTransaction?.tHash.includes("polygon")){
-      const sepoliaScan=import.meta.env.VITE_ALCHEMY_SEPOLIA_PROVIDER_URL;
-      cryptoTransactionDetail.value.checkLink = sepoliaScan+props.cryptoTransaction?.tHash 
-    }
+    cryptoTransactionDetail.value.checkLink = props.cryptoTransaction?.explorerUrl + props.cryptoTransaction?.tHash
+    cryptoTransactionDetail.value.networkName=props.cryptoTransaction?.networkName
   } catch (error) {
     errorStore.throwError(error, 'Error updating profile')
     $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })

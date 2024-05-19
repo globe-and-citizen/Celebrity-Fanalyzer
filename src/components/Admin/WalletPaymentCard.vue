@@ -1,30 +1,23 @@
 <template>
   <q-card>
     <q-card-section class="q-pt-none">
-      <q-form @submit.prevent="onSubmit()">
+      <q-form @submit="onSubmit">
         <!-- <q-input hide-hint label="sender wallet address" maxlength="80" required v-model="userStore.getUser.walletAddress" disable /> -->
         <q-input hide-hint label="Winner wallet address" maxlength="80" required v-model="_walletAddress" disable />
         <q-input
           v-model="usdAmount"
           label="Price in USD"
-          type="number"
-          min="1"
-          @update:model-value="convertToEther()"
-         />
+          min="0"
+          mask="#.##"
+          fill-mask="0"
+          reverse-fill-mask
+          @update:model-value="convertToMatic()"
+        />
         <!-- Displaying Corresponding Ether Amount-->
-        <q-input
-        data-text="ether-amount"
-        v-model="etherAmount"
-        label="Price in ether"
-        mask="#.######"
-        fill-mask="0"
-        reverse-fill-mask
-        readonly
-        >
-        </q-input>
+        <q-input data-text="ether-amount" v-model="maticAmount" label="Price in matic" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />
-          <q-btn label="proceed payment" :disable="!etherAmount" color="green" data-test="confirm-delete-entry" type="submit" v-close-popup />
+          <q-btn label="proceed payment" :disable="!usdAmount" color="green" data-test="confirm-delete-entry" type="submit" v-close-popup/>
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -45,69 +38,79 @@ const cryptoTransactionStore = useCryptoTransactionStore()
 
 const emit = defineEmits(['hideDialog'])
 
+
 const props = defineProps({
   walletAddress: { type: String, required: true },
   entry: null
 })
 
-
 const _walletAddress = ref('')
 const amount = ref(0)
-const usdAmount= ref(0);
-const etherAmount=ref(0);
-const ethRate= ref(0);
+const usdAmount = ref(0)
+const maticAmount = ref(0)
+const maticRate = ref(0)
 
-onMounted(async() => {
-  _walletAddress.value = props.walletAddress;
-  await fetchEthRate();
+onMounted(async () => {
+  _walletAddress.value = props.walletAddress
+  await fetchMaticRate()
 })
 
-function convertToEther() {
-  console.log('convert to ether called');
-  if (ethRate.value && usdAmount.value) {
-    etherAmount.value = (usdAmount.value / ethRate.value).toFixed(6);
+function convertToMatic() {
+  //console.log('convert to matic called');
+  if (maticRate.value && usdAmount.value) {
+    maticAmount.value = (usdAmount.value / maticRate.value).toFixed(6)
   }
 }
-async function fetchEthRate(){
-  // console.log("the ether rate ========================== ");
-  try{
-    const response=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
-    const data= await response.json();
-    ethRate.value=data.ethereum.usd;
-    // console.log("the ether rate ====== ",ethRate.value);
-  } catch(error){
-    console.error('Error fetching ETH rate', error);
-    $q.notify({type:'negative', message:'failed to fetch ETH rate'})
+
+async function fetchMaticRate() {
+  try {
+    const maticRateApiLink = import.meta.env.VITE_MATIC_RATE_API_LINK
+    const response = await fetch(maticRateApiLink)
+    const data = await response.json()
+    //console.log('the data ===== ', data)
+    maticRate.value = data['matic-network'].usd
+    //console.log("the ether rate ====== ",maticRate.value);
+  } catch (error) {
+    console.error('Error fetching Matic rate:', error)
+    $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
   }
 }
-async function onSubmit() {
+
+async function onSubmit(event) {
+  //console.log('on submit called ========= ')
+  event.preventDefault();
+  
   $q.loading.show()
-  await initiateSendEther(props.walletAddress, etherAmount.value)
+
+  await initiateSendEther(props.walletAddress, maticAmount.value)
     .then((transactionResult) => {
+      //console.log("the transaction result ====== ", transactionResult)
       if (transactionResult.success == true) {
         const payload = {
           initiator: userStore.getUser,
           entry: props.entry,
           tHash: transactionResult.transactionId,
-          status: transactionResult.success
+          status: transactionResult.success,
+          networkName:transactionResult.networkName,
+          explorerUrl:transactionResult.explorerUrl
         }
         cryptoTransactionStore
           .addCryptoTransaction(payload)
           .then($q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' }))
           .catch((error) => {
+            //console.log("error when saving transaction === ", error)
             errorStore.throwError(error, 'Error when saving the transaction')
           })
       } else {
         //console.log("the error=====mmmmm========= ", transactionResult  )
-        $q.notify({ type: 'negative', message: transactionResult.error})
+        $q.notify({ type: 'negative', message: transactionResult.error })
         errorStore.throwError(transactionResult?.error, 'Error when saving the transaction')
       }
-
-     
+      $q.loading.hide()
     })
-    .catch((error) => errorStore.throwError(error, 'Error when sending ether'))
-    .finally(() => $q.loading.hide())
 
   emit('hideDialog')
 }
+emit('hideDialog')
+$q.loading.hide()
 </script>

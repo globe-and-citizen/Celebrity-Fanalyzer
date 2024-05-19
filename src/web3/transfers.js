@@ -1,11 +1,21 @@
 import { ethers } from 'ethers'
 import { customWeb3modal } from './walletConnect'
 import { Notify, useQuasar } from 'quasar'
+import { useWalletStore } from '../stores';
+
+const walletStore=useWalletStore();
+
+console.log("the walletStore ", useWalletStore);
 const $q = useQuasar()
 
 export const sendEther = async (recipientAddress, amountInEther, signer, provider) => {
   //initate transaction..
-  const network_name=await provider.getNetwork().name;
+  const network=await provider.getNetwork();
+
+  const networkName = network?.name === "unknown" ? "amoy" : network?.name.toLowerCase();
+  const networkConfig = findNetworkConfig(networkName);
+  const explorerUrl = networkConfig ? networkConfig.explorerUrl : '';
+
 
   const transaction = {
     to: ethers.utils.getAddress(recipientAddress),
@@ -15,9 +25,12 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
     const txResponse = await signer.sendTransaction(transaction)
     const txReceipt = await txResponse.wait()
     return {
-      transactionId: txReceipt.transactionHash+'_'+network_name,
+      transactionId: txReceipt.transactionHash,
       blockNumber: txReceipt.blockNumber,
-      success: txReceipt.status === 1
+      success: txReceipt.status === 1,
+      networkName:networkName,
+      explorerUrl:explorerUrl
+     
     }
   } catch (error) {
     //$q.notify({ message: error.data.message, type: 'negative' })
@@ -27,6 +40,17 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
     }
   }
 }
+
+
+
+const findNetworkConfig = (networkName) => {
+  for (const key in walletStore.getChains) {
+    if (networkName.toLowerCase().includes(key)) {
+      return walletStore.getChains[key];
+    }
+  }
+  return null;
+};
 
 const getProvider = async () => {
   try {
@@ -54,6 +78,7 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       
       const provider = await getProvider() // Get the signer
       const signer = provider.getSigner()
+      
       if (signer) {
         
         const transactionResult = await sendEther(recipientAddress, amountInEther, signer,provider)
@@ -64,7 +89,7 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       //$q.notify({ message: 'the wallet is not connected', type: 'negative' })
     }
   } catch (error) {
-    console.log("the error ============================== ", error);
+    //console.log("the error ============================== ", error);
     //$q.notify({ message: 'error when sending ether', type: 'negative' });
     return {
       success: false,
@@ -74,18 +99,19 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
   }
 }
 
-export const getTransactionDetails = async (txHash) => {
- 
-  const sepoliaProviderUrl = import.meta.env.VITE_ALCHEMY_SEPOLIA_PROVIDER_URL
+export const getTransactionDetails = async (txHash,networkName) => {
+  const providerUrl=walletStore.getChainConfig(networkName)?.rpcUrl;
+  //console.log("the  providerUrl ======  ",providerUrl)
   
-  const sepoliaProvider = new ethers.providers.JsonRpcProvider(sepoliaProviderUrl)
+  const provider = new ethers.providers.JsonRpcProvider(providerUrl)
+  console.log("the provider ======= ", provider);
   try {
     // Fetch the transaction details
-    const transaction = await sepoliaProvider.getTransaction(txHash)
+    const transaction = await provider.getTransaction(txHash)
     // Fetch the transaction receipt to get the status
     
-    const receipt = await sepoliaProvider.getTransactionReceipt(txHash)
-    console.log("the transaction detail is called ==================== ", transaction)
+    const receipt = await provider.getTransactionReceipt(txHash)
+    //console.log("the transaction detail is called ==================== ", transaction)
     // Extracting the desired information
     const amount = ethers.utils.formatEther(transaction.value) // Convert Wei to Ether for the transaction amount
     const sender = transaction.from
