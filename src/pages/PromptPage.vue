@@ -8,11 +8,11 @@
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
       <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries v-if="entries" :entries="entries" />
+      <TheEntries :entries="entries" ref="entriesRef" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
-      <TheAnthrogram :post="prompt" />
+      <TheAnthrogram collectionName="prompts" :post="prompt" />
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white" v-if="prompt">
@@ -30,12 +30,11 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { computed, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
 const router = useRouter()
-
 const $q = useQuasar()
 const commentStore = useCommentStore()
 const entryStore = useEntryStore()
@@ -44,12 +43,11 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 
+const entriesRef = ref(null)
+
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
-
-promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 
 const { href, params, path, name } = router.currentRoute.value
 const prompt = computed(() => {
@@ -63,7 +61,7 @@ const prompt = computed(() => {
         case 'year-month':
           return prompt.date === params.year + '-' + params.month
         case 'slug':
-          return prompt.slug.includes(params.slug)
+          return prompt.slug?.includes(params.slug)
         default:
           return false
       }
@@ -71,14 +69,22 @@ const prompt = computed(() => {
 })
 
 const entries = computed(() => {
-  return entryStore.getEntries?.filter((entry) => entry.prompt === prompt.value?.id)
+  return entryStore.getEntries?.filter((entry) => entry.prompt?.id === prompt.value?.id)
 })
+
+const onScroll = () => {
+  if (entriesRef.value) {
+    const marginTop = entriesRef.value?.getBoundingClientRect().top
+    const windowsHeight = window.innerHeight
+    if (!entries.value?.length && marginTop - windowsHeight < -50) {
+      entryStore.fetchPromptsEntries(prompt.value.entries).catch((error) => errorStore.throwError(error))
+    }
+  }
+}
 
 watchEffect(async () => {
   if (prompt.value?.id) {
     const promptId = prompt.value?.id
-    await commentStore.fetchComments('prompts', promptId).catch((error) => errorStore.throwError(error))
-
     await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
 
     shareIsLoading.value = true
@@ -90,44 +96,30 @@ watchEffect(async () => {
         shareIsLoaded.value = true
       })
   }
+})
 
-  let isPromptPageRoute = false
-  switch (href) {
-    case '/month':
-      isPromptPageRoute = true
-      break
-    case `/${params.year}/${params.month}`:
-      isPromptPageRoute = true
-      break
-    case `/${params.slug}`:
-      isPromptPageRoute = true
-      break
-    default:
-      isPromptPageRoute = false
-  }
+onMounted(async () => {
+  await entryStore.resetEntries
+  entriesRef.value = document.querySelector('.entries-page-container')
+  window.addEventListener('scroll', onScroll)
+})
 
-  if (isPromptPageRoute && promptStore.getPrompts && !prompt.value?.id) {
-    $q.notify({
-      type: 'info',
-      message: 'Prompt Not found'
-    })
-    setTimeout(async () => {
-      $q.notify({
-        type: 'info',
-        message: 'You will be redirected in 3 seconds'
-      })
-    }, 3000)
-    setTimeout(async () => {
-      await router.push('/404')
-    }, 6000)
+watch(entriesRef, (newVal) => {
+  if (entriesRef.value) {
+    if (newVal) {
+      entriesRef.value = document.querySelector('.entries-page-container')
+    } else {
+      console.error('EntriesRef error')
+    }
   }
 })
 
 onUnmounted(async () => {
   promptStore.setTab('post')
-  likeStore.resetLikes()
-  shareStore.resetShares()
-  commentStore.resetComments()
+  await likeStore.resetLikes()
+  await shareStore.resetShares()
+  await commentStore.resetComments()
+  window.removeEventListener('scroll', onScroll)
 })
 </script>
 

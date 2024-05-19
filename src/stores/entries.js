@@ -4,9 +4,7 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
-  onSnapshot,
   query,
   runTransaction,
   setDoc,
@@ -41,6 +39,7 @@ export const useEntryStore = defineStore('entries', {
 
   getters: {
     getEntries: (state) => state._entries,
+    resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab
   },
@@ -53,40 +52,79 @@ export const useEntryStore = defineStore('entries', {
         await userStore.fetchAdminsAndWriters()
       }
 
-      this._isLoading = true
+      try {
+        this._isLoading = true
+        const querySnapshot = await getDocs(collection(db, 'entries'))
+        const entries = []
+        for (const doc of querySnapshot.docs) {
+          const entryData = doc.data()
+          const promptId = entryData.prompt.id
 
-      if (this._unSubscribe) {
-        this._unSubscribe()
-      }
-      this._unSubscribe = onSnapshot(collection(db, 'entries'), async (querySnapshot) => {
-        const entries = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
+          const entry = {
+            id: doc.id,
+            prompt: promptId,
+            ...entryData
+          }
+          entries.push(entry)
+        }
         for (const entry of entries) {
-          //entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }
+        }
+        this._entries = entries
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this._isLoading = false
+      }
+    },
 
-          entry.prompt = entry.prompt.id
+    async fetchPromptsEntries(slugArray) {
+      const userStore = useUserStore()
+      try {
+        if (!userStore.getUsers) {
+          await userStore.fetchAdminsAndWriters()
         }
 
-        this.$patch({ _entries: entries })
-      })
-      this._isLoading = false
+        this._isLoading = true
+
+        let allEntries = []
+
+        for (let i = 0; i < slugArray.length; i += 30) {
+          const chunk = slugArray.slice(i, i + 30)
+          const querySnapshot = await getDocs(query(collection(db, 'entries'), where('id', 'in', chunk)))
+          const chunkEntries = querySnapshot.docs.map(async (doc) => {
+            const entry = { id: doc.id, ...doc.data() }
+            if (entry.author && entry.author.id) {
+              entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+            }
+            return entry
+          })
+          const resolvedChunkEntries = await Promise.all(chunkEntries)
+          allEntries = allEntries.concat(resolvedChunkEntries)
+        }
+        this._entries = allEntries
+        this._isLoading = false
+      } catch (e) {
+        console.error('Error fetching entries entries', e)
+      }
     },
 
     async fetchEntryBySlug(slug) {
-      this._isLoading = true
-      const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
-
-      const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-      entry.author = await getDoc(entry.author).then((doc) => doc.data())
-      entry.prompt = await getDoc(entry.prompt).then((doc) => doc.data())
-
-      this._isLoading = false
-
-      return entry
+      const userStore = useUserStore()
+      try {
+        this._isLoading = true
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
+        const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+        if (entry.author.id) {
+          entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+        }
+        this._isLoading = false
+        this._entries = [entry]
+      } catch (e) {
+        console.error('Unable to fetch entry', e)
+      }
     },
 
     async addEntry(payload) {

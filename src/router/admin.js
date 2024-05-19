@@ -2,21 +2,19 @@ import { useUserStore } from 'stores'
 
 export default [
   {
-    path: '/admin',
+    path: 'admin',
     name: 'admin',
     beforeEnter: (_to, _from, next) => {
       const userStore = useUserStore()
       if (userStore.isWriterOrAbove) next()
       else next('/')
     },
-    redirect: { path: 'admin/prompts' },
     component: () => import('pages/admin/AdminIndex.vue'),
+    redirect: { path: 'admin/prompts' },
     children: [
+      { name: 'admin.prompts', path: 'prompts', component: () => import('pages/admin/PromptsIndex.vue') },
       {
-        path: 'prompts',
-        component: () => import('pages/admin/PromptsIndex.vue')
-      },
-      {
+        name: 'admin.users',
         path: 'users',
         component: () => import('pages/admin/UsersIndex.vue'),
         beforeEnter: (_to, _from, next) => {
@@ -26,6 +24,7 @@ export default [
         }
       },
       {
+        name: 'admin.feedbacks',
         path: 'feedbacks',
         component: () => import('pages/admin/FeedbacksIndex.vue'),
         beforeEnter: (_to, _from, next) => {
@@ -35,6 +34,7 @@ export default [
         }
       },
       {
+        name: 'admin.errors',
         path: 'errors',
         component: () => import('pages/admin/ErrorsIndex.vue'),
         beforeEnter: (_to, _from, next) => {
@@ -44,6 +44,7 @@ export default [
         }
       },
       {
+        name: 'admin.reports',
         path: 'reports',
         component: () => import('pages/admin/ReportsIndex.vue'),
         beforeEnter: (_to, _from, next) => {
