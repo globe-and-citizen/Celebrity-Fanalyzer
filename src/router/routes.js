@@ -1,6 +1,5 @@
 import profile from './profile'
 import admin from './admin'
-import { useUserStore } from 'stores'
 const routes = [
   {
     path: '/robots.txt',
@@ -56,15 +55,6 @@ const routes = [
       {
         path: 'fan/:username',
         component: () => import('pages/PublicProfilePage.vue')
-      },
-      {
-        path: 'advertiser',
-        component: () => import('pages/AdvertiserPage.vue'),
-        beforeEnter: (_to, _from, next) => {
-          const userStore = useUserStore()
-          if (userStore.isAdvertiser || userStore.isAdmin) next()
-          else next('/')
-        }
       },
       {
         path: 'campaign/:campaignId',

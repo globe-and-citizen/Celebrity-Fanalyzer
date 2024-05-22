@@ -10,7 +10,7 @@
         :columns="columns"
         row-key="name"
         :rows-per-page-options="[0]"
-        style="height: 400px"
+        style="margin: 10px 0px"
         virtual-scroll
         hide-bottom
       >

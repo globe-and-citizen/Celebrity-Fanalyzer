@@ -12,40 +12,6 @@
                 <q-radio v-model="advertise.type" val="Text" label="Text" />
               </div>
             </div>
-            <!-- <q-field counter v-if="advertise.type === 'Text'" label="Description" maxlength="400" v-model="advertise.content">
-              <template v-slot:control>
-                <q-editor
-                  class="q-mt-md"
-                  data-test="input-description"
-                  dense
-                  flat
-                  min-height="5rem"
-                  ref="editorRef"
-                  :toolbar="[
-                    [
-                      {
-                        icon: $q.iconSet.editor.align,
-                        options: ['left', 'center', 'right', 'justify']
-                      },
-                      {
-                        icon: $q.iconSet.editor.fontSize,
-                        list: 'no-icons',
-                        options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
-                      },
-                      {
-                        icon: $q.iconSet.editor.formatting,
-                        options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
-                      },
-                      ['link']
-                    ],
-                    ['undo', 'redo']
-                  ]"
-                  v-model="advertise.content"
-                  @paste="onPaste($event)"
-                />
-              </template>
-            </q-field> -->
-
             <q-file
               v-if="advertise.type === 'Banner'"
               class="q-mb-lg"
@@ -148,11 +114,12 @@
 </template>
 
 <script setup>
+import { db } from 'src/firebase'
+import { collection, doc} from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
-import { v4 as uuidV4 } from 'uuid'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
@@ -211,13 +178,16 @@ watchEffect(() => {
     advertise.contentURL = props.contentURL ?? ''
     ;(advertise.budget = props.budget), (advertise.type = props.type)
   } else {
-    advertise.author = userStore.isAdvertiser ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
+    const collectionRef=collection(db,'advertises')
+    const docRef= doc(collectionRef)
+
+    advertise.author = userStore.isAdvertiser || userStore.isEditorOrAbove ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
     advertise.categories = []
     advertise.type = 'Banner'
     advertise.date = currentYearMonth()
     advertise.status = 'Inactive'
     advertise.cost = 0
-    advertise.id = uuidV4()
+    advertise.id = docRef.id
   }
 })
 

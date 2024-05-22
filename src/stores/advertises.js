@@ -46,7 +46,7 @@ export const useAdvertiseStore = defineStore('advertises', {
             return data
           })
 
-          if (!userStore.isAdmin) {
+          if (!userStore.isEditorOrAbove) {
             const filterData = advertises.filter((advertise) => {
               if (advertise.author.id === userStore.getUserId) {
                 return true

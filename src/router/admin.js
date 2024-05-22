@@ -6,13 +6,22 @@ export default [
     name: 'admin',
     beforeEnter: (_to, _from, next) => {
       const userStore = useUserStore()
-      if (userStore.isWriterOrAbove) next()
+      if (userStore.isWriterOrAbove || userStore.isAdvertiser) next()
       else next('/')
     },
     component: () => import('pages/admin/AdminIndex.vue'),
     redirect: { path: 'admin/prompts' },
     children: [
-      { name: 'admin.prompts', path: 'prompts', component: () => import('pages/admin/PromptsIndex.vue') },
+      {
+        name: 'admin.prompts',
+        path: 'prompts',
+        component: () => import('pages/admin/PromptsIndex.vue'),
+        beforeEnter: (_to, _from, next) => {
+          const userStore = useUserStore()
+          if (userStore.isWriterOrAbove) next()
+          else next('/')
+        }
+      },
       {
         name: 'admin.users',
         path: 'users',
@@ -50,6 +59,16 @@ export default [
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
           if (userStore.isEditorOrAbove) next()
+          else next('/')
+        }
+      },
+      {
+        name: 'admin.advertises',
+        path: 'advertises',
+        component: () => import('app/src/pages/admin/AdvertisesIndex.vue'),
+        beforeEnter: (_to, _from, next) => {
+          const userStore = useUserStore()
+          if (userStore.isEditorOrAbove || userStore.isAdvertiser) next()
           else next('/')
         }
       }
