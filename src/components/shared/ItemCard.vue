@@ -1,7 +1,7 @@
 <template>
-  <CampaignCard v-if="item.isAdd" :advertise="item" />
-  <article v-else class="q-pa-md relative-position row article-card-item">
-    <div class="col-8 flex column">
+  <article class="relative-position row" :class="{ 'q-pa-md article-card-item': !item.isAdd, 'full-width': item.isAdd }">
+    <CampaignCard v-if="item.isAdd" :advertise="item" />
+    <div v-if="!item.isAdd" class="col-8 flex column">
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
           <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />
@@ -24,7 +24,7 @@
         </div>
       </router-link>
     </div>
-    <router-link :to="link" class="col-4 text-primary">
+    <router-link v-if="!item.isAdd" :to="link" class="col-4 text-primary">
       <q-img :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
     </router-link>
     <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
@@ -65,26 +65,26 @@ function goToUrl() {
 }
 
 .article-card-item {
-  max-width: 619px;
+  min-width: 619px;
   width: 100%;
   border: 1px solid #e54757;
   border-radius: 24px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 
   @media (max-width: 1440px) {
-    width: 590px;
+    min-width: 590px;
   }
 
   @media (min-width: 1024px) {
-    width: 470px;
+    min-width: 470px;
   }
 
   @media (max-width: 768px) {
-    width: 361px;
+    min-width: 361px;
   }
 
   @media (max-width: 425px) {
-    width: 280px;
+    min-width: 280px;
   }
 }
 </style>

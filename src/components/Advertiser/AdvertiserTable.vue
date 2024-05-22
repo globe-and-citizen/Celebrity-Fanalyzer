@@ -58,7 +58,7 @@
         </template>
         <template #body-cell-name="props">
           <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
-            {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title}}
+            {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title }}
           </q-td>
         </template>
       </q-table>
@@ -83,7 +83,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { useAdvertiseStore, useErrorStore } from 'src/stores'
+import { useAdvertiseStore, useErrorStore ,useUserStore} from 'src/stores'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -99,18 +99,19 @@ const openDialog = ref(false)
 const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
+const userStore = useUserStore()
 const alertMessage = ref('')
 
 function checkDurationStatus() {
   for (const advertise of props.advertises) {
-    if (advertise.duration && advertise.duration < 7 && advertise.status === 'Active') {
+    if (advertise.duration && (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) && advertise.status === 'Active' && userStore.isAdvertiser) {
       alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
       openDialog.value = true
     }
   }
 }
 function goToUrl(id, type) {
-    router.push('/campaign/' + id)
+  router.push('/campaign/' + id)
 }
 onMounted(checkDurationStatus)
 
@@ -190,7 +191,9 @@ function changeActiveStatus(advertise, status) {
   advertise.status = status
   advertiseStore
     .editAdvertise(advertise)
-    .then(() => $q.notify({ type: 'info', message: 'Advertise Published successfully' }))
+    .then(() =>
+      $q.notify({ type: 'info', message: status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully' })
+    )
     .catch((error) => {
       console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')

@@ -95,7 +95,7 @@
                 <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
               </q-btn>
               <ShareComponent
-                :label="shareStore.isLoaded ? shareStore.getShares.length : 0"
+                :label="shareStore.isLoaded ? shareStore.getShares : 0"
                 :disable="!shareStore.isLoaded"
                 @share="share($event)"
               />

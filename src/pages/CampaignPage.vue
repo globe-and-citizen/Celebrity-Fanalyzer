@@ -5,9 +5,8 @@
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
   <q-tab-panels v-if="advertise" animated class="bg-transparent col-grow" swipeable v-model="tab">
-
     <q-tab-panel name="post" style="padding: 0">
-      <SingleAdvertise :advertise="advertise" title="Campaign Page" @clickComments="tab = 'comments'"/>
+      <SingleAdvertise :advertise="advertise" title="Campaign Page" @clickComments="tab = 'comments'" />
     </q-tab-panel>
 
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -25,7 +24,15 @@
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import SingleAdvertise from '../components/Advertiser/SingleAdvertise.vue'
-import { useCommentStore, useErrorStore, useLikeStore, useAdvertiseStore, useShareStore, useClicksStore, useImpressionsStore } from 'src/stores'
+import {
+  useCommentStore,
+  useErrorStore,
+  useLikeStore,
+  useAdvertiseStore,
+  useShareStore,
+  useClicksStore,
+  useImpressionsStore
+} from 'src/stores'
 import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
@@ -46,20 +53,42 @@ const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
 advertiseStore.fetchAdvertises().catch((error) => console.log(error))
-const {  params } = router.currentRoute.value
+advertiseStore.getActiveAdvertise().catch((error) => console.log(error))
+const { params } = router.currentRoute.value
 const advertise = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-  return advertiseStore.getActiveAdvertises.find((advertise) => advertise.id === params.campaignId) || advertiseStore.getAdvertises.find((advertise)=>advertise.id === params.campaignId)
+  return (
+    advertiseStore.getActiveAdvertises.find((advertise) => advertise.id === params.campaignId) ||
+    advertiseStore.getAdvertises.find((advertise) => advertise.id === params.campaignId)
+  )
 })
+
+function redirect() {
+  if (advertiseStore.getAdvertises && advertiseStore.getActiveAdvertises && !advertise.value?.id) {
+    $q.notify({
+      type: 'info',
+      message: 'advertise Not found'
+    })
+    setTimeout(async () => {
+      $q.notify({
+        type: 'info',
+        message: 'You will be redirected in 3 seconds'
+      })
+    }, 1000)
+    setTimeout(async () => {
+      await router.push('/404')
+    }, 4000)
+  }
+}
 
 watchEffect(async () => {
   if (advertise.value?.id) {
     const advertiseId = advertise.value?.id
     await likeStore.getAllLikesDislikes('advertises', advertiseId).catch((error) => errorStore.throwError(error))
 
-    await impressionStore.readImpressions('advertises', advertiseId).catch((error)=>console.log(error) )
+    await impressionStore.readImpressions('advertises', advertiseId).catch((error) => console.log(error))
 
-    await clickStore.readClicks('advertises', advertiseId).catch((error)=>console.log(error))
+    await clickStore.readClicks('advertises', advertiseId).catch((error) => console.log(error))
 
     shareIsLoading.value = true
     await shareStore
@@ -71,24 +100,10 @@ watchEffect(async () => {
       })
   }
 
-  if (advertiseStore.getAdvertises && !advertise.value?.id) {
-    $q.notify({
-      type: 'info',
-      message: 'advertise Not found'
-    })
-    setTimeout(async () => {
-      $q.notify({
-        type: 'info',
-        message: 'You will be redirected in 3 seconds'
-      })
-    }, 3000)
-    setTimeout(async () => {
-      await router.push('/404')
-    }, 6000)
-  }
+  setTimeout(redirect, 5000)
 })
 
-onUnmounted(async() => {
+onUnmounted(async () => {
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()
