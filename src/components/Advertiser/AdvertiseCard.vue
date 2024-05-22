@@ -181,7 +181,7 @@ watchEffect(() => {
     const collectionRef=collection(db,'advertises')
     const docRef= doc(collectionRef)
 
-    advertise.author = userStore.isAdvertiser || userStore.isEditorOrAbove ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
+    advertise.author = userStore.isAdvertiser || userStore.isAdmin ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
     advertise.categories = []
     advertise.type = 'Banner'
     advertise.date = currentYearMonth()

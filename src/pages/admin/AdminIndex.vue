@@ -1,5 +1,6 @@
 <template>
   <TheHeader title="Admin Panel">
+    <q-btn v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
     <q-btn-dropdown
       auto-close
       data-test="button-dropdown"
@@ -27,9 +28,9 @@
         >
           <q-item-section>New Entry</q-item-section>
         </q-item>
-        <q-item v-if="userStore.isAdvertiser || userStore.isEditorOrAbove" color="primary" clickable @click="openAdvertiseDialog">
+        <!-- <q-item v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" clickable @click="openAdvertiseDialog">
           <q-item-section>New Advertise</q-item-section>
-        </q-item>
+        </q-item> -->
       </q-list>
     </q-btn-dropdown>
   </TheHeader>
@@ -53,7 +54,7 @@
           label="Users"
         />
         <q-route-tab
-          v-if="userStore.isAdvertiser || userStore.isEditorOrAbove"
+          v-if="userStore.isAdvertiser || userStore.isAdmin"
           name="advertises"
           :to="{ name: 'admin.advertises' }"
           icon="campaign"

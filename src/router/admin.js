@@ -68,7 +68,7 @@ export default [
         component: () => import('app/src/pages/admin/AdvertisesIndex.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-          if (userStore.isEditorOrAbove || userStore.isAdvertiser) next()
+          if (userStore.isAdmin || userStore.isAdvertiser) next()
           else next('/')
         }
       }
