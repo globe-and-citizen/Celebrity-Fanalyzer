@@ -30,16 +30,14 @@
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
-            <div v-for="prompt in computedPromptsAndAdvertises" :key="prompt?.id">
-              <CampaignCard v-if="prompt.isAdd" :advertise="prompt" />
-              <ItemCard
-                v-else
-                data-test="prompt-card"
-                :item="prompt"
-                :link="prompt?.slug"
-                v-show="prompt?.categories.includes(categ.value) || category === 'All'"
-              />
-            </div>
+            <ItemCard
+              v-for="prompt in computedPromptsAndAdvertises"
+              :key="prompt?.id"
+              v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
+              data-test="prompt-card"
+              :item="prompt"
+              :link="prompt?.slug"
+            />
           </TransitionGroup>
         </q-tab-panel>
       </q-tab-panels>
@@ -58,7 +56,6 @@ import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useAdvertiseStore } from 'src/stores'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import CampaignCard from '../components/Advertiser/CampaignCard.vue'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -91,7 +88,9 @@ const computedPromptsAndAdvertises = computed(() => {
   let i = 0,
     j = 0
   let arr = []
-  while (i < computedPrompts.value.length && j < computedAdvertises.value.length) {
+  const promptsLength = computedPrompts.value?.length ?? 0
+  const advertisesLength = computedAdvertises.value?.length ?? 0
+  while (i < promptsLength && j < advertisesLength) {
     if (Math.random() > 0.5) {
       arr.push(computedPrompts.value[i])
       i++
@@ -100,10 +99,10 @@ const computedPromptsAndAdvertises = computed(() => {
       j++
     }
   }
-  if (i < computedPrompts.value.length) {
+  if (i < promptsLength) {
     arr = [...arr, ...computedPrompts.value.slice(i)]
   }
-  if (j < computedAdvertises.value.length) {
+  if (j < advertisesLength) {
     arr = [...arr, ...computedAdvertises.value.slice(j)]
   }
   return arr
@@ -147,6 +146,7 @@ const computedEntries = computed(() => {
   justify-items: center;
   row-gap: 16px;
   column-gap: 16px;
+  margin: 10px 0px;
   grid-template-columns: repeat(auto-fill, minmax(619px, 1fr));
 
   @media (max-width: 1440px) {

@@ -2,11 +2,11 @@
   <article
     ref="articleRef"
     id="test"
-    class="q-my-md max-width"
+    class="max-width full-height full-width"
     :class="[{ 'blog-card': advertise.type !== 'Text', 'text-blog-card': advertise.type === 'Text' }]"
     @click="onClick"
   >
-    <img
+    <q-img
       v-if="advertise.type === 'Banner'"
       class="post-image"
       :src="advertise.type === 'Text' && !advertise.contentURl ? 'https://cdn.quasar.dev/img/parallax2.jpg' : advertise.contentURL"
@@ -145,7 +145,22 @@ $shadow: rgba(0, 0, 0, 0.2);
   margin: 0 0 0.5rem 0;
 }
 .max-width {
-  max-width: 700px;
+  min-width: 619px;
+  @media (max-width: 1440px) {
+    min-width: 590px;
+  }
+
+  @media (min-width: 1024px) {
+    min-width: 470px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 361px;
+  }
+
+  @media (max-width: 425px) {
+    min-width: 280px;
+  }
 }
 
 @media (max-width: 40rem) {
@@ -186,11 +201,11 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-rows: 1fr;
   }
 
-  @media (max-width: 32rem) {
-    .blog-card {
-      grid-template-columns: auto;
-      grid-template-rows: 18rem 1fr;
-    }
-  }
+  // @media (max-width: 32rem) {
+  //   .blog-card {
+  //     grid-template-columns: auto;
+  //     grid-template-rows: 18rem 1fr;
+  //   }
+  // }
 }
 </style>

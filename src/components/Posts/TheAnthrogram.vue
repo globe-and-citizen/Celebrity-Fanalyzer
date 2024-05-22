@@ -13,9 +13,9 @@
           <q-separator spaced="xl" />
           <CTRBar  :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
         </template>
-        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length && !!likeStore.getDislikes?.length"/>
+        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"/>
         <LikesBar
-          v-if="!!likeStore.getLikes?.length && !!likeStore.getDislikes?.length"
+          v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
           :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
           :interval="interval"
         />

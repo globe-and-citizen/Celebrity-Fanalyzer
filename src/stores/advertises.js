@@ -20,7 +20,8 @@ export const useAdvertiseStore = defineStore('advertises', {
     _advertises: [],
     _tab: 'post',
     _activeAdvertises: [],
-    _unSubscribeActive: undefined
+    _unSubscribeActive: undefined,
+    _singleAdvertise: undefined
   }),
 
   persist: true,
@@ -38,7 +39,7 @@ export const useAdvertiseStore = defineStore('advertises', {
       const userStore = useUserStore()
       this._isLoading = true
       if (!this._unSubscribe) {
-        const q = query(collection(db, 'advertises'), orderBy('created'))
+        const q = query(collection(db, 'advertises'), orderBy('created', 'desc'))
         this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
           let advertises = querySnapshot.docs.map((doc) => {
             const data = { id: doc.id, ...doc.data() }
