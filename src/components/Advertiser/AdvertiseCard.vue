@@ -100,7 +100,7 @@
                 !advertise.content ||
                 !advertise.duration ||
                 !advertise.publishDate ||
-                (advertise.type === 'Banner' && fileError)
+                (advertise.type === 'Banner' && (fileError ||( contentModel.length<=0 && advertise.contentURL.length<=0)) )
               "
               :label="id ? 'Save Edits' : 'Submit '"
               rounded

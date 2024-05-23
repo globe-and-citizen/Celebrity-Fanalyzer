@@ -6,7 +6,7 @@
   </q-tabs>
   <q-tab-panels v-if="advertise" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="post" style="padding: 0">
-      <SingleAdvertise :advertise="advertise" title="Campaign Page" @clickComments="tab = 'comments'" />
+      <ThePost title="Campaign Page" @clickComments="tab = 'comments'" :post="advertise" :isAdd="true" collectionName="advertises" />
     </q-tab-panel>
 
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -23,7 +23,7 @@
 <script setup>
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
-import SingleAdvertise from '../components/Advertiser/SingleAdvertise.vue'
+import ThePost from '../components/Posts/ThePost.vue'
 import {
   useCommentStore,
   useErrorStore,
