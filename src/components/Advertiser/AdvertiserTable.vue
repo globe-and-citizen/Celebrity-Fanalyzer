@@ -13,6 +13,7 @@
         style="margin: 10px 0px"
         virtual-scroll
         hide-bottom
+        :loading="advertiseStore.isLoading"
       >
         <template #body-cell-published="props">
           <q-td :props="props">
