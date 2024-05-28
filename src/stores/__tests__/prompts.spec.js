@@ -7,6 +7,19 @@ import fs from 'fs'
 import { usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 
+// Mock Firebase Storage
+vi.mock('firebase/storage', async () => {
+  const actual = vi.importActual('firebase/storage')
+  return {
+    ...actual,
+    getStorage: vi.fn(),
+    ref: vi.fn(),
+    uploadBytes: vi.fn(async () => ({ metadata: { fullPath: 'images/entry-2024-05' } })),
+    getDownloadURL: vi.fn(async () => 'https://mockstorage.gooleapis.com/v0/b/mocktest/o/images%2Fentry-2024-05?alt=media&token=mocktoken'),
+    deleteObject: vi.fn(async () => {})
+  }
+})
+
 describe('Prompt Store', async () => {
   const fakeDate = `2022-01` // Random number between 1000 and 9999 + '-01'
 

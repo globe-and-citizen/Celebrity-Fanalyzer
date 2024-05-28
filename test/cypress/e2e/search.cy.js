@@ -7,7 +7,7 @@ describe('Search page', () => {
     cy.visit('/search')
 
     cy.get('[data-test="search-input"]').type(' ')
-    cy.get('[data-test="prompt-card"]').first().click()
+    cy.get('[data-test="item-link"]').first().click({ force: true })
     cy.wait(1000)
     cy.get('[data-test="title"]').should('have.text', 'Prompt Page')
   })

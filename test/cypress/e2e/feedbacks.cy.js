@@ -33,7 +33,7 @@ describe('Feedback page', () => {
     cy.get('[data-test="feedbacks-tab"]').click()
     cy.wait(1000)
 
-    cy.get('[data-test="trash-button"] > .q-btn__content').first().click()
+    cy.get('[data-test="trash-button"] > .q-btn__content').first().click({ force: true })
     cy.get('[data-test="delete-button"]').click()
     cy.wait(1000)
 

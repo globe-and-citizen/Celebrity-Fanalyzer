@@ -16,7 +16,7 @@
         <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"/>
         <LikesBar
           v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
-          :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
+          :data="{ likes: likeStore.getLikes??[], dislikes: likeStore.getDislikes??[] }"
           :interval="interval"
         />
         <q-separator v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" spaced="xl" />
