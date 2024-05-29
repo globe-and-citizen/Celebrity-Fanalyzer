@@ -61,26 +61,31 @@ onMounted(async () => {
 
 const unreadNotifications = computed(() => notificationStore.getNotifications.filter((notification) => !notification.read))
 
-function markOneAsRead(id) {
+function markOneAsRead (id) {
   if (unreadNotifications.value.some((i) => i.id === id)) {
     notificationStore.markOneAsRead(id)
   }
 }
 
-function markAllAsRead() {
+function markAllAsRead () {
   notificationStore.markAllAsRead()
 }
 
-function goToLink(notification) {
+function goToLink (notification) {
   markOneAsRead(notification.id)
 
+  if (notification.type === 'comment') {
+    markAllAsRead(notification.link)
+  }
   if (notification.collection === 'prompts') {
     router.push(notification.link || '/')
     promptStore.setTab('comments')
   }
   if (notification.collection === 'entries') {
-    const entry = entryStore.getEntries?.find((entry) => entry.id === notification.link.slice(1))
-    router.push(entry?.slug)
+    // const entry = entryStore.getEntries?.find((entry) => entry.id === notification.link.slice(1))
+    // router.push(entry?.slug)
+    const entry = notification.slug || notification.link.slice(0,8)+'/'+notification.link.slice(8)+'_id'
+    router.push(entry)
     entryStore.setTab('comments')
   }
 }
