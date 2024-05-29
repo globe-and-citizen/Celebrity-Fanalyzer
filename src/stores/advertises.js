@@ -128,13 +128,16 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
 
     async getActiveAdvertise() {
+      const userStore = useUserStore()
       const q = query(collection(db, 'advertises'), where('status', '==', 'Active'))
 
       if (!this._unSubscribeActive) {
         this._unSubscribeActive = onSnapshot(q, (querySnapshot) => {
           const activeAdvertises = []
-          querySnapshot.forEach((doc) => {
+          querySnapshot.forEach(async (doc) => {
             const data = { id: doc.id, ...doc.data(), isAdd: true }
+            const user = userStore.getUserById(data.author.id) || (await userStore.fetchUser(data.author.id))
+            data.author = user
             activeAdvertises.push(data)
           })
           this._activeAdvertises = []
