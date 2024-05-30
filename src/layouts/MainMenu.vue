@@ -28,7 +28,7 @@
 
 <script setup>
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { onSnapshot, collection } from 'firebase/firestore'
 import { db } from 'src/firebase'
