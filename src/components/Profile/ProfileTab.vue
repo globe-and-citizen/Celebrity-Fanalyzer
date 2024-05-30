@@ -81,6 +81,7 @@
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
     <q-input label="Data 2" v-model="user.data2" />
+    <q-btn class="full-width q-mt-lg" @click="createAdCampain()" color="primary" label="CreateAdvertisemen by contract" padding="12px" rounded />
     <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
   <q-dialog v-model="setWalletAddressDialog.show">
@@ -109,7 +110,7 @@ import { Notify, useQuasar } from 'quasar'
 import { computed, ref } from 'vue'
 import Web3ModalComponent from './Web3ModalComponent.vue'
 import { useWalletStore } from 'app/src/stores'
-
+import {contractCreateAdCampaign} from 'app/src/web3/adCampaignManager'
 const walletStore = useWalletStore()
 
 const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_address)
@@ -141,6 +142,11 @@ async function uploadPhoto() {
     .uploadFile(newPhoto.value, `users/${userStore.getUser.uid}`)
     .then((url) => (user.value.photoURL = url))
     .catch((error) => errorStore.throwError(error))
+}
+
+async function createAdCampain(){
+  const result=await contractCreateAdCampaign("0.0000001");
+  console.log("the result ", result);
 }
 
 async function usernameValidator(username) {
