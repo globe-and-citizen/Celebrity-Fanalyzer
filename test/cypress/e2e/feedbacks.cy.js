@@ -3,13 +3,13 @@
 
 describe('Feedback page', () => {
   beforeEach(() => {
-    cy.viewport('iphone-se2')
+    cy.viewport('ipad-2')
     cy.login()
   })
 
   it('should send a feedback message to the admin', () => {
     cy.visit('/profile')
-    cy.get('[data-test="feedback-button"]').click()
+    cy.get('.q-icon').contains('feedback').click()
 
     cy.get('[data-test="subject-input"]').type('Test subject')
     cy.get('[data-test="message-input"]').type('Test message')
@@ -33,7 +33,7 @@ describe('Feedback page', () => {
     cy.get('[data-test="feedbacks-tab"]').click()
     cy.wait(1000)
 
-    cy.get('[data-test="trash-button"] > .q-btn__content').first().click()
+    cy.get('[data-test="trash-button"] > .q-btn__content').first().click({ force: true })
     cy.get('[data-test="delete-button"]').click()
     cy.wait(1000)
 

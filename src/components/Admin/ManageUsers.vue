@@ -31,6 +31,7 @@
   </q-table>
 
   <q-table
+    v-if="userStore.getUsers"
     :columns="columnsUser"
     flat
     :filter="filter"
@@ -85,5 +86,5 @@ const columnsUser = [
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
 ]
 const filter = ref('')
-const options = ['Admin', 'Editor', 'Writer', 'User']
+const options = ['Admin', 'Editor','Advertiser', 'Writer', 'User']
 </script>

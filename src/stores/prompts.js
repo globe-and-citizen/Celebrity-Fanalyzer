@@ -26,6 +26,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { Notify } from 'quasar'
+import { currentYearMonth } from 'src/utils/date'
 
 const getPrompts = async (querySnapshot, userStore) => {
   const prompts = []
@@ -163,7 +164,9 @@ export const usePromptStore = defineStore('prompts', {
 
         // const promptRef = await getDocs(query(collection(db, 'prompts')))
         // const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() })).slice(-1)[0]
-        const promptRef = await getDocs(query(collection(db, 'prompts'), orderBy('date', 'desc'), limit(1)))
+        const promptRef = await getDocs(
+          query(collection(db, 'prompts'), orderBy('date', 'desc'), where('id', '<=', currentYearMonth()), limit(1))
+        )
         const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (promptSnapshot.author.id) {
           promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))

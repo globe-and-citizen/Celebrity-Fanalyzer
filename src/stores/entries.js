@@ -10,7 +10,8 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
-  where
+  where,
+  or
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -113,9 +114,10 @@ export const useEntryStore = defineStore('entries', {
 
     async fetchEntryBySlug(slug) {
       const userStore = useUserStore()
+      const id = slug.slice(1, -3).replace('/', '-').replace('/', '')
       try {
         this._isLoading = true
-        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), or(where('slug', '==', slug), where('id', '==', id))))
         const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (entry.author.id) {
           entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))

@@ -39,7 +39,7 @@
               >
                 <q-item-section>Delete</q-item-section>
               </q-item>
-              <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput">
+              <q-item clickable data-test="comment-select-Report" v-close-popup @click="reportInput">
                 <q-item-section>Report</q-item-section>
               </q-item>
             </q-list>
