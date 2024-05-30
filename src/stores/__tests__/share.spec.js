@@ -60,20 +60,20 @@ describe('Unit Test Share Store', () => {
     })
     expect(shareStore.isLoaded).toBe(true)
 
-    let initialLength = shareStore.getShares.length
+    let initialLength = shareStore.getShares
     if (initialLength > 0) {
       // Delete All Share to have an empty share list
       await shareStore.deleteAllShares('entries', firstEntry.id)
 
       await waitUntil(() => {
-        return shareStore.getShares.length === 0
+        return shareStore.getShares === 0
       })
-      expect(shareStore.getShares.length).toBe(0)
+      expect(shareStore.getShares).toBe(0)
     }
 
-    initialLength = shareStore.getShares.length
+    initialLength = shareStore.getShares
 
-    expect(shareStore.getShares.length).toBe(0)
+    expect(shareStore.getShares).toBe(0)
     shareStore.addShare('entries', firstEntry.id, 'instagram')
 
     await waitUntil(() => {
@@ -82,13 +82,21 @@ describe('Unit Test Share Store', () => {
     await waitUntil(() => {
       return !shareStore.isLoading
     })
-    expect(shareStore.getShares.length).toBe(initialLength + 1)
+    expect(shareStore.getShares).toBe(initialLength + 1)
 
     await shareStore.deleteAllShares('entries', firstEntry.id)
     await waitUntil(() => {
-      return shareStore.getShares.length === 0
+      return shareStore.getShares === 0
     })
-    expect(shareStore.getShares.length).toBe(0)
+
+    await shareStore.fetchShares('entries', firstEntry.id)
+
+    await waitUntil(() => {
+      return shareStore.isLoaded === true
+    })
+    expect(shareStore.isLoaded).toBe(true)
+
+    expect(shareStore.getShares).toBe(0)
 
     // Reload fetch Share with another entries
 

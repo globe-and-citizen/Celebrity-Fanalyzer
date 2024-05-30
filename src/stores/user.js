@@ -81,7 +81,7 @@ export const useUserStore = defineStore('user', {
         this._isLoading = false
         return { uid: user.id, ...user.data() }
       }
-      return await getDocs(query(collection(db, 'users'), or(where('uid', '==', id), where('username', '==', id))))
+      return await getDocs(query(collection(db, 'users'), or(where('username', '==', id), where('displayName', '==', id))))
         .then((querySnapshot) => querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))[0])
         .finally(() => (this._isLoading = false))
     },

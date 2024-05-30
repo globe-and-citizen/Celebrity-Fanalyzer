@@ -1,7 +1,7 @@
 <template>
   <article class="relative-position row" :class="{ 'q-pa-md article-card-item': !item.isAdd, 'full-width': item.isAdd }">
     <CampaignCard v-if="item.isAdd" :advertise="item" />
-    <div v-if="!item.isAdd" class="col-8 flex column">
+    <div v-if="!item.isAdd" class="col-8 flex column" data-test="prompt-card">
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
           <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />

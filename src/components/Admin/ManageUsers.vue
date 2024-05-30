@@ -31,6 +31,7 @@
   </q-table>
 
   <q-table
+    v-if="userStore.getUsers"
     :columns="columnsUser"
     flat
     :filter="filter"

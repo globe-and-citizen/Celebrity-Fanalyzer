@@ -34,7 +34,6 @@
               v-for="prompt in computedPromptsAndAdvertises"
               :key="prompt?.id"
               v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
-              data-test="prompt-card"
               :item="prompt"
               :link="prompt?.slug"
             />

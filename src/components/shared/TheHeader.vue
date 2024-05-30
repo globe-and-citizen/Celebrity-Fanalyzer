@@ -72,7 +72,7 @@ function goBack() {
 }
 
 function goToFeedback() {
-  router.push('/profile')
-  userStore.setProfileTab('feedback')
+  router.push('/profile/feedback')
+  // userStore.setProfileTab('feedback')
 }
 </script>
