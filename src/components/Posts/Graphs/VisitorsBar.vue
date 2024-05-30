@@ -91,6 +91,7 @@ const transformData = (data) => {
   uniqueDates.sort((a, b) => new Date(a) - new Date(b))
 
   return uniqueDates.map((date) => {
+
     // Count the number of items with the first visit on the current date
     const visitorsCount = data.filter((item) => item.visits[0] === date).length
 

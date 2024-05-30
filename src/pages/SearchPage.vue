@@ -31,12 +31,11 @@
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
             <ItemCard
-              v-for="prompt in computedPrompts"
-              data-test="prompt-card"
-              :item="prompt"
+              v-for="prompt in computedPromptsAndAdvertises"
               :key="prompt?.id"
+              v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
+              :item="prompt"
               :link="prompt?.slug"
-              v-show="prompt?.categories.includes(categ.value) || category === 'All'"
             />
           </TransitionGroup>
         </q-tab-panel>
@@ -53,18 +52,20 @@ import ArticleSkeleton from 'src/components/shared/ArticleSkeleton.vue'
 import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useAdvertiseStore } from 'src/stores'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+const advertiseStore = useAdvertiseStore()
 
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
 
+advertiseStore.getActiveAdvertise().catch((error) => console.log(error))
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 
 const computedCategories = computed(() => {
@@ -73,19 +74,51 @@ const computedCategories = computed(() => {
   const allCategory = { label: 'All', value: 'All' }
   return [allCategory, ...uniqueCategories]
 })
-
+const computedAdvertises = computed(() => {
+  return advertiseStore.getActiveAdvertises
+})
 const computedPrompts = computed(() => {
-  return promptStore.getPrompts?.filter((item) =>
-    [item.title, item.description, item.author?.displayName, ...item.categories].some((str) =>
-      str?.toLowerCase().includes(search.value.toLowerCase())
-    )
-  )
+  return promptStore.getPrompts?.filter((item) => {
+    const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
+    return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
+  })
+})
+const computedPromptsAndAdvertises = computed(() => {
+  let i = 0,
+    j = 0
+  let arr = []
+  const promptsLength = computedPrompts.value?.length ?? 0
+  const advertisesLength = computedAdvertises.value?.length ?? 0
+  while (i < promptsLength && j < advertisesLength) {
+    if (Math.random() > 0.5) {
+      arr.push(computedPrompts.value[i])
+      i++
+    } else {
+      arr.push(computedAdvertises.value[j])
+      j++
+    }
+  }
+  if (i < promptsLength) {
+    arr = [...arr, ...computedPrompts.value.slice(i)]
+  }
+  if (j < advertisesLength) {
+    arr = [...arr, ...computedAdvertises.value.slice(j)]
+  }
+  return arr
 })
 
 const computedEntries = computed(() => {
   return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
+})
+
+watchEffect(() => {
+  if (!router.currentRoute.value.params.year) {
+    promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+  } else {
+    promptStore.fetchPromptsByYear(router.currentRoute.value.params.year).catch((error) => errorStore.throwError(error))
+  }
 })
 </script>
 
@@ -120,6 +153,7 @@ const computedEntries = computed(() => {
   justify-items: center;
   row-gap: 16px;
   column-gap: 16px;
+  margin: 10px 0px;
   grid-template-columns: repeat(auto-fill, minmax(619px, 1fr));
 
   @media (max-width: 1440px) {

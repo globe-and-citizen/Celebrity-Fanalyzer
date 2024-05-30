@@ -8,6 +8,18 @@ import { useEntryStore, usePromptStore, useStorageStore, useUserStore } from 'sr
 import { waitUntil } from 'src/utils/waitUntil'
 
 //Load an image to use
+// Mock Firebase Storage
+vi.mock('firebase/storage', async () => {
+  const actual = vi.importActual('firebase/storage')
+  return {
+    ...actual,
+    getStorage: vi.fn(),
+    ref: vi.fn(),
+    uploadBytes: vi.fn(async () => ({ metadata: { fullPath: 'images/entry-2024-05' } })),
+    getDownloadURL: vi.fn(async () => 'https://mockstorage.gooleapis.com/v0/b/mocktest/o/images%2Fentry-2024-05?alt=media&token=mocktoken'),
+    deleteObject: vi.fn(async () => {})
+  }
+})
 
 describe('Entry Store', async () => {
   // By declaring the various stores within the "describe" block,
@@ -79,6 +91,7 @@ describe('Entry Store', async () => {
     }
 
     await entryStore.addEntry(fakeEntry)
+    await entryStore.fetchEntries()
     await waitUntil(() => {
       return entryStore.getEntries?.find((entry) => entry.id === id)
     })
@@ -90,6 +103,7 @@ describe('Entry Store', async () => {
     fakeEntry.description = 'Edited description of a fake entry'
     await entryStore.editEntry(fakeEntry)
 
+    await entryStore.fetchEntries()
     await waitUntil(() => {
       return entryStore.getEntries?.find((entry) => entry.id === id)?.title === 'Edited Fake Entry'
     }).catch(() => console.log("can't 'Have Edited Fake Entry'"))
@@ -97,6 +111,7 @@ describe('Entry Store', async () => {
 
     // 5) Delete fake entry and check
     await entryStore.deleteEntry(fakeEntry.id)
+    await entryStore.fetchEntries()
     await waitUntil(() => {
       return !entryStore.getEntries?.find((entry) => entry.id === id)
     }).catch(() => console.log('Entry Still exist'))

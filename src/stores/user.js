@@ -37,6 +37,7 @@ export const useUserStore = defineStore('user', {
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
     isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
+    isAdvertiser: (getters) => getters.getUser.role === 'Advertiser',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading,
     getUserId: (getters) => (getters.isAuthenticated && getters.getUser ? getters.getUser.uid : getters.getUserIpHash)
@@ -80,7 +81,7 @@ export const useUserStore = defineStore('user', {
         this._isLoading = false
         return { uid: user.id, ...user.data() }
       }
-      return await getDocs(query(collection(db, 'users'), or(where('uid', '==', id), where('username', '==', id))))
+      return await getDocs(query(collection(db, 'users'), or(where('username', '==', id), where('displayName', '==', id))))
         .then((querySnapshot) => querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))[0])
         .finally(() => (this._isLoading = false))
     },

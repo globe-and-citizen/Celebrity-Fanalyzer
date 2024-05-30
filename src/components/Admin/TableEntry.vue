@@ -229,7 +229,7 @@ function onSelectWinner(entry) {
     .then(() => $q.notify({ type: 'positive', message: 'Succeed' }))
     .catch((error) => {
       //console.log('error selectign winner =====> ', error);
-      errorStore.throwError(error, 'Error selcting winner')
+      errorStore.throwError(error, 'Error selecting winner')
     })
 
   selectWinnerDialog.value.show = false
