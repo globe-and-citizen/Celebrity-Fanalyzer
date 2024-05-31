@@ -14,7 +14,7 @@ export const useShareStore = defineStore('shares', {
 
   getters: {
     getShares: (state) => state._shares,
-    isLoaded: (state) => !!state._shares,
+    isLoaded: (state) => (state._shares === 0 ? true : !!state._shares),
     isLoading: (state) => state._isLoading
   },
 

@@ -1,4 +1,17 @@
-import { collection, deleteDoc, doc, getDocs, or, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  or,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where,
+  limit,
+  orderBy
+} from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -123,8 +136,10 @@ export const usePromptStore = defineStore('prompts', {
           await userStore.fetchAdminsAndWriters()
         }
 
-        const promptRef = await getDocs(query(collection(db, 'prompts')))
-        const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() })).slice(-1)[0]
+        // const promptRef = await getDocs(query(collection(db, 'prompts')))
+        // const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() })).slice(-1)[0]
+        const promptRef = await getDocs(query(collection(db, 'prompts'), orderBy('date', 'desc'), limit(1)))
+        const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (promptSnapshot.author.id) {
           promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
         }

@@ -4,7 +4,15 @@
       <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route?.icon" :to="route?.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
-      <q-route-tab class="adminTab" v-if="userStore.isWriterOrAbove" icon="admin_panel_settings" @click="onAdminTabClick">
+      <!-- <q-route-tab v-if="userStore.isAdvertiser || userStore.isAdmin" exact icon="campaign" to="/advertiser">
+        <q-tooltip>Advertiser Panel</q-tooltip>
+      </q-route-tab> -->
+      <q-route-tab
+        class="adminTab"
+        v-if="userStore.isWriterOrAbove || userStore.isAdvertiser"
+        icon="admin_panel_settings"
+        @click="onAdminTabClick"
+      >
         <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
       <div class="q-tab__indicator absolute-top"></div>
@@ -30,6 +38,8 @@
 import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { onSnapshot, collection } from 'firebase/firestore'
+import { db } from 'src/firebase'
 
 const updated = ref(false)
 const userStore = useUserStore()
@@ -51,11 +61,25 @@ const routes = computed(() => [
 function onLogout() {
   userStore.logout()
   updated.value = false
-  router.push({ path: 'profile', query: { email: email.value } })
+  router.push({ path: '/profile', query: { email: email.value } })
 }
+onSnapshot(collection(db, 'users'), (querySnapshot) => {
+  querySnapshot.docChanges().forEach((change) => {
+    if (change.type === 'modified') {
+      const user = change.doc.data()
+      if (user.email === userStore._user.email && user.role !== userStore._user.role) {
+        localStorage.removeItem('user')
+        email.value = userStore._user.email
+        updated.value = true
+      }
+    }
+  })
+})
 
 const onAdminTabClick = () => {
-  if (!isAdminPromptPath) {
+  if (userStore.isAdvertiser) {
+    router.push('/admin/advertises')
+  } else if (!isAdminPromptPath) {
     router.push('/admin/prompts')
   } else {
     router.push('/admin')
