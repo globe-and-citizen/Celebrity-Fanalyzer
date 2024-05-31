@@ -81,7 +81,9 @@
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
     <q-input label="Data 2" v-model="user.data2" />
-    <q-btn class="full-width q-mt-lg" @click="createAdCampain()" color="primary" label="CreateAdvertisemen by contract" padding="12px" rounded />
+    <q-btn class="full-width q-mt-lg" @click="createAdCampain()" color="dark" label="Create Advertisement" padding="12px" rounded />
+    <q-btn class="full-width q-mt-lg" @click="_claimPayment()" color="green" label="claim advertisement payment" padding="12px" rounded />
+    <q-btn class="full-width q-mt-lg" @click="_requestAndApproveWithdrawal()" color="primary" label="widraw remaining budget" padding="12px" rounded />
     <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
   <q-dialog v-model="setWalletAddressDialog.show">
@@ -110,7 +112,7 @@ import { Notify, useQuasar } from 'quasar'
 import { computed, ref } from 'vue'
 import Web3ModalComponent from './Web3ModalComponent.vue'
 import { useWalletStore } from 'app/src/stores'
-import {contractCreateAdCampaign} from 'app/src/web3/adCampaignManager'
+import {contractCreateAdCampaign, claimPayment,requestAndApproveWithdrawal, getAdCampaignByCode} from 'app/src/web3/adCampaignManager'
 const walletStore = useWalletStore()
 
 const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_address)
@@ -124,6 +126,7 @@ const userStore = useUserStore()
 const newPhoto = ref(null)
 const origin = window.location.origin + '/'
 const user = ref(userStore.getUser)
+const currentCampaignCode= ref(null)
 
 const addressUpdated = ref(false)
 
@@ -145,9 +148,53 @@ async function uploadPhoto() {
 }
 
 async function createAdCampain(){
-  const result=await contractCreateAdCampaign("0.0000001");
+  $q.loading.show();
+  const result=await contractCreateAdCampaign({'budgetInMatic':0.0001});
+  if(result.status.includes('success')){
+    console.log(" front result ==== ", result.events[0].args.campaignCode);
+    currentCampaignCode.value=result.events[0].args.campaignCode;
+    console.log(" current campaign code ==== ", currentCampaignCode);
+    $q.notify({ message: 'add campaign created successfully ', type: 'positive' })
+  }
+  else{
+    $q.notify({ message: result?.error?.message, type: 'positive' })
+  }
+  $q.loading.hide();
   console.log("the result ", result);
 }
+//you should be connected as the contract owner the current value can be found in the .env
+async function _claimPayment(){
+  console.log("the current campaign code  ==== ",currentCampaignCode.value );
+  $q.loading.show();
+  const result=await claimPayment({'campaignCode':currentCampaignCode.value,'currentAmounSpentInMatic':0.00001});
+  if(result.status.includes('success')){
+    console.log("the result claimPayment result ====", result);
+    $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
+  }
+  else{
+    $q.notify({ message: result?.error?.message, type: 'positive' })
+  }
+  $q.loading.hide();
+  console.log("the result ", result);
+}
+
+//you should be connected as the contract owner the current value can be found in the .env
+async function _requestAndApproveWithdrawal(){
+  $q.loading.show();
+  const result=await requestAndApproveWithdrawal({'campaignCode':currentCampaignCode.value,'currentAmounSpentInMatic':0.00005});
+  if(result.status.includes('success')){
+    
+    console.log("the result claimPayment result ====", result);
+    $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
+  }
+  else{
+    $q.notify({ message: result?.error?.message, type: 'positive' })
+  }
+  $q.loading.hide();
+  console.log("the result ", result);
+}
+
+
 
 async function usernameValidator(username) {
   if (!username) return true

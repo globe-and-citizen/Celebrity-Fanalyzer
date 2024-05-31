@@ -16,43 +16,50 @@ const  getContractInstance= async ()=>{
     //console.log("the network =========== ", await provider.getNetwork().name)
 
     const signer = provider.getSigner()
-    const contractAddress = '0x9503f03c3848e9Aa490975F7391425979Ac0072F';
+    const contractAddress = import.meta.env.VITE_ADVERTISEMENT_CAMPAIGN_CONTRACT_ADDRESS;
 
     // Create a new instance of the contract
     const adCampaignManager = new ethers.Contract(contractAddress, AdCampaignManager.abi, signer);
 
     return adCampaignManager
 }
-
-function _parseEther(ether) {
-    return ethers.utils.parseUnits(ether, 18);
-}
-
-
-export const contractCreateAdCampaign=async (budgetInMatic)=> {
-    try {
-        
-        const amountInEther=ethers.utils.parseUnits(budgetInMatic.toString(), 'ether');
-        
-        const adCampaignManager=await getContractInstance();
-        //console.log("the contract instance === ", adCampaignManager);
-        const tx = await adCampaignManager.createAdCampaign({ value: amountInEther});
-        const receipt = await tx.wait();
-        //const events = receipt.logs.map(log => adCampaignManager.interface.parseLog(log));
-        const events= receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);
-        console.log('Ad campaign created successfully');
-        return { status: 'success', events };
-    } catch (error) {
-        console.error('Error creating ad campaign:', error);
-       return { status: 'error', error: error.message };
+//advertiser preferably
+export const contractCreateAdCampaign=async (payload={budgetInMatic:0})=> {
+    
+    if(payload.budgetInMatic>0){
+        try {
+            console.log("the budget",payload );
+            // Convert the budget from MATIC to Wei
+            const amountInWei=ethers.utils.parseUnits(payload.budgetInMatic.toString(), 'ether');
+            console.log("the budget",payload );
+            // Get the contract instance
+            const adCampaignManager=await getContractInstance();
+            //console.log("the contract instance === ", adCampaignManager);
+            // Call the createAdCampaign function on the contract 
+            
+            const tx = await adCampaignManager.createAdCampaign({ value: amountInWei});
+            
+            const receipt = await tx.wait();
+            //const events = receipt.logs.map(log => adCampaignManager.interface.parseLog(log));
+            const events= receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);
+            console.log('Ad campaign created successfully');
+            return { status: 'success', events };
+        } catch (error) {
+            console.error('Error creating ad campaign:', error);
+        return { status: 'error', error: error.message };
+        }
+    }else{
+        const errorMessage='Make sure the budget is greater than zero'
+        console.error('Error claiming payment:', errorMessage);
+        return { status: 'error', error: errorMessage };
     }
 }
-
-export const claimPayment=async (payload={'campaignCode':"",currentAmounSpent:"0"})=> {
-    if(payload.campaignCode.length>1 && payload.currentAmounSpent>0){
+//only owner
+export const claimPayment=async (payload={'campaignCode':"",currentAmounSpentInMatic:0})=> {
+    if(payload.campaignCode.length>1 && payload.currentAmounSpentInMatic>0){
         try {
             const adCampaignManager=await getContractInstance();
-            const tx = await adCampaignManager.claimPayment(payload.campaignCode, ethers.utilis.paseEther(payload.currentAmounSpent.toString()));
+            const tx = await adCampaignManager.claimPayment(payload.campaignCode, ethers.utils.parseEther(payload.currentAmounSpentInMatic.toString()));
             const receipt = await tx.wait();
             const events= receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);
             console.log('Payment claimed successfully');
@@ -68,95 +75,45 @@ export const claimPayment=async (payload={'campaignCode':"",currentAmounSpent:"0
     }
 }
 
-
-export const requestWithdrawal=async(payload={'campaignCode':campaignCode})=> {
-    if(payload.campaignCode.length>0){
+//only advertiser
+export const requestAndApproveWithdrawal=async (payload={'campaignCode':"",currentAmounSpentInMatic:0}) =>{
+    if(payload.campaignCode.length>1 && payload.currentAmounSpentInMatic>0){
         try {
             const adCampaignManager=await getContractInstance();
-            const tx = await adCampaignManager.requestWithdrawal(payload.campaignCode);
+            const tx = await adCampaignManager.requestAndApproveWithdrawal(payload.campaignCode,ethers.utils.parseEther(payload.currentAmounSpentInMatic.toString()));
             const receipt = await tx.wait();
-            const events = receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);;
-            console.log('Withdrawal requested successfully');
+            const events = receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);
+            console.log('Withdrawal requested and approved successfully');
             return { status: 'success', events };
         } catch (error) {
-            console.error('Error requesting withdrawal:', error);
+            console.error('Error requesting and approving withdrawal:', error);
             return { status: 'error', error: error.message };
         }
-
     }else{
-        const errorMessage='Make sure  the campaignCode is not empty string'
-        console.error('Error on request Withdrawal payment:', errorMessage);
-        return { status: 'error', error: errorMessage };
+        const errorMessage='Make sure the amount claimed is greater than zero and the campaignCode is not empty string'
+        console.error('Error claiming payment:', errorMessage);
+        return { status: 'error', error: errorMessage };   
     }
+    
 }
-
-export const approveWithdrawal=async(campaignCode, currentAmountSpent)=> {
-    try {
-        const adCampaignManager=await getContractInstance();
-        const tx = await adCampaignManager.approveWithdrawal(campaignCode, currentAmountSpent);
-        const receipt = await tx.wait();
-        const events = receipt.logs.map(log => contract.interface.parseLog(log));
-        console.log('Withdrawal approved and funds transferred successfully');
-        return { status: 'success', events };
-    } catch (error) {
-        console.error('Error approving withdrawal:', error);
-        return { status: 'error', error: error.message };
+//everyone
+export const getAdCampaignByCode= async(payload={'campaignCode':""}) =>{
+    if(payload.campaignCode.length>1){
+        try {
+            const adCampaignManager=await getContractInstance();
+            const campaign = await adCampaignManager.getAdCampaignByCode(payload.campaignCode);
+            console.log('Ad campaign details:', campaign);
+            return { status: 'success', data: campaign };
+        } catch (error) {
+            console.error('Error fetching ad campaign details:', error);
+            return { status: 'error', error: error.message };
+        }
+    }else{
+        const errorMessage='Make sure the campaignCode is not empty string'
+        console.error('Error claiming payment:', errorMessage);
+        return { status: 'error', error: errorMessage };   
     }
-}
-
-async function requestAndApproveWithdrawal(campaignCode) {
-    try {
-        const adCampaignManager=await getContractInstance();
-        const tx = await adCampaignManager.requestAndApproveWithdrawal(campaignCode);
-        const receipt = await tx.wait();
-        const events = receipt.logs.map(log => contract.interface.parseLog(log));
-        console.log('Withdrawal requested and approved successfully');
-        return { status: 'success', events };
-    } catch (error) {
-        console.error('Error requesting and approving withdrawal:', error);
-        return { status: 'error', error: error.message };
-    }
-}
-
-async function pauseContract() {
-    try {
-        const adCampaignManager=await getContractInstance();
-        const tx = await adCampaignManager.pause();
-        const receipt = await tx.wait();
-        const events = receipt.logs.map(log => contract.interface.parseLog(log));
-        console.log('Contract paused successfully');
-        return { status: 'success', events };
-    } catch (error) {
-        console.error('Error pausing contract:', error);
-        return { status: 'error', error: error.message };
-    }
-}
-
-async function unpauseContract() {
-    try {
-        const adCampaignManager=await getContractInstance();
-        const tx = await adCampaignManager.unpause();
-        const receipt = await tx.wait();
-        const events = receipt.logs.map(log => contract.interface.parseLog(log));
-        console.log('Contract unpaused successfully');
-        return { status: 'success', events };
-    } catch (error) {
-        console.error('Error unpausing contract:', error);
-        return { status: 'error', error: error.message };
-    }
-}
-
-
-async function getAdCampaignByCode(campaignCode) {
-    try {
-        const adCampaignManager=await getContractInstance();
-        const campaign = await adCampaignManager.getAdCampaignByCode(campaignCode);
-        console.log('Ad campaign details:', campaign);
-        return { status: 'success', data: campaign };
-    } catch (error) {
-        console.error('Error fetching ad campaign details:', error);
-        return { status: 'error', error: error.message };
-    }
+   
 }
 
 // Function to decode log data
@@ -182,4 +139,35 @@ function decodeLog(log) {
       console.log(`Log could not be decoded:`, error);
       return null;
     }
-  }
+}
+
+//only contract owner
+export const pauseContract= async ()=> {
+    try {
+        const adCampaignManager=await getContractInstance();
+        const tx = await adCampaignManager.pause();
+        const receipt = await tx.wait();
+        const events = receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);
+        console.log('Contract paused successfully');
+        return { status: 'success', events };
+    } catch (error) {
+        console.error('Error pausing contract:', error);
+        return { status: 'error', error: error.message };
+    }
+}
+//only contract owner
+
+export const unpauseContract= async ()=> {
+    try {
+        const adCampaignManager=await getContractInstance();
+        const tx = await adCampaignManager.unpause();
+        const receipt = await tx.wait();
+        const events = receipt.logs.map(log => decodeLog(log)).filter(log => log !== null);
+        console.log('Contract unpaused successfully');
+        return { status: 'success', events };
+    } catch (error) {
+        console.error('Error unpausing contract:', error);
+        return { status: 'error', error: error.message };
+    }
+}
+
