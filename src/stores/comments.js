@@ -10,7 +10,12 @@ import {
   Timestamp,
   updateDoc,
   getCountFromServer,
-  onSnapshot
+  onSnapshot,
+  query,
+  where,
+  or,
+  and,
+  orderBy
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
@@ -69,8 +74,17 @@ export const useCommentStore = defineStore('comments', {
       if (this._unSubscribe) {
         this._unSubscribe()
       }
-      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), async (querySnapshot) => {
-        const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const q = query(
+        collection(db, collectionName, documentId, 'comments'),
+        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+      )
+      this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
+        const comments = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((data) => {
+            if (data.isDeleted) return false
+            return true
+          })
 
         for (const comment of comments) {
           if (!comment.isAnonymous) {
@@ -107,9 +121,23 @@ export const useCommentStore = defineStore('comments', {
       }
 
       try {
-        const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'comments'))
+        const q1 = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+        )
+        const q2 = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false)),
+          orderBy('parentId')
+        )
+
+        const totalCountFunc = await getCountFromServer(q1)
+        const totalChildCommentCountFunc = await getCountFromServer(q2)
+
         const totalComments = totalCountFunc.data().count
-        this.$patch({ _commentsCount: totalComments })
+        const totalChildComments = totalChildCommentCountFunc.data().count
+
+        this.$patch({ _commentsCount: totalComments - totalChildComments })
       } catch (e) {
         console.error('Failed fetching comments count', e)
       }
@@ -213,11 +241,20 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
+        const relatedCommentsQuery = query(collection(db, collectionName, documentId, 'comments'), where('parentId', '==', commentId))
+        const relatedCommentsSnapshot = await getDocs(relatedCommentsQuery)
         transaction.update(doc(db, collectionName, documentId, 'comments', commentId), {
           author: userStore.getUserIpHash,
           isAnonymous: true,
           text: 'Comment Deleted',
           isDeleted: true
+        })
+        relatedCommentsSnapshot.forEach((relatedCommentDocs) => {
+          transaction.update(relatedCommentDocs.ref, {
+            isAnonymous: true,
+            text: 'Comment Deleted',
+            isDeleted: true
+          })
         })
       }).finally(async () => {
         this._isLoading = false

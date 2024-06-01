@@ -18,6 +18,10 @@
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
+          <template v-if="isAdd">
+            <q-separator spaced="xl" />
+            <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
+          </template>
           <div
             v-if="!!statStore.getStats?.length"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
@@ -37,10 +41,10 @@
           </div>
           <div
             class="col-12 anthogram-border"
-            v-if="!!likeStore.getLikes?.length"
+            v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
             v-bind:class="!!shareStore?.getSharesStats?.length ? 'col-md-6' : 'col-md-12'"
           >
-            <LikesBar :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }" :interval="interval" />
+            <LikesBar :data="{ likes: likeStore.getLikes ?? [], dislikes: likeStore.getDislikes ?? [] }" :interval="interval" />
           </div>
         </div>
 
@@ -69,12 +73,15 @@ import LeafletMap from 'components/Posts/Graphs/Map/LeafletMap.vue'
 import { useErrorStore, useLikeStore, useShareStore, useStatStore, useVisitorStore } from 'src/stores'
 import HalfDonought from 'components/Posts/Graphs/HalfDonought.vue'
 import PopularityGauge from 'components/Posts/Graphs/PopularityGauge.vue'
+import CTRBar from './Graphs/CTRBar.vue'
 
-const props = defineProps(['post', 'collectionName'])
+const props = defineProps(['post', 'isAdd', 'collectionName'])
 
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const visitorStore = useVisitorStore()
+const impressionsStore = useImpressionsStore()
+const clickStore = useClicksStore()
 const errorStore = useErrorStore()
 const statStore = useStatStore()
 

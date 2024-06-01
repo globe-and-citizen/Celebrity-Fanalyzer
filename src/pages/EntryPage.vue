@@ -16,7 +16,7 @@
     </q-tab-panel>
     <!-- Panel 3: Comments -->
     <q-tab-panel name="comments" class="bg-white">
-      <TheComments collectionName="entries" :post="entry" />
+      <TheComments v-if="entry" collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
 </template>
@@ -43,13 +43,19 @@ const commentStore = useCommentStore()
 const tab = ref(entryStore.tab)
 
 const entry = computed(() => {
-  return entryStore.getEntries?.find((entry) => router.currentRoute.value.href === entry.slug)
+  return entryStore.getEntries?.find(
+    (entry) =>
+      router.currentRoute.value.href === entry.slug ||
+      router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+  )
 })
 watchEffect(async () => {
   if (entry.value?.id) {
+    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    // await commentStore.getTotalComments('entries', entry.value.id)
     await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
     await commentStore.getTotalComments('entries', entry.value.id)
-    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
   }
 })
 
@@ -63,6 +69,7 @@ onBeforeRouteLeave(async () => {
 })
 
 onUnmounted(() => {
+  commentStore.resetComments()
   entryStore.setTab('post')
 })
 </script>

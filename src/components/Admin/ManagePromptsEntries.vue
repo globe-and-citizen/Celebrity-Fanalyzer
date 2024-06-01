@@ -1,5 +1,6 @@
 <template>
   <q-table
+    v-if="prompts"
     :columns="columns"
     :filter="filter"
     flat

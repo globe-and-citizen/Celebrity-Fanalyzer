@@ -133,12 +133,14 @@ async function addComment() {
       notificationStore.create(props.post.subscribers, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
+        slug: props.post.slug,
         message: 'New comment: ' + comment.text,
         type: 'comment'
       })
       notificationStore.create(mentionedUsers.value, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
+        slug: props.post.slug,
         message: userStore.getUser.displayName + ' mentioned you: ' + comment.text,
         type: 'mention'
       })
@@ -173,6 +175,7 @@ async function addReply() {
       notificationStore.create(props.post.subscribers, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
+        slug: props.post.slug,
         message: 'New comment: ' + comment.text,
         type: 'comment'
       })

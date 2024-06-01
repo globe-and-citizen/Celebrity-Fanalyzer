@@ -1,5 +1,6 @@
 <template>
   <TheHeader title="Admin Panel">
+    <q-btn v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
     <q-btn-dropdown
       auto-close
       data-test="button-dropdown"
@@ -27,6 +28,9 @@
         >
           <q-item-section>New Entry</q-item-section>
         </q-item>
+        <!-- <q-item v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" clickable @click="openAdvertiseDialog">
+          <q-item-section>New Advertise</q-item-section>
+        </q-item> -->
         <q-item v-if="userStore.isAdmin && !!uniqueUsers?.value?.length" clickable @click="addAllUsersToStatsDb()">
           <q-item-section>Add new users</q-item-section>
         </q-item>
@@ -36,7 +40,14 @@
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs active-color="primary" align="justify">
-        <q-route-tab data-test="posts-tab" name="prompts" icon="view_list" label="Prompts & Entries" :to="{ name: 'admin.prompts' }" />
+        <q-route-tab
+          v-if="userStore.isEditorOrAbove"
+          data-test="posts-tab"
+          name="prompts"
+          icon="view_list"
+          label="Prompts & Entries"
+          :to="{ name: 'admin.prompts' }"
+        />
         <q-route-tab
           v-if="userStore.isAdmin"
           data-test="users-tab"
@@ -44,6 +55,13 @@
           :to="{ name: 'admin.users' }"
           icon="people"
           label="Users"
+        />
+        <q-route-tab
+          v-if="userStore.isAdvertiser || userStore.isAdmin"
+          name="advertises"
+          :to="{ name: 'admin.advertises' }"
+          icon="campaign"
+          label="Advertises"
         />
         <q-route-tab
           v-if="userStore.isEditorOrAbove"
@@ -83,7 +101,11 @@
         <EntryCard v-bind="entry" @hideDialog="entry = {}" />
       </q-dialog>
 
-      <router-view @openPromptDialog="openPromptDialog" />
+      <q-dialog class="min-" position="bottom" v-model="advertise.dialog">
+        <AdvertiseCard v-bind="advertise" @hideDialog="advertise = {}" />
+      </q-dialog>
+
+      <router-view @openPromptDialog="openPromptDialog" @openAdvertiseDialog="openAdvertiseDialog" />
     </q-page>
   </q-page-container>
 </template>
@@ -91,8 +113,9 @@
 <script setup>
 import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
+import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, usePromptStore, useRequestStore, useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useRequestStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -101,9 +124,11 @@ const userStore = useUserStore()
 
 const entry = ref({})
 const prompt = ref({})
+const advertise = ref({})
 const tab = ref('posts')
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
+const advertiseStore = useAdvertiseStore()
 const currentPath = ref('')
 
 const router = useRouter()
@@ -116,6 +141,7 @@ const addAllUsersToStatsDb = () => {
   userStore.addAllUsers(allUsersMap)
 }
 
+
 const uniqueUsers = computed(() => {
   const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
   const statsUsersIds = userStore.getAllUsers?.usersList.map((user) => user.user_id) || []
@@ -126,6 +152,8 @@ onMounted(async () => {
   await userStore.fetchUsers()
   await requestStore.readRequests()
   await userStore.getStatsUsers()
+  advertiseStore.fetchAdvertises().catch((error) => console.log(error))
+
   currentPath.value = router.currentRoute.value.path
   const adminTab = document.querySelector('.adminTab')
   const activeHomeTab = document.querySelector('[href="/"]')
@@ -171,5 +199,9 @@ function openPromptDialog(props) {
 function openEntryDialog() {
   entry.value = {}
   entry.value.dialog = true
+}
+function openAdvertiseDialog(props) {
+  advertise.value = props?.id ? props : {}
+  advertise.value.dialog = true
 }
 </script>
