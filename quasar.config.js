@@ -84,6 +84,12 @@ module.exports = configure(function (ctx) {
             }
           }
         }
+        viteConf.optimizeDeps = {
+          include: ['@web3modal/ethers5'],
+          esbuildOptions: {
+            target: 'es2020', // Ensure the target environment supports all features
+          },
+        };
       }
       // viteVuePluginOptions: {},
 

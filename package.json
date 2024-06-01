@@ -21,7 +21,8 @@
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.7",
-    "@web3modal/ethers5": "^4.1.1",
+    "@web3modal/ethers5": "^4.2.3",
+    "big-integer": "^1.6.52",
     "dotenv": "^16.3.1",
     "echarts": "^5.4.3",
     "ethers": "^5.7.2",
