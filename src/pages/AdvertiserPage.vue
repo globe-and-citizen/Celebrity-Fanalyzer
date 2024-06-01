@@ -26,7 +26,7 @@ const advertiseStore = useAdvertiseStore()
 const userStore = useUserStore()
 
 onMounted(() => {
-   advertiseStore.fetchAdvertises().catch(error=>console.log(error))
+  advertiseStore.fetchAdvertises().catch((error) => console.log(error))
 })
 
 function openAdvertiseDialog(props) {

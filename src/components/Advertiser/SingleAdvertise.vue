@@ -26,7 +26,7 @@
           <q-card-section v-if="advertise.type === 'Banner' && advertise.contentURL" class="col-5 flex flex-center">
             <q-img class="rounded-borders full-width height-auto" :src="advertise.contentURL" />
           </q-card-section>
-          <q-card-section horizontal class="flex justify-between" :class="[{'text-margin':advertise.type==='Text'}]">
+          <q-card-section horizontal class="flex justify-between" :class="[{ 'text-margin': advertise.type === 'Text' }]">
             <q-card-section class="q-pt-xs flex row justify-evenly full-width">
               <div class="col-2">
                 <div class="date-box">
@@ -111,7 +111,7 @@
 </template>
 <script setup>
 import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore, useVisitorStore } from 'src/stores'
-import { defineEmits, defineProps, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import ShareComponent from '../Posts/ShareComponent.vue'
 import TheHeader from '../shared/TheHeader.vue'
 
@@ -171,7 +171,7 @@ async function share(socialNetwork) {
   text-decoration: none;
 }
 
-.text-margin{
+.text-margin {
   margin-top: 4rem;
 }
 
@@ -206,7 +206,7 @@ async function share(socialNetwork) {
 .margin-bottom {
   margin-bottom: 6rem;
 }
-.content-box{
+.content-box {
   overflow-wrap: break-word;
 }
 </style>
