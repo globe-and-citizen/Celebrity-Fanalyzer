@@ -74,13 +74,18 @@ function markAllAsRead() {
 function goToLink(notification) {
   markOneAsRead(notification.id)
 
+  if (notification.type === 'comment') {
+    markAllAsRead(notification.link)
+  }
   if (notification.collection === 'prompts') {
     router.push(notification.link || '/')
     promptStore.setTab('comments')
   }
   if (notification.collection === 'entries') {
-    const entry = entryStore.getEntries?.find((entry) => entry.id === notification.link.slice(1))
-    router.push(entry?.slug)
+    // const entry = entryStore.getEntries?.find((entry) => entry.id === notification.link.slice(1))
+    // router.push(entry?.slug)
+    const entry = notification.slug || notification.link.slice(0, 8) + '/' + notification.link.slice(8) + '_id'
+    router.push(entry)
     entryStore.setTab('comments')
   }
 }

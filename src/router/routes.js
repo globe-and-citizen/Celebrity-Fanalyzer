@@ -56,6 +56,10 @@ const routes = [
         path: 'fan/:username',
         component: () => import('pages/PublicProfilePage.vue')
       },
+      {
+        path: 'campaign/:campaignId',
+        component: () => import('pages/CampaignPage.vue')
+      },
       ...profile,
       ...admin
     ]

@@ -9,10 +9,14 @@
           <q-tab name="monthly" label="Monthly" />
         </q-tabs>
         <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
-        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length && !!likeStore.getDislikes?.length" />
+        <template v-if="isAdd">
+          <q-separator spaced="xl" />
+          <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
+        </template>
+        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length" />
         <LikesBar
-          v-if="!!likeStore.getLikes?.length && !!likeStore.getDislikes?.length"
-          :data="{ likes: likeStore.getLikes, dislikes: likeStore.getDislikes }"
+          v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
+          :data="{ likes: likeStore.getLikes ?? [], dislikes: likeStore.getDislikes ?? [] }"
           :interval="interval"
         />
         <q-separator v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" spaced="xl" />
@@ -28,14 +32,17 @@ import LikesBar from 'src/components/Posts/Graphs/LikesBar.vue'
 import SharesPie from 'src/components/Posts/Graphs/SharesPie.vue'
 import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useErrorStore, useLikeStore, useShareStore, useVisitorStore } from 'src/stores'
-import { onMounted, ref } from 'vue'
+import CTRBar from './Graphs/CTRBar.vue'
+import { useLikeStore, useShareStore, useVisitorStore, useClicksStore, useImpressionsStore, useErrorStore } from 'src/stores'
+import { ref, onMounted } from 'vue'
 
-const props = defineProps(['post', 'collectionName'])
+const props = defineProps(['post', 'isAdd', 'collectionName'])
 
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const visitorStore = useVisitorStore()
+const impressionsStore = useImpressionsStore()
+const clickStore = useClicksStore()
 const errorStore = useErrorStore()
 
 const interval = ref('daily')

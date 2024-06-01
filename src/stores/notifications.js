@@ -102,9 +102,14 @@ export const useNotificationStore = defineStore('notification', {
       })
     },
 
-    async markAllAsRead() {
+    async markAllAsRead(link) {
       const userStore = useUserStore()
-      const unreadNotifications = this.getNotifications.filter((notification) => !notification.read)
+      let unreadNotifications
+      if (link) {
+        unreadNotifications = this.getNotifications.filter((notification) => !notification.read && notification.link === link)
+      } else {
+        unreadNotifications = this.getNotifications.filter((notification) => !notification.read)
+      }
 
       await runTransaction(db, async (transaction) => {
         unreadNotifications.forEach((notification) => {
