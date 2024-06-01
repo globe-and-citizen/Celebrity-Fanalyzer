@@ -113,16 +113,18 @@ export const useEntryStore = defineStore('entries', {
 
     async fetchEntryBySlug(slug) {
       const userStore = useUserStore()
+      const promptStore = usePromptStore()
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
-        const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+        const entry = await querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (entry.author.id) {
           entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
         }
         this._isLoading = false
         this._entries = [entry]
       } catch (e) {
+        await promptStore.redirect()
         console.error('Unable to fetch entry', e)
       }
     },

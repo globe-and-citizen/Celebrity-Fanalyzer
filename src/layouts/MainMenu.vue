@@ -27,14 +27,15 @@
 </template>
 
 <script setup>
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref, watch } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const updated = ref(false)
 const userStore = useUserStore()
 const promptStore = usePromptStore()
 const entriesStore = useEntryStore()
+const errorStore = useErrorStore()
 const router = useRouter()
 const email = ref('')
 const currentPath = ref('')

@@ -198,7 +198,7 @@ onMounted(async () => {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
   }
   // If prompts are once per month check if last prompt date is different from current
-  const lastPromptMonth = new Date(monthPrompt.value.created.seconds * 1000).getMonth()
+  const lastPromptMonth = new Date(monthPrompt?.value?.created?.seconds * 1000).getMonth()
   const currentMonth = new Date().getMonth()
   if (lastPromptMonth !== currentMonth) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))

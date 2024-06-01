@@ -55,38 +55,50 @@ function calculateRadius() {
   const screenHeight = window.innerHeight
 
   const minRadius = 20
-  const maxRadius = 450
+  const maxRadius = 100
   const radius = Math.min(screenWidth, screenHeight) * 0.21
 
   return [minRadius, Math.min(radius, maxRadius)]
 }
 
+let summedData = {
+  clicks: 0,
+  keypresses: 0,
+  mouseMovements: 0,
+  scrolls: 0,
+  totalTime: 0
+}
+
+function resetSummedData() {
+  summedData = {
+    clicks: 0,
+    keypresses: 0,
+    mouseMovements: 0,
+    scrolls: 0,
+    totalTime: 0
+  }
+}
+
 function updateChartOption() {
   chartOption.value.series[0].radius = calculateRadius()
 
-  let summedData = {
-    clicks: 0,
-    keypresses: 0,
-    mousemovements: 0,
-    scrolls: 0,
-    totaltime: 0
-  }
-  const userData = props.stats
+  resetSummedData()
 
+  const userData = props.stats
   userData.map((user) => {
     summedData.clicks += user.clicks
     summedData.keypresses += user.keypresses
     summedData.scrolls += user.scrolls
-    summedData.totaltime += user.totaltime
-    summedData.mousemovements += user.mousemovements
+    summedData.totalTime += user.totalTime
+    summedData.mouseMovements += user.mouseMovements
   })
 
   const pieChartData = [
     { value: summedData?.clicks, name: 'Clicks' },
-    { value: summedData?.keypresses, name: 'Keypresses' },
-    { value: summedData?.mousemovements, name: 'Mouse movements' },
+    { value: summedData?.keypresses, name: 'Key-presses' },
+    { value: summedData?.mouseMovements, name: 'Mouse movements' },
     { value: summedData?.scrolls, name: 'Scrolls' },
-    { value: summedData?.totaltime, name: 'Total Time' }
+    { value: summedData?.totalTime, name: 'Total Time' }
   ]
 
   chartOption.value.series[0].data = pieChartData
@@ -103,15 +115,16 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateChartOption)
+  resetSummedData()
 })
 </script>
 
 <style scoped>
 .chart {
-  height: 70vh;
+  height: 100%;
 
   @media (max-width: 1024px) {
-    height: 55vh;
+    height: 45vh;
   }
   @media (max-width: 720px) {
     height: 45vh;
