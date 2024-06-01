@@ -4,7 +4,7 @@ node_modules
 
 .vscode/settings.json
 
-# Quasar core related directories
+# Quasar core related directorie
 .quasar
 /dist
 
