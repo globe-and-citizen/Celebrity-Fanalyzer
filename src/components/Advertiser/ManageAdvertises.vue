@@ -6,7 +6,7 @@
 
 <script setup>
 import { useAdvertiseStore } from 'src/stores'
-import { computed, defineEmits } from 'vue'
+import { computed } from 'vue'
 import AdvertiserTable from './AdvertiserTable.vue'
 
 const emit = defineEmits(['openAdvertiseDialog'])
