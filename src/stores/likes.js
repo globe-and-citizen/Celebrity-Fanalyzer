@@ -1,18 +1,18 @@
-import { collection, deleteDoc, doc, getCountFromServer, getDoc, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
 import layer8 from 'layer8_interceptor'
 import { baseURL } from 'stores/stats'
 
-const pushLikeToStats = async (user_id, article_id, topic_id, isLike) =>
+const pushLikeToStats = async (user_id, article_id, topic_id, isLike, ad_id) =>
   await layer8
     .fetch(`${baseURL}/reaction`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ user_id, article_id, topic_id, isLike })
+      body: JSON.stringify({ user_id, article_id, topic_id, isLike, ad_id })
     })
     .then((res) => res.json())
     .catch((err) => console.log(err))
@@ -53,7 +53,7 @@ export const useLikeStore = defineStore('likes', {
       this._isLoading = false
     },
 
-    async addLike(collectionName, documentId, article_id, topic_id) {
+    async addLike(collectionName, documentId, article_id, topic_id, ad_id) {
       try {
         this._isLoading = true
         const userStore = useUserStore()
@@ -70,14 +70,14 @@ export const useLikeStore = defineStore('likes', {
 
         if (likesSnap.exists()) {
           await deleteDoc(likesRef)
-          await pushLikeToStats(user_id, article_id, topic_id, null)
+          await pushLikeToStats(user_id, article_id, topic_id, null, ad_id)
         } else {
           const like = {
             author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
             createdAt: Timestamp.fromDate(new Date())
           }
           await setDoc(likesRef, like)
-          await pushLikeToStats(user_id, article_id, topic_id, true)
+          await pushLikeToStats(user_id, article_id, topic_id, true, ad_id)
         }
 
         await this.getAllLikesDislikes(collectionName, documentId)
@@ -89,7 +89,7 @@ export const useLikeStore = defineStore('likes', {
       }
     },
 
-    async addDislike(collectionName, documentId, article_id, topic_id) {
+    async addDislike(collectionName, documentId, article_id, topic_id, ad_id) {
       try {
         this._isLoading = true
         const userStore = useUserStore()
@@ -107,14 +107,14 @@ export const useLikeStore = defineStore('likes', {
 
         if (dislikesSnap.exists()) {
           await deleteDoc(dislikesRef)
-          await pushLikeToStats(user_id, article_id, topic_id, null)
+          await pushLikeToStats(user_id, article_id, topic_id, null, ad_id)
         } else {
           const dislike = {
             author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
             createdAt: Timestamp.fromDate(new Date())
           }
           await setDoc(dislikesRef, dislike)
-          await pushLikeToStats(user_id, article_id, topic_id, false)
+          await pushLikeToStats(user_id, article_id, topic_id, false, ad_id)
         }
 
         await this.getAllLikesDislikes(collectionName, documentId)

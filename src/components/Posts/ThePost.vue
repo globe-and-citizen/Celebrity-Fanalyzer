@@ -84,7 +84,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.isLoaded ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
+          <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
             v-if="userStore.isAuthenticated"
             color="blue"

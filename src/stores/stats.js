@@ -111,6 +111,16 @@ export const useStatStore = defineStore('stats', {
       })
     },
 
+    async addAdvertisement(ad_id, user_id, title, content, budget, duration) {
+      await layer8.fetch(`${baseURL}/advertisement`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id, ad_id, title, content, budget, duration })
+      })
+    },
+
     async addUser(user_id, location) {
       try {
         const response = await layer8.fetch(`${baseURL}/users`, {

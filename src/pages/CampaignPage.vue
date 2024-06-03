@@ -92,7 +92,7 @@ watchEffect(async () => {
 
     shareIsLoading.value = true
     await shareStore
-      .fetchShares('advertises', advertiseId)
+      .fetchSharesCount('advertises', advertiseId)
       .catch((error) => errorStore.throwError(error))
       .finally(() => {
         shareIsLoading.value = false
