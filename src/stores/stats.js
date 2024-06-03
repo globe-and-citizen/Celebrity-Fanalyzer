@@ -75,9 +75,10 @@ export const useStatStore = defineStore('stats', {
      * @async
      * @param {string} documentId - The ID of the document.
      * @param {object} stats - The statistics to be added.
+     * @param {string} type - Post type statistics are added to.
      * @returns {Promise<void>} - A promise that resolves when the statistics are successfully added.
      */
-    async addStats(documentId, stats) {
+    async addStats(documentId, stats, type) {
       const userStore = useUserStore()
       const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
       const id = documentId
@@ -87,7 +88,7 @@ export const useStatStore = defineStore('stats', {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ ...stats, user_id, id })
+        body: JSON.stringify({ ...stats, user_id, id, type })
       })
     },
 

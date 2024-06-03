@@ -119,7 +119,7 @@ watch(entriesRef, (newVal) => {
 
 onUnmounted(async () => {
   const stats = stopTracking()
-  await statStore.addStats(prompt.value?.id, stats)
+  await statStore.addStats(prompt.value?.id, stats, 'topic')
   promptStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()

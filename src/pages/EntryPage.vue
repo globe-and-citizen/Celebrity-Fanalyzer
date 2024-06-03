@@ -64,7 +64,7 @@ onMounted(async () => {
 
 onBeforeRouteLeave(async () => {
   const stats = stopTracking()
-  await statStore.addStats(entry.value.id, stats)
+  await statStore.addStats(entry.value.id, stats, 'article')
 })
 
 onUnmounted(() => {
