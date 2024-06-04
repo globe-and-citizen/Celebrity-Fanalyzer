@@ -120,7 +120,6 @@ export const getTransactionDetails = async (txHash,networkName) => {
 
     const result = {
       amount: amount,
-      gasPrice: ethers.utils.gasPrice,
       sender: sender,
       receiver: receiver,
       status: status

@@ -51,9 +51,13 @@ module.exports = configure(function (ctx) {
     build: {
       sourceMap: true,
       target: {
-        browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
-        node: 'node16'
+        browser: ['es2020'], // Update to es2020 to ensure BigInt support
+        node: 'node18'
       },
+      // target: {
+      //   browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
+      //   node: 'node16'
+      // },
       vueRouterMode: 'history', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
@@ -68,6 +72,7 @@ module.exports = configure(function (ctx) {
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
+      
 
       extendViteConf(viteConf) {
         viteConf.build.rollupOptions = {
@@ -88,9 +93,23 @@ module.exports = configure(function (ctx) {
           include: ['@web3modal/ethers5'],
           esbuildOptions: {
             target: 'es2020', // Ensure the target environment supports all features
+            define: {
+              global: 'globalThis'
+            },
+            supported: { 
+              bigint: true 
+            },
           },
+          
         };
+        
       }
+      
+      // babel :{
+      //   plugins: [
+      //     '@babel/plugin-syntax-bigint'
+      //   ]
+      // }
       // viteVuePluginOptions: {},
 
       // vitePlugins: [

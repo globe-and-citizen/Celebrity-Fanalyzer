@@ -40,6 +40,18 @@ export default defineConfig({
     include: ['@web3modal/ethers5'],
     esbuildOptions: {
       target: 'es2020', // Ensure the target environment supports all features
+      define: {
+        global: 'globalThis'
+      },
+      supported: { 
+        bigint: true 
+      },
     },
+   
   },
+  // babel: {
+  //   plugins: [
+  //     '@babel/plugin-syntax-bigint'
+  //   ]
+  // }
 })

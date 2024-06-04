@@ -19,6 +19,7 @@
     "cy:test": "start-server-and-test dev http://localhost:9200 cy:run"
   },
   "dependencies": {
+    "@babel/plugin-syntax-bigint": "^7.8.3",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.7",
     "@web3modal/ethers5": "^4.2.3",
