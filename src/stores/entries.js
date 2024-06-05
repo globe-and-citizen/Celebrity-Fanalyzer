@@ -114,6 +114,7 @@ export const useEntryStore = defineStore('entries', {
 
     async fetchEntryBySlug(slug) {
       const userStore = useUserStore()
+      const promptStore = usePromptStore()
       const id = slug.slice(1, -3).replace('/', '-').replace('/', '')
       try {
         this._isLoading = true
@@ -125,6 +126,7 @@ export const useEntryStore = defineStore('entries', {
         this._isLoading = false
         this._entries = [entry]
       } catch (e) {
+        await promptStore.redirect()
         console.error('Unable to fetch entry', e)
       }
     },

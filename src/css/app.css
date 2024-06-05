@@ -27,6 +27,10 @@ html {
   padding-right: 0;
 }
 
+.leaflet-pane {
+  z-index: 2 !important;
+}
+
 wui-card {
   z-index: 999999999999 !important;
    /* High z-index to ensure visibility above other elements */

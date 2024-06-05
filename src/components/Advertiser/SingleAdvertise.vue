@@ -95,8 +95,8 @@
                 <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
               </q-btn>
               <ShareComponent
-                :label="shareStore.isLoaded ? shareStore.getShares : 0"
-                :disable="!shareStore.isLoaded"
+                :label="shareStore.getShares ? shareStore.getShares : 0"
+                :disable="shareStore.isLoading"
                 @share="share($event)"
               />
             </div>
@@ -110,8 +110,8 @@
   </q-page-container>
 </template>
 <script setup>
-import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useUserStore, useVisitorStore } from 'src/stores'
-import { onMounted } from 'vue'
+import { useCommentStore, useErrorStore, useLikeStore, useShareStore, useStatStore, useUserStore, useVisitorStore } from 'src/stores'
+import { onMounted, watchEffect } from 'vue'
 import ShareComponent from '../Posts/ShareComponent.vue'
 import TheHeader from '../shared/TheHeader.vue'
 
@@ -133,6 +133,7 @@ const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
+const statsStore = useStatStore()
 
 function getDate(timestamp) {
   return timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
@@ -149,20 +150,38 @@ function getMonth(timestamp) {
 }
 onMounted(async () => {
   await userStore.fetchUserIp()
-
+  const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+  const userLocation = userStore.getUserLocation
+  await statsStore.addUser(userId, userLocation)
   await visitorStore.addVisitor(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
 })
 
+watchEffect(async () => {
+  if (props.advertise?.author?.id) {
+    await statsStore.addAdvertisement(
+      props.advertise?.id,
+      props.advertise?.author?.id,
+      props.advertise?.title,
+      props.advertise?.content,
+      props.advertise?.budget,
+      props.advertise?.duration
+    )
+  }
+})
 async function like() {
-  await likeStore.addLike(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
+  await likeStore
+    .addLike(props.collectionName, props.advertise?.id, null, null, props.advertise?.id)
+    .catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.addDislike(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
+  await likeStore
+    .addDislike(props.collectionName, props.advertise?.id, null, null, props.advertise?.id)
+    .catch((error) => errorStore.throwError(error))
 }
 
 async function share(socialNetwork) {
-  await shareStore.addShare(props.collectionName, props.advertise.id, socialNetwork).catch((error) => errorStore.throwError(error))
+  await shareStore.addShare(props.collectionName, props.advertise?.id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 </script>
 
