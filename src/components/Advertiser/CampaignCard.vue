@@ -18,6 +18,7 @@
         {{ advertise.content?.length > 80 ? advertise.content.substring(0, 80) + '...' : advertise.content }}
       </p>
       <span class="cursor-pointer text-black link" @click="goToUrl">Learn more</span>
+      <a v-if="advertise?.productLink" class="cursor-pointer text-black link" :href="advertise.productLink">Explore now</a>
     </div>
   </article>
 </template>
@@ -87,6 +88,7 @@ $shadow: rgba(0, 0, 0, 0.2);
 }
 .link {
   text-decoration: underline;
+  margin-right:25px;
 }
 .blog-card {
   display: flex;

@@ -89,6 +89,16 @@
           </q-btn>
           <ShareComponent :label="shareStore.isLoaded ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
+              v-if="post?.productLink && post?.isAdd"
+                flat
+                icon="open_in_new"
+                rounded
+                size="0.75rem"
+                :href="post?.productLink"
+              >
+                <q-tooltip anchor="bottom middle" self="center middle">{{ post?.productLink }}</q-tooltip>
+              </q-btn>
+          <q-btn
             v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
             flat
