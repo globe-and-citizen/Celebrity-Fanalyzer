@@ -35,6 +35,7 @@ export const useRequestStore = defineStore('request', {
 
     async becomeWriter(message) {
       const userStore = useUserStore()
+
       const payload = {
         createdAt: new Date(),
         message: message,
@@ -42,8 +43,10 @@ export const useRequestStore = defineStore('request', {
         request: 'writer',
         requester: userStore.getUserRef
       }
+
       this._isLoading = true
       await setDoc(doc(db, 'requests', userStore.getUser.uid), payload)
+
       runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', userStore.getUser.uid), { askedToBeWriter: true })
       }).finally(() => (this._isLoading = false))
