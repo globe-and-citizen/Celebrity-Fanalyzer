@@ -16,7 +16,7 @@
       >
         <template #body-cell-published="props">
           <q-td :props="props">
-            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" />
+            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
             <q-icon
               v-else-if="props.value === 'Inactive'"
               @click="changeActiveStatus(props.row, 'Active')"
