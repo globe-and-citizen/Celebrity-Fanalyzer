@@ -16,6 +16,7 @@ import { useStatStore } from './stats'
 import { useStorageStore } from './storage'
 import { useUserStore } from './user'
 import { useVisitorStore } from './visitors'
+import { useWalletStore } from './wallet'
 import { useAdvertiseStore } from './advertises'
 import { useClicksStore } from './clicks'
 import { useImpressionsStore } from './impressions'
@@ -69,6 +70,7 @@ export {
   useStorageStore,
   useUserStore,
   useVisitorStore,
+  useWalletStore,
   useAdvertiseStore,
   useClicksStore,
   useImpressionsStore

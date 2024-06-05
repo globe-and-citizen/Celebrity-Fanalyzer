@@ -165,6 +165,23 @@ export const useEntryStore = defineStore('entries', {
       }).finally(() => (this._isLoading = false))
     },
 
+    //update not coming from form submission
+    async dataUpdateEntry(payload) {
+      
+      const promptStore = usePromptStore()
+      //console.log('the payload ===', payload.entry.prompt );
+      const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
+       
+      //console.log('the promt ===', prompt );
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'prompts', prompt.id), {
+          hasWinner: payload.isWinner == true ? true : false,
+          updated: Timestamp.fromDate(new Date())
+        })
+        transaction.update(doc(db, 'entries', payload.entry.id), { isWinner: payload.isWinner, updated: Timestamp.fromDate(new Date()) })
+      }).finally(() => (this._isLoading = false))
+    },
+
     async deleteEntry(entryId) {
       const commentStore = useCommentStore()
       const errorStore = useErrorStore()
