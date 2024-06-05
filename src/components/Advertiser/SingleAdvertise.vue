@@ -148,9 +148,11 @@ function getMonth(timestamp) {
   return date.toLocaleString('default', { month: 'long' }).toUpperCase().slice(0, 3)
 }
 onMounted(async () => {
-  await userStore.fetchUserIp()
+  if (props.advertise?.isApproved && props.advertise?.status === 'Active') {
+    await userStore.fetchUserIp()
 
-  await visitorStore.addVisitor(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
+    await visitorStore.addVisitor(props.collectionName, props.advertise.id).catch((error) => errorStore.throwError(error))
+  }
 })
 
 async function like() {
