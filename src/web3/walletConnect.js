@@ -1,4 +1,5 @@
-import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5'
+import { createWeb3Modal,defaultConfig } from '@web3modal/ethers5'
+
 import { useWalletStore } from '../stores'
 
 //console.log("the cahins === ",useWalletStore().getChains)

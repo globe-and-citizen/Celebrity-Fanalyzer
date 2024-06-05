@@ -1,10 +1,10 @@
 .DS_Store
 .thumbs.db
 node_modules
-package-lock.json
+
 .vscode/settings.json
 
-# Quasar core related directories
+# Quasar core related directorie
 .quasar
 /dist
 
@@ -40,3 +40,4 @@ ui-debug.log
 firebase-debug.log
 .nyc_output
 coverage/
+conf-example

@@ -3,7 +3,7 @@
 </template>
 <script setup>
 import { useAdvertiseStore } from 'src/stores'
-import { computed, defineEmits } from 'vue'
+import { computed } from 'vue'
 import AdvertiserTable from 'src/components/Advertiser/AdvertiserTable.vue'
 
 const emit = defineEmits(['openAdvertiseDialog'])

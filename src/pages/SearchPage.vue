@@ -52,8 +52,8 @@ import ArticleSkeleton from 'src/components/shared/ArticleSkeleton.vue'
 import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useAdvertiseStore } from 'src/stores'
-import { computed, ref } from 'vue'
+import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { computed, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -111,14 +111,6 @@ const computedEntries = computed(() => {
   return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
-})
-
-watchEffect(() => {
-  if (!router.currentRoute.value.params.year) {
-    promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-  } else {
-    promptStore.fetchPromptsByYear(router.currentRoute.value.params.year).catch((error) => errorStore.throwError(error))
-  }
 })
 </script>
 

@@ -83,7 +83,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { useAdvertiseStore, useErrorStore ,useUserStore} from 'src/stores'
+import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -104,7 +104,12 @@ const alertMessage = ref('')
 
 function checkDurationStatus() {
   for (const advertise of props.advertises) {
-    if (advertise.duration && (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) && advertise.status === 'Active' && userStore.isAdvertiser) {
+    if (
+      advertise.duration &&
+      (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) &&
+      advertise.status === 'Active' &&
+      userStore.isAdvertiser
+    ) {
       alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
       openDialog.value = true
     }

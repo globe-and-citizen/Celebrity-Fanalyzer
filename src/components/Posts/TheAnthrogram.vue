@@ -11,12 +11,12 @@
         <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
         <template v-if="isAdd">
           <q-separator spaced="xl" />
-          <CTRBar  :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
+          <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
         </template>
-        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"/>
+        <q-separator spaced="xl" v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length" />
         <LikesBar
           v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
-          :data="{ likes: likeStore.getLikes??[], dislikes: likeStore.getDislikes??[] }"
+          :data="{ likes: likeStore.getLikes ?? [], dislikes: likeStore.getDislikes ?? [] }"
           :interval="interval"
         />
         <q-separator v-if="!!shareStore?.getShares?.length" :data="shareStore?.getShares" spaced="xl" />
@@ -33,10 +33,10 @@ import SharesPie from 'src/components/Posts/Graphs/SharesPie.vue'
 import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import CTRBar from './Graphs/CTRBar.vue'
-import { useLikeStore, useShareStore, useVisitorStore , useClicksStore, useImpressionsStore,useErrorStore} from 'src/stores'
-import { ref,onMounted } from 'vue'
+import { useLikeStore, useShareStore, useVisitorStore, useClicksStore, useImpressionsStore, useErrorStore } from 'src/stores'
+import { ref, onMounted } from 'vue'
 
-const props = defineProps(['post', 'isAdd','collectionName'])
+const props = defineProps(['post', 'isAdd', 'collectionName'])
 
 const likeStore = useLikeStore()
 const shareStore = useShareStore()
