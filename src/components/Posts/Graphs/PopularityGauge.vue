@@ -12,12 +12,15 @@ import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 
 const props = defineProps({ postRating: {}, title: String })
 let rating = ref(0)
+let screenWidth = ref(window.innerWidth)
 
 use([TooltipComponent, TitleComponent, GaugeChart, CanvasRenderer])
-const chartOption = ref({
+
+const getChartOption = (width) => ({
   title: {
     text: props.title,
-    left: 'center'
+    left: 'center',
+    fontSize: width < 720 ? 12 : 18
   },
   tooltip: {
     formatter: '{a} <br/>{b} : {c}%'
@@ -27,7 +30,7 @@ const chartOption = ref({
       name: 'Popularity',
       type: 'gauge',
       detail: {
-        fontSize: 30,
+        fontSize: width < 720 ? 15 : 30,
         offsetCenter: [0, '-35%'],
         valueAnimation: true,
         formatter: function (value) {
@@ -35,11 +38,11 @@ const chartOption = ref({
         },
         color: 'inherit'
       },
-      data: [{ value: 0, name: 'Score' }],
+      data: [{ value: 0 }],
       startAngle: 180,
       endAngle: 0,
-      center: ['50%', '75%'],
-      radius: '90%',
+      center: width < 720 ? ['50%', '68%'] : ['50%', '80%'],
+      radius: width < 720 ? '80%' : '90%',
       min: 0,
       max: 100,
       splitNumber: 10,
@@ -71,8 +74,8 @@ const chartOption = ref({
       },
       axisLabel: {
         color: '#464646',
-        fontSize: 15,
-        distance: -60,
+        fontSize: width < 720 ? 10 : 15,
+        distance: width < 720 ? -50 : -60,
         rotate: 'tangential',
         formatter: function (value) {
           if (value === 10) {
@@ -101,6 +104,8 @@ const chartOption = ref({
   ]
 })
 
+const chartOption = ref(getChartOption(screenWidth.value))
+
 function updateChartOption() {
   rating.value = props.postRating?.postRating || 0
   chartOption.value.series[0].data[0].value = Math.ceil(rating.value)
@@ -111,7 +116,10 @@ watchEffect(() => {
 })
 
 onMounted(() => {
-  window.addEventListener('resize', updateChartOption)
+  window.addEventListener('resize', () => {
+    screenWidth.value = window.innerWidth
+    chartOption.value = getChartOption(screenWidth.value)
+  })
 })
 
 onUnmounted(() => {
@@ -123,11 +131,8 @@ onUnmounted(() => {
 .chart {
   height: 100%;
 
-  @media (max-width: 1024px) {
-    height: 45vh;
-  }
   @media (max-width: 720px) {
-    height: 45vh;
+    height: 35vh;
   }
 }
 </style>

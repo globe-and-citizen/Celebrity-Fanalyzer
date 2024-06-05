@@ -1,6 +1,6 @@
 <template>
   <q-select v-model="selectedDataType" :options="dataOptions" label="Filter By" outlined dense class="q-mb-lg q-select-class" />
-  <div id="map" @mousedown.stop.prevent></div>
+  <div id="map" @mousedown.stop.prevent @touchstart="handleTouchStart"></div>
 </template>
 
 <script setup>
@@ -87,7 +87,9 @@ const initMap = async () => {
   }
 }
 
-onMounted(async () => {})
+const handleTouchStart = (e) => {
+  e.stopPropagation()
+}
 
 watchEffect(() => {
   if (statStore.getAllInteractionsByCountry?.response) {
@@ -115,6 +117,11 @@ watch(
 #map {
   height: 80vh;
   border-radius: 20px;
+  touch-action: none;
+
+  @media (max-width: 720px) {
+    height: 60vh;
+  }
 }
 
 .q-select-class {
