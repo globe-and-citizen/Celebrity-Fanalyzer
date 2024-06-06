@@ -48,7 +48,7 @@
           </div>
         </div>
 
-        <div v-if="!!statStore.getArticleRate?.postRating" class="col-12 anthogram-border" style="height: 350px; margin-top: 10px">
+        <div v-if="!!statStore.getArticleRate?.postRating" class="col-12 anthogram-border rating-chart">
           <PopularityGauge :postRating="statStore.getArticleRate" :title="'Post popularity rating'" />
         </div>
 
@@ -110,5 +110,15 @@ onUnmounted(() => {
   border-radius: 10px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
   padding: 20px;
+}
+
+.rating-chart {
+  height: 350px;
+  width: auto;
+  margin-top: 10px;
+
+  @media (max-width: 720px) {
+    height: 280px;
+  }
 }
 </style>

@@ -29,7 +29,7 @@ const chartOption = ref({
     }
   },
   legend: {
-    bottom: '1%',
+    bottom: '0%',
     data: []
   },
   series: [
@@ -37,11 +37,11 @@ const chartOption = ref({
       name: 'User Activity',
       type: 'pie',
       radius: [],
-      center: ['50%', '60%'],
+      center: ['50%', '50%'],
       data: [],
       emphasis: {
         itemStyle: {
-          shadowBlur: 10,
+          shadowBlur: 20,
           shadowOffsetX: 0,
           shadowColor: 'rgba(0, 0, 0, 0.5)'
         }
