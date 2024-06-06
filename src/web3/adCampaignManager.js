@@ -6,11 +6,30 @@ import AdCampaignManager from 'src/contracts/artifacts/contracts/AdCampaignManag
 
 const walletStore=useWalletStore();
 const iface = new ethers.utils.Interface(AdCampaignManager.abi);
+
+const getProvider = async () => {
+    try {
+      const walletProvider = customWeb3modal.getWalletProvider()
+      
+      // With the walletProvider obtained, proceed to create the ethers provider and signer
+      const provider = new ethers.providers.Web3Provider(walletProvider)
+      //const signer = provider.getSigner()
+      //console.log("the network =========== ", await provider.getNetwork().name)
+  
+      return provider
+    } catch (error) {
+      walletStore.conn
+      console.error('Error getting provider:', error)
+      throw error // Rethrow the error to handle it where getProvider is called
+    }
+  }
+
 const  getContractInstance= async ()=>{
-    const walletProvider = customWeb3modal.getWalletProvider()
-    console.log("the wallet provider ==== ", walletProvider);
+    const provider =await getProvider();
+    
+    //console.log("the wallet provider ==== ", walletProvider);
     // With the walletProvider obtained, proceed to create the ethers provider and signer
-    const provider = new ethers.providers.Web3Provider(walletProvider)
+    //const provider = new ethers.providers.Web3Provider(walletProvider)
     console.log("the provider ============ ", provider);
     //const signer = provider.getSigner()
     //console.log("the network =========== ", await provider.getNetwork().name)
@@ -46,12 +65,12 @@ export const contractCreateAdCampaign=async (payload={budgetInMatic:0})=> {
             return { status: 'success', events };
         } catch (error) {
             console.error('Error creating ad campaign:', error);
-        return { status: 'error', error: error.message };
+            return { status: 'error', error: error?.message?error?.message:error };
         }
     }else{
         const errorMessage='Make sure the budget is greater than zero'
         console.error('Error claiming payment:', errorMessage);
-        return { status: 'error', error: errorMessage };
+        return { status: 'error', error:{'message':errorMessage} };
     }
 }
 //only owner

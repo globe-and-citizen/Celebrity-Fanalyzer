@@ -38,6 +38,19 @@
           <q-td :props="props">
             <q-icon name="edit" color="blue" size="18px" @click="$emit('openAdvertiseDialog', props.row)" class="cursor-pointer q-mr-sm" />
             <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
+            <q-btn
+              color="dark"
+              :disable="userStore.getUser.role !== 'Admin' "
+              flat
+              icon="payment"
+              size="sm"
+              label=""
+              v-if="props.row?.campaignCode && props.row.status=='active'"
+
+              @click="_claimPayment(props.row)"
+            >
+              <q-tooltip class="positi_claimPaymentve" :offset="[10, 10]">proceed payment!</q-tooltip>
+            </q-btn>
           </q-td>
         </template>
         <template #body-cell-durations="props">
@@ -85,7 +98,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-
+import { claimPayment } from 'app/src/web3/adCampaignManager'
 const props = defineProps({
   advertises: {
     required: true,
@@ -101,6 +114,34 @@ const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 const alertMessage = ref('')
+
+async function calculateAmountSpent(advertise) {
+  return (
+    import.meta.env.VITE_ADVERTISE_CLICK_RATE * advertise.clicks + import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * advertise.impressions
+  )
+}
+async function _claimPayment(advertise) {
+  console.log("the current advertise=== ", advertise)
+  if (advertise?.campaignCode) {
+    $q.loading.show()
+    const currentAmountSpent = await calculateAmountSpent(advertise)
+    if (currentAmountSpent > 0) {
+      const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
+      if (result.status.includes('success')) {
+        console.log('the result claimPayment result ====', result)
+        $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
+      } else {
+        $q.notify({ message: result?.error?.message, type: 'positive' })
+      }
+    } else {
+      $q.notify({ message: 'The curent balance to claim should be greater than zero' })
+    }
+  } else {
+    $q.notify({ message: 'No campaign code associated', type: 'negative' })
+  }
+  $q.loading.hide()
+  console.log('the result ', result)
+}
 
 function checkDurationStatus() {
   for (const advertise of props.advertises) {
@@ -181,6 +222,7 @@ const columns = ref([
     field: 'duration',
     label: 'Durations'
   },
+
   {
     name: 'action',
     field: 'action',

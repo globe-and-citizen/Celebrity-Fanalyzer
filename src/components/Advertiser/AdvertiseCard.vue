@@ -80,11 +80,12 @@
               :rules="[(duration) => duration > 0 || 'Enter a positive number']"
             />
             <q-input
-              label="Budget"
+              label="Budget In Matic"
               class="q-mb-lg"
-              v-model.number="advertise.budget"
-              type="number"
-              :min="0"
+              v-model="advertise.budget"
+              mask="#.######"
+              fill-mask="0"
+              
               :rules="[(budget) => (budget ? budget >= 0 : true || 'Enter a positive number')]"
             />
           </q-card-section>
@@ -119,8 +120,9 @@ import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { reactive, ref, watchEffect } from 'vue'
-
+import { reactive, ref, watchEffect, computed } from 'vue'
+import { useWalletStore } from 'src/stores'
+import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
   'author',
@@ -136,9 +138,11 @@ const props = defineProps([
   'duration',
   'status',
   'contentURL',
-  'budget'
+  'budget',
+  'campaignCode'
 ])
 
+const walletStore=useWalletStore()
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const advertiseStore = useAdvertiseStore()
@@ -150,6 +154,9 @@ const datePickerVisible = ref(false)
 const fileErrorMessage = ref('Max size is 5MB')
 const fileError = ref(false)
 
+
+const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_address)
+
 function openDatePicker() {
   datePickerVisible.value = true
 }
@@ -158,7 +165,8 @@ const advertise = reactive({
   content: '',
   title: '',
   productLink: '',
-  contentURL: ''
+  contentURL: '',
+  caompaignCode:''
 })
 const step = ref(1)
 
@@ -261,8 +269,20 @@ function getCurrentDate() {
   }
   return `${currentDate.getFullYear()}/${month}/${day}`
 }
+
+async function createAdCampain(payload){
+  $q.loading.show();
+  const result=await contractCreateAdCampaign(payload);
+  return result;
+  
+}
+
 async function onSubmit() {
+  // if (currentWalletAddress.value)
+  // {
   if (!advertise.budget) advertise.budget = 0
+  
+  $q.loading.show();
   advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
   if (advertise.type === 'Text') advertise.contentURL = ''
   else if (Object.keys(contentModel.value).length && advertise.type === 'Banner') {
@@ -286,15 +306,30 @@ async function onSubmit() {
         errorStore.throwError(error, 'Advertise edit failed')
       })
   } else {
-    await advertiseStore
+    //call contract create function
+    const result= await createAdCampain({'budgetInMatic':advertise.budget})
+    if(result.status.includes('success')){
+      //currentCampaignCode.value=result.events[0].args.campaignCode;
+      advertise.caompaignCode=result.events[0].args.campaignCode;
+      //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
+      //save advertisement to database
+      await advertiseStore
       .addAdvertise(advertise)
       .then(() => $q.notify({ type: 'positive', message: 'Advertise successfully submitted' }))
       .catch((error) => {
         console.log(error)
         errorStore.throwError(error, 'Advertise submission failed')
       })
+    }
+    else{
+      $q.notify({ message: result?.error?.message, type: 'negative' })
+    }
+    
   }
-
+  // }else{
+  //   $q.notify({ message: "please connect your blockchain wallet", type: 'negative' })
+  // }
   emit('hideDialog')
+  $q.loading.hide();
 }
 </script>
