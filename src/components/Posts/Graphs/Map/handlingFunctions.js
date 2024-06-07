@@ -17,23 +17,26 @@ export const handleLikesAndDislikes = (data, mapRef) => {
 
     const minRadius = 40000
     data.forEach((countryData) => {
-      const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
-      const popupContent = `Country: ${commentsLocation}<br>Likes: ${countryData.interactions.likes}<br>Dislikes: ${countryData.interactions.dislikes}`
-      const calcRadius = Math.sqrt((countryData.interactions.likes + countryData.interactions.dislikes) / Math.PI) * 4000
-      const radius = Math.max(calcRadius, minRadius)
-      const circleOptions = {
-        autoClose: false,
-        closeOnClick: false,
-        radius,
-        fillOpacity: 0.5,
-        color: '#e54757',
-        fillColor: '#e54757',
-        weight: 1.4
-      }
-      const countryCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
+      const totalInteractions = countryData.interactions.likes + countryData.interactions.dislikes
+      if (totalInteractions > 0) {
+        const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
+        const popupContent = `Country: ${commentsLocation}<br>Likes: ${countryData.interactions.likes}<br>Dislikes: ${countryData.interactions.dislikes}`
+        const calcRadius = Math.sqrt(totalInteractions / Math.PI) * 4000
+        const radius = Math.max(calcRadius, minRadius)
+        const circleOptions = {
+          autoClose: false,
+          closeOnClick: false,
+          radius,
+          fillOpacity: 0.5,
+          color: '#e54757',
+          fillColor: '#e54757',
+          weight: 1.4
+        }
+        const countryCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
 
-      if (countryCoordinates) {
-        L.circle(countryCoordinates, circleOptions).addTo(toRaw(mapRef.value)).bindPopup(popupContent)
+        if (countryCoordinates) {
+          L.circle(countryCoordinates, circleOptions).addTo(toRaw(mapRef.value)).bindPopup(popupContent)
+        }
       }
     })
   }
@@ -44,20 +47,20 @@ export const handleComments = (data, mapRef) => {
   const minRadius = 40000
   data.forEach((countryData) => {
     const commentsCount = countryData.comments || 0
-    const commentsCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
-    const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
-    if (commentsCount && commentsCoordinates) {
-      const popupContent = `Country: ${commentsLocation}<br>Comments: ${commentsCount}`
-      const calcRadius = Math.sqrt(commentsCount / Math.PI) * 4000
-      const radius = Math.max(calcRadius, minRadius)
-      const circleOptions = {
-        radius,
-        fillOpacity: 0.5,
-        color: '#e54757',
-        fillColor: '#e54757',
-        weight: 1.4
-      }
+    if (commentsCount > 0) {
+      const commentsCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
+      const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
       if (commentsCoordinates) {
+        const popupContent = `Country: ${commentsLocation}<br>Comments: ${commentsCount}`
+        const calcRadius = Math.sqrt(commentsCount / Math.PI) * 4000
+        const radius = Math.max(calcRadius, minRadius)
+        const circleOptions = {
+          radius,
+          fillOpacity: 0.5,
+          color: '#e54757',
+          fillColor: '#e54757',
+          weight: 1.4
+        }
         toRaw(mapRef.value).setView(commentsCoordinates, 3)
         L.circle(commentsCoordinates, circleOptions).addTo(toRaw(mapRef.value)).bindPopup(popupContent)
       }
