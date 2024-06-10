@@ -2,10 +2,25 @@ import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timest
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import layer8 from 'layer8_interceptor'
+import { baseURL } from 'stores/stats'
+
+const pushShareToStats = async (user_id, id, social_media) =>
+  await layer8
+    .fetch(`${baseURL}/share`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_id, id, social_media })
+    })
+    .then((res) => res.json())
+    .catch((err) => console.log(err))
 
 export const useShareStore = defineStore('shares', {
   state: () => ({
-    _shares: undefined,
+    _sharesCount: undefined,
+    _sharesStats: undefined,
     _unSubscribe: undefined,
     _isLoading: false
   }),
@@ -13,16 +28,28 @@ export const useShareStore = defineStore('shares', {
   persist: true,
 
   getters: {
-    getShares: (state) => state._shares,
-    isLoaded: (state) => (state._shares === 0 ? true : !!state._shares),
+    getShares: (state) => state._sharesCount,
+    getSharesStats: (state) => state._sharesStats,
+    isLoaded: (state) => !!state._shares || state._shares === 0,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async fetchShares(collectionName, documentId) {
+    async fetchSharesCount(collectionName, documentId) {
       try {
         const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'shares'))
-        this._shares = totalCountFunc.data().count
+        this._sharesCount = totalCountFunc.data().count
+        this._isLoading = false
+      } catch (e) {
+        console.error('Failed fetching shares count', e)
+      }
+    },
+
+    async fetchSharesStats(collectionName, documentId) {
+      try {
+        const sharesCollection = collection(db, collectionName, documentId, 'shares')
+        const querySnapshot = await getDocs(sharesCollection)
+        this._sharesStats = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
         this._isLoading = false
       } catch (e) {
         console.error('Failed fetching shares count', e)
@@ -35,6 +62,7 @@ export const useShareStore = defineStore('shares', {
         const userStore = useUserStore()
         await userStore.fetchUserIp()
 
+        const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
         const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash)
 
         await setDoc(doc(db, collectionName, documentId, 'shares', docId), {
@@ -42,7 +70,9 @@ export const useShareStore = defineStore('shares', {
           createdAt: Timestamp.fromDate(new Date()),
           sharedOn: socialNetwork
         })
-        await this.fetchShares(collectionName, documentId)
+        await pushShareToStats(user_id, documentId, socialNetwork)
+
+        await this.fetchSharesCount(collectionName, documentId)
         this._isLoading = false
       } catch (e) {
         console.error('Error adding share:', e)
@@ -64,7 +94,7 @@ export const useShareStore = defineStore('shares', {
     },
 
     async resetShares() {
-      this._shares = undefined
+      this._sharesCount = undefined
     }
   }
 })

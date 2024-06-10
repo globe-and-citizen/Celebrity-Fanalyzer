@@ -34,7 +34,6 @@
               v-for="prompt in computedPromptsAndAdvertises"
               :key="prompt?.id"
               v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
-              data-test="prompt-card"
               :item="prompt"
               :link="prompt?.slug"
             />
@@ -53,8 +52,8 @@ import ArticleSkeleton from 'src/components/shared/ArticleSkeleton.vue'
 import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useAdvertiseStore } from 'src/stores'
-import { computed, ref } from 'vue'
+import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
+import { computed, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()

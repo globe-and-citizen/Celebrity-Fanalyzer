@@ -87,7 +87,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.isLoaded ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
+          <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
               v-if="post?.productLink && post?.isAdd"
                 flat
@@ -126,7 +126,9 @@ import {
   useErrorStore,
   useLikeStore,
   useNotificationStore,
+  usePromptStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
@@ -149,21 +151,41 @@ const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 const entryStore = useEntryStore()
+const statsStore = useStatStore()
+const promptStore = usePromptStore()
 
 onMounted(async () => {
+  // =========== STATS ===========
   await userStore.fetchUserIp()
+  const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+  const userLocation = userStore.getUserLocation
+  await statsStore.addUser(userId, userLocation)
+  if (typeof props.post.entries !== 'undefined') {
+    await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
+  }
+  if (typeof props.post.prompt !== 'undefined') {
+    const promptId = props.post.prompt?.id
+      ? props.post.prompt?.id
+      : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0].id
+    await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
+  }
+  // =========== ------ ===========
+
   if (props.post?.id) {
     await commentStore.getTotalComments(props.collectionName, props.post?.id)
   }
   await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 })
 
+const e = !!props.post.entries
+const id = props.post.id
+
 async function like() {
-  await likeStore.addLike(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addLike(props.collectionName, id, e ? null : id, e ? id : null).catch((error) => errorStore.throwError(error))
 }
 
 async function dislike() {
-  await likeStore.addDislike(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  await likeStore.addDislike(props.collectionName, id, e ? null : id, e ? id : null).catch((error) => errorStore.throwError(error))
 }
 
 async function share(socialNetwork) {

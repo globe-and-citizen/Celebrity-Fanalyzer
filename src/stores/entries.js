@@ -10,7 +10,8 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
-  where
+  where,
+  or
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -113,9 +114,11 @@ export const useEntryStore = defineStore('entries', {
 
     async fetchEntryBySlug(slug) {
       const userStore = useUserStore()
+      const promptStore = usePromptStore()
+      const id = slug.slice(1, -3).replace('/', '-').replace('/', '')
       try {
         this._isLoading = true
-        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('slug', '==', slug)))
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), or(where('slug', '==', slug), where('id', '==', id))))
         const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (entry.author.id) {
           entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
@@ -123,6 +126,7 @@ export const useEntryStore = defineStore('entries', {
         this._isLoading = false
         this._entries = [entry]
       } catch (e) {
+        await promptStore.redirect()
         console.error('Unable to fetch entry', e)
       }
     },
@@ -160,6 +164,23 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
+      }).finally(() => (this._isLoading = false))
+    },
+
+    //update not coming from form submission
+    async dataUpdateEntry(payload) {
+      
+      const promptStore = usePromptStore()
+      //console.log('the payload ===', payload.entry.prompt );
+      const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
+       
+      //console.log('the promt ===', prompt );
+      await runTransaction(db, async (transaction) => {
+        transaction.update(doc(db, 'prompts', prompt.id), {
+          hasWinner: payload.isWinner == true ? true : false,
+          updated: Timestamp.fromDate(new Date())
+        })
+        transaction.update(doc(db, 'entries', payload.entry.id), { isWinner: payload.isWinner, updated: Timestamp.fromDate(new Date()) })
       }).finally(() => (this._isLoading = false))
     },
 

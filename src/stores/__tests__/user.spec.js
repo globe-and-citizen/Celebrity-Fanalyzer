@@ -178,13 +178,13 @@ describe('Users Store', () => {
 
   it('queryUsers', async () => {
     const userStore = useUserStore()
-    await userStore.queryUsers('Cypr')
+    await userStore.queryUsers('Cypress T')
     expect(userStore.getUsers.length).toEqual(1)
   })
 
   it('Should Fetch user by ID', async () => {
     const userStore = useUserStore()
-    const user = await userStore.fetchUser('r8oT5vFDyFQJtZHg7Kvn906KE9o2')
+    const user = await userStore.fetchUser('NQFZGO9mCYYyJUMdihfvYqy7df43')
     expect(user.displayName).toMatchInlineSnapshot('"Cypress Tester"')
   })
 

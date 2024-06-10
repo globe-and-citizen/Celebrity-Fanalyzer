@@ -31,11 +31,13 @@ import {
   useAdvertiseStore,
   useShareStore,
   useClicksStore,
-  useImpressionsStore
+  useImpressionsStore,
+  useStatStore
 } from 'src/stores'
 import { computed, onUnmounted, ref, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { startTracking, stopTracking } from 'src/utils/activityTracker'
 
 const router = useRouter()
 
@@ -47,6 +49,7 @@ const advertiseStore = useAdvertiseStore()
 const shareStore = useShareStore()
 const impressionStore = useImpressionsStore()
 const clickStore = useClicksStore()
+const statStore = useStatStore()
 
 const tab = ref(advertiseStore.tab)
 const shareIsLoading = ref(false)
@@ -92,7 +95,7 @@ watchEffect(async () => {
 
     shareIsLoading.value = true
     await shareStore
-      .fetchShares('advertises', advertiseId)
+      .fetchSharesCount('advertises', advertiseId)
       .catch((error) => errorStore.throwError(error))
       .finally(() => {
         shareIsLoading.value = false
@@ -104,12 +107,18 @@ watchEffect(async () => {
 })
 
 onUnmounted(async () => {
+  startTracking()
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()
   await commentStore.resetComments()
   await impressionStore.resetImpressions()
   await likeStore.resetLikes()
+})
+
+onBeforeRouteLeave(async () => {
+  const stats = stopTracking()
+  await statStore.addStats(advertise.value?.id, stats, 'advertisement')
 })
 </script>
 

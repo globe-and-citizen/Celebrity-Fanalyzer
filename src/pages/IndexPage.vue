@@ -99,7 +99,7 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item caption="2023/24" default-opened expand-separator header-class="text-primary" icon="code" label="Build Layer 8">
+          <q-expansion-item caption="2023/24" expand-separator icon="code" label="Build Layer 8">
             <q-card>
               <q-card-section>
                 Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
@@ -108,7 +108,14 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item caption="2024" expand-separator icon="language" label="Make it a DAPP">
+          <q-expansion-item
+            caption="2024"
+            default-opened
+            expand-separator
+            icon="language"
+            header-class="text-primary"
+            label="Make it a DAPP"
+          >
             <q-card>
               <q-card-section>
                 Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity
@@ -118,7 +125,14 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item caption="2024" expand-separator icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8">
+          <q-expansion-item
+            caption="2024"
+            default-opened
+            expand-separator
+            icon="assessment"
+            header-class="text-primary"
+            label="Connect Celebrity Fanalyzer to Layer 8"
+          >
             <q-card>
               <q-card-section>
                 How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
@@ -198,7 +212,7 @@ onMounted(async () => {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
   }
   // If prompts are once per month check if last prompt date is different from current
-  const lastPromptMonth = new Date(monthPrompt.value.created.seconds * 1000).getMonth()
+  const lastPromptMonth = new Date(monthPrompt?.value?.created?.seconds * 1000).getMonth()
   const currentMonth = new Date().getMonth()
   if (lastPromptMonth !== currentMonth) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))

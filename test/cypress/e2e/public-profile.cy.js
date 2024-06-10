@@ -7,10 +7,10 @@ describe('Accessing a Public Profile', () => {
 
   it('Should Visite to a public profile page', () => {
     // Visits the month page
-    cy.visit('/fan/cypress')
+    cy.visit('/fan/Cypress Tester')
     // Waits for the posts card on the page to load and checks if it has at least 1 post
-    cy.get('[data-test="user-displayName"]').should('contain.text', 'Cypress')
-    cy.location('pathname').should('eq', '/fan/cypress')
+    cy.get('[data-test="user-displayName"]').should('contain.text', 'Cypress Tester')
+    cy.location('pathname').should('eq', '/fan/Cypress%20Tester')
   })
 
   it('Should Visit a non existing public profile page', () => {

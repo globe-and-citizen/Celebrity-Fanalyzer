@@ -115,7 +115,7 @@
 
 <script setup>
 import { db } from 'src/firebase'
-import { collection, doc} from 'firebase/firestore'
+import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
@@ -178,10 +178,11 @@ watchEffect(() => {
     advertise.contentURL = props.contentURL ?? ''
     ;(advertise.budget = props.budget), (advertise.type = props.type)
   } else {
-    const collectionRef=collection(db,'advertises')
-    const docRef= doc(collectionRef)
+    const collectionRef = collection(db, 'advertises')
+    const docRef = doc(collectionRef)
 
-    advertise.author = userStore.isAdvertiser || userStore.isAdmin ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
+    advertise.author =
+      userStore.isAdvertiser || userStore.isAdmin ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
     advertise.categories = []
     advertise.type = 'Banner'
     advertise.date = currentYearMonth()

@@ -14,7 +14,7 @@ describe('Commenting', async () => {
     cy.visit('/month')
 
     // Programmatically change the q-tab-panel to the comments section
-    cy.getByData('panel-3-navigator').click()
+    cy.getByData('comments-tab').click()
 
     // Wait all comments to be loaded
     cy.getByData('comment-loaded')
@@ -53,7 +53,7 @@ describe('Commenting', async () => {
     cy.get('.q-notification__message').contains('Reply successfully submitted')
 
     // Editing reply text
-
+    cy.scrollTo('bottom')
     // Editing reply
     cy.getByData(reply + '-option-button').click()
 

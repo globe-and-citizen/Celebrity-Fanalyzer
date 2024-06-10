@@ -10,11 +10,30 @@ import {
   Timestamp,
   updateDoc,
   getCountFromServer,
-  onSnapshot
+  onSnapshot,
+  query,
+  where,
+  or,
+  and,
+  orderBy
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import layer8 from 'layer8_interceptor'
+import { baseURL } from 'stores/stats'
+
+const pushCommentToStats = async (user_id, id, content) =>
+  await layer8
+    .fetch(`${baseURL}/comment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_id, id, content })
+    })
+    .then((res) => res.json())
+    .catch((err) => console.log(err))
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
@@ -55,14 +74,18 @@ export const useCommentStore = defineStore('comments', {
       if (this._unSubscribe) {
         this._unSubscribe()
       }
-      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), async (querySnapshot) => {
+      const q = query(
+        collection(db, collectionName, documentId, 'comments'),
+        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+      )
+      this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
         const comments = querySnapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((data) => {
             if (data.isDeleted) return false
-            else if (data.isAnonymous && data.text == 'Comment Deleted') return false
             return true
           })
+
         for (const comment of comments) {
           if (!comment.isAnonymous) {
             comment.author = userStore.getUserById(comment.author?.id) || comment.author?.id
@@ -98,9 +121,23 @@ export const useCommentStore = defineStore('comments', {
       }
 
       try {
-        const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'comments'))
+        const q1 = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+        )
+        const q2 = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false)),
+          orderBy('parentId')
+        )
+
+        const totalCountFunc = await getCountFromServer(q1)
+        const totalChildCommentCountFunc = await getCountFromServer(q2)
+
         const totalComments = totalCountFunc.data().count
-        this.$patch({ _commentsCount: totalComments })
+        const totalChildComments = totalChildCommentCountFunc.data().count
+
+        this.$patch({ _commentsCount: totalComments - totalChildComments })
       } catch (e) {
         console.error('Failed fetching comments count', e)
       }
@@ -109,11 +146,14 @@ export const useCommentStore = defineStore('comments', {
     async addComment(collectionName, comment, document) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
+      const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 
       comment.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       comment.created = Timestamp.fromDate(new Date())
       comment.id = Date.now() + '-' + (comment.author.id || comment.author)
       comment.isAnonymous = !userStore.isAuthenticated
+
+      await pushCommentToStats(user_id, document.id, comment.text)
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
@@ -201,11 +241,20 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
+        const relatedCommentsQuery = query(collection(db, collectionName, documentId, 'comments'), where('parentId', '==', commentId))
+        const relatedCommentsSnapshot = await getDocs(relatedCommentsQuery)
         transaction.update(doc(db, collectionName, documentId, 'comments', commentId), {
           author: userStore.getUserIpHash,
           isAnonymous: true,
           text: 'Comment Deleted',
           isDeleted: true
+        })
+        relatedCommentsSnapshot.forEach((relatedCommentDocs) => {
+          transaction.update(relatedCommentDocs.ref, {
+            isAnonymous: true,
+            text: 'Comment Deleted',
+            isDeleted: true
+          })
         })
       }).finally(async () => {
         this._isLoading = false

@@ -11,6 +11,7 @@ import { defineStore } from 'pinia'
 import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
+import { baseURL } from 'stores/stats'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -18,7 +19,9 @@ export const useUserStore = defineStore('user', {
     _user: {},
     _userIp: '',
     _users: undefined,
-    _isLoading: false
+    _isLoading: false,
+    _userLocation: '',
+    _statsUsers: undefined
   }),
 
   persist: true,
@@ -40,7 +43,9 @@ export const useUserStore = defineStore('user', {
     isAdvertiser: (getters) => getters.getUser.role === 'Advertiser',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading,
-    getUserId: (getters) => (getters.isAuthenticated && getters.getUser ? getters.getUser.uid : getters.getUserIpHash)
+    getUserId: (getters) => (getters.isAuthenticated && getters.getUser ? getters.getUser.uid : getters.getUserIpHash),
+    getUserLocation: (state) => state._userLocation,
+    getAllUsers: (state) => state._statsUsers
   },
 
   actions: {
@@ -81,7 +86,7 @@ export const useUserStore = defineStore('user', {
         this._isLoading = false
         return { uid: user.id, ...user.data() }
       }
-      return await getDocs(query(collection(db, 'users'), or(where('uid', '==', id), where('username', '==', id))))
+      return await getDocs(query(collection(db, 'users'), or(where('username', '==', id), where('displayName', '==', id))))
         .then((querySnapshot) => querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))[0])
         .finally(() => (this._isLoading = false))
     },
@@ -110,6 +115,9 @@ export const useUserStore = defineStore('user', {
             const [key, value] = line.split('=')
             if (key === 'ip') {
               this._userIp = value
+            }
+            if (key === 'loc') {
+              this._userLocation = value
             }
           })
         })
@@ -144,6 +152,7 @@ export const useUserStore = defineStore('user', {
             this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
         })
+        .catch((error) => console.error(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -206,6 +215,23 @@ export const useUserStore = defineStore('user', {
 
     setProfileTab(tab) {
       this.$patch({ _profileTab: tab })
+    },
+
+    async addAllUsers(users) {
+      await fetch(`${baseURL}/add-all-users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify(users)
+      })
+    },
+
+    async getStatsUsers() {
+      const allUsers = await layer8.fetch(`${baseURL}/users`, {
+        method: 'GET'
+      })
+      this._statsUsers = await allUsers.json()
     }
   }
 })
