@@ -174,7 +174,9 @@ onMounted(async () => {
   if (props.post?.id) {
     await commentStore.getTotalComments(props.collectionName, props.post?.id)
   }
-  await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  if (!props.isAdd || props.post?.status === 'Active') {
+    await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  }
 })
 
 const e = !!props.post.entries

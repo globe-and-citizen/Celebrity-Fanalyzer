@@ -34,8 +34,8 @@ import {
   useImpressionsStore,
   useStatStore
 } from 'src/stores'
-import { computed, onUnmounted, ref, watchEffect } from 'vue'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { computed, onUnmounted, ref, watchEffect, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 
@@ -105,20 +105,19 @@ watchEffect(async () => {
 
   setTimeout(redirect, 5000)
 })
+onMounted(() => {
+  startTracking()
+})
 
 onUnmounted(async () => {
-  startTracking()
+  const stats = stopTracking()
+  await statStore.addStats(advertise.value?.id, stats, 'topic')
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()
   await commentStore.resetComments()
   await impressionStore.resetImpressions()
   await likeStore.resetLikes()
-})
-
-onBeforeRouteLeave(async () => {
-  const stats = stopTracking()
-  await statStore.addStats(advertise.value?.id, stats, 'advertisement')
 })
 </script>
 
