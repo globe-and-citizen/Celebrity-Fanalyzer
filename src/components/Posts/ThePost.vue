@@ -2,16 +2,18 @@
   <q-page-container style="padding-bottom: 0">
     <q-page class="bg-white" style="min-height: auto">
       <TheHeader feedbackButton :title="title" />
-
-      <q-responsive :ratio="1" :style="{ backgroundImage: `url(${post?.image})` }">
+      <q-responsive :ratio="1" v-if="!isAdd" :style="{ backgroundImage: `url(${post?.image})` }">
         <div class="bg-blur flex">
           <q-img fit="contain" ratio="1" spinner-color="primary" :src="post?.image" />
         </div>
       </q-responsive>
-      <section class="q-pa-md q-pb-none">
+      <div v-else-if="post.contentURL" class="bg-blur flex">
+       <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
+      </div>
+      <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
           <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
-          <div>
+          <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
             </q-badge>
@@ -20,7 +22,7 @@
         <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
         <q-separator spaced />
         <section
-          v-if="post?.author"
+          v-if="post?.author && !isAdd"
           class="cursor-pointer flex items-center no-wrap q-pa-md"
           data-test="author-section"
           @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
@@ -37,8 +39,9 @@
             <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
           </div>
         </section>
-        <q-separator spaced />
-        <p class="q-mt-md text-body1" v-html="post?.description"></p>
+        <q-separator v-if="!isAdd" spaced />
+        <p v-if="isAdd" class="q-mt-sm text-body1">{{ post.content }}</p>
+        <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
         <q-separator spaced="lg" />
         <div class="text-center">
           <q-btn
@@ -86,7 +89,17 @@
           </q-btn>
           <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
-            v-if="userStore.isAuthenticated"
+              v-if="post?.productLink && post?.isAdd"
+                flat
+                icon="open_in_new"
+                rounded
+                size="0.75rem"
+                :href="post?.productLink"
+              >
+                <q-tooltip anchor="bottom middle" self="center middle">{{ post?.productLink }}</q-tooltip>
+              </q-btn>
+          <q-btn
+            v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
             flat
             :icon="userStore.getUser.subscriptions?.includes(props.post?.id) ? 'notifications' : 'notifications_none'"
@@ -125,7 +138,7 @@ import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 
-const props = defineProps(['collectionName', 'post', 'title'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd'])
 defineEmits(['clickComments'])
 
 const router = useRouter()
@@ -161,7 +174,9 @@ onMounted(async () => {
   if (props.post?.id) {
     await commentStore.getTotalComments(props.collectionName, props.post?.id)
   }
-  await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  if (!props.isAdd || props.post?.status === 'Active') {
+    await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+  }
 })
 
 const e = !!props.post.entries
@@ -188,5 +203,8 @@ async function subscribe() {
 // add a blur effect to the background image
 .bg-blur {
   backdrop-filter: blur(60px);
+}
+.margin-bottom {
+  margin-bottom: 6rem;
 }
 </style>

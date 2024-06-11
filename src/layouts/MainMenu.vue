@@ -4,9 +4,7 @@
       <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route?.icon" :to="route?.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
-      <!-- <q-route-tab v-if="userStore.isAdvertiser || userStore.isAdmin" exact icon="campaign" to="/advertiser">
-        <q-tooltip>Advertiser Panel</q-tooltip>
-      </q-route-tab> -->
+
       <q-route-tab
         class="adminTab"
         v-if="userStore.isWriterOrAbove || userStore.isAdvertiser"

@@ -5,6 +5,7 @@
         v-if="advertises.length > 0"
         flat
         bordered
+        :filter="filter"
         title="Manage Advertisements"
         :rows="advertises"
         :columns="columns"
@@ -13,7 +14,15 @@
         style="margin: 10px 0px"
         virtual-scroll
         hide-bottom
+        :loading="advertiseStore.isLoading"
       >
+        <template v-slot:top-right>
+          <q-input debounce="300" dense placeholder="Search" v-model="filter">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
         <template #body-cell-published="props">
           <q-td :props="props">
             <q-icon
@@ -36,7 +45,14 @@
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
-            <q-icon name="edit" color="blue" size="18px" @click="$emit('openAdvertiseDialog', props.row)" class="cursor-pointer q-mr-sm" />
+            <q-icon
+              v-show="props.row.status === 'Inactive'"
+              name="edit"
+              color="blue"
+              size="18px"
+              @click="$emit('openAdvertiseDialog', props.row)"
+              class="cursor-pointer q-mr-sm"
+            />
             <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
           </q-td>
         </template>
@@ -101,6 +117,7 @@ const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 const alertMessage = ref('')
+const filter = ref('')
 
 function checkDurationStatus() {
   for (const advertise of props.advertises) {
@@ -164,22 +181,26 @@ const columns = ref([
   {
     name: 'budget',
     field: 'budget',
-    label: 'Budget'
+    label: 'Budget',
+    sortable: true
   },
   {
     name: 'clicks',
     field: 'clicks',
-    label: 'Number of Click'
+    label: 'Number of Click',
+    sortable: true
   },
   {
     name: 'impression',
     field: 'impressions',
-    label: 'Number of Impression'
+    label: 'Number of Impression',
+    sortable: true
   },
   {
     name: 'durations',
     field: 'duration',
-    label: 'Durations'
+    label: 'Durations',
+    sortable: true
   },
   {
     name: 'action',
