@@ -111,7 +111,7 @@ onMounted(() => {
 
 onUnmounted(async () => {
   const stats = stopTracking()
-  await statStore.addStats(advertise.value?.id, stats, 'topic')
+  await statStore.addStats(advertise.value?.id, stats, 'advertisement')
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()
