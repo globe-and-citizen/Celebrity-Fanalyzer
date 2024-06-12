@@ -129,7 +129,12 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
 
     async getActiveAdvertise() {
-      const q = query(collection(db, 'advertises'), where('status', '==', 'Active'), where('isApproved', '==', true))
+      const q = query(
+        collection(db, 'advertises'),
+        where('status', '==', 'Active'),
+        where('isApproved', '==', true),
+        orderBy('created', 'desc')
+      )
       const userStore = useUserStore()
       if (!this._unSubscribeActive) {
         this._unSubscribeActive = onSnapshot(q, (querySnapshot) => {
