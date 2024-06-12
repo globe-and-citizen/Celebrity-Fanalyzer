@@ -4,11 +4,11 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref, toRaw, watch, watchEffect } from 'vue'
+import { nextTick, ref, toRaw, watch, watchEffect } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { usePromptStore, useStatStore, useUserStore } from 'src/stores'
-import { handleComments, handleLikesAndDislikes } from 'components/Posts/Graphs/Map/handlingFunctions'
+import { handleComments, handleLikesAndDislikes, handleShares } from 'components/Posts/Graphs/Map/handlingFunctions'
 
 const userStore = useUserStore()
 const statStore = useStatStore()
@@ -17,24 +17,36 @@ const mapRef = ref(null)
 
 const interactionsExists = statStore.getAllInteractionsByCountry?.response.some((el) => el.interactions?.likes || el.interactions?.dislikes)
 const commentsExists = statStore.getAllInteractionsByCountry?.response.some((el) => el.comments)
+const sharesExist = statStore.getAllInteractionsByCountry?.response.some((el) => el.shares)
 const selectedDataType = ref(
-  interactionsExists ? { label: 'Likes and dislikes', value: 'interactions' } : { label: 'Comments', value: 'comments' }
+  interactionsExists
+    ? { label: 'Likes and dislikes', value: 'interactions' }
+    : commentsExists
+      ? { label: 'Comments', value: 'comments' }
+      : { label: 'Shares', value: 'shares' }
 )
 
 const initialDataOptions = [
   { label: 'Likes and dislikes', value: 'interactions' },
-  { label: 'Comments', value: 'comments' }
+  { label: 'Comments', value: 'comments' },
+  { label: 'Shares', value: 'shares' }
 ]
 
 const dataOptions = ref(
   initialDataOptions.filter(
-    (option) => (option.value === 'interactions' && interactionsExists) || (option.value === 'comments' && commentsExists)
+    (option) =>
+      (option.value === 'interactions' && interactionsExists) ||
+      (option.value === 'comments' && commentsExists) ||
+      (option.value === 'shares' && sharesExist)
   )
 )
 
 const updateDataOptions = () => {
   dataOptions.value = initialDataOptions.filter(
-    (option) => (option.value === 'interactions' && interactionsExists) || (option.value === 'comments' && commentsExists)
+    (option) =>
+      (option.value === 'interactions' && interactionsExists) ||
+      (option.value === 'comments' && commentsExists) ||
+      (option.value === 'shares' && sharesExist)
   )
 
   if (!dataOptions.value.some((option) => option.value === selectedDataType.value.value)) {
@@ -71,14 +83,12 @@ const initMap = async () => {
 
     toRaw(mapRef.value).setMaxBounds(bounds)
     toRaw(mapRef.value).fitBounds(bounds)
-    if (selectedDataType.value.value === 'interactions') {
-      if (interactionsExists) {
-        handleLikesAndDislikes(statStore.getAllInteractionsByCountry.response, mapRef)
-      }
-    } else {
-      if (commentsExists) {
-        handleComments(statStore.getAllInteractionsByCountry.response, mapRef)
-      }
+    if (selectedDataType.value.value === 'interactions' && interactionsExists) {
+      handleLikesAndDislikes(statStore.getAllInteractionsByCountry.response, mapRef)
+    } else if (selectedDataType.value.value === 'comments' && commentsExists) {
+      handleComments(statStore.getAllInteractionsByCountry.response, mapRef)
+    } else if (selectedDataType.value.value === 'shares' && sharesExist) {
+      handleShares(statStore.getAllInteractionsByCountry.response, mapRef)
     }
 
     window.addEventListener('resize', () => {

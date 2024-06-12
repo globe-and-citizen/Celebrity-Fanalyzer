@@ -67,3 +67,29 @@ export const handleComments = (data, mapRef) => {
     }
   })
 }
+
+export const handleShares = (data, mapRef) => {
+  if (!Array.isArray(data)) return
+  const minRadius = 40000
+  data.forEach((countryData) => {
+    const sharesCount = countryData?.shares || 0
+    if (sharesCount > 0) {
+      const sharesCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
+      const sharesLocation = countries.find((country) => country.code === countryData.location)?.country
+      if (sharesCoordinates) {
+        const popupContent = `Country: ${sharesLocation}<br>Shares: ${sharesCount}`
+        const calcRadius = Math.sqrt(sharesCount / Math.PI) * 4000
+        const radius = Math.max(calcRadius, minRadius)
+        const circleOptions = {
+          radius,
+          fillOpacity: 0.5,
+          color: '#e54757',
+          fillColor: '#e54757',
+          weight: 1.4
+        }
+        toRaw(mapRef.value).setView(sharesCoordinates, 3)
+        L.circle(sharesCoordinates, circleOptions).addTo(toRaw(mapRef.value)).bindPopup(popupContent)
+      }
+    }
+  })
+}
