@@ -166,7 +166,7 @@ const advertise = reactive({
   title: '',
   productLink: '',
   contentURL: '',
-  caompaignCode:''
+  campaignCode:''
 })
 const step = ref(1)
 
@@ -310,7 +310,7 @@ async function onSubmit() {
     const result= await createAdCampain({'budgetInMatic':advertise.budget})
     if(result.status.includes('success')){
       //currentCampaignCode.value=result.events[0].args.campaignCode;
-      advertise.caompaignCode=result.events[0].args.campaignCode;
+      advertise.campaignCode=result.events[0].args.campaignCode;
       //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
       //save advertisement to database
       await advertiseStore
