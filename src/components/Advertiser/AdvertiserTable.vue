@@ -25,8 +25,9 @@
         </template>
         <template #body-cell-published="props">
           <q-td :props="props">
+            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
             <q-icon
-              v-if="props.value === 'Inactive'"
+              v-else-if="props.value === 'Inactive'"
               @click="changeActiveStatus(props.row, 'Active')"
               name="play_circle"
               size="18px"
@@ -45,6 +46,7 @@
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
+            <q-icon v-if="userStore.isAdmin && !props.row.isApproved" name="done_outline" color="green" size="18px" @click="onApproveAdvertise(props.row)" class="cursor-pointer q-mr-sm" />
             <q-icon
               v-show="props.row.status === 'Inactive'"
               name="edit"
@@ -145,6 +147,11 @@ function onDeleteAdvertise(id, type) {
       console.log(error)
       errorStore.throwError(error, 'Advertise deletion failed')
     })
+}
+
+function onApproveAdvertise(advertise, approve=true) {
+  advertise.isApproved=approve
+  advertiseStore.editAdvertise(advertise)
 }
 const columns = ref([
   {

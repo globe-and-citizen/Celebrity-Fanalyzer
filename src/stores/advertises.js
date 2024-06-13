@@ -108,6 +108,7 @@ export const useAdvertiseStore = defineStore('advertises', {
       const advertise = { ...payload }
       advertise.author = doc(db, 'users', advertise.author.uid)
       advertise.created = Timestamp.fromDate(new Date())
+      advertise.isApproved = false
 
       this._isLoading = true
       await setDoc(doc(db, 'advertises', advertise.id), advertise)
@@ -128,9 +129,13 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
 
     async getActiveAdvertise() {
+      const q = query(
+        collection(db, 'advertises'),
+        where('status', '==', 'Active'),
+        where('isApproved', '==', true),
+        orderBy('created', 'desc')
+      )
       const userStore = useUserStore()
-      const q = query(collection(db, 'advertises'), where('status', '==', 'Active'))
-
       if (!this._unSubscribeActive) {
         this._unSubscribeActive = onSnapshot(q, (querySnapshot) => {
           const activeAdvertises = []

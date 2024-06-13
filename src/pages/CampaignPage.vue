@@ -105,7 +105,8 @@ watchEffect(async () => {
 
   setTimeout(redirect, 5000)
 })
-onMounted(() => {
+
+onMounted(()=>{
   startTracking()
 })
 
