@@ -27,17 +27,35 @@
           data-test="author-section"
           @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
         >
-          <q-avatar size="6rem">
-            <q-img
-              :src="post.author.photoURL ? post.author.photoURL : '/icons/user_raiting_premium_member.svg'"
-              :srcset="post.author.photoURL"
-              :width="post.author.photoURL ? 'null' : '65px'"
-            />
-          </q-avatar>
-          <div class="q-ml-md">
-            <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
-            <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
+          <div class="flex row items-center">
+            <q-avatar size="4rem">
+              <q-img
+                :src="post.author.photoURL ? post.author.photoURL : '/icons/user_raiting_premium_member.svg'"
+                :srcset="post.author.photoURL"
+                :width="post.author.photoURL ? 'null' : '50px'"
+              />
+            </q-avatar>
+            <div>
+              <p class="text-body1 text-bold q-mb-none q-ml-md text-capitalize">{{ post.author.displayName }}</p>
+              <div class="flex q-ml-md">
+                <q-rating
+                  v-model="userRating"
+                  max="5"
+                  size="1.4rem"
+                  color="yellow"
+                  icon="star_border"
+                  icon-selected="star"
+                  icon-half="star_half"
+                  no-dimming
+                  readonly
+                />
+              </div>
+            </div>
           </div>
+
+          <p v-if="props.post.author.bio" class="q-mb-none q-mt-md text-italic" style="white-space: pre-line">
+            {{ post.author.bio }}
+          </p>
         </section>
         <q-separator v-if="!isAdd" spaced />
         <p v-if="isAdd" class="q-mt-sm text-body1">{{ post.content }}</p>
@@ -133,7 +151,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { monthYear } from 'src/utils/date'
-import { onMounted } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -153,6 +171,7 @@ const visitorStore = useVisitorStore()
 const entryStore = useEntryStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
+const userRating = ref(0)
 
 onMounted(async () => {
   // =========== STATS ===========
@@ -197,6 +216,12 @@ async function share(socialNetwork) {
 async function subscribe() {
   await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
+
+watchEffect(async () => {
+  if (statsStore.getUserRate?.userRating) {
+    userRating.value = ((await statsStore.getUserRate?.userRating) / 100) * 5
+  }
+})
 </script>
 
 <style scoped lang="scss">

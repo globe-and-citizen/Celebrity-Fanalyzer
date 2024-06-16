@@ -60,6 +60,7 @@ watchEffect(async () => {
 
 onMounted(async () => {
   startTracking()
+  await statStore.getUserRating(entry.value?.author?.uid)
 })
 
 onBeforeRouteLeave(async () => {
@@ -69,6 +70,7 @@ onBeforeRouteLeave(async () => {
 
 onUnmounted(() => {
   commentStore.resetComments()
+  statStore.resetStats()
   entryStore.setTab('post')
 })
 </script>

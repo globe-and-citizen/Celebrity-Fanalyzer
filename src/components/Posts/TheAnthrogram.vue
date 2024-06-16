@@ -48,8 +48,21 @@
           </div>
         </div>
 
-        <div v-if="!!statStore.getArticleRate?.postRating" class="col-12 anthogram-border rating-chart">
-          <PopularityGauge :postRating="statStore.getArticleRate" :title="'Post popularity rating'" />
+        <div class="row" style="justify-content: space-between; gap: 10px; margin-top: 10px">
+          <div
+            class="col-12 anthogram-border rating-chart"
+            v-if="!!statStore.getArticleRate?.postRating"
+            v-bind:class="!!statStore.getUserRate?.userRating ? 'col-md-6' : 'col-md-12'"
+          >
+            <PopularityGauge :postRating="statStore.getArticleRate" :title="'Post popularity rating'" />
+          </div>
+          <div
+            class="col-12 anthogram-border rating-chart"
+            v-if="!!statStore.getUserRate?.userRating"
+            v-bind:class="!!statStore.getArticleRate?.postRating ? 'col-md-6' : 'col-md-12'"
+          >
+            <UserRatingGauge :userRating="statStore.getUserRate" :title="'User rating'" />
+          </div>
         </div>
 
         <q-separator spaced="xl" />
@@ -73,6 +86,7 @@ import LeafletMap from 'components/Posts/Graphs/Map/LeafletMap.vue'
 import { useClicksStore, useErrorStore, useImpressionsStore, useLikeStore, useShareStore, useStatStore, useVisitorStore } from 'src/stores'
 import HalfDonought from 'components/Posts/Graphs/HalfDonought.vue'
 import PopularityGauge from 'components/Posts/Graphs/PopularityGauge.vue'
+import UserRatingGauge from 'components/Posts/Graphs/UserratingGauge.vue'
 import CTRBar from './Graphs/CTRBar.vue'
 
 const props = defineProps(['post', 'isAdd', 'collectionName'])
@@ -114,7 +128,6 @@ onUnmounted(() => {
 
 .rating-chart {
   height: 350px;
-  width: auto;
   margin-top: 10px;
 
   @media (max-width: 720px) {

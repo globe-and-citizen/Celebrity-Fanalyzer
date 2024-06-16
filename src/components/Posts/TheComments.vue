@@ -68,7 +68,7 @@
 import { useQuasar } from 'quasar'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
+import { useCommentStore, useErrorStore, useNotificationStore, useStatStore, useUserStore } from 'src/stores'
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
 
 const props = defineProps({
@@ -81,6 +81,7 @@ const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const notificationStore = useNotificationStore()
 const userStore = useUserStore()
+const statsStore = useStatStore()
 
 const commentId = ref('')
 const commentValue = ref('')
@@ -154,6 +155,9 @@ async function addComment() {
       commentValue.value = ''
     })
 }
+
+const commentsMessages = commentStore.getComments?.map((comment) => comment.text)
+const prompt = commentsMessages?.map((comment, index) => index + ': ' + comment).join('\n')
 
 watchEffect(async () => {
   await commentStore.fetchComments(props.collectionName, props.post.id)

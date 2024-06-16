@@ -32,7 +32,7 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
 const router = useRouter()
@@ -101,8 +101,9 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
-  startTracking()
+  await statStore.getUserRating(prompt?.value?.author?.uid)
   await entryStore.resetEntries
+  startTracking()
   entriesRef.value = document.querySelector('.entries-page-container')
   window.addEventListener('scroll', onScroll)
 })
@@ -115,6 +116,11 @@ watch(entriesRef, (newVal) => {
       console.error('EntriesRef error')
     }
   }
+})
+
+onBeforeRouteLeave(async () => {
+  await statStore.resetStats()
+  await statStore.resetUserRating()
 })
 
 onUnmounted(async () => {

@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from 'src/stores'
 import layer8 from 'layer8_interceptor'
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  apiKey: '',
+  dangerouslyAllowBrowser: true
+})
 
 export const baseURL = 'https://stats-api.up.railway.app/v1'
 
@@ -10,7 +16,10 @@ export const useStatStore = defineStore('stats', {
     _stats: [],
     _summary: [],
     _allInteractionsByCountry: [],
-    _articleRating: []
+    _articleRating: undefined,
+    _userRating: undefined,
+    _sentiment: 'Unknown',
+    _isInitialized: false
   }),
 
   getters: {
@@ -18,7 +27,10 @@ export const useStatStore = defineStore('stats', {
     getStats: (state) => state._stats,
     getSummary: (state) => state._summary,
     getAllInteractionsByCountry: (state) => state._allInteractionsByCountry,
-    getArticleRate: (state) => state._articleRating
+    getArticleRate: (state) => state._articleRating,
+    getUserRate: (state) => state._userRating,
+    getSentiment: (state) => state._sentiment,
+    getInitializedState: (state) => state._isInitialized
   },
 
   actions: {
@@ -42,10 +54,18 @@ export const useStatStore = defineStore('stats', {
       this._isLoading = false
     },
 
+    setInitialized(v) {
+      this._isInitialized = v
+    },
+
     resetStats() {
       this._stats = []
       this._allInteractionsByCountry = []
-      this._articleRating = []
+      this._articleRating = undefined
+    },
+
+    resetUserRating() {
+      this._userRating = undefined
     },
 
     // /**
@@ -172,6 +192,57 @@ export const useStatStore = defineStore('stats', {
         const data = await res.json()
         this._articleRating = data
         return data
+      } catch (err) {
+        console.log(err)
+        return null
+      }
+    },
+
+    async getUserRating(user_id) {
+      try {
+        const res = await layer8.fetch(`${baseURL}/user-rating`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id })
+        })
+        const data = await res.json()
+        this._userRating = data
+        return data
+      } catch (err) {
+        console.log(err)
+        return null
+      }
+    },
+
+    async getCommentsAnalysis(comments) {
+      try {
+        const response = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Analyze comments attitude of article and return a single word answer: "Positive", "Negative", "Neutral" or "Unknown"'
+            },
+            {
+              role: 'user',
+              content: comments
+            }
+          ],
+          temperature: 0.2,
+          max_tokens: 100,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0
+        })
+
+        if (response.choices[0].message.content) {
+          console.log('Sentiment analysis response:', response)
+          this._sentiment = response.choices[0].message.content
+          return response
+        }
       } catch (err) {
         console.log(err)
         return null
