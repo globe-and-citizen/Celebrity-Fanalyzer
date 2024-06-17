@@ -8,7 +8,7 @@
         </div>
       </q-responsive>
       <div v-else-if="post.contentURL" class="bg-blur flex">
-       <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
+        <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
@@ -23,7 +23,7 @@
         <q-separator spaced />
         <section
           v-if="post?.author && !isAdd"
-          class="cursor-pointer flex items-center no-wrap q-pa-md"
+          class="cursor-pointer flex column items-start no-wrap q-pa-md"
           data-test="author-section"
           @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
         >
@@ -107,15 +107,17 @@
           </q-btn>
           <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
-              v-if="post?.productLink && post?.isAdd"
-                flat
-                icon="open_in_new"
-                rounded
-                size="0.75rem"
-                :href="post?.productLink"
-              >
-                <q-tooltip anchor="bottom middle" self="center middle">{{ post?.productLink }}</q-tooltip>
-              </q-btn>
+            v-if="post?.productLink && post?.isAdd"
+            flat
+            icon="open_in_new"
+            rounded
+            size="0.75rem"
+            :href="getFormattedLink(post?.productLink)"
+            replace
+            target="_blank"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">{{ getFormattedLink(post?.productLink) }}</q-tooltip>
+          </q-btn>
           <q-btn
             v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
@@ -155,6 +157,7 @@ import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
+import { getFormattedLink } from '../../utils/getFormattedLink'
 
 const props = defineProps(['collectionName', 'post', 'title', 'isAdd'])
 defineEmits(['clickComments'])
@@ -198,15 +201,32 @@ onMounted(async () => {
   }
 })
 
-const e = !!props.post.entries
+const isPrompt = !!props.post.entries
+const isAd = props.post?.isAdd
 const id = props.post.id
 
 async function like() {
-  await likeStore.addLike(props.collectionName, id, e ? null : id, e ? id : null).catch((error) => errorStore.throwError(error))
+  if (isPrompt) {
+    await likeStore.addLike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
+  } else if (isAd) {
+    await likeStore.addLike(props.collectionName, id, null, null, id).catch((error) => errorStore.throwError('Error adding like', error))
+  } else {
+    await likeStore
+      .addLike(props.collectionName, id, id, props.post?.prompt?.id, null)
+      .catch((error) => errorStore.throwError('Error adding like', error))
+  }
 }
 
 async function dislike() {
-  await likeStore.addDislike(props.collectionName, id, e ? null : id, e ? id : null).catch((error) => errorStore.throwError(error))
+  if (isPrompt) {
+    await likeStore.addDislike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
+  } else if (isAd) {
+    await likeStore.addDislike(props.collectionName, id, null, null, id).catch((error) => errorStore.throwError('Error adding like', error))
+  } else {
+    await likeStore
+      .addDislike(props.collectionName, id, id, props.post?.prompt?.id, null)
+      .catch((error) => errorStore.throwError('Error adding like', error))
+  }
 }
 
 async function share(socialNetwork) {

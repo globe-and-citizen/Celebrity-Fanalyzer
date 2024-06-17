@@ -78,15 +78,19 @@ export const useStatStore = defineStore('stats', {
     //  * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
     //  */
     async fetchStats(id) {
-      const statsResponse = await layer8.fetch(`${baseURL}/stats/article`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id })
-      })
-      const stats = await statsResponse.json()
-      this._stats.push(...stats)
+      try {
+        const statsResponse = await layer8.fetch(`${baseURL}/stats/article`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id })
+        })
+        const stats = await statsResponse.json()
+        this._stats.push(...stats)
+      } catch (e) {
+        console.error(e)
+      }
     },
 
     /**

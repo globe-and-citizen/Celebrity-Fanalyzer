@@ -50,17 +50,19 @@ const entry = computed(() => {
   )
 })
 watchEffect(async () => {
+  if (entry.value?.author?.uid) {
+    await statStore.getUserRating(entry.value?.author?.uid)
+  }
+
   if (entry.value?.id) {
-    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await commentStore.getTotalComments('entries', entry.value.id)
+    await likeStore.getAllLikesDislikes('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchSharesCount('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entry.value?.id)
   }
 })
 
 onMounted(async () => {
   startTracking()
-  await statStore.getUserRating(entry.value?.author?.uid)
 })
 
 onBeforeRouteLeave(async () => {

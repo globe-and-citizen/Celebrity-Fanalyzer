@@ -18,10 +18,6 @@
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
-          <template v-if="isAdd">
-            <q-separator spaced="xl" />
-            <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
-          </template>
           <div
             v-if="!!statStore.getStats?.length"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
@@ -29,6 +25,9 @@
           >
             <HalfDonought :stats="statStore.getStats" :title="'User\'s total activity'" />
           </div>
+        </div>
+        <div v-if="isAdd" class="anthogram-border q-my-sm">
+          <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
         </div>
 
         <div class="row" style="justify-content: space-between; gap: 10px; margin-top: 10px">
@@ -48,7 +47,7 @@
           </div>
         </div>
 
-        <div class="row" style="justify-content: space-between; gap: 10px; margin-top: 10px">
+        <div class="row" style="justify-content: space-between; gap: 10px">
           <div
             class="col-12 anthogram-border rating-chart"
             v-if="!!statStore.getArticleRate?.postRating"
@@ -103,7 +102,7 @@ const interval = ref('daily')
 
 onMounted(async () => {
   await visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
-  await shareStore.fetchSharesStats('entries', props.post.id).catch((error) => errorStore.throwError(error))
+  await shareStore.fetchSharesStats(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
   await statStore.fetchStats(props.post.id)
   await statStore.getArticleRating(props.post.id)
   await statStore.getArticleMetrics(props.post.id)

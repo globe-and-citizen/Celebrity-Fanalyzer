@@ -78,13 +78,17 @@ const onScroll = () => {
   if (entriesRef.value) {
     const marginTop = entriesRef.value?.getBoundingClientRect().top
     const windowsHeight = window.innerHeight
-    if (!entries.value?.length && marginTop - windowsHeight < -50) {
+    if ((!entries.value?.length || entries.value === undefined) && marginTop - windowsHeight < -50) {
       entryStore.fetchPromptsEntries(prompt.value.entries).catch((error) => errorStore.throwError(error))
     }
   }
 }
 
 watchEffect(async () => {
+  if (prompt?.value?.author?.uid) {
+    await statStore.getUserRating(prompt?.value?.author?.uid)
+  }
+
   if (prompt.value?.id) {
     const promptId = prompt.value?.id
     await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
@@ -101,11 +105,10 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
-  await statStore.getUserRating(prompt?.value?.author?.uid)
-  await entryStore.resetEntries
-  startTracking()
   entriesRef.value = document.querySelector('.entries-page-container')
   window.addEventListener('scroll', onScroll)
+  await entryStore.resetEntries
+  startTracking()
 })
 
 watch(entriesRef, (newVal) => {
