@@ -13,7 +13,6 @@ import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 const props = defineProps({ userRating: {}, title: String })
 let rating = ref(0)
 let screenWidth = ref(window.innerWidth)
-
 use([TooltipComponent, TitleComponent, GaugeChart, CanvasRenderer])
 
 const getChartOption = (width) => ({

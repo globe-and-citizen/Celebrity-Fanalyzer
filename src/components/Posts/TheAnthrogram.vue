@@ -77,15 +77,15 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import LikesBar from 'src/components/Posts/Graphs/LikesBar.vue'
-import SharesPie from 'src/components/Posts/Graphs/SharesPie.vue'
-import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
+import LikesBar from './Graphs/LikesBar.vue'
+import SharesPie from './Graphs/SharesPie.vue'
+import VisitorsBar from './Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import LeafletMap from 'components/Posts/Graphs/Map/LeafletMap.vue'
+import LeafletMap from './Graphs/Map/LeafletMap.vue'
 import { useClicksStore, useErrorStore, useImpressionsStore, useLikeStore, useShareStore, useStatStore, useVisitorStore } from 'src/stores'
-import HalfDonought from 'components/Posts/Graphs/HalfDonought.vue'
-import PopularityGauge from 'components/Posts/Graphs/PopularityGauge.vue'
-import UserRatingGauge from 'components/Posts/Graphs/UserratingGauge.vue'
+import HalfDonought from './Graphs/HalfDonought.vue'
+import PopularityGauge from './Graphs/PopularityGauge.vue'
+import UserRatingGauge from './Graphs/UserratingGauge.vue'
 import CTRBar from './Graphs/CTRBar.vue'
 
 const props = defineProps(['post', 'isAdd', 'collectionName'])
