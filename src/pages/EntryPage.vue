@@ -4,10 +4,10 @@
     <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
     <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-spinner v-if="!entry && entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
-  <q-tab-panels v-else animated class="bg-transparent col-grow" swipeable v-model="tab">
+  <q-spinner v-if="entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
+  <q-tab-panels v-else-if="entry" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
-    <q-tab-panel v-if="entry" name="post" style="padding: 0" data-test="entry-page">
+    <q-tab-panel name="post" style="padding: 0" data-test="entry-page">
       <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem" @clickComments="tab = 'comments'" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -49,41 +49,22 @@ const entry = computed(() => {
       router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
   )
 })
-
 watchEffect(async () => {
   if (entry.value?.id) {
     await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchShares('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    // await commentStore.getTotalComments('entries', entry.value.id)
+    await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entry.value.id)
   }
 })
 
-onMounted(() => {
-  if (entryStore.getEntries === undefined) {
-    entryStore.fetchEntryBySlug(router.currentRoute.value.href).catch((error) => errorStore.throwError(error))
-  }
-
+onMounted(async () => {
   startTracking()
-  if (entryStore.getEntries && !entry.value?.id) {
-    $q.notify({
-      type: 'info',
-      message: 'Entry Not found'
-    })
-    setTimeout(async () => {
-      $q.notify({
-        type: 'info',
-        message: 'You will be redirected in 3 seconds'
-      })
-    }, 30000)
-    setTimeout(async () => {
-      await router.push('/404')
-    }, 6000)
-  }
 })
 
 onBeforeRouteLeave(async () => {
   const stats = stopTracking()
-  await statStore.addStats(entry?.value?.id, stats)
+  await statStore.addStats(entry.value.id, stats, 'article')
 })
 
 onUnmounted(() => {

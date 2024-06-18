@@ -5,6 +5,7 @@
         v-if="advertises.length > 0"
         flat
         bordered
+        :filter="filter"
         title="Manage Advertisements"
         :rows="advertises"
         :columns="columns"
@@ -13,11 +14,20 @@
         style="margin: 10px 0px"
         virtual-scroll
         hide-bottom
+        :loading="advertiseStore.isLoading"
       >
+        <template v-slot:top-right>
+          <q-input debounce="300" dense placeholder="Search" v-model="filter">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
         <template #body-cell-published="props">
           <q-td :props="props">
+            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
             <q-icon
-              v-if="props.value === 'Inactive'"
+              v-else-if="props.value === 'Inactive'"
               @click="changeActiveStatus(props.row, 'Active')"
               name="play_circle"
               size="18px"
@@ -36,7 +46,6 @@
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
-            
             <q-icon
               color="green"
               :disable="userStore.getUser.role !== 'Admin'"
@@ -73,6 +82,22 @@
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
             </q-icon>
             <q-icon name="edit" color="blue" size="18px" @click="$emit('openAdvertiseDialog', props.row)" class="cursor-pointer q-mr-sm" />
+            <q-icon
+              v-if="userStore.isAdmin && !props.row.isApproved"
+              name="done_outline"
+              color="green"
+              size="18px"
+              @click="onApproveAdvertise(props.row)"
+              class="cursor-pointer q-mr-sm"
+            />
+            <q-icon
+              v-show="props.row.status === 'Inactive'"
+              name="edit"
+              color="blue"
+              size="18px"
+              @click="$emit('openAdvertiseDialog', props.row)"
+              class="cursor-pointer q-mr-sm"
+            />
             <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
           </q-td>
         </template>
@@ -184,18 +209,19 @@ const router = useRouter()
 const openDialog = ref(false)
 const withdrawAmountSpentDialog = ref({})
 const withdrawRemainingBudgetDialog = ref({})
-const advertismentPaymentEventsDialog=ref({show:false})
+const advertismentPaymentEventsDialog = ref({ show: false })
 const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 const alertMessage = ref('')
+const filter = ref('')
 
-const eventRows= ref([]);
-const eventColumns= ref([
-        { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
-        { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: val => `${val} MATIC` },
-      ]);
+const eventRows = ref([])
+const eventColumns = ref([
+  { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
+  { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
+])
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -211,7 +237,7 @@ async function _getEventsForCampaign(advertise) {
     if (result.status.includes('success')) {
       $q.notify({ message: 'events retreived successfully ', type: 'positive' })
       // Combine events into a single array with eventType field
-      
+
       const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
         ...event,
         eventType: 'Campaign Created'
@@ -232,11 +258,16 @@ async function _getEventsForCampaign(advertise) {
         eventType: 'Payment Released on Withdraw Approval'
       }))
 
-      eventRows.value = [...adCampaignCreatedEvents, ...paymentReleasedEvents, ...budgetWithdrawnEvents, ...paymentReleasedOnWithdrawApprovalEvents]
+      eventRows.value = [
+        ...adCampaignCreatedEvents,
+        ...paymentReleasedEvents,
+        ...budgetWithdrawnEvents,
+        ...paymentReleasedOnWithdrawApprovalEvents
+      ]
       //let's change the advertise status.
-      advertismentPaymentEventsDialog.value.show=true;
+      advertismentPaymentEventsDialog.value.show = true
       console.log('the result ======= ', result)
-      console.log('the event rows=== ', this.eventRows.value);
+      console.log('the event rows=== ', this.eventRows.value)
     } else {
       $q.notify({ message: result?.error?.message, type: 'negative' })
     }
@@ -362,6 +393,11 @@ function onDeleteAdvertise(id, type) {
       errorStore.throwError(error, 'Advertise deletion failed')
     })
 }
+
+function onApproveAdvertise(advertise, approve = true) {
+  advertise.isApproved = approve
+  advertiseStore.editAdvertise(advertise)
+}
 const columns = ref([
   {
     name: 'published',
@@ -397,22 +433,26 @@ const columns = ref([
   {
     name: 'budget',
     field: 'budget',
-    label: 'Budget'
+    label: 'Budget',
+    sortable: true
   },
   {
     name: 'clicks',
     field: 'clicks',
-    label: 'Number of Click'
+    label: 'Number of Click',
+    sortable: true
   },
   {
     name: 'impression',
     field: 'impressions',
-    label: 'Number of Impression'
+    label: 'Number of Impression',
+    sortable: true
   },
   {
     name: 'durations',
     field: 'duration',
-    label: 'Durations'
+    label: 'Durations',
+    sortable: true
   },
 
   {

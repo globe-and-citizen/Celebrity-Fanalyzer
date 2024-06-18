@@ -63,8 +63,8 @@ function compute() {
 }
 
 function groupLikesAndDislikesByDate(data) {
-  const likes = data.likes
-  const dislikes = data.dislikes
+  const likes = data.likes || []
+  const dislikes = data.dislikes || []
 
   const likesByDate = likes.reduce((acc, item) => {
     const date = monthDayYear(item.createdAt)
@@ -87,14 +87,13 @@ function groupLikesAndDislikesByDate(data) {
   }, {})
 
   const mergedResult = []
-
   const allDates = new Set([...Object.keys(likesByDate), ...Object.keys(dislikesByDate)])
 
   allDates.forEach((date) => {
     mergedResult.push({
       [date]: {
         likes: likesByDate[date] ? likesByDate[date].likes : 0,
-        dislikes: dislikesByDate[date] ? -dislikesByDate[date].dislikes : 0
+        dislikes: dislikesByDate[date] ? dislikesByDate[date].dislikes : 0
       }
     })
   })
@@ -139,10 +138,7 @@ watchEffect(() => {
 
   dates.value = info.map((obj) => Object.keys(obj)[0])
   likes.value = info.map((obj) => Object.values(obj)[0].likes || 0)
-  dislikes.value = info.map((obj) => {
-    const dislikesValue = Object.values(obj)[0].dislikes || 0
-    return dislikesValue < 0 ? -dislikesValue : dislikesValue
-  })
+  dislikes.value = info.map((obj) => Object.values(obj)[0].dislikes || 0)
 
   countLikes.value = likes.value.reduce((acc, item) => acc + item, 0)
   countDislikes.value = dislikes.value.reduce((acc, item) => acc + item, 0)

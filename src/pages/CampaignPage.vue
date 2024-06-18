@@ -6,7 +6,7 @@
   </q-tabs>
   <q-tab-panels v-if="advertise" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="post" style="padding: 0">
-      <SingleAdvertise :advertise="advertise" title="Campaign Page" @clickComments="tab = 'comments'" />
+      <ThePost title="Campaign Page" @clickComments="tab = 'comments'" :post="advertise" :isAdd="true" collectionName="advertises" />
     </q-tab-panel>
 
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -23,7 +23,7 @@
 <script setup>
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
-import SingleAdvertise from '../components/Advertiser/SingleAdvertise.vue'
+import ThePost from '../components/Posts/ThePost.vue'
 import {
   useCommentStore,
   useErrorStore,
@@ -31,11 +31,13 @@ import {
   useAdvertiseStore,
   useShareStore,
   useClicksStore,
-  useImpressionsStore
+  useImpressionsStore,
+  useStatStore
 } from 'src/stores'
-import { computed, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, onUnmounted, ref, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { startTracking, stopTracking } from 'src/utils/activityTracker'
 
 const router = useRouter()
 
@@ -47,6 +49,7 @@ const advertiseStore = useAdvertiseStore()
 const shareStore = useShareStore()
 const impressionStore = useImpressionsStore()
 const clickStore = useClicksStore()
+const statStore = useStatStore()
 
 const tab = ref(advertiseStore.tab)
 const shareIsLoading = ref(false)
@@ -92,7 +95,7 @@ watchEffect(async () => {
 
     shareIsLoading.value = true
     await shareStore
-      .fetchShares('advertises', advertiseId)
+      .fetchSharesCount('advertises', advertiseId)
       .catch((error) => errorStore.throwError(error))
       .finally(() => {
         shareIsLoading.value = false
@@ -103,7 +106,13 @@ watchEffect(async () => {
   setTimeout(redirect, 5000)
 })
 
+onMounted(()=>{
+  startTracking()
+})
+
 onUnmounted(async () => {
+  const stats = stopTracking()
+  await statStore.addStats(advertise.value?.id, stats, 'advertisement')
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()

@@ -13,9 +13,9 @@ let endTime = startTime + INITIAL_WAIT
 const counts = {
   clicks: 0,
   keypresses: 0,
-  mousemovements: 0,
+  mouseMovements: 0,
   scrolls: 0,
-  totaltime: 0
+  totalTime: 0
 }
 
 // Interval id for tracking time intervals
@@ -26,7 +26,7 @@ export function startTracking() {
   intervalId = setInterval(function () {
     if (!document.hidden && startTime <= endTime) {
       startTime = Date.now()
-      counts.totaltime += ONE_SECOND
+      counts.totalTime += ONE_SECOND
     }
   }, ONE_SECOND)
 
@@ -51,7 +51,7 @@ export function stopTracking() {
   clearInterval(intervalId)
   const data = {
     ...counts,
-    totaltime: Math.round(counts.totaltime / 1000)
+    totalTime: Math.round(counts.totalTime / 1000)
   }
 
   for (const key in counts) {

@@ -28,7 +28,8 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore } from 'src/stores'
+import { startTracking, stopTracking } from 'src/utils/activityTracker'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
@@ -42,6 +43,7 @@ const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
+const statStore = useStatStore()
 
 const entriesRef = ref(null)
 
@@ -57,7 +59,7 @@ const prompt = computed(() => {
     ?.find((prompt) => {
       switch (name) {
         case 'month':
-          return prompt.id <= currentYearMonth()
+          return prompt.id >= currentYearMonth()
         case 'year-month':
           return prompt.date === params.year + '-' + params.month
         case 'slug':
@@ -89,7 +91,7 @@ watchEffect(async () => {
 
     shareIsLoading.value = true
     await shareStore
-      .fetchShares('prompts', promptId)
+      .fetchSharesCount('prompts', promptId)
       .catch((error) => errorStore.throwError(error))
       .finally(() => {
         shareIsLoading.value = false
@@ -99,6 +101,7 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
+  startTracking()
   await entryStore.resetEntries
   entriesRef.value = document.querySelector('.entries-page-container')
   window.addEventListener('scroll', onScroll)
@@ -115,6 +118,8 @@ watch(entriesRef, (newVal) => {
 })
 
 onUnmounted(async () => {
+  const stats = stopTracking()
+  await statStore.addStats(prompt.value?.id, stats, 'topic')
   promptStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()

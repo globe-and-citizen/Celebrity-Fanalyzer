@@ -4,9 +4,7 @@
       <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route?.icon" :to="route?.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
-      <!-- <q-route-tab v-if="userStore.isAdvertiser || userStore.isAdmin" exact icon="campaign" to="/advertiser">
-        <q-tooltip>Advertiser Panel</q-tooltip>
-      </q-route-tab> -->
+
       <q-route-tab
         class="adminTab"
         v-if="userStore.isWriterOrAbove || userStore.isAdvertiser"
@@ -35,7 +33,7 @@
 </template>
 
 <script setup>
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { onSnapshot, collection } from 'firebase/firestore'
@@ -45,6 +43,7 @@ const updated = ref(false)
 const userStore = useUserStore()
 const promptStore = usePromptStore()
 const entriesStore = useEntryStore()
+const errorStore = useErrorStore()
 const router = useRouter()
 const email = ref('')
 const currentPath = ref('')
