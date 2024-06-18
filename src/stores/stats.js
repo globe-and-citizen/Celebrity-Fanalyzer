@@ -10,7 +10,8 @@ export const useStatStore = defineStore('stats', {
     _stats: [],
     _summary: [],
     _allInteractionsByCountry: [],
-    _articleRating: []
+    _articleRating: [],
+    _sentiment: ''
   }),
 
   getters: {
@@ -18,7 +19,8 @@ export const useStatStore = defineStore('stats', {
     getStats: (state) => state._stats,
     getSummary: (state) => state._summary,
     getAllInteractionsByCountry: (state) => state._allInteractionsByCountry,
-    getArticleRate: (state) => state._articleRating
+    getArticleRate: (state) => state._articleRating,
+    getSentiment: (state) => state._sentiment
   },
 
   actions: {
@@ -172,6 +174,26 @@ export const useStatStore = defineStore('stats', {
         const data = await res.json()
         this._articleRating = data
         return data
+      } catch (err) {
+        console.log(err)
+        return null
+      }
+    },
+
+    async getCommentsAnalysis(id, comments) {
+      this._isLoading = true
+      try {
+        const res = await layer8.fetch(`${baseURL}/comments/analyze`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id, comments })
+        })
+        const sentiment = await res.json()
+        this._sentiment = sentiment.response
+        this._isLoading = false
+        return sentiment
       } catch (err) {
         console.log(err)
         return null
