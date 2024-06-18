@@ -137,14 +137,17 @@ export const useAdvertiseStore = defineStore('advertises', {
       )
       const userStore = useUserStore()
       if (!this._unSubscribeActive) {
-        this._unSubscribeActive = onSnapshot(q, (querySnapshot) => {
-          const activeAdvertises = []
-          querySnapshot.forEach(async (doc) => {
+        this._unSubscribeActive = onSnapshot(q, async (querySnapshot) => {
+          const activeAdvertisesPromise = querySnapshot.docs.map(async (doc) => {
             const data = { id: doc.id, ...doc.data(), isAdd: true }
-            const user = userStore.getUserById(data.author.id) || (await userStore.fetchUser(data.author.id))
+            let user = userStore.getUserById(data.author.id)
+            if (!user) {
+              user = await userStore.fetchUser(data.author.id)
+            }
             data.author = user
-            activeAdvertises.push(data)
+            return data
           })
+          const activeAdvertises = await Promise.all(activeAdvertisesPromise)
           this._activeAdvertises = []
           this.$patch({ _activeAdvertises: activeAdvertises })
         })
