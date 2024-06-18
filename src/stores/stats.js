@@ -18,7 +18,7 @@ export const useStatStore = defineStore('stats', {
     _allInteractionsByCountry: [],
     _articleRating: undefined,
     _userRating: undefined,
-    _sentiment: 'Unknown',
+    _sentiment: '',
     _isInitialized: false
   }),
 
@@ -220,33 +220,20 @@ export const useStatStore = defineStore('stats', {
       }
     },
 
-    async getCommentsAnalysis(comments) {
+    async getCommentsAnalysis(id, comments) {
+      this._isLoading = true
       try {
-        const response = await openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Analyze comments attitude of article and return a single word answer: "Positive", "Negative", "Neutral" or "Unknown"'
-            },
-            {
-              role: 'user',
-              content: comments
-            }
-          ],
-          temperature: 0.2,
-          max_tokens: 100,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0
+        const res = await layer8.fetch(`${baseURL}/comments/analyze`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id, comments })
         })
-
-        if (response.choices[0].message.content) {
-          console.log('Sentiment analysis response:', response)
-          this._sentiment = response.choices[0].message.content
-          return response
-        }
+        const sentiment = await res.json()
+        this._sentiment = sentiment.response
+        this._isLoading = false
+        return sentiment
       } catch (err) {
         console.log(err)
         return null
