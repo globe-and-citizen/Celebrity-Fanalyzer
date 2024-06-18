@@ -18,10 +18,7 @@
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
-          <template v-if="isAdd">
-            <q-separator spaced="xl" />
-            <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
-          </template>
+
           <div
             v-if="!!statStore.getStats?.length"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
@@ -29,6 +26,10 @@
           >
             <HalfDonought :stats="statStore.getStats" :title="'User\'s total activity'" />
           </div>
+          <template v-if="isAdd">
+            <q-separator spaced="xl" />
+            <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
+          </template>
         </div>
 
         <div class="row" style="justify-content: space-between; gap: 10px; margin-top: 10px">
