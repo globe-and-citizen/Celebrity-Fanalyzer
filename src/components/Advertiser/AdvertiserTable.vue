@@ -309,16 +309,8 @@ async function onwithdrawAmountSpentDialog(advertise) {
   $q.loading.hide()
 }
 async function _claimPayment(advertise, currentAmountSpent) {
-  // console.log('the current advertise=== ', advertise)
-  // if (advertise?.campaignCode) {
-  // $q.loading.show()
-  // const currentAmountSpent = await calculateAmountSpent(advertise)
-  // if (currentAmountSpent > 0) {
   $q.loading.show()
-  //const campaignInstance= await getAdCampaignByCode({campaignCode:advertise.campaignCode});
-  //console.log('the campaign Instance ==== ', campaignInstance)
   const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
-  //console.log('the result ', result)
   if (result.status.includes('success')) {
     console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
@@ -329,12 +321,6 @@ async function _claimPayment(advertise, currentAmountSpent) {
   } else {
     $q.notify({ message: result?.error?.message, type: 'negative' })
   }
-  // } else {
-  //   $q.notify({ message: 'The curent balance to claim should be greater than zero' })
-  // }
-  // } else {
-  //   $q.notify({ message: 'No campaign code associated', type: 'negative' })
-  // }
   $q.loading.hide()
 }
 
@@ -350,10 +336,7 @@ async function _completeAdvertise(advertise) {
 }
 async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
-  //const campaignInstance= await getAdCampaignByCode({campaignCode:advertise.campaignCode});
-  //console.log('the campaign Instance ==== ', campaignInstance)
   const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
-  //console.log('the result ', result)
   if (result.status.includes('success')) {
     console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
@@ -362,7 +345,6 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   } else {
     $q.notify({ message: result?.error?.message, type: 'negative' })
   }
-
   $q.loading.hide()
 }
 
