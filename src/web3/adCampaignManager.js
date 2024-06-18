@@ -211,3 +211,75 @@ export const unpauseContract = async () => {
     return { status: 'error', error: error }
   }
 }
+
+
+
+export const getEventsForCampaign = async (campaignCode) => {
+  if (campaignCode.length > 1) {
+    try {
+      const adCampaignManager = await getContractInstance();
+      
+      // Get all logs for the relevant events
+      const adCampaignCreatedLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.AdCampaignCreated());
+      const paymentReleasedLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.PaymentReleased());
+      const paymentReleasedOnWithdrawApprovalLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.PaymentReleasedOnWithdrawApproval());
+      const budgetWithdrawnLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.BudgetWithdrawn());
+
+      // Decode the logs and filter by campaignCode
+      const adCampaignCreatedEvents = adCampaignCreatedLogs
+        .map(log => decodeLog(log))
+        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+
+      const paymentReleasedEvents = paymentReleasedLogs
+        .map(log => decodeLog(log))
+        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+
+      const budgetWithdrawnEvents = budgetWithdrawnLogs
+        .map(log => decodeLog(log))
+        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+
+      const paymentReleasedOnWithdrawApprovalEvents = paymentReleasedOnWithdrawApprovalLogs
+        .map(log => decodeLog(log))
+        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+
+      const adCampaignCreatedData = adCampaignCreatedEvents.map(event => ({
+        campaignCode: event.args.campaignCode,
+        amount:event.args.budget
+      }));
+      
+      const paymentReleasedOnWithdrawApprovalData = paymentReleasedOnWithdrawApprovalEvents.map(event => ({
+        campaignCode: event.args.campaignCode,
+        amount:event.args.paymentAmount
+      }));
+
+      const paymentReleasedData = paymentReleasedEvents.map(event => ({
+        campaignCode: event.args.campaignCode,
+        amount:event.args.paymentAmount
+      }));
+
+      const budgetWithdrawnData = budgetWithdrawnEvents.map(event => ({
+        campaignCode: event.args.campaignCode,
+        advertiser: event.args.advertiser,
+        amount: event.args.amount
+      }));
+
+      // Create JSON object to return
+      const result = {
+        paymentReleasedEvents: paymentReleasedData,
+        budgetWithdrawnEvents: budgetWithdrawnData,
+        paymentReleasedOnWithdrawApprovalEvents:paymentReleasedOnWithdrawApprovalData,
+        adCampaignCreatedEvents:adCampaignCreatedData
+      };
+
+      console.log('Events retrieved successfully');
+      return { status: 'success', events: result };
+    } catch (error) {
+       console.error('Error retrieving events:', error);
+       return { status: 'error', error: error.error ? error.error.data : error };
+    }
+  } else {
+    const errorMessage = 'Make sure the campaignCode is not an empty string';
+    console.error('Error retrieving events:', errorMessage);
+    return { status: 'error', error: { message: errorMessage } };
+  }
+}

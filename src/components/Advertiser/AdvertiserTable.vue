@@ -36,33 +36,44 @@
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
-            <q-icon name="edit" color="blue" size="18px" @click="$emit('openAdvertiseDialog', props.row)" class="cursor-pointer q-mr-sm" />
-            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
-            <q-btn
+            
+            <q-icon
               color="green"
               :disable="userStore.getUser.role !== 'Admin'"
               flat
-              icon="payment"
-              size="sm"
+              name="payment"
+              size="18px"
               label=""
-              
-              v-if=" userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
               @click="onwithdrawAmountSpentDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw amount spent!</q-tooltip>
-            </q-btn>
-            <q-btn
+            </q-icon>
+            <q-icon
               color="primary"
-              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email!=props.row.author.email"
+              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
               flat
-              icon="payment"
-              size="sm"
+              name="free_cancellation"
+              size="18px"
               label=""
-              v-if=" userStore.getUser.email==props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw remaining budget!</q-tooltip>
-            </q-btn>
+            </q-icon>
+            <q-icon
+              color="dark"
+              flat
+              name="receipt_long"
+              size="18px"
+              label=""
+              v-if="props.row.campaignCode?.length > 5"
+              @click="_getEventsForCampaign(props.row)"
+            >
+              <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
+            </q-icon>
+            <q-icon name="edit" color="blue" size="18px" @click="$emit('openAdvertiseDialog', props.row)" class="cursor-pointer q-mr-sm" />
+            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
           </q-td>
         </template>
         <template #body-cell-durations="props">
@@ -73,7 +84,7 @@
         </template>
         <template #body-cell-status="props">
           <q-td>
-            {{ calculateStatus(props.row.value) ? 'Active' : 'Inactive' }}
+            {{ props.row.status }}
           </q-td>
         </template>
         <template #body-cell-content="props">
@@ -116,14 +127,14 @@
             color="negative"
             @click="_claimPayment(withdrawAmountSpentDialog.advertise, withdrawAmountSpentDialog.currentAmountSpent)"
             v-close-popup
-            />
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
     <q-dialog v-model="withdrawRemainingBudgetDialog.show">
       <q-card>
         <q-card-section class="q-pb-none">
-          <h6 class="q-my-sm">Withdraw Remaining  Budget : {{ withdrawRemainingBudgetDialog.remainingBudget }}</h6>
+          <h6 class="q-my-sm">Withdraw Remaining Budget : {{ withdrawRemainingBudgetDialog.remainingBudget }}</h6>
         </q-card-section>
         <q-card-section>Are you sure you want to withdraw it ?</q-card-section>
         <q-card-actions align="right">
@@ -135,8 +146,20 @@
             color="negative"
             @click="_withdrawRemainingBudget(withdrawRemainingBudgetDialog.advertise, withdrawRemainingBudgetDialog.currentAmounSpent)"
             v-close-popup
-            />
+          />
         </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="advertismentPaymentEventsDialog.show" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <div class="col">Campaign Events</div>
+          <q-btn icon="close" flat round dense @click="advertismentPaymentEventsDialog.show = false" />
+        </q-card-section>
+        <q-card-section>
+          <q-table :rows="eventRows" :columns="eventColumns" row-key="index" />
+        </q-card-section>
       </q-card>
     </q-dialog>
   </div>
@@ -147,7 +170,8 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { claimPayment,getAdCampaignByCode,requestAndApproveWithdrawal } from 'app/src/web3/adCampaignManager'
+import { claimPayment, getAdCampaignByCode, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
+
 const props = defineProps({
   advertises: {
     required: true,
@@ -160,11 +184,18 @@ const router = useRouter()
 const openDialog = ref(false)
 const withdrawAmountSpentDialog = ref({})
 const withdrawRemainingBudgetDialog = ref({})
+const advertismentPaymentEventsDialog=ref({show:false})
 const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 const alertMessage = ref('')
+
+const eventRows= ref([]);
+const eventColumns= ref([
+        { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
+        { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: val => `${val} MATIC` },
+      ]);
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -172,20 +203,62 @@ async function calculateAmountSpent(advertise) {
   )
 }
 
+async function _getEventsForCampaign(advertise) {
+  if (advertise?.campaignCode) {
+    $q.loading.show()
+    const result = await getEventsForCampaign(advertise.campaignCode)
+
+    if (result.status.includes('success')) {
+      $q.notify({ message: 'events retreived successfully ', type: 'positive' })
+      // Combine events into a single array with eventType field
+      
+      const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
+        ...event,
+        eventType: 'Campaign Created'
+      }))
+
+      const paymentReleasedEvents = result.events.paymentReleasedEvents.map((event) => ({
+        ...event,
+        eventType: 'Payment Released'
+      }))
+
+      const budgetWithdrawnEvents = result.events.budgetWithdrawnEvents.map((event) => ({
+        ...event,
+        eventType: 'Remaining Budget Withdrawn'
+      }))
+
+      const paymentReleasedOnWithdrawApprovalEvents = result.events.paymentReleasedOnWithdrawApprovalEvents.map((event) => ({
+        ...event,
+        eventType: 'Payment Released on Withdraw Approval'
+      }))
+
+      eventRows.value = [...adCampaignCreatedEvents, ...paymentReleasedEvents, ...budgetWithdrawnEvents, ...paymentReleasedOnWithdrawApprovalEvents]
+      //let's change the advertise status.
+      advertismentPaymentEventsDialog.value.show=true;
+      console.log('the result ======= ', result)
+      console.log('the event rows=== ', this.eventRows.value);
+    } else {
+      $q.notify({ message: result?.error?.message, type: 'negative' })
+    }
+  } else {
+    $q.notify({ message: 'No campaign code associated', type: 'negative' })
+  }
+  $q.loading.hide()
+}
+
 async function onWithdrawRemainingBudgetDialog(advertise) {
   if (advertise?.campaignCode) {
     $q.loading.show()
     const currentAmountSpent = await calculateAmountSpent(advertise)
-    const remainingBudget=(advertise.budget-currentAmountSpent)<0?0:(advertise.budget-currentAmountSpent);
+    const remainingBudget = advertise.budget - currentAmountSpent < 0 ? 0 : advertise.budget - currentAmountSpent
     withdrawRemainingBudgetDialog.value.advertise = advertise
-    withdrawRemainingBudgetDialog.value.currentAmounSpent=currentAmountSpent;
-    withdrawRemainingBudgetDialog.value.remainingBudget = remainingBudget;
+    withdrawRemainingBudgetDialog.value.currentAmounSpent = currentAmountSpent
+    withdrawRemainingBudgetDialog.value.remainingBudget = remainingBudget
     withdrawRemainingBudgetDialog.value.show = true
-   
   } else {
     $q.notify({ message: 'No campaign code associated', type: 'negative' })
   }
-  $q.loading.hide();
+  $q.loading.hide()
 }
 
 async function onwithdrawAmountSpentDialog(advertise) {
@@ -202,7 +275,7 @@ async function onwithdrawAmountSpentDialog(advertise) {
   } else {
     $q.notify({ message: 'No campaign code associated', type: 'negative' })
   }
-  $q.loading.hide();
+  $q.loading.hide()
 }
 async function _claimPayment(advertise, currentAmountSpent) {
   // console.log('the current advertise=== ', advertise)
@@ -218,9 +291,9 @@ async function _claimPayment(advertise, currentAmountSpent) {
   if (result.status.includes('success')) {
     console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
-    //let's change the advertise status. 
-    if(currentAmountSpent>=advertise.budget){
-      await _completeAdvertise();
+    //let's change the advertise status.
+    if (currentAmountSpent >= advertise.budget) {
+      await _completeAdvertise(advertise)
     }
   } else {
     $q.notify({ message: result?.error?.message, type: 'negative' })
@@ -234,19 +307,17 @@ async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.hide()
 }
 
-async function _completeAdvertise(advertise){
-  advertise.status = "Complete"
-    advertiseStore
-      .editAdvertise(advertise)
-      .then(() =>
-        $q.notify({ type: 'info', message:"Advertise status Changed to complete " })
-      )
-      .catch((error) => {
-        console.log(error)
-        errorStore.throwError(error, 'Advertise edit failed')
-      })
+async function _completeAdvertise(advertise) {
+  advertise.status = 'Complete'
+  advertiseStore
+    .editAdvertise(advertise)
+    .then(() => $q.notify({ type: 'info', message: 'Advertise status Changed to complete ' }))
+    .catch((error) => {
+      console.log(error)
+      errorStore.throwError(error, 'Advertise edit failed')
+    })
 }
-async function _withdrawRemainingBudget(advertise, currentAmounSpent){
+async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
   //const campaignInstance= await getAdCampaignByCode({campaignCode:advertise.campaignCode});
   //console.log('the campaign Instance ==== ', campaignInstance)
@@ -256,12 +327,11 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent){
     console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
     //let's change the advertise status
-    await _completeAdvertise(advertise);
-
+    await _completeAdvertise(advertise)
   } else {
     $q.notify({ message: result?.error?.message, type: 'negative' })
   }
-  
+
   $q.loading.hide()
 }
 

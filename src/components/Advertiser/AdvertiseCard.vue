@@ -120,9 +120,10 @@ import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { reactive, ref, watchEffect, computed } from 'vue'
+import { reactive, ref, watchEffect, computed, onMounted } from 'vue'
 import { useWalletStore } from 'src/stores'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
+import { customWeb3modal } from 'app/src/web3/walletConnect'
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
   'author',
@@ -160,6 +161,12 @@ const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_add
 function openDatePicker() {
   datePickerVisible.value = true
 }
+onMounted(() => {
+  if(!customWeb3modal.getAddress()){
+    customWeb3modal.open()
+    emit('hideDialog')
+  }
+})
 
 const advertise = reactive({
   content: '',
