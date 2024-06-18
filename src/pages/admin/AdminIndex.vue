@@ -28,10 +28,7 @@
         >
           <q-item-section>New Entry</q-item-section>
         </q-item>
-        <!-- <q-item v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" clickable @click="openAdvertiseDialog">
-          <q-item-section>New Advertise</q-item-section>
-        </q-item> -->
-        <q-item v-if="userStore.isAdmin && !!uniqueUsers?.value?.length" clickable @click="addAllUsersToStatsDb()">
+        <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
           <q-item-section>Add new users</q-item-section>
         </q-item>
       </q-list>
@@ -140,7 +137,6 @@ const addAllUsersToStatsDb = () => {
   })
   userStore.addAllUsers(allUsersMap)
 }
-
 
 const uniqueUsers = computed(() => {
   const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
