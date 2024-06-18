@@ -85,7 +85,7 @@ import LeafletMap from './Graphs/Map/LeafletMap.vue'
 import { useClicksStore, useErrorStore, useImpressionsStore, useLikeStore, useShareStore, useStatStore, useVisitorStore } from 'src/stores'
 import HalfDonought from './Graphs/HalfDonought.vue'
 import PopularityGauge from './Graphs/PopularityGauge.vue'
-import UserRatingGauge from './Graphs/UserratingGauge.vue'
+import UserRatingGauge from './Graphs/UserRatingGauge.vue'
 import CTRBar from './Graphs/CTRBar.vue'
 
 const props = defineProps(['post', 'isAdd', 'collectionName'])
