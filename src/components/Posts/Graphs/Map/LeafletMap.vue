@@ -185,9 +185,9 @@ watch(
   background-color: white;
   z-index: 3;
   transition: all 0.6s;
+}
 
-  &:hover {
-    border-color: #000000;
-  }
+.total-countries:hover {
+  border-color: #000000;
 }
 </style>
