@@ -100,7 +100,7 @@
                 !advertise.content ||
                 !advertise.duration ||
                 !advertise.publishDate ||
-                (advertise.type === 'Banner' && (fileError ||( contentModel.length<=0 && advertise.contentURL.length<=0)) )
+                (advertise.type === 'Banner' && (fileError || (contentModel.length <= 0 && advertise.contentURL.length <= 0)))
               "
               :label="id ? 'Save Edits' : 'Submit '"
               rounded
@@ -181,8 +181,7 @@ watchEffect(() => {
     const collectionRef = collection(db, 'advertises')
     const docRef = doc(collectionRef)
 
-    advertise.author =
-      userStore.isAdvertiser || userStore.isAdmin ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
+    advertise.author = userStore.isAuthenticated ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
     advertise.categories = []
     advertise.type = 'Banner'
     advertise.date = currentYearMonth()

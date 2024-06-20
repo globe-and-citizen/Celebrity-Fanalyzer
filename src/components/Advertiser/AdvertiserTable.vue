@@ -46,7 +46,14 @@
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
-            <q-icon v-if="userStore.isAdmin && !props.row.isApproved" name="done_outline" color="green" size="18px" @click="onApproveAdvertise(props.row)" class="cursor-pointer q-mr-sm" />
+            <q-icon
+              v-if="userStore.isAdmin && !props.row.isApproved"
+              name="done_outline"
+              color="green"
+              size="18px"
+              @click="onApproveAdvertise(props.row)"
+              class="cursor-pointer q-mr-sm"
+            />
             <q-icon
               v-show="props.row.status === 'Inactive'"
               name="edit"
@@ -127,7 +134,7 @@ function checkDurationStatus() {
       advertise.duration &&
       (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) &&
       advertise.status === 'Active' &&
-      userStore.isAdvertiser
+      !userStore.isAdmin
     ) {
       alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
       openDialog.value = true
@@ -137,7 +144,10 @@ function checkDurationStatus() {
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
-onMounted(checkDurationStatus)
+onMounted(() => {
+  checkDurationStatus()
+  advertiseStore.fetchAdvertises()
+})
 
 function onDeleteAdvertise(id, type) {
   advertiseStore
@@ -149,8 +159,8 @@ function onDeleteAdvertise(id, type) {
     })
 }
 
-function onApproveAdvertise(advertise, approve=true) {
-  advertise.isApproved=approve
+function onApproveAdvertise(advertise, approve = true) {
+  advertise.isApproved = approve
   advertiseStore.editAdvertise(advertise)
 }
 const columns = ref([
