@@ -20,7 +20,7 @@ export const handleLikesAndDislikes = (data, mapRef) => {
       const totalInteractions = countryData.interactions.likes + countryData.interactions.dislikes
       if (totalInteractions > 0) {
         const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
-        const popupContent = `Country: ${commentsLocation}<br>Likes: ${countryData.interactions.likes}<br>Dislikes: ${countryData.interactions.dislikes}`
+        const popupContent = `Country: ${commentsLocation}<br>Total Likes: ${countryData.interactions.likes}<br>Total Dislikes: ${countryData.interactions.dislikes}`
         const calcRadius = Math.sqrt(totalInteractions / Math.PI) * 4000
         const radius = Math.max(calcRadius, minRadius)
         const circleOptions = {
@@ -51,7 +51,7 @@ export const handleComments = (data, mapRef) => {
       const commentsCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
       const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
       if (commentsCoordinates) {
-        const popupContent = `Country: ${commentsLocation}<br>Comments: ${commentsCount}`
+        const popupContent = `Country: ${commentsLocation}<br>Total Comments: ${commentsCount}`
         const calcRadius = Math.sqrt(commentsCount / Math.PI) * 4000
         const radius = Math.max(calcRadius, minRadius)
         const circleOptions = {
@@ -77,7 +77,7 @@ export const handleShares = (data, mapRef) => {
       const sharesCoordinates = countries.find((country) => country.code === countryData.location)?.coordinates
       const sharesLocation = countries.find((country) => country.code === countryData.location)?.country
       if (sharesCoordinates) {
-        const popupContent = `Country: ${sharesLocation}<br>Shares: ${sharesCount}`
+        const popupContent = `Country: ${sharesLocation}<br>Total Shares: ${sharesCount}`
         const calcRadius = Math.sqrt(sharesCount / Math.PI) * 4000
         const radius = Math.max(calcRadius, minRadius)
         const circleOptions = {

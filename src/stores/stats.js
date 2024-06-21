@@ -1,12 +1,6 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from 'src/stores'
 import layer8 from 'layer8_interceptor'
-import OpenAI from 'openai'
-
-const openai = new OpenAI({
-  apiKey: '',
-  dangerouslyAllowBrowser: true
-})
 
 export const baseURL = 'https://stats-api.up.railway.app/v1'
 

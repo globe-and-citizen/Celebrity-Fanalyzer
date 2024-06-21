@@ -144,7 +144,7 @@ function checkDurationStatus() {
       advertise.duration &&
       (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) &&
       advertise.status === 'Active' &&
-      userStore.isAdvertiser
+      !userStore.isAdmin
     ) {
       alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
       openDialog.value = true
@@ -154,7 +154,10 @@ function checkDurationStatus() {
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
-onMounted(checkDurationStatus)
+onMounted(() => {
+  checkDurationStatus()
+  advertiseStore.fetchAdvertises()
+})
 
 function onDeleteAdvertise(id, type) {
   advertiseStore
