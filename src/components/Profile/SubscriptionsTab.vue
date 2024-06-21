@@ -2,7 +2,9 @@
   <q-table v-if="filteredPrompts" :columns="columns" flat hide-bottom :pagination="pagination" :rows="filteredPrompts" title="Prompts">
     <template v-slot:body-cell-actions="props">
       <q-td :props="props">
-        <q-btn color="primary" flat icon="unsubscribe" round @click="unsubscribe('prompts', props.row.id)" />
+        <q-btn color="primary" flat icon="unsubscribe" round @click="unsubscribe('prompts', props.row.id)">
+          <q-tooltip>Unsubscribe</q-tooltip>
+        </q-btn>
       </q-td>
     </template>
   </q-table>
@@ -10,7 +12,9 @@
   <q-table v-if="filteredEntries" :columns="columns" flat hide-bottom :pagination="pagination" :rows="filteredEntries" title="Entries">
     <template v-slot:body-cell-actions="props">
       <q-td :props="props">
-        <q-btn color="primary" flat icon="unsubscribe" round @click="unsubscribe('entries', props.row.id)" />
+        <q-btn color="primary" flat icon="unsubscribe" round @click="unsubscribe('entries', props.row.id)">
+          <q-tooltip>Unsubscribe</q-tooltip>
+        </q-btn>
       </q-td>
     </template>
   </q-table>

@@ -46,7 +46,9 @@
           round
           size="sm"
           @click="onEditDialog(props.row)"
-        />
+        >
+          <q-tooltip>Edit</q-tooltip>
+        </q-btn>
         <q-btn
           v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
           color="negative"
@@ -56,7 +58,9 @@
           round
           size="sm"
           @click="onDeleteDialog(props.row)"
-        />
+        >
+          <q-tooltip>Delete</q-tooltip>
+        </q-btn>
       </td>
     </template>
   </q-table>

@@ -25,7 +25,7 @@
         </template>
         <template #body-cell-published="props">
           <q-td :props="props">
-            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
+            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue"><q-tooltip>Pending</q-tooltip></q-icon>
             <q-icon
               v-else-if="props.value === 'Inactive'"
               @click="changeActiveStatus(props.row, 'Active')"
@@ -33,7 +33,9 @@
               size="18px"
               color="green-6"
               class="cursor-pointer"
-            />
+            >
+              <q-tooltip>Publish</q-tooltip>
+            </q-icon>
             <q-icon
               v-else
               @click="changeActiveStatus(props.row, 'Inactive')"
@@ -41,12 +43,23 @@
               size="18px"
               color="red-8"
               class="cursor-pointer"
-            />
+            >
+              <q-tooltip>Unpublish</q-tooltip>
+            </q-icon>
           </q-td>
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
-            <q-icon v-if="userStore.isAdmin && !props.row.isApproved" name="done_outline" color="green" size="18px" @click="onApproveAdvertise(props.row)" class="cursor-pointer q-mr-sm" />
+            <q-icon
+              v-if="userStore.isAdmin && !props.row.isApproved"
+              name="done_outline"
+              color="green"
+              size="18px"
+              @click="onApproveAdvertise(props.row)"
+              class="cursor-pointer q-mr-sm"
+            >
+              <q-tooltip>Approve</q-tooltip>
+            </q-icon>
             <q-icon
               v-show="props.row.status === 'Inactive'"
               name="edit"
@@ -54,8 +67,12 @@
               size="18px"
               @click="$emit('openAdvertiseDialog', props.row)"
               class="cursor-pointer q-mr-sm"
-            />
-            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
+            >
+              <q-tooltip>Edit</q-tooltip>
+            </q-icon>
+            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer">
+              <q-tooltip>Delete</q-tooltip>
+            </q-icon>
           </q-td>
         </template>
         <template #body-cell-durations="props">
@@ -149,8 +166,8 @@ function onDeleteAdvertise(id, type) {
     })
 }
 
-function onApproveAdvertise(advertise, approve=true) {
-  advertise.isApproved=approve
+function onApproveAdvertise(advertise, approve = true) {
+  advertise.isApproved = approve
   advertiseStore.editAdvertise(advertise)
 }
 const columns = ref([
