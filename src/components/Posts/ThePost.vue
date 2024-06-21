@@ -8,7 +8,7 @@
         </div>
       </q-responsive>
       <div v-else-if="post.contentURL" class="bg-blur flex">
-       <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
+        <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
@@ -23,21 +23,39 @@
         <q-separator spaced />
         <section
           v-if="post?.author && !isAdd"
-          class="cursor-pointer flex items-center no-wrap q-pa-md"
+          class="cursor-pointer flex column items-start no-wrap q-pa-md"
           data-test="author-section"
           @click="router.push(`/fan/${props.post.author.username || props.post.author.uid}`)"
         >
-          <q-avatar size="6rem">
-            <q-img
-              :src="post.author.photoURL ? post.author.photoURL : '/icons/user_raiting_premium_member.svg'"
-              :srcset="post.author.photoURL"
-              :width="post.author.photoURL ? 'null' : '65px'"
-            />
-          </q-avatar>
-          <div class="q-ml-md">
-            <p class="text-body1 text-bold">{{ post.author.displayName }}</p>
-            <p class="q-mb-none" style="white-space: pre-line">{{ post.author.bio }}</p>
+          <div class="flex row items-center">
+            <q-avatar size="4rem">
+              <q-img
+                :src="post.author.photoURL ? post.author.photoURL : '/icons/user_raiting_premium_member.svg'"
+                :srcset="post.author.photoURL"
+                :width="post.author.photoURL ? 'null' : '50px'"
+              />
+            </q-avatar>
+            <div>
+              <p class="text-body1 text-bold q-mb-none q-ml-md text-capitalize">{{ post.author.displayName }}</p>
+              <div class="flex q-ml-md">
+                <q-rating
+                  v-model="userRating"
+                  max="5"
+                  size="1.4rem"
+                  color="yellow"
+                  icon="star_border"
+                  icon-selected="star"
+                  icon-half="star_half"
+                  no-dimming
+                  readonly
+                />
+              </div>
+            </div>
           </div>
+
+          <p v-if="props.post.author.bio" class="q-mb-none q-mt-md text-italic" style="white-space: pre-line">
+            {{ post.author.bio }}
+          </p>
         </section>
         <q-separator v-if="!isAdd" spaced />
         <p v-if="isAdd" class="q-mt-sm text-body1">{{ post.content }}</p>
@@ -89,15 +107,17 @@
           </q-btn>
           <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
-              v-if="post?.productLink && post?.isAdd"
-                flat
-                icon="open_in_new"
-                rounded
-                size="0.75rem"
-                :href="post?.productLink"
-              >
-                <q-tooltip anchor="bottom middle" self="center middle">{{ post?.productLink }}</q-tooltip>
-              </q-btn>
+            v-if="post?.productLink && post?.isAdd"
+            flat
+            icon="open_in_new"
+            rounded
+            size="0.75rem"
+            :href="getFormattedLink(post?.productLink)"
+            replace
+            target="_blank"
+          >
+            <q-tooltip anchor="bottom middle" self="center middle">{{ getFormattedLink(post?.productLink) }}</q-tooltip>
+          </q-btn>
           <q-btn
             v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
@@ -133,10 +153,11 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { monthYear } from 'src/utils/date'
-import { onMounted } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
+import { getFormattedLink } from '../../utils/getFormattedLink'
 
 const props = defineProps(['collectionName', 'post', 'title', 'isAdd'])
 defineEmits(['clickComments'])
@@ -153,6 +174,7 @@ const visitorStore = useVisitorStore()
 const entryStore = useEntryStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
+const userRating = ref(0)
 
 onMounted(async () => {
   // =========== STATS ===========
@@ -179,15 +201,32 @@ onMounted(async () => {
   }
 })
 
-const e = !!props.post.entries
+const isPrompt = !!props.post.entries
+const isAd = props.post?.isAdd
 const id = props.post.id
 
 async function like() {
-  await likeStore.addLike(props.collectionName, id, e ? null : id, e ? id : null).catch((error) => errorStore.throwError(error))
+  if (isPrompt) {
+    await likeStore.addLike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
+  } else if (isAd) {
+    await likeStore.addLike(props.collectionName, id, null, null, id).catch((error) => errorStore.throwError('Error adding like', error))
+  } else {
+    await likeStore
+      .addLike(props.collectionName, id, id, props.post?.prompt?.id, null)
+      .catch((error) => errorStore.throwError('Error adding like', error))
+  }
 }
 
 async function dislike() {
-  await likeStore.addDislike(props.collectionName, id, e ? null : id, e ? id : null).catch((error) => errorStore.throwError(error))
+  if (isPrompt) {
+    await likeStore.addDislike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
+  } else if (isAd) {
+    await likeStore.addDislike(props.collectionName, id, null, null, id).catch((error) => errorStore.throwError('Error adding like', error))
+  } else {
+    await likeStore
+      .addDislike(props.collectionName, id, id, props.post?.prompt?.id, null)
+      .catch((error) => errorStore.throwError('Error adding like', error))
+  }
 }
 
 async function share(socialNetwork) {
@@ -197,6 +236,12 @@ async function share(socialNetwork) {
 async function subscribe() {
   await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
+
+watchEffect(async () => {
+  if (statsStore.getUserRate?.userRating) {
+    userRating.value = ((await statsStore.getUserRate?.userRating) / 100) * 5
+  }
+})
 </script>
 
 <style scoped lang="scss">

@@ -18,7 +18,6 @@
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
-
           <div
             v-if="!!statStore.getStats?.length"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
@@ -30,6 +29,9 @@
             <q-separator spaced="xl" />
             <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
           </template>
+        </div>
+        <div v-if="isAdd" class="anthogram-border q-my-sm">
+          <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
         </div>
 
         <div class="row" style="justify-content: space-between; gap: 10px; margin-top: 10px">
@@ -49,8 +51,21 @@
           </div>
         </div>
 
-        <div v-if="!!statStore.getArticleRate?.postRating" class="col-12 anthogram-border rating-chart">
-          <PopularityGauge :postRating="statStore.getArticleRate" :title="'Post popularity rating'" />
+        <div class="row" style="justify-content: space-between; gap: 10px">
+          <div
+            class="col-12 anthogram-border rating-chart"
+            v-if="!!statStore.getArticleRate?.postRating"
+            v-bind:class="!!statStore.getUserRate?.userRating ? 'col-md-6' : 'col-md-12'"
+          >
+            <PopularityGauge :postRating="statStore.getArticleRate" :title="'Post popularity rating'" />
+          </div>
+          <div
+            class="col-12 anthogram-border rating-chart"
+            v-if="!!statStore.getUserRate?.userRating"
+            v-bind:class="!!statStore.getArticleRate?.postRating ? 'col-md-6' : 'col-md-12'"
+          >
+            <UserRatingGauge :userRating="statStore.getUserRate" :title="'User rating'" />
+          </div>
         </div>
 
         <q-separator spaced="xl" />
@@ -66,14 +81,15 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import LikesBar from 'src/components/Posts/Graphs/LikesBar.vue'
-import SharesPie from 'src/components/Posts/Graphs/SharesPie.vue'
-import VisitorsBar from 'src/components/Posts/Graphs/VisitorsBar.vue'
+import LikesBar from './Graphs/LikesBar.vue'
+import SharesPie from './Graphs/SharesPie.vue'
+import VisitorsBar from './Graphs/VisitorsBar.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import LeafletMap from 'components/Posts/Graphs/Map/LeafletMap.vue'
+import LeafletMap from './Graphs/Map/LeafletMap.vue'
 import { useClicksStore, useErrorStore, useImpressionsStore, useLikeStore, useShareStore, useStatStore, useVisitorStore } from 'src/stores'
-import HalfDonought from 'components/Posts/Graphs/HalfDonought.vue'
-import PopularityGauge from 'components/Posts/Graphs/PopularityGauge.vue'
+import HalfDonought from './Graphs/HalfDonought.vue'
+import PopularityGauge from './Graphs/PopularityGauge.vue'
+import UserRatingGauge from './Graphs/UserRatingGauge.vue'
 import CTRBar from './Graphs/CTRBar.vue'
 
 const props = defineProps(['post', 'isAdd', 'collectionName'])
@@ -90,7 +106,7 @@ const interval = ref('daily')
 
 onMounted(async () => {
   await visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
-  await shareStore.fetchSharesStats('entries', props.post.id).catch((error) => errorStore.throwError(error))
+  await shareStore.fetchSharesStats(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
   await statStore.fetchStats(props.post.id)
   await statStore.getArticleRating(props.post.id)
   await statStore.getArticleMetrics(props.post.id)
@@ -115,7 +131,6 @@ onUnmounted(() => {
 
 .rating-chart {
   height: 350px;
-  width: auto;
   margin-top: 10px;
 
   @media (max-width: 720px) {
