@@ -1,6 +1,6 @@
 <template>
   <TheHeader title="Admin Panel">
-    <q-btn v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
+    <q-btn v-if="userStore.isAuthenticated || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
     <q-btn-dropdown
       auto-close
       data-test="button-dropdown"
@@ -54,7 +54,7 @@
           label="Users"
         />
         <q-route-tab
-          v-if="userStore.isAdvertiser || userStore.isAdmin"
+          v-if="userStore.isAuthenticated || userStore.isAdmin"
           name="advertises"
           :to="{ name: 'admin.advertises' }"
           icon="campaign"
