@@ -115,12 +115,16 @@ onMounted(async () => {
       advertise?.value?.duration
     )
   }
-  startTracking()
+  if (advertise.value?.status === 'Active') {
+    startTracking()
+  }
 })
 
 onUnmounted(async () => {
-  const stats = stopTracking()
-  await statStore.addStats(advertise.value?.id, stats, 'advertisement')
+  if (advertise.value.status === 'Active') {
+    const stats = stopTracking()
+    await statStore.addStats(advertise.value?.id, stats, 'advertisement')
+  }
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()

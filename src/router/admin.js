@@ -6,7 +6,7 @@ export default [
     name: 'admin',
     beforeEnter: (_to, _from, next) => {
       const userStore = useUserStore()
-      if (userStore.isWriterOrAbove || userStore.isAdvertiser) next()
+      if (userStore.isWriterOrAbove || userStore.isAuthenticated) next()
       else next('/')
     },
     component: () => import('pages/admin/AdminIndex.vue'),
@@ -68,8 +68,8 @@ export default [
         component: () => import('app/src/pages/admin/AdvertisesIndex.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-          if (userStore.isAdmin || userStore.isAdvertiser) next()
-          else next('/')
+          if (userStore.isAuthenticated) next()
+          else next('/search')
         }
       }
     ]
