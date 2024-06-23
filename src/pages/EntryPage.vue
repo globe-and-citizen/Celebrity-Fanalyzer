@@ -80,6 +80,6 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .tab-selector {
   margin-bottom: 3.5rem;
-  z-index: 3;
+  z-index: 4;
 }
 </style>
