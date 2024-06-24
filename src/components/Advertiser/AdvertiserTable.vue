@@ -120,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted , watch} from 'vue'
+import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
@@ -142,7 +142,6 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-watch(selectedAdvertise,()=>console.log(selectedAdvertise.value))
 
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
