@@ -122,3 +122,21 @@ export const getStats = (reacts, startAt) => {
 
   return { weekStats, dayStats }
 }
+export function calculateEndDate(publishDate, duration) {
+  const publishDayObj = new Date(publishDate)
+  const endDate = new Date(publishDayObj.getTime() + duration * 24 * 60 * 60 * 1000)
+  return endDate.toISOString().slice(0, 10).replaceAll('-', '/')
+}
+
+export function getCurrentDate() {
+  const currentDate = new Date()
+  let month = currentDate.getMonth() + 1
+  if (month < 10) {
+    month = '0' + month
+  }
+  let day = currentDate.getDate()
+  if (day < 10) {
+    day = '0' + day
+  }
+  return `${currentDate.getFullYear()}/${month}/${day}`
+}

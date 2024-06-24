@@ -51,7 +51,7 @@
               name="done_outline"
               color="green"
               size="18px"
-              @click="onApproveAdvertise(props.row)"
+              @click="openApprovalDialog(props.row)"
               class="cursor-pointer q-mr-sm"
             />
             <q-icon
@@ -62,7 +62,7 @@
               @click="$emit('openAdvertiseDialog', props.row)"
               class="cursor-pointer q-mr-sm"
             />
-            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
+            <q-icon name="delete" color="red" size="18px" @click="openDeleteDialog(props.row.id, props.row.type)" class="cursor-pointer" />
           </q-td>
         </template>
         <template #body-cell-durations="props">
@@ -89,16 +89,30 @@
       </q-table>
       <h4 v-else class="text-center">Add advertises to view and manage them</h4>
     </div>
-    <q-dialog v-model="openDialog">
+    <q-dialog v-model="dialog.open">
       <q-card style="min-width: 20rem; max-width: 30rem">
         <q-card-section class="bg-primary text-white q-pa-sm">
-          <div class="text-h6">Alert</div>
+          <div class="text-h6">{{ dialog.title }}</div>
         </q-card-section>
         <q-card-section class="q-pt-none bg-white q-py-lg text-center">
-          <div class="text-subtitle1 wrap">{{ alertMessage }}</div>
+          <div class="text-subtitle1 wrap">{{ dialog.subTitle }}</div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
+          <template v-if="dialog.type === 'ChangePublishDate'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="changePublishDate" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else-if="dialog.type === 'DeleteCampaign'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="onDeleteAdvertise" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else-if="dialog.type === 'ApproveCampaign'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="onApproveAdvertise" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else>
+            <q-btn flat label="Ok" color="primary" v-close-popup @click="onDeselect" />
+          </template>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -106,10 +120,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted , watch} from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
+import { getCurrentDate, calculateEndDate } from 'src/utils/date'
 
 const props = defineProps({
   advertises: {
@@ -120,48 +135,92 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const openDialog = ref(false)
+const dialog = ref({ open: false, title: '', subTitle: '', type: '' })
 const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
-const alertMessage = ref('')
+const selectedAdvertise = ref({})
 const filter = ref('')
+watch(selectedAdvertise,()=>console.log(selectedAdvertise.value))
 
-function checkDurationStatus() {
-  for (const advertise of props.advertises) {
-    if (
-      advertise.duration &&
-      (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) &&
-      advertise.status === 'Active' &&
-      !userStore.isAdmin
-    ) {
-      alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
-      openDialog.value = true
-    }
-  }
-}
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
 onMounted(() => {
-  checkDurationStatus()
   advertiseStore.fetchAdvertises()
 })
 
-function onDeleteAdvertise(id, type) {
+function openDeleteDialog(id, type) {
+  dialog.value.open = true
+  dialog.value.title = 'Delete campaign'
+  dialog.value.subTitle = 'Are you sure you want to delete this campaign'
+  dialog.value.type = 'DeleteCampaign'
+  selectedAdvertise.value.id = id
+  selectedAdvertise.value.type = type
+}
+
+function openApprovalDialog(advertise, approve = true) {
+  dialog.value.open = true
+  dialog.value.title = 'Approval'
+  dialog.value.subTitle = 'Are you sure you want to approve this campaign'
+  dialog.value.type = 'ApproveCampaign'
+  selectedAdvertise.value = { ...advertise }
+  selectedAdvertise.value.isApproved = approve
+}
+function changePublishDate() {
+  const date = getCurrentDate()
+  selectedAdvertise.value.publishDate = date
+  selectedAdvertise.value.endDate = calculateEndDate(date, selectedAdvertise.value.duration)
   advertiseStore
-    .deleteAdvertise(id, type === 'Banner')
-    .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
+    .editAdvertise(selectedAdvertise.value)
+    .then(() =>
+      $q.notify({
+        type: 'info',
+        message: selectedAdvertise.value.status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully'
+      })
+    )
     .catch((error) => {
       console.log(error)
-      errorStore.throwError(error, 'Advertise deletion failed')
+      errorStore.throwError(error, 'Advertise edit failed')
+    })
+    .finally(() => {
+      selectedAdvertise.value = {}
     })
 }
 
-function onApproveAdvertise(advertise, approve = true) {
-  advertise.isApproved = approve
-  advertiseStore.editAdvertise(advertise)
+function onDeleteAdvertise() {
+  const id = selectedAdvertise.value?.id
+  const type = selectedAdvertise.value?.type
+  if (id && type) {
+    advertiseStore
+      .deleteAdvertise(id, type === 'Banner')
+      .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
+      .catch((error) => {
+        console.log(error)
+        errorStore.throwError(error, 'Advertise deletion failed')
+      })
+      .finally(() => {
+        selectedAdvertise.value = {}
+      })
+  }
+  selectedAdvertise.value = {}
+}
+function onDeselect() {
+  selectedAdvertise.value = {}
+}
+
+function onApproveAdvertise() {
+  advertiseStore
+    .editAdvertise(selectedAdvertise.value)
+    .then(() => $q.notify({ type: 'info', message: 'Advertise Approved successfully' }))
+    .catch((error) => {
+      console.log(error)
+      errorStore.throwError(error, 'Advertise Approval failed')
+    })
+    .finally(() => {
+      selectedAdvertise.value = {}
+    })
 }
 const columns = ref([
   {
@@ -227,8 +286,13 @@ const columns = ref([
 ])
 function changeActiveStatus(advertise, status) {
   if (!calculateStatus(advertise.publishDate) && status === 'Active') {
-    alertMessage.value = 'Change your publish date'
-    openDialog.value = true
+    dialog.value.open = true
+    dialog.value.title = 'Publish Status'
+    dialog.value.subTitle = 'Do you want to change your publish date and publish this campaign today?'
+    dialog.value.type = 'ChangePublishDate'
+    selectedAdvertise.value = { ...advertise }
+    selectedAdvertise.value.status = status
+    console.log('test', advertise)
     return
   }
   advertise.status = status

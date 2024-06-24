@@ -118,7 +118,7 @@ import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
-import { currentYearMonth } from 'src/utils/date'
+import { currentYearMonth, getCurrentDate,calculateEndDate } from 'src/utils/date'
 import { reactive, ref, watchEffect } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
@@ -242,24 +242,7 @@ function isUrlValid(userInput = '') {
   else return true
 }
 
-function calculateEndDate(publishDate, duration) {
-  const publishDayObj = new Date(publishDate)
-  const endDate = new Date(publishDayObj.getTime() + duration * 24 * 60 * 60 * 1000)
-  return endDate.toISOString().slice(0, 10).replaceAll('-', '/')
-}
 
-function getCurrentDate() {
-  const currentDate = new Date()
-  let month = currentDate.getMonth() + 1
-  if (month < 10) {
-    month = '0' + month
-  }
-  let day = currentDate.getDate()
-  if (day < 10) {
-    day = '0' + day
-  }
-  return `${currentDate.getFullYear()}/${month}/${day}`
-}
 async function onSubmit() {
   if (!advertise.budget) advertise.budget = 0
   advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
