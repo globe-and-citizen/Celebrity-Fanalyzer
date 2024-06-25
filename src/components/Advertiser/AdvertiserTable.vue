@@ -5,19 +5,19 @@
         v-if="advertises.length > 0"
         flat
         bordered
-        :filter="filter"
-        title="Manage Advertisements"
-        :rows="advertises"
-        :columns="columns"
-        row-key="name"
-        :rows-per-page-options="[0]"
-        style="margin: 10px 0px"
         virtual-scroll
         hide-bottom
+        title="Manage Advertisements"
+        row-key="name"
+        style="margin: 10px 0px"
+        :filter="filter"
+        :rows="advertises"
+        :columns="columns"
         :loading="advertiseStore.isLoading"
+        :rows-per-page-options="[0]"
       >
         <template v-slot:top-right>
-          <q-input debounce="300" dense placeholder="Search" v-model="filter">
+          <q-input v-model="filter" debounce="300" dense placeholder="Search">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -27,20 +27,28 @@
           <q-td :props="props">
             <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
             <q-icon
+              v-else-if="computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) > props.row.budget"
+              name="close"
+              size="18px"
+              color="primary"
+            >
+              <q-tooltip>Budget crossed</q-tooltip>
+            </q-icon>
+            <q-icon
               v-else-if="props.value === 'Inactive'"
-              @click="changeActiveStatus(props.row, 'Active')"
               name="play_circle"
               size="18px"
               color="green-6"
               class="cursor-pointer"
+              @click="changeActiveStatus(props.row, 'Active')"
             />
             <q-icon
               v-else
-              @click="changeActiveStatus(props.row, 'Inactive')"
               name="pause_circle"
               size="18px"
               color="red-8"
               class="cursor-pointer"
+              @click="changeActiveStatus(props.row, 'Inactive')"
             />
           </q-td>
         </template>
@@ -51,23 +59,23 @@
               name="done_outline"
               color="green"
               size="18px"
-              @click="onApproveAdvertise(props.row)"
               class="cursor-pointer q-mr-sm"
+              @click="onApproveAdvertise(props.row)"
             />
             <q-icon
               v-show="props.row.status === 'Inactive'"
               name="edit"
               color="blue"
               size="18px"
-              @click="$emit('openAdvertiseDialog', props.row)"
               class="cursor-pointer q-mr-sm"
+              @click="$emit('openAdvertiseDialog', props.row)"
             />
-            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
+            <q-icon name="delete" color="red" size="18px" class="cursor-pointer" @click="onDeleteAdvertise(props.row.id, props.row.type)" />
           </q-td>
         </template>
         <template #body-cell-durations="props">
-          <q-td>
-            {{ props.row.status === 'Inactive' ? props.row.duration : computedDuration(props.row.endDate) }} day's
+          <q-td class="text-right">
+            {{ computedDuration(props.row.endDate) }} day's
             <q-tooltip>{{ props.row.publishDate }} to {{ props.row.endDate }}</q-tooltip>
           </q-td>
         </template>
@@ -77,12 +85,12 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             {{ props.row.content?.length > 30 ? props.row.content.substring(0, 30) + '...' : props.row.content }}
           </q-td>
         </template>
         <template #body-cell-name="props">
-          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title }}
           </q-td>
         </template>
@@ -95,16 +103,16 @@
       </q-table>
       <h4 v-else class="text-center">Add advertises to view and manage them</h4>
     </div>
-    <q-dialog v-model="openDialog">
+    <q-dialog v-model="dialog.open">
       <q-card style="min-width: 20rem; max-width: 30rem">
         <q-card-section class="bg-primary text-white q-pa-sm">
-          <div class="text-h6">Alert</div>
+          <div class="text-h6">{{ dialog.title }}</div>
         </q-card-section>
         <q-card-section class="q-pt-none bg-white q-py-lg text-center">
-          <div class="text-subtitle1 wrap">{{ alertMessage }}</div>
+          <div class="text-subtitle1 wrap">{{ dialog.subTitle }}</div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
+          <q-btn flat label="Ok" color="primary" v-close-popup="-1" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -126,42 +134,45 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const openDialog = ref(false)
+const dialog = ref({ open: false, title: '', subTitle: '', type: '' })
 const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
-const alertMessage = ref('')
 const filter = ref('')
 
 const budgetCrossAdvertises = computed(() => {
   return props.advertises.filter((advertise) => {
-    const totalCost = computeAdvertisementMatic(advertise?.impressions, advertise?.clicks, advertise?.visits)
-    if (totalCost > advertise?.budget) {
-      return true
+    if (advertise.author.uid === userStore.getUserId) {
+      const totalCost = computeAdvertisementMatic(advertise?.impressions, advertise?.clicks, advertise?.visits)
+      if (totalCost > advertise?.budget && advertise?.status === 'Active') {
+        return true
+      }
     }
     return false
   })
 })
-function checkDurationStatus() {
-  for (const advertise of props.advertises) {
-    if (
-      advertise.duration &&
-      (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) &&
-      advertise.status === 'Active' &&
-      !userStore.isAdmin
-    ) {
-      alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
-      openDialog.value = true
-    }
+
+async function checkBudgetCrossStatus() {
+  if (budgetCrossAdvertises.value.length > 0) {
+    dialog.value.open = true
+    dialog.value.title = 'Budget Cross Status'
+    dialog.value.subTitle = 'Your advertise cost has crossed the budget so the advertises will be paused'
+    dialog.value.type = 'BudgetCrossed'
+    budgetCrossAdvertises.value.forEach((advertise) => {
+      advertise.status = 'Inactive'
+      advertiseStore.editAdvertise(advertise)
+    })
   }
 }
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
 onMounted(() => {
-  checkDurationStatus()
   advertiseStore.fetchAdvertises()
+  setTimeout(() => {
+    checkBudgetCrossStatus()
+  }, 7000)
 })
 
 function onDeleteAdvertise(id, type) {
@@ -190,20 +201,20 @@ const columns = ref([
   {
     name: 'name',
     required: true,
-    label: 'Advertiser Name',
+    label: 'Advertise Title',
     field: 'title'
   },
   {
     name: 'content',
     required: true,
     field: 'content',
-    label: 'Advertiser Content'
+    label: 'Advertise Content'
   },
   {
     name: 'type',
     required: true,
     field: 'type',
-    label: 'Advertiser Type'
+    label: 'Advertise Type'
   },
   {
     name: 'status',
@@ -253,8 +264,10 @@ const columns = ref([
 ])
 function changeActiveStatus(advertise, status) {
   if (!calculateStatus(advertise.publishDate) && status === 'Active') {
-    alertMessage.value = 'Change your publish date'
-    openDialog.value = true
+    dialog.value.open = true
+    dialog.value.title = 'Alert'
+    dialog.value.subTitle = 'Change your publish date'
+    dialog.value.type = 'ChangePublishDate'
     return
   }
   advertise.status = status
