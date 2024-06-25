@@ -7,7 +7,7 @@
 
       <q-route-tab
         class="adminTab"
-        v-if="userStore.isWriterOrAbove || userStore.isAdvertiser"
+        v-if="userStore.isWriterOrAbove || userStore.isAuthenticated"
         icon="admin_panel_settings"
         @click="onAdminTabClick"
       >
@@ -76,7 +76,7 @@ onSnapshot(collection(db, 'users'), (querySnapshot) => {
 })
 
 const onAdminTabClick = () => {
-  if (userStore.isAdvertiser) {
+  if (userStore.isAuthenticated) {
     router.push('/admin/advertises')
   } else if (!isAdminPromptPath) {
     router.push('/admin/prompts')

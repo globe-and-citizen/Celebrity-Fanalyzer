@@ -88,9 +88,7 @@ watchEffect(async () => {
   if (advertise.value?.id) {
     const advertiseId = advertise.value?.id
     await likeStore.getAllLikesDislikes('advertises', advertiseId).catch((error) => errorStore.throwError(error))
-
     await impressionStore.readImpressions('advertises', advertiseId).catch((error) => console.log(error))
-
     await clickStore.readClicks('advertises', advertiseId).catch((error) => console.log(error))
 
     shareIsLoading.value = true
@@ -106,13 +104,27 @@ watchEffect(async () => {
   setTimeout(redirect, 5000)
 })
 
-onMounted(()=>{
-  startTracking()
+onMounted(async () => {
+  if (advertise.value?.id) {
+    await statStore.addAdvertisement(
+      advertise?.value?.id,
+      advertise?.value?.author?.uid,
+      advertise?.value?.title,
+      advertise?.value?.content,
+      advertise?.value?.budget,
+      advertise?.value?.duration
+    )
+  }
+  if (advertise.value.status === 'Active') {
+    startTracking()
+  }
 })
 
 onUnmounted(async () => {
-  const stats = stopTracking()
-  await statStore.addStats(advertise.value?.id, stats, 'advertisement')
+  if (advertise.value.status === 'Active') {
+    const stats = stopTracking()
+    await statStore.addStats(advertise.value?.id, stats, 'advertisement')
+  }
   advertiseStore.setTab('post')
   await likeStore.resetLikes()
   await shareStore.resetShares()

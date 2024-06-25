@@ -10,7 +10,10 @@ export const useStatStore = defineStore('stats', {
     _stats: [],
     _summary: [],
     _allInteractionsByCountry: [],
-    _articleRating: []
+    _articleRating: undefined,
+    _userRating: undefined,
+    _sentiment: '',
+    _isInitialized: false
   }),
 
   getters: {
@@ -18,7 +21,10 @@ export const useStatStore = defineStore('stats', {
     getStats: (state) => state._stats,
     getSummary: (state) => state._summary,
     getAllInteractionsByCountry: (state) => state._allInteractionsByCountry,
-    getArticleRate: (state) => state._articleRating
+    getArticleRate: (state) => state._articleRating,
+    getUserRate: (state) => state._userRating,
+    getSentiment: (state) => state._sentiment,
+    getInitializedState: (state) => state._isInitialized
   },
 
   actions: {
@@ -42,10 +48,18 @@ export const useStatStore = defineStore('stats', {
       this._isLoading = false
     },
 
+    setInitialized(v) {
+      this._isInitialized = v
+    },
+
     resetStats() {
       this._stats = []
       this._allInteractionsByCountry = []
-      this._articleRating = []
+      this._articleRating = undefined
+    },
+
+    resetUserRating() {
+      this._userRating = undefined
     },
 
     // /**
@@ -58,15 +72,19 @@ export const useStatStore = defineStore('stats', {
     //  * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
     //  */
     async fetchStats(id) {
-      const statsResponse = await layer8.fetch(`${baseURL}/stats/article`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id })
-      })
-      const stats = await statsResponse.json()
-      this._stats.push(...stats)
+      try {
+        const statsResponse = await layer8.fetch(`${baseURL}/stats/article`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id })
+        })
+        const stats = await statsResponse.json()
+        this._stats.push(...stats)
+      } catch (e) {
+        console.error(e)
+      }
     },
 
     /**
@@ -172,6 +190,44 @@ export const useStatStore = defineStore('stats', {
         const data = await res.json()
         this._articleRating = data
         return data
+      } catch (err) {
+        console.log(err)
+        return null
+      }
+    },
+
+    async getUserRating(user_id) {
+      try {
+        const res = await layer8.fetch(`${baseURL}/user-rating`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id })
+        })
+        const data = await res.json()
+        this._userRating = data
+        return data
+      } catch (err) {
+        console.log(err)
+        return null
+      }
+    },
+
+    async getCommentsAnalysis(id, comments) {
+      this._isLoading = true
+      try {
+        const res = await layer8.fetch(`${baseURL}/comments/analyze`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id, comments })
+        })
+        const sentiment = await res.json()
+        this._sentiment = sentiment.response
+        this._isLoading = false
+        return sentiment
       } catch (err) {
         console.log(err)
         return null

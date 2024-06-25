@@ -50,11 +50,14 @@ const entry = computed(() => {
   )
 })
 watchEffect(async () => {
+  if (entry.value?.author?.uid) {
+    await statStore.getUserRating(entry.value?.author?.uid)
+  }
+
   if (entry.value?.id) {
-    await likeStore.getAllLikesDislikes('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entry.value.id).catch((error) => errorStore.throwError(error))
-    await commentStore.getTotalComments('entries', entry.value.id)
+    await likeStore.getAllLikesDislikes('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchSharesCount('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entry.value?.id)
   }
 })
 
@@ -69,6 +72,7 @@ onBeforeRouteLeave(async () => {
 
 onUnmounted(() => {
   commentStore.resetComments()
+  statStore.resetStats()
   entryStore.setTab('post')
 })
 </script>

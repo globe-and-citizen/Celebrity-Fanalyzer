@@ -32,7 +32,7 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
 const router = useRouter()
@@ -78,13 +78,17 @@ const onScroll = () => {
   if (entriesRef.value) {
     const marginTop = entriesRef.value?.getBoundingClientRect().top
     const windowsHeight = window.innerHeight
-    if (!entries.value?.length && marginTop - windowsHeight < -50) {
+    if ((!entries.value?.length || entries.value === undefined) && marginTop - windowsHeight < -50) {
       entryStore.fetchPromptsEntries(prompt.value.entries).catch((error) => errorStore.throwError(error))
     }
   }
 }
 
 watchEffect(async () => {
+  if (prompt?.value?.author?.uid) {
+    await statStore.getUserRating(prompt?.value?.author?.uid)
+  }
+
   if (prompt.value?.id) {
     const promptId = prompt.value?.id
     await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
@@ -101,10 +105,10 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
-  startTracking()
-  await entryStore.resetEntries
   entriesRef.value = document.querySelector('.entries-page-container')
   window.addEventListener('scroll', onScroll)
+  await entryStore.resetEntries
+  startTracking()
 })
 
 watch(entriesRef, (newVal) => {
@@ -115,6 +119,11 @@ watch(entriesRef, (newVal) => {
       console.error('EntriesRef error')
     }
   }
+})
+
+onBeforeRouteLeave(async () => {
+  await statStore.resetStats()
+  await statStore.resetUserRating()
 })
 
 onUnmounted(async () => {

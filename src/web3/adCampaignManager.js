@@ -56,10 +56,8 @@ const getContractInstance = async () => {
 export const contractCreateAdCampaign = async (payload = { budgetInMatic: 0 }) => {
   if (payload.budgetInMatic > 0) {
     try {
-      console.log('the budget', payload)
       // Convert the budget from MATIC to Wei
       const amountInWei = ethers.utils.parseUnits(payload.budgetInMatic.toString(), 'ether')
-      console.log('the budget', payload)
       // Get the contract instance
       const adCampaignManager = await getContractInstance()
       //console.log("the contract instance === ", adCampaignManager);
@@ -70,11 +68,11 @@ export const contractCreateAdCampaign = async (payload = { budgetInMatic: 0 }) =
       const receipt = await tx.wait()
       //const events = receipt.logs.map(log => adCampaignManager.interface.parseLog(log));
       const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-      console.log('Ad campaign created successfully')
+      //console.log('Ad campaign created successfully')
       return { status: 'success', events }
     } catch (error) {
       console.error('Error creating ad campaign:', error)
-      return { status: 'error', error: error }
+      return { status: 'error', error: error.data }
     }
   } else {
     const errorMessage = 'Make sure the budget is greater than zero'
@@ -97,7 +95,7 @@ export const claimPayment = async (payload = { campaignCode: '', currentAmounSpe
         )
         const receipt = await tx.wait()
         const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-        console.log('Payment claimed successfully')
+
         return { status: 'success', events }
       } else {
         const errorMessage = 'You must be connected as the contract owner to withdraw the advertisement amount spent'
@@ -106,7 +104,7 @@ export const claimPayment = async (payload = { campaignCode: '', currentAmounSpe
       }
     } catch (error) {
       console.error('Error claiming payment:', error)
-      return { status: 'error', error: error.error?error.error.data:error }
+      return { status: 'error', error: error.error ? error.error.data : error }
     }
   } else {
     const errorMessage = 'Make sure the amount claimed is greater than zero and the campaignCode is not empty string'
@@ -126,11 +124,11 @@ export const requestAndApproveWithdrawal = async (payload = { campaignCode: '', 
       )
       const receipt = await tx.wait()
       const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-      console.log('Withdrawal requested and approved successfully')
+      //console.log('Withdrawal requested and approved successfully')
       return { status: 'success', events }
     } catch (error) {
-        console.error('Error claiming payment:', error)
-        return { status: 'error', error: error.error?error.error.data:error }
+      console.error('Error claiming payment:', error)
+      return { status: 'error', error: error.error ? error.error.data : error }
     }
   } else {
     const errorMessage = 'Make sure the campaignCode is not empty string'
@@ -144,7 +142,7 @@ export const getAdCampaignByCode = async (payload = { campaignCode: '' }) => {
     try {
       const adCampaignManager = await getContractInstance()
       const campaign = await adCampaignManager.getAdCampaignByCode(payload.campaignCode)
-      console.log('Ad campaign details:', campaign)
+      //console.log('Ad campaign details:', campaign)
       return { status: 'success', data: campaign }
     } catch (error) {
       console.error('Error fetching ad campaign details:', error)
@@ -189,7 +187,7 @@ export const pauseContract = async () => {
     const tx = await adCampaignManager.pause()
     const receipt = await tx.wait()
     const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-    console.log('Contract paused successfully')
+    //console.log('Contract paused successfully')
     return { status: 'success', events }
   } catch (error) {
     console.error('Error pausing contract:', error)
@@ -204,7 +202,7 @@ export const unpauseContract = async () => {
     const tx = await adCampaignManager.unpause()
     const receipt = await tx.wait()
     const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-    console.log('Contract unpaused successfully')
+    //console.log('Contract unpaused successfully')
     return { status: 'success', events }
   } catch (error) {
     console.error('Error unpausing contract:', error)
@@ -212,74 +210,74 @@ export const unpauseContract = async () => {
   }
 }
 
-
-
 export const getEventsForCampaign = async (campaignCode) => {
   if (campaignCode.length > 1) {
     try {
-      const adCampaignManager = await getContractInstance();
-      
+      const adCampaignManager = await getContractInstance()
+
       // Get all logs for the relevant events
-      const adCampaignCreatedLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.AdCampaignCreated());
-      const paymentReleasedLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.PaymentReleased());
-      const paymentReleasedOnWithdrawApprovalLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.PaymentReleasedOnWithdrawApproval());
-      const budgetWithdrawnLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.BudgetWithdrawn());
+      const adCampaignCreatedLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.AdCampaignCreated())
+      const paymentReleasedLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.PaymentReleased())
+      const paymentReleasedOnWithdrawApprovalLogs = await adCampaignManager.queryFilter(
+        adCampaignManager.filters.PaymentReleasedOnWithdrawApproval()
+      )
+      const budgetWithdrawnLogs = await adCampaignManager.queryFilter(adCampaignManager.filters.BudgetWithdrawn())
 
       // Decode the logs and filter by campaignCode
       const adCampaignCreatedEvents = adCampaignCreatedLogs
-        .map(log => decodeLog(log))
-        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+        .map((log) => decodeLog(log))
+        .filter((event) => event !== null && event.args.campaignCode === campaignCode)
 
       const paymentReleasedEvents = paymentReleasedLogs
-        .map(log => decodeLog(log))
-        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+        .map((log) => decodeLog(log))
+        .filter((event) => event !== null && event.args.campaignCode === campaignCode)
 
       const budgetWithdrawnEvents = budgetWithdrawnLogs
-        .map(log => decodeLog(log))
-        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+        .map((log) => decodeLog(log))
+        .filter((event) => event !== null && event.args.campaignCode === campaignCode)
 
       const paymentReleasedOnWithdrawApprovalEvents = paymentReleasedOnWithdrawApprovalLogs
-        .map(log => decodeLog(log))
-        .filter(event => event !== null && event.args.campaignCode === campaignCode);
+        .map((log) => decodeLog(log))
+        .filter((event) => event !== null && event.args.campaignCode === campaignCode)
 
-      const adCampaignCreatedData = adCampaignCreatedEvents.map(event => ({
+      const adCampaignCreatedData = adCampaignCreatedEvents.map((event) => ({
         campaignCode: event.args.campaignCode,
-        amount:event.args.budget
-      }));
-      
-      const paymentReleasedOnWithdrawApprovalData = paymentReleasedOnWithdrawApprovalEvents.map(event => ({
-        campaignCode: event.args.campaignCode,
-        amount:event.args.paymentAmount
-      }));
+        amount: event.args.budget
+      }))
 
-      const paymentReleasedData = paymentReleasedEvents.map(event => ({
+      const paymentReleasedOnWithdrawApprovalData = paymentReleasedOnWithdrawApprovalEvents.map((event) => ({
         campaignCode: event.args.campaignCode,
-        amount:event.args.paymentAmount
-      }));
+        amount: event.args.paymentAmount
+      }))
 
-      const budgetWithdrawnData = budgetWithdrawnEvents.map(event => ({
+      const paymentReleasedData = paymentReleasedEvents.map((event) => ({
+        campaignCode: event.args.campaignCode,
+        amount: event.args.paymentAmount
+      }))
+
+      const budgetWithdrawnData = budgetWithdrawnEvents.map((event) => ({
         campaignCode: event.args.campaignCode,
         advertiser: event.args.advertiser,
         amount: event.args.amount
-      }));
+      }))
 
       // Create JSON object to return
       const result = {
         paymentReleasedEvents: paymentReleasedData,
         budgetWithdrawnEvents: budgetWithdrawnData,
-        paymentReleasedOnWithdrawApprovalEvents:paymentReleasedOnWithdrawApprovalData,
-        adCampaignCreatedEvents:adCampaignCreatedData
-      };
+        paymentReleasedOnWithdrawApprovalEvents: paymentReleasedOnWithdrawApprovalData,
+        adCampaignCreatedEvents: adCampaignCreatedData
+      }
 
-      console.log('Events retrieved successfully');
-      return { status: 'success', events: result };
+      //console.log('Events retrieved successfully')
+      return { status: 'success', events: result }
     } catch (error) {
-       console.error('Error retrieving events:', error);
-       return { status: 'error', error: error.error ? error.error.data : error };
+      console.error('Error retrieving events:', error)
+      return { status: 'error', error: error.error ? error.error.data : error }
     }
   } else {
-    const errorMessage = 'Make sure the campaignCode is not an empty string';
-    console.error('Error retrieving events:', errorMessage);
-    return { status: 'error', error: { message: errorMessage } };
+    const errorMessage = 'Make sure the campaignCode is not an empty string'
+    console.error('Error retrieving events:', errorMessage)
+    return { status: 'error', error: { message: errorMessage } }
   }
 }

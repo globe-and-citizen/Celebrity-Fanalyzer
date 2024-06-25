@@ -1,6 +1,6 @@
 <template>
   <TheHeader title="Admin Panel">
-    <q-btn v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
+    <q-btn v-if="userStore.isAuthenticated || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
     <q-btn-dropdown
       auto-close
       data-test="button-dropdown"
@@ -28,10 +28,7 @@
         >
           <q-item-section>New Entry</q-item-section>
         </q-item>
-        <!-- <q-item v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" clickable @click="openAdvertiseDialog">
-          <q-item-section>New Advertise</q-item-section>
-        </q-item> -->
-        <q-item v-if="userStore.isAdmin && !!uniqueUsers?.value?.length" clickable @click="addAllUsersToStatsDb()">
+        <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
           <q-item-section>Add new users</q-item-section>
         </q-item>
       </q-list>
@@ -57,7 +54,7 @@
           label="Users"
         />
         <q-route-tab
-          v-if="userStore.isAdvertiser || userStore.isAdmin"
+          v-if="userStore.isAuthenticated || userStore.isAdmin"
           name="advertises"
           :to="{ name: 'admin.advertises' }"
           icon="campaign"
@@ -140,7 +137,6 @@ const addAllUsersToStatsDb = () => {
   })
   userStore.addAllUsers(allUsersMap)
 }
-
 
 const uniqueUsers = computed(() => {
   const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []

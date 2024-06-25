@@ -18,7 +18,14 @@
         {{ advertise.content?.length > 80 ? advertise.content.substring(0, 80) + '...' : advertise.content }}
       </p>
       <span class="cursor-pointer text-black link" @click="goToUrl">Learn more</span>
-      <a v-if="advertise?.productLink" class="cursor-pointer text-black link" :href="advertise.productLink">Explore now</a>
+      <a
+        v-if="advertise?.productLink"
+        class="cursor-pointer text-black link"
+        :href="getFormattedLink(advertise.productLink)"
+        target="_blank"
+      >
+        Explore now
+      </a>
     </div>
   </article>
 </template>
@@ -27,6 +34,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore, useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
+import { getFormattedLink } from 'src/utils/getFormattedLink'
 
 const router = useRouter()
 const articleRef = ref(null)
@@ -88,7 +96,7 @@ $shadow: rgba(0, 0, 0, 0.2);
 }
 .link {
   text-decoration: underline;
-  margin-right:25px;
+  margin-right: 25px;
 }
 .blog-card {
   display: flex;
