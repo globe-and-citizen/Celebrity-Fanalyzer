@@ -63,7 +63,7 @@ export const useAdvertiseStore = defineStore('advertises', {
 
           this._advertises = []
           this.$patch({ _advertises: advertises })
-          this.computeLikesAndImpressions()
+          this.computeValues()
           this.setLoaderFalse()
         })
       }
@@ -74,7 +74,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     setLoaderFalse() {
       this._isLoading = false
     },
-    async computeLikesAndImpressions() {
+    async computeValues() {
       this.getAdvertises.map((advertise) => {
         onSnapshot(collection(db, 'advertises', advertise.id, 'impressions'), (impressionsSnapshot) => {
           let computedImpressions = 0
@@ -97,6 +97,18 @@ export const useAdvertiseStore = defineStore('advertises', {
           this._advertises = this._advertises.map((element) => {
             if (element.id === advertise.id) {
               element.clicks = computedClicks
+            }
+            return element
+          })
+        })
+        onSnapshot(collection(db, 'advertises', advertise.id, 'visitors'), (visitsSnapshot) => {
+          let computedVisits = 0
+          visitsSnapshot.docs.map((doc) => {
+            computedVisits += doc.data().visits?.length || 0
+          })
+          this._advertises = this._advertises.map((element) => {
+            if (element.id === advertise.id) {
+              element.visits = computedVisits
             }
             return element
           })

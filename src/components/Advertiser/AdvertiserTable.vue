@@ -86,6 +86,12 @@
             {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title }}
           </q-td>
         </template>
+        <template #body-cell-total_cost="props">
+          <q-td  class="text-right">
+            {{ viewMatic(computeAdvertisementMatic(props.row.impressions,props.row.clicks,props.row.visits )) }}
+            <q-tooltip>{{ computeAdvertisementMatic(props.row.impressions,props.row.clicks,props.row.visits ) }}</q-tooltip>
+          </q-td>
+        </template>
       </q-table>
       <h4 v-else class="text-center">Add advertises to view and manage them</h4>
     </div>
@@ -214,10 +220,21 @@ const columns = ref([
     sortable: true
   },
   {
+    name: 'visits',
+    field: 'visits',
+    label: 'Number of Visits',
+    sortable: true
+  },
+  {
+    name: 'total_cost',
+    field: 'total_cost',
+    label: 'Total Cost',
+    sortable: true
+  },
+  {
     name: 'durations',
     field: 'duration',
     label: 'Durations',
-    sortable: true
   },
   {
     name: 'action',
@@ -257,6 +274,22 @@ function calculateStatus(date) {
 
   return publishDate <= currentDate
 }
+function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
+  let impressionsMatic = impressions / 100
+  let clicksMatic = clicks / 20
+  let viewsMatic = views / 20
+  return impressionsMatic + clicksMatic + viewsMatic
+}
+function viewMatic(matic) {
+  if (Number.isInteger(matic)) return matic
+  const maticSplit = String(matic).split('.')
+  let floatNumbers = maticSplit[1]
+  if (floatNumbers.length > 3) {
+    floatNumbers = floatNumbers.slice(0, 3) + '...'
+  }
+  return maticSplit[0] + '.' + floatNumbers
+}
+
 </script>
 
 <style lang="scss" scoped></style>
