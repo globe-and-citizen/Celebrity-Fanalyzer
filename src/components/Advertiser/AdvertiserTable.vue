@@ -87,9 +87,9 @@
           </q-td>
         </template>
         <template #body-cell-total_cost="props">
-          <q-td  class="text-right">
-            {{ viewMatic(computeAdvertisementMatic(props.row.impressions,props.row.clicks,props.row.visits )) }}
-            <q-tooltip>{{ computeAdvertisementMatic(props.row.impressions,props.row.clicks,props.row.visits ) }}</q-tooltip>
+          <q-td class="text-right">
+            {{ viewMatic(computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits)) }}
+            <q-tooltip>{{ computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) }}</q-tooltip>
           </q-td>
         </template>
       </q-table>
@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
@@ -134,6 +134,15 @@ const userStore = useUserStore()
 const alertMessage = ref('')
 const filter = ref('')
 
+const budgetCrossAdvertises = computed(() => {
+  return props.advertises.filter((advertise) => {
+    const totalCost = computeAdvertisementMatic(advertise?.impressions, advertise?.clicks, advertise?.visits)
+    if (totalCost > advertise?.budget) {
+      return true
+    }
+    return false
+  })
+})
 function checkDurationStatus() {
   for (const advertise of props.advertises) {
     if (
@@ -234,7 +243,7 @@ const columns = ref([
   {
     name: 'durations',
     field: 'duration',
-    label: 'Durations',
+    label: 'Durations'
   },
   {
     name: 'action',
@@ -289,7 +298,6 @@ function viewMatic(matic) {
   }
   return maticSplit[0] + '.' + floatNumbers
 }
-
 </script>
 
 <style lang="scss" scoped></style>
