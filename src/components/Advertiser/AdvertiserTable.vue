@@ -291,7 +291,6 @@ function changeActiveStatus(advertise, status) {
     dialog.value.type = 'ChangePublishDate'
     selectedAdvertise.value = { ...advertise }
     selectedAdvertise.value.status = status
-    console.log('test', advertise)
     return
   }
   advertise.status = status
