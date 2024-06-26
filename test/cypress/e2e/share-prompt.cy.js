@@ -4,7 +4,16 @@
 describe('Sharing a Prompt', () => {
   beforeEach(() => {
     cy.viewport('macbook-16')
+    // Adding the uncaught:exception handler
+    cy.on('uncaught:exception', (err, runnable) => {
+      // Returning false here prevents Cypress from
+      // failing the test when ResizeObserver errors occur
+      if (err.message.includes('ResizeObserver loop completed with undelivered notifications')) {
+        return false
+      }
+    })
   })
+
   it('Should display properly and navigate to /month page', () => {
     let initialValue = 0
     // Visits the month page and waits for 5 seconds for the page to load
