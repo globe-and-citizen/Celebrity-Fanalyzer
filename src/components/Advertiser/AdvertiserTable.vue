@@ -157,7 +157,7 @@ async function checkBudgetCrossStatus() {
   if (budgetCrossAdvertises.value.length > 0) {
     dialog.value.open = true
     dialog.value.title = 'Budget Cross Status'
-    dialog.value.subTitle = 'Your advertise cost has crossed the budget so the advertises will be paused'
+    dialog.value.subTitle = 'Your advertising costs have exceeded the budget, so the ads will be paused.'
     dialog.value.type = 'BudgetCrossed'
     budgetCrossAdvertises.value.forEach((advertise) => {
       advertise.status = 'Inactive'
