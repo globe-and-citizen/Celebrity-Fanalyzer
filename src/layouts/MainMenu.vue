@@ -34,9 +34,9 @@
 
 <script setup>
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-import { onSnapshot, collection } from 'firebase/firestore'
+import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from 'src/firebase'
 
 const updated = ref(false)
@@ -45,10 +45,10 @@ const promptStore = usePromptStore()
 const entriesStore = useEntryStore()
 const errorStore = useErrorStore()
 const router = useRouter()
-const email = ref('')
 const currentPath = ref('')
 const isAdminPromptPath = currentPath.value.includes('/admin/prompts')
-const { href, params, path, name } = router.currentRoute.value
+const { href, params } = router.currentRoute.value
+const userDocRef = ref({})
 
 const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
@@ -60,20 +60,8 @@ const routes = computed(() => [
 function onLogout() {
   userStore.logout()
   updated.value = false
-  router.push({ path: '/profile', query: { email: email.value } })
+  router.push({ path: '/profile' })
 }
-onSnapshot(collection(db, 'users'), (querySnapshot) => {
-  querySnapshot.docChanges().forEach((change) => {
-    if (change.type === 'modified') {
-      const user = change.doc.data()
-      if (user.email === userStore._user.email && user.role !== userStore._user.role) {
-        localStorage.removeItem('user')
-        email.value = userStore._user.email
-        updated.value = true
-      }
-    }
-  })
-})
 
 const onAdminTabClick = () => {
   if (userStore.isAuthenticated) {
@@ -84,6 +72,26 @@ const onAdminTabClick = () => {
     router.push('/admin')
   }
 }
+
+watchEffect(async () => {
+  const uid = await userStore.getUser?.uid
+  const userRole = await userStore.getUser?.role
+
+  if (uid) {
+    userDocRef.value = doc(db, 'users', uid)
+    onSnapshot(userDocRef.value, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const userData = docSnapshot.data()
+        if (userRole !== userData.role) {
+          localStorage.removeItem('user')
+          updated.value = true
+        }
+      } else {
+        console.error('User not found')
+      }
+    })
+  }
+})
 
 onMounted(async () => {
   if (params.year && params.month && !params.id) {
