@@ -26,14 +26,14 @@
         <template #body-cell-published="props">
           <q-td :props="props">
             <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
-            <q-icon
+            <!-- <q-icon
               v-else-if="computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) > props.row.budget"
               name="close"
               size="18px"
               color="primary"
             >
               <q-tooltip>Budget crossed</q-tooltip>
-            </q-icon>
+            </q-icon> -->
             <q-icon
               v-else-if="props.value === 'Inactive'"
               name="play_circle"
@@ -153,26 +153,13 @@ const budgetCrossAdvertises = computed(() => {
   })
 })
 
-async function checkBudgetCrossStatus() {
-  if (budgetCrossAdvertises.value.length > 0) {
-    dialog.value.open = true
-    dialog.value.title = 'Budget Cross Status'
-    dialog.value.subTitle = 'Your advertising costs have exceeded the budget, so the ads will be paused.'
-    dialog.value.type = 'BudgetCrossed'
-    budgetCrossAdvertises.value.forEach((advertise) => {
-      advertise.status = 'Inactive'
-      advertiseStore.editAdvertise(advertise)
-    })
-  }
-}
+
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
 onMounted(() => {
   advertiseStore.fetchAdvertises()
-  setTimeout(() => {
-    checkBudgetCrossStatus()
-  }, 7000)
+
 })
 
 function onDeleteAdvertise(id, type) {
@@ -285,6 +272,8 @@ function changeActiveStatus(advertise, status) {
 function computedDuration(endDate) {
   const date1 = new Date()
   const date2 = new Date(endDate)
+  date1.setHours(0, 0, 0, 0)
+  date2.setHours(0, 0, 0, 0)
   let Difference_In_Time = date2.getTime() - date1.getTime()
   let Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
   return Difference_In_Days

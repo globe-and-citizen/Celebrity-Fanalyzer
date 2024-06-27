@@ -57,10 +57,16 @@ async function updateAdvertiseStatus(docId) {
   const totalVisits = await calculateTotalVisits(advertiseDocRef)
 
   const totalCost = totalImpressions / 100 + totalClicks / 20 + totalVisits / 20
+  const date1 = new Date()
+  const date2 = new Date(docData.endDate)
+  date1.setHours(0, 0, 0, 0)
+  date2.setHours(0, 0, 0, 0)
+  let Difference_In_Time = date2.getTime() - date1.getTime()
+  let Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
 
   let newStatus = docData.status
 
-  if (myBudget < totalCost) {
+  if (myBudget < totalCost || Difference_In_Days < 1) {
     newStatus = 'Inactive'
   }
 
@@ -70,6 +76,11 @@ async function updateAdvertiseStatus(docId) {
 
   console.log(`Document ${docId} updated with status: ${newStatus}`)
 }
+
+exports.onAdvertiseChange = functions.firestore.document('advertises/{docId}').onWrite(async (change, context) => {
+  const docId = context.params.docId
+  await updateAdvertiseStatus(docId)
+})
 
 exports.onImpressionChange = functions.firestore
   .document('advertises/{docId}/impressions/{impressionId}')
