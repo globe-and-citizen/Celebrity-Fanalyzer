@@ -66,8 +66,10 @@ async function updateAdvertiseStatus(docId) {
 
   let newStatus = docData.status
 
-  if (myBudget < totalCost || Difference_In_Days < 1) {
-    newStatus = 'Inactive'
+  if (myBudget < totalCost) {
+    newStatus = 'Budget Crossed'
+  } else if (Difference_In_Days < 0) {
+    newStatus = 'Complete'
   }
 
   await advertiseDocRef.update({

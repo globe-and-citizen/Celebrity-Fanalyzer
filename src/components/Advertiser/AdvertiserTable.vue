@@ -26,14 +26,17 @@
         <template #body-cell-published="props">
           <q-td :props="props">
             <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
-            <!-- <q-icon
-              v-else-if="computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) > props.row.budget"
+            <q-icon
+              v-else-if="props.row.status==='Budget Crossed'"
               name="close"
               size="18px"
               color="primary"
             >
               <q-tooltip>Budget crossed</q-tooltip>
-            </q-icon> -->
+            </q-icon>
+            <q-icon v-else-if="props.row.status==='Complete'" name="task_alt" size="18px" color="green">
+              <q-tooltip>Complete</q-tooltip>
+            </q-icon>
             <q-icon
               v-else-if="props.value === 'Inactive'"
               name="play_circle"
@@ -43,7 +46,7 @@
               @click="changeActiveStatus(props.row, 'Active')"
             />
             <q-icon
-              v-else
+              v-else-if="props.value === 'Active'"
               name="pause_circle"
               size="18px"
               color="red-8"
@@ -63,7 +66,11 @@
               @click="onApproveAdvertise(props.row)"
             />
             <q-icon
-              v-show="props.row.status === 'Inactive'"
+              v-show="
+                props.row.status === 'Inactive' &&
+                computedDuration(props.row.endDate) > 0 &&
+                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
+              "
               name="edit"
               color="blue"
               size="18px"
@@ -80,8 +87,8 @@
           </q-td>
         </template>
         <template #body-cell-status="props">
-          <q-td>
-            {{ calculateStatus(props.value) ? 'Active' : 'Inactive' }}
+          <q-td class="text-right">
+            {{ showStatus(props.row) }}
           </q-td>
         </template>
         <template #body-cell-content="props">
@@ -120,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
@@ -141,25 +148,12 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const filter = ref('')
 
-const budgetCrossAdvertises = computed(() => {
-  return props.advertises.filter((advertise) => {
-    if (advertise.author.uid === userStore.getUserId) {
-      const totalCost = computeAdvertisementMatic(advertise?.impressions, advertise?.clicks, advertise?.visits)
-      if (totalCost > advertise?.budget && advertise?.status === 'Active') {
-        return true
-      }
-    }
-    return false
-  })
-})
-
 
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
 onMounted(() => {
   advertiseStore.fetchAdvertises()
-
 })
 
 function onDeleteAdvertise(id, type) {
@@ -300,6 +294,18 @@ function viewMatic(matic) {
   }
   return maticSplit[0] + '.' + floatNumbers
 }
+function showStatus(data) {
+  const create = calculateStatus(data.publishDate)
+  const ended = calculateStatus(data.endDate)
+  if (!create) {
+    return 'Publish date pending'
+  } else if (computeAdvertisementMatic(data.impressions, data.clicks, data.visits) > Number(data.budget)) {
+    return 'Budget Crossed'
+  } else if (ended) {
+    return 'Complete'
+  } else if (create && !ended) {
+    return 'Ready to Publish'
+  }
+  return 'Pending: Publish date not yet reached'
+}
 </script>
-
-<style lang="scss" scoped></style>
