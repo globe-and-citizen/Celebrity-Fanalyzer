@@ -35,7 +35,7 @@
               class="cursor-pointer"
             />
             <q-icon
-              v-else
+              v-else-if="props.row.status==='Active'"
               @click="changeActiveStatus(props.row, 'Inactive')"
               name="pause_circle"
               size="18px"
