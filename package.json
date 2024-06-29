@@ -16,7 +16,7 @@
     "coverage": "cd coverage/src/stores && open index.html",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
-    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run"
+    "cy:test": "WAIT_ON_TIMEOUT=600000 start-server-and-test dev http-get://localhost:9200 cy:run"
   },
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
