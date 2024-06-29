@@ -1,21 +1,18 @@
 import { ethers } from 'ethers'
 import { customWeb3modal } from './walletConnect'
 import { Notify, useQuasar } from 'quasar'
-import { useWalletStore } from '../stores';
+import { useWalletStore } from '../stores'
 
-const walletStore=useWalletStore();
-
-console.log("the walletStore ", useWalletStore);
+const walletStore = useWalletStore()
 const $q = useQuasar()
 
 export const sendEther = async (recipientAddress, amountInEther, signer, provider) => {
   //initate transaction..
-  const network=await provider.getNetwork();
+  const network = await provider.getNetwork()
 
-  const networkName = network?.name === "unknown" ? "amoy" : network?.name.toLowerCase();
-  const networkConfig = findNetworkConfig(networkName);
-  const explorerUrl = networkConfig ? networkConfig.explorerUrl : '';
-
+  const networkName = network?.name === 'unknown' ? 'amoy' : network?.name.toLowerCase()
+  const networkConfig = findNetworkConfig(networkName)
+  const explorerUrl = networkConfig ? networkConfig.explorerUrl : ''
 
   const transaction = {
     to: ethers.utils.getAddress(recipientAddress),
@@ -28,9 +25,8 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
       transactionId: txReceipt.transactionHash,
       blockNumber: txReceipt.blockNumber,
       success: txReceipt.status === 1,
-      networkName:networkName,
-      explorerUrl:explorerUrl
-     
+      networkName: networkName,
+      explorerUrl: explorerUrl
     }
   } catch (error) {
     //$q.notify({ message: error.data.message, type: 'negative' })
@@ -41,21 +37,19 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
   }
 }
 
-
-
 const findNetworkConfig = (networkName) => {
   for (const key in walletStore.getChains) {
     if (networkName.toLowerCase().includes(key)) {
-      return walletStore.getChains[key];
+      return walletStore.getChains[key]
     }
   }
-  return null;
-};
+  return null
+}
 
 const getProvider = async () => {
   try {
     const walletProvider = customWeb3modal.getWalletProvider()
-    
+
     // With the walletProvider obtained, proceed to create the ethers provider and signer
     const provider = new ethers.providers.Web3Provider(walletProvider)
     //const signer = provider.getSigner()
@@ -75,13 +69,11 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       await customWeb3modal.open()
     }
     if (customWeb3modal.getAddress()) {
-      
       const provider = await getProvider() // Get the signer
       const signer = provider.getSigner()
-      
+
       if (signer) {
-        
-        const transactionResult = await sendEther(recipientAddress, amountInEther, signer,provider)
+        const transactionResult = await sendEther(recipientAddress, amountInEther, signer, provider)
         return transactionResult
         // Further logic to handle successful transaction
       }
@@ -99,17 +91,32 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
   }
 }
 
-export const getTransactionDetails = async (txHash,networkName) => {
-  const providerUrl=walletStore.getChainConfig(networkName)?.rpcUrl;
-  //console.log("the  providerUrl ======  ",providerUrl)
-  
+export const fetchMaticRate = async () => {
+  try {
+    const maitcRateApiLink = import.meta.env.VITE_MATIC_RATE_API_LINK
+    const response = await fetch(maitcRateApiLink)
+    const data = await response.json()
+    return {
+      success: true,
+      maticRate: data['matic-network'].usd
+    }
+  } catch (error) {
+    console.error('error when getting matic Rate ')
+    return {
+      success: false,
+      error: error
+    }
+  }
+}
+
+export const getTransactionDetails = async (txHash, networkName) => {
+  const providerUrl = walletStore.getChainConfig(networkName)?.rpcUrl
   const provider = new ethers.providers.JsonRpcProvider(providerUrl)
-  console.log("the provider ======= ", provider);
   try {
     // Fetch the transaction details
     const transaction = await provider.getTransaction(txHash)
     // Fetch the transaction receipt to get the status
-    
+
     const receipt = await provider.getTransactionReceipt(txHash)
     //console.log("the transaction detail is called ==================== ", transaction)
     // Extracting the desired information
