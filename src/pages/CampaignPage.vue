@@ -115,7 +115,7 @@ onMounted(async () => {
       advertise?.value?.duration
     )
   }
-  if (advertise.value.status === 'Active') {
+  if (advertise.value?.status === 'Active') {
     startTracking()
   }
 })
