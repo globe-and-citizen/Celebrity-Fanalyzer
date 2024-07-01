@@ -41,7 +41,7 @@
               @click="changeActiveStatus(props.row, 'Active')"
             />
             <q-icon
-              v-if="props.value === 'Active'"
+              v-else-if="props.row.status === 'Active'"
               name="pause_circle"
               size="18px"
               color="red-8"
@@ -53,36 +53,39 @@
         <template #body-cell-action="props">
           <q-td :props="props">
             <q-icon
-              color="green"
-              :disable="userStore.getUser.role !== 'Admin'"
+              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
               flat
+              color="green"
               name="payment"
               size="18px"
               label=""
-              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              class="q-mr-sm"
+              :disable="userStore.getUser.role !== 'Admin'"
               @click="onwithdrawAmountSpentDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw amount spent!</q-tooltip>
             </q-icon>
             <q-icon
-              color="primary"
-              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
+              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
               flat
+              color="primary"
               name="free_cancellation"
               size="18px"
               label=""
-              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              class="q-mr-sm"
+              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw remaining budget!</q-tooltip>
             </q-icon>
             <q-icon
-              color="dark"
+              v-if="props.row.campaignCode?.length > 5"
               flat
+              color="dark"
               name="receipt_long"
               size="18px"
               label=""
-              v-if="props.row.campaignCode?.length > 5"
+              class="q-mr-sm"
               @click="_getEventsForCampaign(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
@@ -94,7 +97,7 @@
               color="green"
               size="18px"
               class="cursor-pointer q-mr-sm"
-              @click="onApproveAdvertise(props.row)"
+              @click="openApprovalDialog(props.row)"
             />
             <q-icon
               v-show="
@@ -108,7 +111,7 @@
               class="cursor-pointer q-mr-sm"
               @click="$emit('openAdvertiseDialog', props.row)"
             />
-            <q-icon name="delete" color="red" size="18px" class="cursor-pointer" @click="onDeleteAdvertise(props.row.id, props.row.type)" />
+            <q-icon name="delete" color="red" size="18px" @click="openDeleteDialog(props.row.id, props.row.type)" class="cursor-pointer" />
           </q-td>
         </template>
         <template #body-cell-durations="props">
@@ -150,7 +153,21 @@
           <div class="text-subtitle1 wrap">{{ dialog.subTitle }}</div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Ok" color="primary" v-close-popup="-1" />
+          <template v-if="dialog.type === 'ChangePublishDate'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="changePublishDate" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else-if="dialog.type === 'DeleteCampaign'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="onDeleteAdvertise" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else-if="dialog.type === 'ApproveCampaign'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="onApproveAdvertise" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else>
+            <q-btn flat label="Ok" color="primary" v-close-popup @click="onDeselect" />
+          </template>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -211,6 +228,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
+import { getCurrentDate, calculateEndDate } from 'src/utils/date'
 import { claimPayment, getAdCampaignByCode, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
@@ -230,6 +248,7 @@ const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
+const selectedAdvertise = ref({})
 const filter = ref('')
 
 const eventRows = ref([])
@@ -370,19 +389,76 @@ onMounted(() => {
   advertiseStore.fetchAdvertises()
 })
 
-function onDeleteAdvertise(id, type) {
+function openDeleteDialog(id, type) {
+  dialog.value.open = true
+  dialog.value.title = 'Delete campaign'
+  dialog.value.subTitle = 'Are you sure you want to delete this campaign'
+  dialog.value.type = 'DeleteCampaign'
+  selectedAdvertise.value.id = id
+  selectedAdvertise.value.type = type
+}
+
+function openApprovalDialog(advertise, approve = true) {
+  dialog.value.open = true
+  dialog.value.title = 'Approval'
+  dialog.value.subTitle = 'Are you sure you want to approve this campaign'
+  dialog.value.type = 'ApproveCampaign'
+  selectedAdvertise.value = { ...advertise }
+  selectedAdvertise.value.isApproved = approve
+}
+function changePublishDate() {
+  const date = getCurrentDate()
+  selectedAdvertise.value.publishDate = date
+  selectedAdvertise.value.endDate = calculateEndDate(date, selectedAdvertise.value.duration)
   advertiseStore
-    .deleteAdvertise(id, type === 'Banner')
-    .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
+    .editAdvertise(selectedAdvertise.value)
+    .then(() =>
+      $q.notify({
+        type: 'info',
+        message: selectedAdvertise.value.status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully'
+      })
+    )
     .catch((error) => {
       console.log(error)
-      errorStore.throwError(error, 'Advertise deletion failed')
+      errorStore.throwError(error, 'Advertise edit failed')
+    })
+    .finally(() => {
+      selectedAdvertise.value = {}
     })
 }
 
-function onApproveAdvertise(advertise, approve = true) {
-  advertise.isApproved = approve
-  advertiseStore.editAdvertise(advertise)
+function onDeleteAdvertise() {
+  const id = selectedAdvertise.value?.id
+  const type = selectedAdvertise.value?.type
+  if (id && type) {
+    advertiseStore
+      .deleteAdvertise(id, type === 'Banner')
+      .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
+      .catch((error) => {
+        console.log(error)
+        errorStore.throwError(error, 'Advertise deletion failed')
+      })
+      .finally(() => {
+        selectedAdvertise.value = {}
+      })
+  }
+  selectedAdvertise.value = {}
+}
+function onDeselect() {
+  selectedAdvertise.value = {}
+}
+
+function onApproveAdvertise() {
+  advertiseStore
+    .editAdvertise(selectedAdvertise.value)
+    .then(() => $q.notify({ type: 'info', message: 'Advertise Approved successfully' }))
+    .catch((error) => {
+      console.log(error)
+      errorStore.throwError(error, 'Advertise Approval failed')
+    })
+    .finally(() => {
+      selectedAdvertise.value = {}
+    })
 }
 const columns = ref([
   {
@@ -461,9 +537,11 @@ const columns = ref([
 function changeActiveStatus(advertise, status) {
   if (!calculateStatus(advertise.publishDate) && status === 'Active') {
     dialog.value.open = true
-    dialog.value.title = 'Alert'
-    dialog.value.subTitle = 'Change your publish date'
+    dialog.value.title = 'Publish Status'
+    dialog.value.subTitle = 'Do you want to change your publish date and publish this campaign today?'
     dialog.value.type = 'ChangePublishDate'
+    selectedAdvertise.value = { ...advertise }
+    selectedAdvertise.value.status = status
     return
   }
   advertise.status = status
