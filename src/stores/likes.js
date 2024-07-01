@@ -53,7 +53,7 @@ export const useLikeStore = defineStore('likes', {
       this._isLoading = false
     },
 
-    async addLike(collectionName, documentId, article_id, topic_id, ad_id) {
+    async addLike(collectionName, documentId, article_id, topic_id, ad_id, isTest = false) {
       try {
         this._isLoading = true
         const userStore = useUserStore()
@@ -70,14 +70,18 @@ export const useLikeStore = defineStore('likes', {
 
         if (likesSnap.exists()) {
           await deleteDoc(likesRef)
-          await pushLikeToStats(user_id, article_id, topic_id, null, ad_id)
+          if (!isTest) {
+            await pushLikeToStats(user_id, article_id, topic_id, null, ad_id)
+          }
         } else {
           const like = {
             author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
             createdAt: Timestamp.fromDate(new Date())
           }
           await setDoc(likesRef, like)
-          await pushLikeToStats(user_id, article_id, topic_id, true, ad_id)
+          if (!isTest) {
+            await pushLikeToStats(user_id, article_id, topic_id, true, ad_id)
+          }
         }
 
         await this.getAllLikesDislikes(collectionName, documentId)
@@ -89,7 +93,7 @@ export const useLikeStore = defineStore('likes', {
       }
     },
 
-    async addDislike(collectionName, documentId, article_id, topic_id, ad_id) {
+    async addDislike(collectionName, documentId, article_id, topic_id, ad_id, isTest = false) {
       try {
         this._isLoading = true
         const userStore = useUserStore()
@@ -107,14 +111,18 @@ export const useLikeStore = defineStore('likes', {
 
         if (dislikesSnap.exists()) {
           await deleteDoc(dislikesRef)
-          await pushLikeToStats(user_id, article_id, topic_id, null, ad_id)
+          if (!isTest) {
+            await pushLikeToStats(user_id, article_id, topic_id, null, ad_id)
+          }
         } else {
           const dislike = {
             author: userStore.isAuthenticated ? userStore.getUserRef : 'Anonymous',
             createdAt: Timestamp.fromDate(new Date())
           }
           await setDoc(dislikesRef, dislike)
-          await pushLikeToStats(user_id, article_id, topic_id, false, ad_id)
+          if (!isTest) {
+            await pushLikeToStats(user_id, article_id, topic_id, false, ad_id)
+          }
         }
 
         await this.getAllLikesDislikes(collectionName, documentId)

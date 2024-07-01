@@ -143,7 +143,7 @@ export const useCommentStore = defineStore('comments', {
       }
     },
 
-    async addComment(collectionName, comment, document) {
+    async addComment(collectionName, comment, document, isTest = false) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
       const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
@@ -153,7 +153,9 @@ export const useCommentStore = defineStore('comments', {
       comment.id = Date.now() + '-' + (comment.author.id || comment.author)
       comment.isAnonymous = !userStore.isAuthenticated
 
-      await pushCommentToStats(user_id, document.id, comment.text)
+      if (!isTest) {
+        await pushCommentToStats(user_id, document.id, comment.text)
+      }
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
