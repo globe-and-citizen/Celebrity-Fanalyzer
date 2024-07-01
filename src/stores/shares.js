@@ -30,7 +30,7 @@ export const useShareStore = defineStore('shares', {
   getters: {
     getShares: (state) => state._sharesCount,
     getSharesStats: (state) => state._sharesStats,
-    isLoaded: (state) => !!state._shares || state._shares === 0,
+    isLoaded: (state) => !!state._sharesCount || state._sharesCount === 0,
     isLoading: (state) => state._isLoading
   },
 
@@ -56,7 +56,7 @@ export const useShareStore = defineStore('shares', {
       }
     },
 
-    async addShare(collectionName, documentId, socialNetwork) {
+    async addShare(collectionName, documentId, socialNetwork, isTest = false) {
       try {
         this._isLoading = true
         const userStore = useUserStore()
@@ -70,7 +70,9 @@ export const useShareStore = defineStore('shares', {
           createdAt: Timestamp.fromDate(new Date()),
           sharedOn: socialNetwork
         })
-        await pushShareToStats(user_id, documentId, socialNetwork)
+        if (!isTest) {
+          await pushShareToStats(user_id, documentId, socialNetwork)
+        }
 
         await this.fetchSharesCount(collectionName, documentId)
         this._isLoading = false
@@ -87,9 +89,10 @@ export const useShareStore = defineStore('shares', {
 
       const snapshot = await getDocs(sharesCollection)
 
-      snapshot.forEach(async (doc) => {
-        await deleteDoc(doc.ref)
+      const promises = snapshot.docs.map(async (doc) => {
+        return deleteDoc(doc.ref)
       })
+      await Promise.all(promises)
       this._isLoading = false
     },
 
