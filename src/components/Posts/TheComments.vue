@@ -58,7 +58,9 @@
               icon="send"
               round
               type="submit"
-            />
+            >
+              <q-tooltip v-if="commentValue">Send</q-tooltip>
+            </q-btn>
           </q-input>
           <q-btn
             v-if="commentStore.getComments?.length >= 10"

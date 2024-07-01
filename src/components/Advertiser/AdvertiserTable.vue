@@ -25,7 +25,7 @@
         </template>
         <template #body-cell-published="props">
           <q-td :props="props">
-            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
+            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue"><q-tooltip>Pending</q-tooltip></q-icon>
             <q-icon
               v-else-if="props.value === 'Inactive'"
               name="play_circle"
@@ -33,7 +33,9 @@
               color="green-6"
               class="cursor-pointer"
               @click="changeActiveStatus(props.row, 'Active')"
-            />
+            >
+              <q-tooltip>Publish</q-tooltip>
+            </q-icon>
             <q-icon
               v-else-if="props.row.status === 'Active'"
               name="pause_circle"
@@ -41,7 +43,9 @@
               color="red-8"
               class="cursor-pointer"
               @click="changeActiveStatus(props.row, 'Inactive')"
-            />
+            >
+              <q-tooltip>Unpublish</q-tooltip>
+            </q-icon>
           </q-td>
         </template>
         <template #body-cell-action="props">
@@ -91,7 +95,9 @@
               size="18px"
               class="cursor-pointer q-mr-sm"
               @click="openApprovalDialog(props.row)"
-            />
+            >
+              <q-tooltip>Approve</q-tooltip>
+            </q-icon>
             <q-icon
               v-show="props.row.status === 'Inactive'"
               name="edit"
@@ -99,8 +105,12 @@
               size="18px"
               class="cursor-pointer q-mr-sm"
               @click="$emit('openAdvertiseDialog', props.row)"
-            />
-            <q-icon name="delete" color="red" size="18px" @click="openDeleteDialog(props.row.id, props.row.type)" class="cursor-pointer" />
+            >
+              <q-tooltip>Edit</q-tooltip>
+            </q-icon>
+            <q-icon name="delete" color="red" size="18px" @click="openDeleteDialog(props.row.id, props.row.type)" class="cursor-pointer">
+              <q-tooltip>Delete</q-tooltip>
+            </q-icon>
           </q-td>
         </template>
         <template #body-cell-durations="props">
