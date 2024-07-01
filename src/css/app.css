@@ -26,3 +26,7 @@ html {
 .q-field__prefix {
   padding-right: 0;
 }
+
+.leaflet-pane {
+  z-index: 2 !important;
+}

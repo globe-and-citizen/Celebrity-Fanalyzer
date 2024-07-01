@@ -112,14 +112,6 @@ const computedEntries = computed(() => {
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })
-
-watchEffect(() => {
-  if (!router.currentRoute.value.params.year) {
-    promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-  } else {
-    promptStore.fetchPromptsByYear(router.currentRoute.value.params.year).catch((error) => errorStore.throwError(error))
-  }
-})
 </script>
 
 <style lang="scss" scoped>

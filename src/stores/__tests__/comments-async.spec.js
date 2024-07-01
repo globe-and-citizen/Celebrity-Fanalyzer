@@ -91,7 +91,7 @@ describe('Async watcher ', () => {
 
     // 3- Check Add comment
     let myComment = { text: 'Test comment' }
-    commentStore.addComment('entries', myComment, getFirstEntry())
+    commentStore.addComment('entries', myComment, getFirstEntry(), true)
 
     // Check Loading state variation false =>true => false
     await waitUntil(() => {

@@ -41,6 +41,9 @@ service cloud.firestore {
     match /errors/{document=**} {
     	allow read, create, update, delete, write;
     }
+    match /cryptoTransactions/{document=**} {
+      allow read, create, write;
+    }
     match /feedbacks/{document=**} {
     	allow read, create, update, delete, write;
     }

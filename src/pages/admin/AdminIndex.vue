@@ -1,6 +1,6 @@
 <template>
   <TheHeader title="Admin Panel">
-    <q-btn v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
+    <q-btn v-if="userStore.isAuthenticated || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
     <q-btn-dropdown
       auto-close
       data-test="button-dropdown"
@@ -28,9 +28,9 @@
         >
           <q-item-section>New Entry</q-item-section>
         </q-item>
-        <!-- <q-item v-if="userStore.isAdvertiser || userStore.isAdmin" color="primary" clickable @click="openAdvertiseDialog">
-          <q-item-section>New Advertise</q-item-section>
-        </q-item> -->
+        <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
+          <q-item-section>Add new users</q-item-section>
+        </q-item>
       </q-list>
     </q-btn-dropdown>
   </TheHeader>
@@ -54,7 +54,7 @@
           label="Users"
         />
         <q-route-tab
-          v-if="userStore.isAdvertiser || userStore.isAdmin"
+          v-if="userStore.isAuthenticated || userStore.isAdmin"
           name="advertises"
           :to="{ name: 'admin.advertises' }"
           icon="campaign"
@@ -113,7 +113,7 @@ import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, usePromptStore, useRequestStore, useUserStore, useAdvertiseStore } from 'src/stores'
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const requestStore = useRequestStore()
@@ -130,9 +130,24 @@ const currentPath = ref('')
 
 const router = useRouter()
 const route = useRoute()
-onMounted(() => {
-  userStore.fetchUsers()
-  requestStore.readRequests()
+
+const addAllUsersToStatsDb = () => {
+  const allUsersMap = userStore?.getUsers.map((user) => {
+    return { user_id: user.uid }
+  })
+  userStore.addAllUsers(allUsersMap)
+}
+
+const uniqueUsers = computed(() => {
+  const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
+  const statsUsersIds = userStore.getAllUsers?.usersList.map((user) => user.user_id) || []
+  return firebaseUsers.filter((user) => !statsUsersIds.includes(user))
+})
+
+onMounted(async () => {
+  await userStore.fetchUsers()
+  await requestStore.readRequests()
+  await userStore.getStatsUsers()
   advertiseStore.fetchAdvertises().catch((error) => console.log(error))
 
   currentPath.value = router.currentRoute.value.path

@@ -20,6 +20,20 @@ import {
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import layer8 from 'layer8_interceptor'
+import { baseURL } from 'stores/stats'
+
+const pushCommentToStats = async (user_id, id, content) =>
+  await layer8
+    .fetch(`${baseURL}/comment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_id, id, content })
+    })
+    .then((res) => res.json())
+    .catch((err) => console.log(err))
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
@@ -129,14 +143,19 @@ export const useCommentStore = defineStore('comments', {
       }
     },
 
-    async addComment(collectionName, comment, document) {
+    async addComment(collectionName, comment, document, isTest = false) {
       const userStore = useUserStore()
       await userStore.fetchUserIp()
+      const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 
       comment.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       comment.created = Timestamp.fromDate(new Date())
       comment.id = Date.now() + '-' + (comment.author.id || comment.author)
       comment.isAnonymous = !userStore.isAuthenticated
+
+      if (!isTest) {
+        await pushCommentToStats(user_id, document.id, comment.text)
+      }
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))

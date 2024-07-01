@@ -38,3 +38,5 @@ ui-debug.log
 firebase-debug.log
 .nyc_output
 coverage/
+conf-example
+package-lock.json

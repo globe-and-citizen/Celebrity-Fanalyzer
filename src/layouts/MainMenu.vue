@@ -4,12 +4,10 @@
       <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route?.icon" :to="route?.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
-      <!-- <q-route-tab v-if="userStore.isAdvertiser || userStore.isAdmin" exact icon="campaign" to="/advertiser">
-        <q-tooltip>Advertiser Panel</q-tooltip>
-      </q-route-tab> -->
+
       <q-route-tab
         class="adminTab"
-        v-if="userStore.isWriterOrAbove || userStore.isAdvertiser"
+        v-if="userStore.isWriterOrAbove || userStore.isAuthenticated"
         icon="admin_panel_settings"
         @click="onAdminTabClick"
       >
@@ -35,21 +33,22 @@
 </template>
 
 <script setup>
-import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-import { onSnapshot, collection } from 'firebase/firestore'
+import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from 'src/firebase'
 
 const updated = ref(false)
 const userStore = useUserStore()
 const promptStore = usePromptStore()
 const entriesStore = useEntryStore()
+const errorStore = useErrorStore()
 const router = useRouter()
-const email = ref('')
 const currentPath = ref('')
 const isAdminPromptPath = currentPath.value.includes('/admin/prompts')
-const { href, params, path, name } = router.currentRoute.value
+const { href, params } = router.currentRoute.value
+const userDocRef = ref({})
 
 const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
@@ -61,23 +60,11 @@ const routes = computed(() => [
 function onLogout() {
   userStore.logout()
   updated.value = false
-  router.push({ path: '/profile', query: { email: email.value } })
+  router.push({ path: '/profile' })
 }
-onSnapshot(collection(db, 'users'), (querySnapshot) => {
-  querySnapshot.docChanges().forEach((change) => {
-    if (change.type === 'modified') {
-      const user = change.doc.data()
-      if (user.email === userStore._user.email && user.role !== userStore._user.role) {
-        localStorage.removeItem('user')
-        email.value = userStore._user.email
-        updated.value = true
-      }
-    }
-  })
-})
 
 const onAdminTabClick = () => {
-  if (userStore.isAdvertiser) {
+  if (userStore.isAuthenticated) {
     router.push('/admin/advertises')
   } else if (!isAdminPromptPath) {
     router.push('/admin/prompts')
@@ -85,6 +72,26 @@ const onAdminTabClick = () => {
     router.push('/admin')
   }
 }
+
+watchEffect(async () => {
+  const uid = await userStore.getUser?.uid
+  const userRole = await userStore.getUser?.role
+
+  if (uid) {
+    userDocRef.value = doc(db, 'users', uid)
+    onSnapshot(userDocRef.value, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const userData = docSnapshot.data()
+        if (userRole !== userData.role) {
+          localStorage.removeItem('user')
+          updated.value = true
+        }
+      } else {
+        console.error('User not found')
+      }
+    })
+  }
+})
 
 onMounted(async () => {
   if (params.year && params.month && !params.id) {

@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { useEntryStore, usePromptStore, useShareStore, useStorageStore, useUserStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useShareStore, useStorageStore, useUserStore, useStatStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -52,7 +52,7 @@ describe('Unit Test Share Store', () => {
     })
     const firstEntry = entryStore.getEntries[0]
 
-    await shareStore.fetchShares('entries', firstEntry.id)
+    await shareStore.fetchSharesCount('entries', firstEntry.id)
     // await shareStore.fetchShares('entries', entryStore.getEntries[1].id)
 
     await waitUntil(() => {
@@ -64,7 +64,7 @@ describe('Unit Test Share Store', () => {
     if (initialLength > 0) {
       // Delete All Share to have an empty share list
       await shareStore.deleteAllShares('entries', firstEntry.id)
-
+      await shareStore.fetchSharesCount('entries', firstEntry.id)
       await waitUntil(() => {
         return shareStore.getShares === 0
       })
@@ -74,7 +74,8 @@ describe('Unit Test Share Store', () => {
     initialLength = shareStore.getShares
 
     expect(shareStore.getShares).toBe(0)
-    shareStore.addShare('entries', firstEntry.id, 'instagram')
+    shareStore.addShare('entries', firstEntry.id, 'instagram', true)
+    await shareStore.fetchSharesCount('entries', firstEntry.id)
 
     await waitUntil(() => {
       return shareStore.isLoading
@@ -89,7 +90,7 @@ describe('Unit Test Share Store', () => {
       return shareStore.getShares === 0
     })
 
-    await shareStore.fetchShares('entries', firstEntry.id)
+    await shareStore.fetchSharesCount('entries', firstEntry.id)
 
     await waitUntil(() => {
       return shareStore.isLoaded === true
@@ -107,7 +108,7 @@ describe('Unit Test Share Store', () => {
     await waitUntil(() => {
       return promptStore.getPrompts
     })
-    await shareStore.fetchShares('prompt', promptStore.getPrompts[0].id)
+    await shareStore.fetchSharesCount('prompt', promptStore.getPrompts[0].id)
     expect(shareStore.isLoaded).toBe(true)
   })
 })
