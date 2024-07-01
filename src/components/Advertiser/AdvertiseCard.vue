@@ -14,16 +14,16 @@
             </div>
             <q-file
               v-if="advertise.type === 'Banner'"
-              class="q-mb-lg"
-              :accept="advertise.type === 'Banner' ? '.jpg, image/*' : '.mp4, .mkv'"
-              counter
-              data-test="file-image"
+              v-model="contentModel"
               hide-hint
+              counter
+              class="q-mb-lg"
+              data-test="file-image"
               :hint="fileErrorMessage"
               :label="advertise.type === 'Banner' ? 'Image' : 'Video'"
               :max-total-size="5242880"
               :required="!id"
-              v-model="contentModel"
+              :accept="advertise.type === 'Banner' ? '.jpg, image/*' : '.mp4, .mkv'"
               @rejected="onRejected()"
               @update:model-value="uploadPhoto()"
             >
@@ -35,28 +35,28 @@
               <q-img
                 v-if="advertise.contentURL"
                 class="q-mt-md"
-                :src="advertise.contentURL"
                 fit="contain"
                 style="max-height: 40vh; max-width: 80vw"
+                :src="advertise.contentURL"
               />
             </div>
             <q-input counter data-test="input-title" hide-hint label="Description" type="textarea" required v-model="advertise.content" />
             <q-input
-              class="q-mb-lg"
+              v-model="advertise.productLink"
               counter
               hide-hint
+              class="q-mb-lg"
               label="Product URL"
               maxlength="80"
-              v-model="advertise.productLink"
               :rules="[(url) => (url ? isUrlValid(url) : true) || 'Please enter a valid url']"
             />
             <q-input
-              filled
               v-model="advertise.publishDate"
+              filled
+              readonly
               mask="date"
               label="Publish date"
               :rules="['date']"
-              readonly
               @click="openDatePicker"
             >
               <template v-slot:append>
@@ -72,9 +72,9 @@
               </template>
             </q-input>
             <q-input
+              v-model.number="advertise.duration"
               label="Duration(day's)"
               class="q-mb-lg"
-              v-model.number="advertise.duration"
               type="number"
               :min="1"
               :rules="[(duration) => duration > 0 || 'Enter a positive number']"
@@ -89,10 +89,10 @@
               @update:model-value="convertToMatic()"
             />
             <q-input
+              v-model="advertise.budget"
               readonly
               label="Budget In Matic"
               class="q-mb-lg"
-              v-model="advertise.budget"
               mask="#.######"
               fill-mask="0"
               :rules="[(budget) => (budget ? budget >= 0 : true || 'Enter a positive number')]"
@@ -103,6 +103,8 @@
           <q-stepper-navigation class="flex justify-end q-gutter-md">
             <q-btn flat rounded label="Cancel" v-close-popup />
             <q-btn
+              rounded
+              type="submit"
               color="primary"
               data-test="button-submit"
               :disable="
@@ -113,8 +115,6 @@
                 (advertise.type === 'Banner' && (fileError || (contentModel.length <= 0 && advertise.contentURL.length <= 0)))
               "
               :label="id ? 'Save Edits' : 'Submit '"
-              rounded
-              type="submit"
             />
           </q-stepper-navigation>
         </template>
@@ -128,7 +128,7 @@ import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
-import { currentYearMonth } from 'src/utils/date'
+import { currentYearMonth, getCurrentDate, calculateEndDate } from 'src/utils/date'
 import { reactive, ref, watchEffect, computed, onMounted } from 'vue'
 import { useWalletStore } from 'src/stores'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
@@ -273,25 +273,6 @@ function isUrlValid(userInput = '') {
   var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
   if (res == null) return false
   else return true
-}
-
-function calculateEndDate(publishDate, duration) {
-  const publishDayObj = new Date(publishDate)
-  const endDate = new Date(publishDayObj.getTime() + duration * 24 * 60 * 60 * 1000)
-  return endDate.toISOString().slice(0, 10).replaceAll('-', '/')
-}
-
-function getCurrentDate() {
-  const currentDate = new Date()
-  let month = currentDate.getMonth() + 1
-  if (month < 10) {
-    month = '0' + month
-  }
-  let day = currentDate.getDate()
-  if (day < 10) {
-    day = '0' + day
-  }
-  return `${currentDate.getFullYear()}/${month}/${day}`
 }
 
 async function createAdCampain(payload) {

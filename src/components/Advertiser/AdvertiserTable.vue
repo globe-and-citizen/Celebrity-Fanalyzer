@@ -5,15 +5,15 @@
         v-if="advertises.length > 0"
         flat
         bordered
-        :filter="filter"
-        title="Manage Advertisements"
-        :rows="advertises"
-        :columns="columns"
-        row-key="name"
-        :rows-per-page-options="[0]"
-        style="margin: 10px 0px"
         virtual-scroll
         hide-bottom
+        title="Manage Advertisements"
+        row-key="name"
+        style="margin: 10px 0px"
+        :filter="filter"
+        :rows="advertises"
+        :columns="columns"
+        :rows-per-page-options="[0]"
         :loading="advertiseStore.isLoading"
       >
         <template v-slot:top-right>
@@ -28,77 +28,79 @@
             <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue" />
             <q-icon
               v-else-if="props.value === 'Inactive'"
-              @click="changeActiveStatus(props.row, 'Active')"
               name="play_circle"
               size="18px"
               color="green-6"
               class="cursor-pointer"
+              @click="changeActiveStatus(props.row, 'Active')"
             />
             <q-icon
-              v-if="props.value === 'Active'"
-              @click="changeActiveStatus(props.row, 'Inactive')"
+              v-else-if="props.row.status === 'Active'"
               name="pause_circle"
               size="18px"
               color="red-8"
               class="cursor-pointer"
+              @click="changeActiveStatus(props.row, 'Inactive')"
             />
           </q-td>
         </template>
         <template #body-cell-action="props">
           <q-td :props="props">
             <q-icon
-              color="green"
-              :disable="userStore.getUser.role !== 'Admin'"
+              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
               flat
+              color="green"
               name="payment"
               size="18px"
               label=""
-              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              class="q-mr-sm"
+              :disable="userStore.getUser.role !== 'Admin'"
               @click="onwithdrawAmountSpentDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw amount spent!</q-tooltip>
             </q-icon>
             <q-icon
-              color="primary"
-              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
+              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
               flat
+              color="primary"
               name="free_cancellation"
               size="18px"
               label=""
-              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              class="q-mr-sm"
+              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw remaining budget!</q-tooltip>
             </q-icon>
             <q-icon
-              color="dark"
+              v-if="props.row.campaignCode?.length > 5"
               flat
+              color="dark"
               name="receipt_long"
               size="18px"
               label=""
-              v-if="props.row.campaignCode?.length > 5"
+              class="q-mr-sm"
               @click="_getEventsForCampaign(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
             </q-icon>
-            <q-icon name="edit" color="blue" size="18px" @click="$emit('openAdvertiseDialog', props.row)" class="cursor-pointer q-mr-sm" />
             <q-icon
               v-if="userStore.isAdmin && !props.row.isApproved"
               name="done_outline"
               color="green"
               size="18px"
-              @click="onApproveAdvertise(props.row)"
               class="cursor-pointer q-mr-sm"
+              @click="openApprovalDialog(props.row)"
             />
             <q-icon
               v-show="props.row.status === 'Inactive'"
               name="edit"
               color="blue"
               size="18px"
-              @click="$emit('openAdvertiseDialog', props.row)"
               class="cursor-pointer q-mr-sm"
+              @click="$emit('openAdvertiseDialog', props.row)"
             />
-            <q-icon name="delete" color="red" size="18px" @click="onDeleteAdvertise(props.row.id, props.row.type)" class="cursor-pointer" />
+            <q-icon name="delete" color="red" size="18px" @click="openDeleteDialog(props.row.id, props.row.type)" class="cursor-pointer" />
           </q-td>
         </template>
         <template #body-cell-durations="props">
@@ -125,16 +127,30 @@
       </q-table>
       <h4 v-else class="text-center">Add advertises to view and manage them</h4>
     </div>
-    <q-dialog v-model="openDialog">
+    <q-dialog v-model="dialog.open">
       <q-card style="min-width: 20rem; max-width: 30rem">
         <q-card-section class="bg-primary text-white q-pa-sm">
-          <div class="text-h6">Alert</div>
+          <div class="text-h6">{{ dialog.title }}</div>
         </q-card-section>
         <q-card-section class="q-pt-none bg-white q-py-lg text-center">
-          <div class="text-subtitle1 wrap">{{ alertMessage }}</div>
+          <div class="text-subtitle1 wrap">{{ dialog.subTitle }}</div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
+          <template v-if="dialog.type === 'ChangePublishDate'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="changePublishDate" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else-if="dialog.type === 'DeleteCampaign'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="onDeleteAdvertise" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else-if="dialog.type === 'ApproveCampaign'">
+            <q-btn flat label="Yes" color="primary" v-close-popup @click="onApproveAdvertise" />
+            <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
+          </template>
+          <template v-else>
+            <q-btn flat label="Ok" color="primary" v-close-popup @click="onDeselect" />
+          </template>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -195,6 +211,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
+import { getCurrentDate, calculateEndDate } from 'src/utils/date'
 import { claimPayment, getAdCampaignByCode, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
@@ -206,7 +223,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const openDialog = ref(false)
+const dialog = ref({ open: false, title: '', subTitle: '', type: '' })
 const withdrawAmountSpentDialog = ref({})
 const withdrawRemainingBudgetDialog = ref({})
 const advertismentPaymentEventsDialog = ref({ show: false })
@@ -214,7 +231,7 @@ const $q = useQuasar()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
-const alertMessage = ref('')
+const selectedAdvertise = ref({})
 const filter = ref('')
 
 const eventRows = ref([])
@@ -348,40 +365,83 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.hide()
 }
 
-function checkDurationStatus() {
-  for (const advertise of props.advertises) {
-    if (
-      advertise.duration &&
-      (advertise.duration < 7 || computedDuration(advertise.endDate) < 7) &&
-      advertise.status === 'Active' &&
-      !userStore.isAdmin
-    ) {
-      alertMessage.value = 'Please extend the advertise duration to more than 7 days.'
-      openDialog.value = true
-    }
-  }
-}
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
 onMounted(() => {
-  checkDurationStatus()
   advertiseStore.fetchAdvertises()
 })
 
-function onDeleteAdvertise(id, type) {
+function openDeleteDialog(id, type) {
+  dialog.value.open = true
+  dialog.value.title = 'Delete campaign'
+  dialog.value.subTitle = 'Are you sure you want to delete this campaign'
+  dialog.value.type = 'DeleteCampaign'
+  selectedAdvertise.value.id = id
+  selectedAdvertise.value.type = type
+}
+
+function openApprovalDialog(advertise, approve = true) {
+  dialog.value.open = true
+  dialog.value.title = 'Approval'
+  dialog.value.subTitle = 'Are you sure you want to approve this campaign'
+  dialog.value.type = 'ApproveCampaign'
+  selectedAdvertise.value = { ...advertise }
+  selectedAdvertise.value.isApproved = approve
+}
+function changePublishDate() {
+  const date = getCurrentDate()
+  selectedAdvertise.value.publishDate = date
+  selectedAdvertise.value.endDate = calculateEndDate(date, selectedAdvertise.value.duration)
   advertiseStore
-    .deleteAdvertise(id, type === 'Banner')
-    .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
+    .editAdvertise(selectedAdvertise.value)
+    .then(() =>
+      $q.notify({
+        type: 'info',
+        message: selectedAdvertise.value.status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully'
+      })
+    )
     .catch((error) => {
       console.log(error)
-      errorStore.throwError(error, 'Advertise deletion failed')
+      errorStore.throwError(error, 'Advertise edit failed')
+    })
+    .finally(() => {
+      selectedAdvertise.value = {}
     })
 }
 
-function onApproveAdvertise(advertise, approve = true) {
-  advertise.isApproved = approve
-  advertiseStore.editAdvertise(advertise)
+function onDeleteAdvertise() {
+  const id = selectedAdvertise.value?.id
+  const type = selectedAdvertise.value?.type
+  if (id && type) {
+    advertiseStore
+      .deleteAdvertise(id, type === 'Banner')
+      .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
+      .catch((error) => {
+        console.log(error)
+        errorStore.throwError(error, 'Advertise deletion failed')
+      })
+      .finally(() => {
+        selectedAdvertise.value = {}
+      })
+  }
+  selectedAdvertise.value = {}
+}
+function onDeselect() {
+  selectedAdvertise.value = {}
+}
+
+function onApproveAdvertise() {
+  advertiseStore
+    .editAdvertise(selectedAdvertise.value)
+    .then(() => $q.notify({ type: 'info', message: 'Advertise Approved successfully' }))
+    .catch((error) => {
+      console.log(error)
+      errorStore.throwError(error, 'Advertise Approval failed')
+    })
+    .finally(() => {
+      selectedAdvertise.value = {}
+    })
 }
 const columns = ref([
   {
@@ -448,8 +508,12 @@ const columns = ref([
 ])
 function changeActiveStatus(advertise, status) {
   if (!calculateStatus(advertise.publishDate) && status === 'Active') {
-    alertMessage.value = 'Change your publish date'
-    openDialog.value = true
+    dialog.value.open = true
+    dialog.value.title = 'Publish Status'
+    dialog.value.subTitle = 'Do you want to change your publish date and publish this campaign today?'
+    dialog.value.type = 'ChangePublishDate'
+    selectedAdvertise.value = { ...advertise }
+    selectedAdvertise.value.status = status
     return
   }
   advertise.status = status
@@ -467,6 +531,8 @@ function changeActiveStatus(advertise, status) {
 function computedDuration(endDate) {
   const date1 = new Date()
   const date2 = new Date(endDate)
+  date1.setHours(0, 0, 0, 0)
+  date2.setHours(0, 0, 0, 0)
   let Difference_In_Time = date2.getTime() - date1.getTime()
   let Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
   return Difference_In_Days
