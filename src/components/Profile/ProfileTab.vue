@@ -81,6 +81,7 @@
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
     <q-input label="Data 2" v-model="user.data2" />
+    
     <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
   <q-dialog v-model="setWalletAddressDialog.show">
@@ -124,6 +125,7 @@ const newPhoto = ref(null)
 const origin = window.location.origin + '/'
 const user = ref(userStore.getUser)
 
+
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
@@ -142,6 +144,7 @@ async function uploadPhoto() {
     .then((url) => (user.value.photoURL = url))
     .catch((error) => errorStore.throwError(error))
 }
+
 
 async function usernameValidator(username) {
   if (!username) return true

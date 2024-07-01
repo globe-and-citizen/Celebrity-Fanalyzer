@@ -17,7 +17,7 @@
         <q-input data-text="ether-amount" v-model="maticAmount" label="Price in matic" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />
-          <q-btn label="proceed payment" :disable="!usdAmount" color="green" data-test="confirm-delete-entry" type="submit" v-close-popup/>
+          <q-btn label="proceed payment" :disable="!usdAmount" color="green" data-test="confirm-delete-entry" type="submit" v-close-popup />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -27,7 +27,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { ref, onMounted } from 'vue'
-import { initiateSendEther } from 'app/src/web3/transfers.js'
+import { initiateSendEther, fetchMaticRate } from 'app/src/web3/transfers.js'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -37,7 +37,6 @@ const userStore = useUserStore()
 const cryptoTransactionStore = useCryptoTransactionStore()
 
 const emit = defineEmits(['hideDialog'])
-
 
 const props = defineProps({
   walletAddress: { type: String, required: true },
@@ -52,7 +51,12 @@ const maticRate = ref(0)
 
 onMounted(async () => {
   _walletAddress.value = props.walletAddress
-  await fetchMaticRate()
+  const maticRateResult = await fetchMaticRate()
+  if (maticRateResult.success) {
+    maticRate.value = maticRateResult.maticRate
+  } else {
+    $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
+  }
 })
 
 function convertToMatic() {
@@ -62,52 +66,51 @@ function convertToMatic() {
   }
 }
 
-async function fetchMaticRate() {
-  try {
-    const maticRateApiLink = import.meta.env.VITE_MATIC_RATE_API_LINK
-    const response = await fetch(maticRateApiLink)
-    const data = await response.json()
-    //console.log('the data ===== ', data)
-    maticRate.value = data['matic-network'].usd
-    //console.log("the ether rate ====== ",maticRate.value);
-  } catch (error) {
-    console.error('Error fetching Matic rate:', error)
-    $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
-  }
-}
+// async function fetchMaticRate() {
+//   try {
+//     const maticRateApiLink = import.meta.env.VITE_MATIC_RATE_API_LINK
+//     const response = await fetch(maticRateApiLink)
+//     const data = await response.json()
+//     //console.log('the data ===== ', data)
+//     maticRate.value = data['matic-network'].usd
+//     //console.log("the ether rate ====== ",maticRate.value);
+//   } catch (error) {
+//     console.error('Error fetching Matic rate:', error)
+//     $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
+//   }
+// }
 
 async function onSubmit(event) {
   //console.log('on submit called ========= ')
-  event.preventDefault();
-  
+  event.preventDefault()
+
   $q.loading.show()
 
-  await initiateSendEther(props.walletAddress, maticAmount.value)
-    .then((transactionResult) => {
-      //console.log("the transaction result ====== ", transactionResult)
-      if (transactionResult.success == true) {
-        const payload = {
-          initiator: userStore.getUser,
-          entry: props.entry,
-          tHash: transactionResult.transactionId,
-          status: transactionResult.success,
-          networkName:transactionResult.networkName,
-          explorerUrl:transactionResult.explorerUrl
-        }
-        cryptoTransactionStore
-          .addCryptoTransaction(payload)
-          .then($q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' }))
-          .catch((error) => {
-            //console.log("error when saving transaction === ", error)
-            errorStore.throwError(error, 'Error when saving the transaction')
-          })
-      } else {
-        //console.log("the error=====mmmmm========= ", transactionResult  )
-        $q.notify({ type: 'negative', message: transactionResult.error })
-        errorStore.throwError(transactionResult?.error, 'Error when saving the transaction')
+  await initiateSendEther(props.walletAddress, maticAmount.value).then((transactionResult) => {
+    //console.log("the transaction result ====== ", transactionResult)
+    if (transactionResult.success == true) {
+      const payload = {
+        initiator: userStore.getUser,
+        entry: props.entry,
+        tHash: transactionResult.transactionId,
+        status: transactionResult.success,
+        networkName: transactionResult.networkName,
+        explorerUrl: transactionResult.explorerUrl
       }
-      $q.loading.hide()
-    })
+      cryptoTransactionStore
+        .addCryptoTransaction(payload)
+        .then($q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' }))
+        .catch((error) => {
+          //console.log("error when saving transaction === ", error)
+          errorStore.throwError(error, 'Error when saving the transaction')
+        })
+    } else {
+      //console.log("the error=====mmmmm========= ", transactionResult  )
+      $q.notify({ type: 'negative', message: transactionResult.error })
+      errorStore.throwError(transactionResult?.error, 'Error when saving the transaction')
+    }
+    $q.loading.hide()
+  })
 
   emit('hideDialog')
 }

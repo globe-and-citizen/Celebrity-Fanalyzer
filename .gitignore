@@ -40,3 +40,4 @@ firebase-debug.log
 coverage/
 conf-example
 functions/node_modules
+package-lock.json
