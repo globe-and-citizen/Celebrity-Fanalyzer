@@ -73,7 +73,7 @@
       </q-tr>
     </template>
   </q-table>
-  <TableEntry v-else :filter="filter" :rows="userRelatedEntries" />
+  <TableEntry v-else :filter="filter" :rows="entryStore.getUserRelatedEntries" />
 
   <q-dialog v-model="deleteDialog.show">
     <q-card>
