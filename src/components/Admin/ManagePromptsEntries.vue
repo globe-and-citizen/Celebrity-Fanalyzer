@@ -141,7 +141,6 @@ const prompts = computed(() => {
     entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
   }))
 })
-const userRelatedEntries = computed(() => entryStore.getUserRelatedEntries)
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true
