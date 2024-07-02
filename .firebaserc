@@ -1,7 +1,7 @@
 {
   "projects": {
     "web": "celebrityfanalizer",
-    "default": "celebrityfanalyzer"
+    "default": "celebrityfanalizer"
   },
   "targets": {},
   "etags": {},
