@@ -13,11 +13,11 @@
         :filter="filter"
         :rows="advertises"
         :columns="columns"
-        :rows-per-page-options="[0]"
         :loading="advertiseStore.isLoading"
+        :rows-per-page-options="[0]"
       >
         <template v-slot:top-right>
-          <q-input debounce="300" dense placeholder="Search" v-model="filter">
+          <q-input v-model="filter" debounce="300" dense placeholder="Search">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -26,6 +26,12 @@
         <template #body-cell-published="props">
           <q-td :props="props">
             <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue"><q-tooltip>Pending</q-tooltip></q-icon>
+            <q-icon v-else-if="props.row.status === 'Budget Crossed'" name="close" size="18px" color="primary">
+              <q-tooltip>Budget crossed</q-tooltip>
+            </q-icon>
+            <q-icon v-else-if="props.row.status === 'Complete'" name="task_alt" size="18px" color="green">
+              <q-tooltip>Complete</q-tooltip>
+            </q-icon>
             <q-icon
               v-else-if="props.value === 'Inactive'"
               name="play_circle"
@@ -88,6 +94,7 @@
             >
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
             </q-icon>
+
             <q-icon
               v-if="userStore.isAdmin && !props.row.isApproved"
               name="done_outline"
@@ -99,7 +106,11 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="props.row.status === 'Inactive'"
+              v-show="
+                props.row.status === 'Inactive' &&
+                computedDuration(props.row.endDate) > 0 &&
+                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
+              "
               name="edit"
               color="blue"
               size="18px"
@@ -114,24 +125,30 @@
           </q-td>
         </template>
         <template #body-cell-durations="props">
-          <q-td>
-            {{ props.row.status === 'Inactive' ? props.row.duration : computedDuration(props.row.endDate) }} day's
+          <q-td class="text-right">
+            {{ computedDuration(props.row.endDate) }} day's
             <q-tooltip>{{ props.row.publishDate }} to {{ props.row.endDate }}</q-tooltip>
           </q-td>
         </template>
         <template #body-cell-status="props">
-          <q-td>
-            {{ props.row.status }}
+          <q-td class="text-right">
+            {{ showStatus(props.row) }}
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             {{ props.row.content?.length > 30 ? props.row.content.substring(0, 30) + '...' : props.row.content }}
           </q-td>
         </template>
         <template #body-cell-name="props">
-          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title }}
+          </q-td>
+        </template>
+        <template #body-cell-total_cost="props">
+          <q-td class="text-right">
+            {{ viewMatic(computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits)) }}
+            <q-tooltip>{{ computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) }}</q-tooltip>
           </q-td>
         </template>
       </q-table>
@@ -465,20 +482,20 @@ const columns = ref([
   {
     name: 'name',
     required: true,
-    label: 'Advertiser Name',
+    label: 'Advertise Title',
     field: 'title'
   },
   {
     name: 'content',
     required: true,
     field: 'content',
-    label: 'Advertiser Content'
+    label: 'Advertise Content'
   },
   {
     name: 'type',
     required: true,
     field: 'type',
-    label: 'Advertiser Type'
+    label: 'Advertise Type'
   },
   {
     name: 'status',
@@ -504,10 +521,21 @@ const columns = ref([
     sortable: true
   },
   {
+    name: 'visits',
+    field: 'visits',
+    label: 'Number of Visits',
+    sortable: true
+  },
+  {
+    name: 'total_cost',
+    field: 'total_cost',
+    label: 'Total Cost',
+    sortable: true
+  },
+  {
     name: 'durations',
     field: 'duration',
-    label: 'Durations',
-    sortable: true
+    label: 'Durations'
   },
 
   {
@@ -554,6 +582,33 @@ function calculateStatus(date) {
 
   return publishDate <= currentDate
 }
+function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
+  let impressionsMatic = impressions / 100
+  let clicksMatic = clicks / 20
+  let viewsMatic = views / 20
+  return impressionsMatic + clicksMatic + viewsMatic
+}
+function viewMatic(matic) {
+  if (Number.isInteger(matic)) return matic
+  const maticSplit = String(matic).split('.')
+  let floatNumbers = maticSplit[1]
+  if (floatNumbers.length > 3) {
+    floatNumbers = floatNumbers.slice(0, 3) + '...'
+  }
+  return maticSplit[0] + '.' + floatNumbers
+}
+function showStatus(data) {
+  const create = calculateStatus(data.publishDate)
+  const ended = calculateStatus(data.endDate)
+  if (!create) {
+    return 'Publish date pending'
+  } else if (computeAdvertisementMatic(data.impressions, data.clicks, data.visits) > Number(data.budget)) {
+    return 'Budget Crossed'
+  } else if (ended) {
+    return 'Complete'
+  } else if (create && !ended) {
+    return 'Ready to Publish'
+  }
+  return 'Pending: Publish date not yet reached'
+}
 </script>
-
-<style lang="scss" scoped></style>
