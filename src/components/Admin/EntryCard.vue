@@ -101,7 +101,7 @@ import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserS
 import { onMounted, reactive, ref } from 'vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title'])
+const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -131,6 +131,8 @@ onMounted(() => {
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
+  } else if (props.selectedPromptDate) {
+    entry.prompt = promptOptions.find((prompt) => prompt.value === props.selectedPromptDate)
   }
 })
 

@@ -18,7 +18,7 @@ export default [
         component: () => import('pages/admin/PromptsIndex.vue'),
         beforeEnter: (_to, _from, next) => {
           const userStore = useUserStore()
-          if (userStore.isWriterOrAbove) next()
+          if (userStore.isAuthenticated) next()
           else next('/')
         }
       },
