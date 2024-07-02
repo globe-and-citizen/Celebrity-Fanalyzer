@@ -1,15 +1,15 @@
 <template>
   <q-table
-    v-if="prompts"
-    :columns="columns"
-    :filter="filter"
+    v-if="prompts && userStore.isEditorOrAbove"
     flat
     hide-bottom
+    style="left: 0; right: 0"
+    title="Manage Prompts & Entries"
+    :columns="columns"
+    :filter="filter"
     :loading="isLoading"
     :pagination="pagination"
     :rows="prompts"
-    style="left: 0; right: 0"
-    title="Manage Prompts & Entries"
   >
     <template v-slot:top-right>
       <q-input :data-test="isLoading ? '' : 'input-search'" debounce="300" dense placeholder="Search" v-model="filter">
@@ -22,12 +22,12 @@
       <q-tr class="new" :data-test="props.key" :props="props">
         <q-td auto-width>
           <q-btn
-            color="red"
-            data-test="button-expand"
             dense
             flat
-            :icon="props.expand ? 'expand_less' : 'expand_more'"
             round
+            color="red"
+            data-test="button-expand"
+            :icon="props.expand ? 'expand_less' : 'expand_more'"
             @click="props.expand = !props.expand"
           >
             <q-tooltip>
@@ -39,26 +39,26 @@
         <q-td class="text-right">
           <q-btn
             v-if="userStore.isEditorOrAbove"
+            flat
+            round
             color="warning"
             data-test="button-edit"
-            :disable="promptStore.isLoading"
-            flat
             icon="edit"
-            round
             size="sm"
+            :disable="promptStore.isLoading"
             @click="$emit('openPromptDialog', props.row)"
           >
             <q-tooltip>Edit</q-tooltip>
           </q-btn>
           <q-btn
             v-if="userStore.isEditorOrAbove"
+            flat
+            round
             color="negative"
             data-test="button-delete-prompt"
-            :disable="promptStore.isLoading"
-            flat
-            icon="delete"
-            round
             size="sm"
+            icon="delete"
+            :disable="promptStore.isLoading"
             @click="openDeleteDialog(props.row)"
           >
             <q-tooltip>Delete</q-tooltip>
@@ -73,6 +73,7 @@
       </q-tr>
     </template>
   </q-table>
+  <TableEntry v-else :filter="filter" :rows="userRelatedEntries" />
 
   <q-dialog v-model="deleteDialog.show">
     <q-card>
@@ -140,6 +141,7 @@ const prompts = computed(() => {
     entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
   }))
 })
+const userRelatedEntries = computed(() => entryStore.getUserRelatedEntries)
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true

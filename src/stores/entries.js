@@ -42,7 +42,11 @@ export const useEntryStore = defineStore('entries', {
     getEntries: (state) => state._entries,
     resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
-    tab: (state) => state._tab
+    tab: (state) => state._tab,
+    getUserRelatedEntries: (state) => {
+      if (state._entries === undefined) return []
+      return state._entries.filter((element) => element?.author?.uid === useUserStore().getUserId)
+    }
   },
 
   actions: {
@@ -169,11 +173,10 @@ export const useEntryStore = defineStore('entries', {
 
     //update not coming from form submission
     async dataUpdateEntry(payload) {
-      
       const promptStore = usePromptStore()
       //console.log('the payload ===', payload.entry.prompt );
       const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
-       
+
       //console.log('the promt ===', prompt );
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), {

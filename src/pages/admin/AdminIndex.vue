@@ -38,7 +38,7 @@
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs active-color="primary" align="justify">
         <q-route-tab
-          v-if="userStore.isEditorOrAbove"
+          v-if="userStore.isAuthenticated"
           data-test="posts-tab"
           name="prompts"
           icon="view_list"
