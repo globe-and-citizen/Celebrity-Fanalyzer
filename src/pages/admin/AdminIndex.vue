@@ -21,7 +21,7 @@
           <q-item-section>New Prompt</q-item-section>
         </q-item>
         <q-item
-          v-if="userStore.isWriterOrAbove"
+          v-if="userStore.isAuthenticated"
           clickable
           :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'"
           @click="openEntryDialog()"

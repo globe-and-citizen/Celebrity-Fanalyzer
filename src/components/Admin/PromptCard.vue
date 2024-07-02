@@ -185,7 +185,7 @@ watchEffect(() => {
     prompt.showcase = props.showcase
     prompt.title = props.title
   } else {
-    prompt.author = userStore.isWriterOrAbove ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
     prompt.date = currentYearMonth()
   }
