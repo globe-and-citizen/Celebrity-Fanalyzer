@@ -57,7 +57,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
 
     // Should add a like if not exit
-    await likeStore.addLike('entries', entyId)
+    await likeStore.addLike('entries', entyId, '', '', '', true)
 
     // await waitUntil(() => {
     //   return likeStore.getLikes?.length === initialLikeLenght + 1
@@ -70,7 +70,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
 
     // Should remove like if exit
-    await likeStore.addLike('entries', entyId)
+    await likeStore.addLike('entries', entyId, '', '', '', true)
     // await waitUntil(() => {
     //   return likeStore.getLikes?.length === initialLikeLenght
     // }).catch(() => console.log('2-Second Like'))
@@ -82,7 +82,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
 
     // Should add dislike if not exit
-    await likeStore.addDislike('entries', entyId)
+    await likeStore.addDislike('entries', entyId, '', '', '', true)
     // await waitUntil(() => {
     //   return likeStore.getLikes?.length === initialLikeLenght && likeStore.getDislikes?.length === initialDislikeLenght + 1
     // }).catch(() => console.log('3-First Dislike'))
@@ -95,7 +95,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght + 1)
 
     //should remove dislike if exist
-    await likeStore.addDislike('entries', entyId)
+    await likeStore.addDislike('entries', entyId, '', '', '', true)
     // After
     expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
     expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('0')
@@ -104,7 +104,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
 
     // Should add dislike if not exit
-    await likeStore.addDislike('entries', entyId)
+    await likeStore.addDislike('entries', entyId, '', '', '', true)
     // await waitUntil(() => {
     //   return likeStore.getLikes?.length === initialLikeLenght && likeStore.getDislikes?.length === initialDislikeLenght + 1
     // })
@@ -115,7 +115,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght + 1)
 
     // Should remove dislike after like
-    await likeStore.addLike('entries', entyId)
+    await likeStore.addLike('entries', entyId, '', '', '', true)
     // await waitUntil(() => {
     //   return likeStore.getLikes?.length === initialLikeLenght + 1 && likeStore.getDislikes?.length === initialDislikeLenght
     // })
@@ -126,7 +126,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght)
 
     // Should add like after dislike
-    await likeStore.addDislike('entries', entyId)
+    await likeStore.addDislike('entries', entyId, '', '', '', true)
 
     // await waitUntil(() => {
     //   return likeStore.getDislikes?.length === initialDislikeLenght + 1 && likeStore.getLikes?.length === initialLikeLenght
@@ -154,7 +154,7 @@ describe('Likes Store', async () => {
     }
 
     // Part 2: Like the entry
-    await likeStore.addLike('entries', entyId)
+    await likeStore.addLike('entries', entyId, '', '', '', true)
     expect(likeStore.getLikes?.length).toMatchInlineSnapshot('1')
     expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('1')
 
@@ -162,7 +162,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getDislikes?.length).toBe(initialDislikeLenght + 1)
 
     // Part 2: Dislike the entry
-    await likeStore.addDislike('entries', entyId)
+    await likeStore.addDislike('entries', entyId, '', '', '', true)
     expect(likeStore.getLikes?.length).toMatchInlineSnapshot('0')
     expect(likeStore.getDislikes?.length).toMatchInlineSnapshot('2')
 

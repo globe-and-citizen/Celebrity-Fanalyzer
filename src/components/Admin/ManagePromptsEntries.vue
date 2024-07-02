@@ -29,7 +29,11 @@
             :icon="props.expand ? 'expand_less' : 'expand_more'"
             round
             @click="props.expand = !props.expand"
-          />
+          >
+            <q-tooltip>
+              {{ props.expand ? 'Collapse' : 'Expand' }}
+            </q-tooltip>
+          </q-btn>
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
         <q-td class="text-right">
@@ -43,7 +47,9 @@
             round
             size="sm"
             @click="$emit('openPromptDialog', props.row)"
-          />
+          >
+            <q-tooltip>Edit</q-tooltip>
+          </q-btn>
           <q-btn
             v-if="userStore.isEditorOrAbove"
             color="negative"
@@ -54,7 +60,9 @@
             round
             size="sm"
             @click="openDeleteDialog(props.row)"
-          />
+          >
+            <q-tooltip>Delete</q-tooltip>
+          </q-btn>
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
