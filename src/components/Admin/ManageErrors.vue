@@ -1,7 +1,7 @@
 <template>
   <h5 v-if="errorStore.isLoaded && errorStore.getErrors.length === 0" class="text-center">Nothing is wrong! 🎉</h5>
   <q-table
-    v-if="!errorStore.isLoaded || (errorStore.isLoaded && errorStore.getErrors.length > 0)"
+    v-if="(errorStore.getErrors && errorStore.getErrors?.length > 0)"
     :columns="columns"
     flat
     hide-bottom
