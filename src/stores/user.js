@@ -109,6 +109,8 @@ export const useUserStore = defineStore('user', {
      * @SaveState <string> IPV6
      */
     async fetchUserIp() {
+      this._userIp = ''
+      this._userLocation = ''
       await fetch('https://www.cloudflare.com/cdn-cgi/trace')
         .then((res) => res.text())
         .then((text) => {
