@@ -71,5 +71,8 @@ service cloud.firestore {
     match /advertises/{advertiseId}/impressions/{document=**} {
       allow read, create, update, delete;
     }
+    match /advertises/{advertiseId}/lastViews/{document=**} {
+      allow read, create, update, delete;
+    }
   }
 }
