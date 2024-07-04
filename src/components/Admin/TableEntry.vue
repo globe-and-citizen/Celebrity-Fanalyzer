@@ -17,7 +17,7 @@
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
         <q-btn
-          v-if="props.row.isWinner != true && userStore.isEditorOrAbove"
+          v-if="props.row.isWinner !== true && userStore.isEditorOrAbove"
           flat
           color="black"
           size="sm"

@@ -6,7 +6,7 @@
   >
     <h2 class="q-my-auto text-bold text-h5 q-pa-md">
       Entries
-      <q-icon name="add" size="30px" @click="openEntryDialog()"><q-tooltip>Add entries</q-tooltip></q-icon>
+      <q-icon class="cursor-pointer" name="add" size="30px" @click="openEntryDialog()"><q-tooltip>Add entries</q-tooltip></q-icon>
     </h2>
     <div class="card-items-wrapper">
       <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" data-test="entry" />
