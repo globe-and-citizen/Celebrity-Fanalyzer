@@ -36,8 +36,6 @@ export const useErrorStore = defineStore('errors', {
 
     async throwError(error, message) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const err = {
         createdAt: Timestamp.fromDate(new Date()),
         error: error.stack,

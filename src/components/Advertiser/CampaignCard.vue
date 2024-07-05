@@ -71,8 +71,6 @@ onMounted(async () => {
   })
   observer.observe(articleRef.value)
 
-  await userStore.fetchUserIp()
-
   visitorStore.readVisitors('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
 
   await visitorStore.addVisitor('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))

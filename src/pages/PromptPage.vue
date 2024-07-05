@@ -33,10 +33,8 @@ import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptS
 import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 
 const router = useRouter()
-const $q = useQuasar()
 const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -51,7 +49,7 @@ const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
-const { href, params, path, name } = router.currentRoute.value
+const { params, name } = router.currentRoute.value
 const prompt = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
   return promptStore.getPrompts
