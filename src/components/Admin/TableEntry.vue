@@ -17,30 +17,47 @@
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
         <q-btn
-          v-if="props.row.isWinner !== true && userStore.isEditorOrAbove"
-          flat
+          v-if="
+            userStore.isEditorOrAbove &&
+            props.row.isWinner != true &&
+            _currentPrompt?.isTreated != true &&
+            _currentPrompt?.hasWinner != true
+          "
           color="black"
+          :disable="userStore.getUser.role !== 'Admin'"
+          flat
           size="sm"
           icon="toggle_off"
-          :disable="userStore.getUser.role !== 'Admin'"
           @click="onSelectWinnerDialog(props.row)"
         >
           <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
         </q-btn>
         <q-btn
-          v-if="props.row.isWinner == true"
-          flat
+          v-if="props.row.isWinner == true && _currentPrompt?.isTreated != true"
           color="dark"
+          :disable="userStore.getUser.role !== 'Admin'"
+          flat
           icon="payment"
           size="sm"
           label=""
-          :disable="userStore.getUser.role !== 'Admin'"
           @click="onProceedPaymentDialog(props.row)"
         >
           <q-tooltip class="positive" :offset="[10, 10]">proceed payment!</q-tooltip>
         </q-btn>
         <q-btn
-          v-if="props.row.isWinner == true"
+          v-if="props.row.isWinner == true && _currentPrompt?.isTreated == true"
+          color="dark"
+          :disable="userStore.getUser.role !== 'Admin'"
+          flat
+          icon="payment"
+          size="sm"
+          label=""
+          @click="onProceedPaymentDialog(props.row)"
+        >
+          <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
+        </q-btn>
+        <q-btn
+          v-if="props.row.isWinner == true && _currentPrompt?.isTreated != true"
           color="positive"
           flat
           icon="toggle_on"
@@ -51,29 +68,36 @@
         >
           <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
         </q-btn>
-        <q-btn
-          v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
-          color="warning"
-          flat
-          icon="edit"
-          round
-          size="sm"
-          @click="onEditDialog(props.row)"
-        >
-          <q-tooltip>Edit</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
-          color="negative"
-          data-test="button-delete-entry"
-          flat
-          icon="delete"
-          round
-          size="sm"
-          @click="onDeleteDialog(props.row)"
-        >
-          <q-tooltip>Delete</q-tooltip>
-        </q-btn>
+
+        <span v-if="_currentPrompt.hasWinner != true">
+          <span v-if="props.row.isWinner != true">
+            <q-btn
+              v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
+              color="warning"
+              flat
+              icon="edit"
+              round
+              size="sm"
+              @click="onEditDialog(props.row)"
+            >
+              <q-tooltip>Edit</q-tooltip>
+            </q-btn>
+          </span>
+          <span v-if="props.row.isWinner != true">
+            <q-btn
+              v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
+              color="negative"
+              data-test="button-delete-entry"
+              flat
+              icon="delete"
+              round
+              size="sm"
+              @click="onDeleteDialog(props.row)"
+            >
+              <q-tooltip>Delete</q-tooltip>
+            </q-btn>
+          </span>
+        </span>
       </td>
     </template>
   </q-table>
@@ -139,7 +163,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watchEffect, watch } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
@@ -147,11 +171,21 @@ import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 
 const props = defineProps({
   filter: { type: String, required: false, default: '' },
-  rows: { type: Array, required: true, default: () => [] }
+  rows: { type: Array, required: true, default: () => [] },
+  currentPrompt: { type: Object, default: () => ({}) }
 })
 
-onMounted(async () => {})
+const entries = computed(() => {
+  return props.rows
+})
+const _currentPrompt = ref({})
 
+watchEffect(() => {
+  _currentPrompt.value = props.currentPrompt
+})
+
+// Emit event to parent
+const emit = defineEmits(['update-entry'])
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -165,6 +199,13 @@ const columns = [
   { name: 'title', align: 'left', label: 'Title', field: 'title' },
   { name: 'actions', field: 'actions' }
 ]
+
+// Watch for changes in props.rows and log them
+// watchEffect(() => {
+//   console.log('Updated rows in TableEntry:', props.rows)
+// })
+
+// Watch for changes in props.rows and log them
 
 const deleteDialog = ref({})
 const entry = ref({})
@@ -204,8 +245,8 @@ async function onProceedPaymentDialog(props) {
 }
 
 function onSelectWinnerDialog(props) {
-  const currentPrompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0])
   // Toggle the isWinner state
+  console.log('the current prompt ==== ', _currentPrompt)
   const isWinner = props.isWinner == true ? false : true
   // Dynamically set the selectWinnerMessage and selectWinnerTitle based on isWinner
   selectWinnerMessage.value =
@@ -213,10 +254,9 @@ function onSelectWinnerDialog(props) {
       ? `Are sure you want to select the entry <b>${props.title}</b> as competition winner ?`
       : `Are sure you want to deselect the entry ${props.title} </b> ?`
   selectWinnerTitle.value = isWinner == true ? 'Select Winner' : 'Deselect winner'
-  const promptHasWinner = currentPrompt.hasWinner == true ? true : false
-  const promptIsTreated = currentPrompt.isTreated == true ? true : false
+  const promptHasWinner = _currentPrompt.value.hasWinner == true ? true : false
   //let's check if the corresponding promt already have a winner selected
-  if (promptIsTreated == true) {
+  if (_currentPrompt.value.isTreated == true) {
     $q.notify({ type: 'negative', message: 'the corresponding prompt is already treated' })
   } else {
     if (isWinner == true && promptHasWinner == true) {
@@ -238,15 +278,28 @@ function onDeleteEntry(id) {
 }
 
 function onSelectWinner(entry) {
+  $q.loading.show()
   const isWinner = entry.isWinner == true ? false : true
   const payload = { entry: entry, isWinner: isWinner }
   //let's first check if the prompt don't already have selected entry
   entryStore
     .dataUpdateEntry(payload)
-    .then(() => $q.notify({ type: 'positive', message: 'Succeed' }))
+    .then(async (response) => {
+      const { _entry, _prompt } = response
+      console.log('the entry  ====', _entry)
+      console.log('the prompt  ====', _prompt)
+      if (_entry && _prompt) {
+        const index = entries.value.findIndex((e) => e.id === _entry.id)
+        console.log('the index ==== ', index)
+        emit('update-entry', { _entry, _prompt })
+      }
+      $q.notify({ type: 'positive', message: 'Succeed' })
+      $q.loading.hide()
+    })
     .catch((error) => {
-      //console.log('error selectign winner =====> ', error);
+      console.log('error selectign winner =====> ', error)
       errorStore.throwError(error, 'Error selecting winner')
+      $q.loading.hide()
     })
 
   selectWinnerDialog.value.show = false

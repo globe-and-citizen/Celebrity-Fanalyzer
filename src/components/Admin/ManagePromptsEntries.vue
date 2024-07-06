@@ -68,7 +68,7 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :filter="filter" :rows="props.row.entries" />
+          <TableEntry v-else :filter="filter" :rows="props.row.entries" :currentPrompt="props.row" @update-entry="handleUpdateEntry" />
         </q-td>
       </q-tr>
     </template>
@@ -99,7 +99,7 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, watchEffect, ref } from 'vue'
 
 defineEmits(['openPromptDialog'])
 
@@ -120,6 +120,8 @@ const deleteDialog = ref({})
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
+// Reactive state for prompts and entries
+const prompts = ref([])
 onMounted(() => {
   promptStore.fetchPrompts()
   entryStore.fetchEntries()
@@ -135,8 +137,8 @@ const isLoaded = computed(() => promptStore.getPrompts && entryStore.getEntries)
  */
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
-const prompts = computed(() => {
-  return promptStore.getPrompts?.map((prompt) => ({
+watchEffect(() => {
+  prompts.value = promptStore.getPrompts?.map((prompt) => ({
     ...prompt,
     entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
   }))
@@ -155,5 +157,31 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+async function handleUpdateEntry({ _entry, _prompt }) {
+  console.log('updateEntries called')
+  const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
+  if (promptIndex !== -1) {
+    console.log('the new prompt==== ', _prompt)
+    console.log('prompt index finded ==== ', promptIndex)
+
+    const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
+    if (entryIndex !== -1) {
+      console.log('entry index found == ', entryIndex)
+      const { author, ...restOfEntry } = _entry
+      // Merge the existing entry with the incoming _entry data
+      const updatedEntry = { ...prompts.value[promptIndex].entries[entryIndex], ...restOfEntry }
+      prompts.value[promptIndex].entries.splice(entryIndex, 1, updatedEntry)
+    }
+
+    // Update other properties of the prompt if necessary
+    const { entries, ...restOfPrompt } = _prompt
+    Object.assign(prompts.value[promptIndex], restOfPrompt)
+
+    // This reassignment ensures Vue's reactivity system is aware of the update
+    prompts.value = [...prompts.value]
+  }
+  console.log('the new prompts value ', prompts.value[promptIndex])
 }
 </script>

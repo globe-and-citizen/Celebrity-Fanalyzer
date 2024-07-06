@@ -276,7 +276,6 @@ function isUrlValid(userInput = '') {
 }
 
 async function createAdCampain(payload) {
-  $q.loading.show()
   const result = await contractCreateAdCampaign(payload)
   return result
 }
@@ -289,54 +288,60 @@ function convertToMatic() {
 async function onSubmit() {
   // if (currentWalletAddress.value)
   // {
-  if (!advertise.budget) advertise.budget = 0
+  try {
+    if (!advertise.budget) advertise.budget = 0
 
-  $q.loading.show()
-  advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
-  if (advertise.type === 'Text') advertise.contentURL = ''
-  else if (Object.keys(contentModel.value).length && advertise.type === 'Banner') {
-    await storageStore
-      .uploadFile(contentModel.value, `advertise/content-${advertise.id}`)
-      .then((url) => (advertise.contentURL = url))
-      .catch((error) => errorStore.throwError(error))
-  }
-
-  if (props.id) {
-    if (props.type === 'Banner' && advertise.type === 'Text') {
-      const imagePath = `advertise/content-${advertise.id}`
-      storageStore.deleteFile(imagePath).catch((error) => console.log(error))
-      advertise.contentURL = ''
+    $q.loading.show()
+    advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
+    if (advertise.type === 'Text') advertise.contentURL = ''
+    else if (Object.keys(contentModel.value).length && advertise.type === 'Banner') {
+      await storageStore
+        .uploadFile(contentModel.value, `advertise/content-${advertise.id}`)
+        .then((url) => (advertise.contentURL = url))
+        .catch((error) => errorStore.throwError(error))
     }
-    await advertiseStore
-      .editAdvertise(advertise)
-      .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
-      .catch((error) => {
-        console.log(error)
-        errorStore.throwError(error, 'Advertise edit failed')
-      })
-  } else {
-    //call contract create function
-    const result = await createAdCampain({ budgetInMatic: advertise.budget })
-    if (result.status.includes('success')) {
-      //currentCampaignCode.value=result.events[0].args.campaignCode;
-      advertise.campaignCode = result.events[0].args.campaignCode
-      //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
-      //save advertisement to database
+
+    if (props.id) {
+      if (props.type === 'Banner' && advertise.type === 'Text') {
+        const imagePath = `advertise/content-${advertise.id}`
+        storageStore.deleteFile(imagePath).catch((error) => console.log(error))
+        advertise.contentURL = ''
+      }
       await advertiseStore
-        .addAdvertise(advertise)
-        .then(() => $q.notify({ type: 'positive', message: 'Advertise successfully submitted' }))
+        .editAdvertise(advertise)
+        .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
         .catch((error) => {
           console.log(error)
-          errorStore.throwError(error, 'Advertise submission failed')
+          errorStore.throwError(error, 'Advertise edit failed')
         })
     } else {
-      $q.notify({ message: result?.error?.message, type: 'negative' })
+      //call contract create function
+      const result = await createAdCampain({ budgetInMatic: advertise.budget })
+      if (result.status.includes('success')) {
+        //currentCampaignCode.value=result.events[0].args.campaignCode;
+        advertise.campaignCode = result.events[0].args.campaignCode
+        //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
+        //save advertisement to database
+        await advertiseStore
+          .addAdvertise(advertise)
+          .then(() => $q.notify({ type: 'positive', message: 'Advertise successfully submitted' }))
+          .catch((error) => {
+            console.log(error)
+            errorStore.throwError(error, 'Advertise submission failed')
+          })
+      } else {
+        $q.notify({ message: result?.error?.message, type: 'negative' })
+        $q.loading.hide()
+      }
     }
+  } catch (error) {
+    $q.notify({ message: 'Advertise submission failed', type: 'negative' })
+    errorStore.throwError(error, 'Advertise submission failed')
   }
   // }else{
   //   $q.notify({ message: "please connect your blockchain wallet", type: 'negative' })
   // }
-  emit('hideDialog')
+  //emit('hideDialog')
   $q.loading.hide()
 }
 </script>
