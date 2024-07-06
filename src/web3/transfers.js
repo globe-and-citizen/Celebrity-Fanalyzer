@@ -32,7 +32,7 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
     //$q.notify({ message: error.data.message, type: 'negative' })
     return {
       success: false,
-      error: error.data.message
+      error: await handleMetamaskError(error)
     }
   }
 }
@@ -83,9 +83,10 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
   } catch (error) {
     //console.log("the error ============================== ", error);
     //$q.notify({ message: 'error when sending ether', type: 'negative' });
+    const errorMessage = await handleMetamaskError(error)
     return {
       success: false,
-      error: error.data.message
+      error: errorMessage
     }
     //console.error('Error initiating sendEther:', error);
   }
@@ -134,5 +135,39 @@ export const getTransactionDetails = async (txHash, networkName) => {
     return result
   } catch (error) {
     //console.error('Error retrieving transaction details:', error);
+    const errorMessage = await handleMetamaskError(error)
+    return {
+      success: false,
+      error: errorMessage
+    }
+  }
+}
+
+const handleMetamaskError = async (error) => {
+  console.log('metamask handle message is called================================')
+  // Check if the error has a code property
+  if (error.code) {
+    switch (error.code) {
+      case 4001:
+        return 'Request was rejected by the user.'
+      case -32603:
+        return 'Internal JSON-RPC error. Please try again later.'
+      // Add other specific error codes as needed
+      case 'ACTION_REJECTED':
+        return 'user rejected transaction'
+      default:
+        return `An unknown error occurred (code: ${error.code}). Please try again later.`
+    }
+  } else {
+    // Handle errors without a code property by checking the message
+    if (error.message.includes('network')) {
+      return 'Network error. Please check your connection and try again.'
+    } else if (error.message.includes('insufficient funds')) {
+      return 'Insufficient funds. Please check your balance and try again.'
+    } else if (error.message.includes('User denied')) {
+      return 'Request was denied by the user.'
+    } else {
+      return 'An unknown error occurred. Please try again later.'
+    }
   }
 }

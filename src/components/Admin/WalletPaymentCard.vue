@@ -52,7 +52,7 @@ const maticRate = ref(0)
 onMounted(async () => {
   _walletAddress.value = props.walletAddress
   const maticRateResult = await fetchMaticRate()
-  if (maticRateResult.success) {
+  if (maticRateResult?.success) {
     maticRate.value = maticRateResult.maticRate
   } else {
     $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
@@ -85,32 +85,43 @@ async function onSubmit(event) {
   event.preventDefault()
 
   $q.loading.show()
-
-  await initiateSendEther(props.walletAddress, maticAmount.value).then((transactionResult) => {
-    //console.log("the transaction result ====== ", transactionResult)
-    if (transactionResult.success == true) {
-      const payload = {
-        initiator: userStore.getUser,
-        entry: props.entry,
-        tHash: transactionResult.transactionId,
-        status: transactionResult.success,
-        networkName: transactionResult.networkName,
-        explorerUrl: transactionResult.explorerUrl
+  try {
+    await initiateSendEther(props.walletAddress, maticAmount.value).then((transactionResult) => {
+      //console.log("the transaction result ====== ", transactionResult)
+      if (transactionResult?.success == true) {
+        const payload = {
+          initiator: userStore.getUser,
+          entry: props.entry,
+          tHash: transactionResult.transactionId,
+          status: transactionResult?.success,
+          networkName: transactionResult.networkName,
+          explorerUrl: transactionResult.explorerUrl
+        }
+        cryptoTransactionStore
+          .addCryptoTransaction(payload)
+          .then($q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' }))
+          .catch((error) => {
+            //console.log("error when saving transaction === ", error)
+            errorStore.throwError(error, 'Error when saving the transaction')
+          })
+      } else {
+        //console.log("the error=====mmmmm========= ", transactionResult  )
+        var errorMessage = 'transaction failed'
+        console.log('the transaction result ', transactionResult)
+        if (transactionResult?.error) {
+          errorMessage = transactionResult?.error
+        }
+        $q.notify({ type: 'negative', message: errorMessage })
+        console.log('error during payment  transaction ==== ', errorMessage)
+        $q.loading.hide()
+        //errorStore.throwError(transactionResult?.error, 'Error when saving the transaction')
       }
-      cryptoTransactionStore
-        .addCryptoTransaction(payload)
-        .then($q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' }))
-        .catch((error) => {
-          //console.log("error when saving transaction === ", error)
-          errorStore.throwError(error, 'Error when saving the transaction')
-        })
-    } else {
-      //console.log("the error=====mmmmm========= ", transactionResult  )
-      $q.notify({ type: 'negative', message: transactionResult.error })
-      errorStore.throwError(transactionResult?.error, 'Error when saving the transaction')
-    }
-    $q.loading.hide()
-  })
+      $q.loading.hide()
+    })
+  } catch (error) {
+    $q.notify({ type: 'negative', message: 'oups transaction failed' })
+    console.log('the error ==== ', error)
+  }
 
   emit('hideDialog')
 }
