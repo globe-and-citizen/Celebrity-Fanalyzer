@@ -179,7 +179,7 @@ onMounted(async () => {
     emit('hideDialog')
   }
   const maticRateResult = await fetchMaticRate()
-  if (maticRateResult.success) {
+  if (maticRateResult?.success) {
     maticRate.value = maticRateResult.maticRate
   } else {
     $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
