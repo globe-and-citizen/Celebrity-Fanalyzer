@@ -184,9 +184,7 @@ const reportOptions = [
 
 const $q = useQuasar()
 onMounted(async () => {
-  await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
-
   window.addEventListener('keydown', handleKeydown)
 })
 

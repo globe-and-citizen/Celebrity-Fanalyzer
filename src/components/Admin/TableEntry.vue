@@ -1,27 +1,40 @@
 <template>
   <q-spinner v-if="entryStore.isLoading" color="primary" size="2em" class="block q-mx-auto q-my-md" />
-  <q-table v-else :columns="columns" dense flat :filter="filter" hide-bottom hide-header :pagination="pagination" :rows="rows">
+  <q-table
+    v-else
+    flat
+    hide-bottom
+    :class="{ 'entries-table': !userStore.isEditorOrAbove }"
+    :columns="columns"
+    :dense="userStore.isEditorOrAbove"
+    :filter="filter"
+    :bordered="!userStore.isEditorOrAbove"
+    :hide-header="userStore.isEditorOrAbove"
+    :pagination="pagination"
+    :rows="rows"
+    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+  >
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
         <q-btn
-          v-if="props.row.isWinner != true"
-          color="black"
-          :disable="userStore.getUser.role !== 'Admin'"
+          v-if="props.row.isWinner !== true && userStore.isEditorOrAbove"
           flat
+          color="black"
           size="sm"
           icon="toggle_off"
+          :disable="userStore.getUser.role !== 'Admin'"
           @click="onSelectWinnerDialog(props.row)"
         >
           <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
         </q-btn>
         <q-btn
           v-if="props.row.isWinner == true"
-          color="dark"
-          :disable="userStore.getUser.role !== 'Admin'"
           flat
+          color="dark"
           icon="payment"
           size="sm"
           label=""
+          :disable="userStore.getUser.role !== 'Admin'"
           @click="onProceedPaymentDialog(props.row)"
         >
           <q-tooltip class="positive" :offset="[10, 10]">proceed payment!</q-tooltip>
@@ -29,17 +42,17 @@
         <q-btn
           v-if="props.row.isWinner == true"
           color="positive"
-          :disable="userStore.getUser.role !== 'Admin'"
           flat
           icon="toggle_on"
           size="sm"
           label=""
+          :disable="userStore.getUser.role !== 'Admin'"
           @click="onSelectWinnerDialog(props.row)"
         >
           <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
         </q-btn>
         <q-btn
-          v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
+          v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
           color="warning"
           flat
           icon="edit"
@@ -50,7 +63,7 @@
           <q-tooltip>Edit</q-tooltip>
         </q-btn>
         <q-btn
-          v-if="userStore.getUser.role !== 'Writer' || userStore.getUser.uid === props.row.author.uid"
+          v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
           color="negative"
           data-test="button-delete-entry"
           flat
@@ -239,3 +252,8 @@ function onSelectWinner(entry) {
   selectWinnerDialog.value.show = false
 }
 </script>
+<style scoped>
+.entries-table {
+  margin: 1rem 1rem 0rem 1rem;
+}
+</style>

@@ -310,8 +310,8 @@ async function _getEventsForCampaign(advertise) {
       ]
       //let's change the advertise status.
       advertismentPaymentEventsDialog.value.show = true
-      console.log('the result ======= ', result)
-      console.log('the event rows=== ', this.eventRows.value)
+      //console.log('the result ======= ', result)
+      //console.log('the event rows=== ', this.eventRows.value)
     } else {
       $q.notify({ message: result?.error?.message, type: 'negative' })
     }

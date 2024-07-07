@@ -94,6 +94,9 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
+  if (!userStore.getUserIp.length) {
+    await userStore.fetchUserIp()
+  }
   if (params.year && params.month && !params.id) {
     promptStore.fetchPromptBySlug(`${params.year}-${params.month}`).catch((error) => errorStore.throwError(error))
   }

@@ -20,8 +20,6 @@ export const useVisitorStore = defineStore('visitors', {
   actions: {
     async addVisitor(collectionName, documentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const visitorId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
 
       const visitorRef = doc(db, collectionName, documentId, 'visitors', visitorId)
@@ -42,8 +40,7 @@ export const useVisitorStore = defineStore('visitors', {
 
     async readVisitors(collectionName, documentId) {
       onSnapshot(collection(db, collectionName, documentId, 'visitors'), (querySnapshot) => {
-        const visitors = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        this._visitors = visitors
+        this._visitors = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       })
     },
 
