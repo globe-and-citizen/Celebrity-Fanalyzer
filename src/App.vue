@@ -1,11 +1,11 @@
 <template>
-  <div v-if="statsStore.getInitializedState">
-    <router-view />
-  </div>
-  <div class="flex" v-else>
-    Establishing encrypted tunnel...
-    <q-spinner class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
-  </div>
+  <!--  <div v-if="statsStore.getInitializedState">-->
+  <router-view />
+  <!--  </div>-->
+  <!--  <div class="flex" v-else>-->
+  <!--    Establishing encrypted tunnel...-->
+  <!--    <q-spinner class="q-mx-auto" color="primary" size="3em" style="width: 50%" />-->
+  <!--  </div>-->
 </template>
 
 <script setup>

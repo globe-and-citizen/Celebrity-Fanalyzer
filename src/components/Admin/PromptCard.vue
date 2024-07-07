@@ -164,8 +164,6 @@ const userStore = useUserStore()
 
 const authorOptions = reactive([])
 const dataKey = ref(Date.now())
-const editorRef = ref(null)
-const imageModel = ref([])
 const prompt = reactive({
   description: '',
   image: '',
@@ -173,6 +171,8 @@ const prompt = reactive({
   title: ''
 })
 const step = ref(1)
+const imageModel = ref(null)
+const imagePreview = ref(null)
 
 watchEffect(() => {
   if (props.id) {
@@ -184,6 +184,9 @@ watchEffect(() => {
     prompt.image = props.image
     prompt.showcase = props.showcase
     prompt.title = props.title
+    if (props.image) {
+      imagePreview.value = props.image
+    }
   } else {
     prompt.author = userStore.isWriterOrAbove ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
@@ -204,10 +207,6 @@ function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (prompt.image = reader.result)
-}
-
-function onRejected() {
-  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 
 function onPaste(evt) {
@@ -239,11 +238,8 @@ async function onSubmit() {
     return
   }
 
-  if (Object.keys(imageModel.value).length) {
-    await storageStore
-      .uploadFile(imageModel.value, `images/prompt-${prompt.date}`)
-      .then((url) => (prompt.image = url))
-      .catch((error) => errorStore.throwError(error))
+  if (imageModel.value) {
+    await uploadAndSetImage()
   }
 
   if (props.id) {
@@ -259,5 +255,47 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
+}
+
+async function uploadAndSetImage() {
+  const reader = new FileReader()
+
+  reader.onload = async (event) => {
+    const imageDataURL = event.target.result
+    const img = new Image()
+
+    img.onload = async () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.width = img.width
+      canvas.height = img.height
+      ctx.drawImage(img, 0, 0, img.width, img.height)
+
+      canvas.toBlob(async (blob) => {
+        await storageStore
+          .uploadFile(blob, `images/prompt-${prompt.date}`)
+          .then(async (url) => {
+            prompt.image = url
+          })
+          .catch((error) => {
+            console.log(error)
+            errorStore.throwError(error)
+          })
+      }, 'image/webp')
+    }
+
+    img.src = imageDataURL
+  }
+
+  reader.readAsDataURL(imageModel.value)
+}
+
+function handleImageChange(value) {
+  imagePreview.value = null
+  imageModel.value = value
+}
+
+function onRejected() {
+  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 </script>

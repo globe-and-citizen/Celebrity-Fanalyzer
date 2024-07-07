@@ -4,7 +4,17 @@
       <TheHeader feedbackButton :title="title" />
       <q-responsive :ratio="1" v-if="!isAdd" :style="{ backgroundImage: `url(${post?.image})` }">
         <div class="bg-blur flex">
-          <q-img fit="contain" ratio="1" spinner-color="primary" :src="post?.image" />
+          <q-img
+            fit="contain"
+            ratio="1"
+            spinner-color="primary"
+            :src="post?.image"
+            :srcset="`${post.image} 2x`"
+            sizes="(max-width: 560) 50vw, 100vw"
+            loading="lazy"
+            decoding="async"
+            fetchpriority="high"
+          />
         </div>
       </q-responsive>
       <div v-else-if="post.contentURL" class="bg-blur flex">
