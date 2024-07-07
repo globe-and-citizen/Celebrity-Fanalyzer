@@ -324,7 +324,11 @@ async function onSubmit() {
         //save advertisement to database
         await advertiseStore
           .addAdvertise(advertise)
-          .then(() => $q.notify({ type: 'positive', message: 'Advertise successfully submitted' }))
+          .then(() => {
+            $q.notify({ type: 'positive', message: 'Advertise successfully submitted' })
+            $q.loading.hide()
+            emit('hideDialog')
+          })
           .catch((error) => {
             console.log(error)
             errorStore.throwError(error, 'Advertise submission failed')
@@ -334,14 +338,16 @@ async function onSubmit() {
         $q.loading.hide()
       }
     }
+    emit('hideDialog')
   } catch (error) {
     $q.notify({ message: 'Advertise submission failed', type: 'negative' })
     errorStore.throwError(error, 'Advertise submission failed')
+    emit('hideDialog')
+    $q.loading.hide()
   }
   // }else{
   //   $q.notify({ message: "please connect your blockchain wallet", type: 'negative' })
   // }
-  //emit('hideDialog')
-  $q.loading.hide()
+  emit('hideDialog')
 }
 </script>
