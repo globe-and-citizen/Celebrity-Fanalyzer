@@ -83,7 +83,7 @@
               v-model="usdAmount"
               label="Price in USD"
               min="0"
-              mask="#.##"
+              mask="#.####"
               fill-mask="0"
               reverse-fill-mask
               @update:model-value="convertToMatic()"
