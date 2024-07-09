@@ -204,10 +204,8 @@ export const useAdvertiseStore = defineStore('advertises', {
       try {
         const lastViewsSnap = await getDoc(lastViewsRef)
         if (this.isDurationGreaterThanHours(lastViewsSnap)) {
-          console.log('true', data)
           return data
         }
-        console.log('false')
       } catch (error) {
         console.error(`Error processing advertise ${data.id}:`, error)
       }
