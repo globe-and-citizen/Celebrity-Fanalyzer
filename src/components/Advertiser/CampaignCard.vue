@@ -73,7 +73,7 @@ onMounted(async () => {
 
   visitorStore.readVisitors('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
 
-  await visitorStore.addVisitor('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
+
 })
 </script>
 
