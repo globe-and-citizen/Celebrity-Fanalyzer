@@ -10,7 +10,8 @@ import {
   Timestamp,
   where,
   limit,
-  orderBy
+  orderBy,
+  getDoc
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -26,7 +27,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { Notify } from 'quasar'
-import { currentYearMonth } from 'src/utils/date'
+import { currentYearMonth, previousYearMonth } from 'src/utils/date'
 
 const getPrompts = async (querySnapshot, userStore) => {
   const prompts = []
@@ -162,12 +163,16 @@ export const usePromptStore = defineStore('prompts', {
           await userStore.fetchAdminsAndWriters()
         }
 
-        // const promptRef = await getDocs(query(collection(db, 'prompts')))
-        // const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() })).slice(-1)[0]
-        const promptRef = await getDocs(
-          query(collection(db, 'prompts'), orderBy('date', 'desc'), where('id', '<=', currentYearMonth()), limit(1))
-        )
-        const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+        const promptDocRef = doc(db, 'prompts', currentYearMonth())
+        let promptSnapshotRef = await getDoc(promptDocRef)
+
+        if (!promptSnapshotRef.exists()) {
+          const previousPromptRef = doc(db, 'prompts', previousYearMonth())
+          promptSnapshotRef = await getDoc(previousPromptRef)
+        }
+
+        const promptSnapshot = { id: promptSnapshotRef.id, ...promptSnapshotRef.data() }
+
         if (promptSnapshot.author.id) {
           promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
         }

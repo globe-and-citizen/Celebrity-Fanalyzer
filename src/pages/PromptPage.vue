@@ -57,7 +57,7 @@ const prompt = computed(() => {
     ?.find((prompt) => {
       switch (name) {
         case 'month':
-          return prompt.id >= currentYearMonth()
+          return prompt.id <= currentYearMonth()
         case 'year-month':
           return prompt.date === params.year + '-' + params.month
         case 'slug':
