@@ -180,7 +180,7 @@ export const useAdvertiseStore = defineStore('advertises', {
           this.$patch({ _activeAdvertises: finalAds })
           this.$patch({ _allActiveAdvertises: activeAdvertises })
         })
-      } else if (this.getRowActiveAdvertises.length > 0) {
+      } else if (this.getALlActiveAdvertises.length > 0) {
         this.recomputeActiveAdvertises()
       }
     },
