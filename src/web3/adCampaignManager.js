@@ -30,6 +30,8 @@ const getProvider = async () => {
     }
   } catch (error) {
     console.error('Error getting provider:', error)
+    const errorMessage = 'please connect your wallet'
+    error = 'please connect your wallet'
     throw error // Rethrow the error to handle it where getProvider is called
   }
 }
@@ -72,7 +74,11 @@ export const contractCreateAdCampaign = async (payload = { budgetInMatic: 0 }) =
       return { status: 'success', events }
     } catch (error) {
       console.error('Error creating ad campaign:', error)
-      return { status: 'error', error: error.data }
+      const errorData = { message: error.data.message }
+      if (errorData.message.includes('insufficient funds for gas')) {
+        errorData.message = 'insufficient funds for gas'
+      }
+      return { status: 'error', error: errorData }
     }
   } else {
     const errorMessage = 'Make sure the budget is greater than zero'
@@ -272,8 +278,8 @@ export const getEventsForCampaign = async (campaignCode) => {
       //console.log('Events retrieved successfully')
       return { status: 'success', events: result }
     } catch (error) {
-      console.error('Error retrieving events:', error)
-      return { status: 'error', error: error.error ? error.error.data : error }
+      const errorMessage = error.error ? error.error.data : error
+      return { status: 'error', error: { message: errorMessage } }
     }
   } else {
     const errorMessage = 'Make sure the campaignCode is not an empty string'

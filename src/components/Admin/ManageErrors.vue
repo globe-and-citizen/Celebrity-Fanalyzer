@@ -4,9 +4,9 @@
     v-if="!errorStore.isLoaded || (errorStore.isLoaded && errorStore.getErrors.length > 0)"
     :columns="columns"
     flat
-    hide-bottom
+    hide-pagination
+    :rows-per-page-options="[0]"
     :loading="!errorStore.isLoaded || errorStore.isLoading"
-    :pagination="pagination"
     :rows="errorStore.getErrors"
     style="left: 0; right: 0"
     title="Manage Errors"
@@ -40,12 +40,20 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-btn
+    v-if="errors.value?.length !== errorStore?.totalErrors"
+    :loading="errorStore.isLoading"
+    @click="fetchMoreErrors"
+    label="Load More"
+    color="primary"
+    class="q-mt-md q-mb-xl q-mr-md float-right"
+  />
 </template>
 
 <script setup>
 import { useErrorStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 
 const errorStore = useErrorStore()
 
@@ -56,10 +64,17 @@ const columns = [
   { name: 'action', label: 'Action', field: 'action' }
 ]
 const deleteDialog = ref({})
-const pagination = { sortBy: 'createdAt', descending: true, rowsPerPage: 0 }
+const errors = ref([])
 
 onMounted(async () => {
   await errorStore.fetchErrors()
+  await errorStore.fetchErrorsCount()
+})
+
+watchEffect(() => {
+  if (errorStore.getErrors) {
+    errors.value = errorStore.getErrors
+  }
 })
 
 function confirmDelete(error) {
@@ -70,5 +85,9 @@ function confirmDelete(error) {
 function onDeleteError(id) {
   errorStore.deleteError(id).catch((error) => errorStore.throwError(error, 'Failed to delete error'))
   deleteDialog.value.show = false
+}
+
+function fetchMoreErrors() {
+  errorStore.fetchErrors({ loadMore: true })
 }
 </script>
