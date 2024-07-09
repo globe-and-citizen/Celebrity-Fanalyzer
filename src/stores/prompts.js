@@ -164,7 +164,7 @@ export const usePromptStore = defineStore('prompts', {
         }
 
         const promptDocRef = doc(db, 'prompts', currentYearMonth())
-        const promptSnapshotRef = await getDoc(promptDocRef)
+        let promptSnapshotRef = await getDoc(promptDocRef)
 
         if (!promptSnapshotRef.exists()) {
           const previousPromptRef = doc(db, 'prompts', previousYearMonth())
