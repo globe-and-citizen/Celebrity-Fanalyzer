@@ -43,7 +43,7 @@ export const useImpressionsStore = defineStore('impressions', {
         await updateDoc(lastViewsRef, { views: arrayUnion(Timestamp.fromDate(new Date())) })
       } else {
         const visitor = {
-          id: visitorId,
+          id: user_id,
           views: [Timestamp.fromDate(new Date())]
         }
         await setDoc(lastViewsRef, visitor)
