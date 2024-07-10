@@ -43,7 +43,7 @@ describe('Users Store', () => {
     expect(userStore.getUsers).toEqual(undefined)
     expect(userStore.isAdmin).toEqual(false)
     expect(userStore.isEditorOrAbove).toEqual(false)
-    expect(userStore.isWriterOrAbove).toEqual(false)
+
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isLoading).toEqual(false)
     expect(userStore.isAuthenticated).toEqual(false)
@@ -84,7 +84,6 @@ describe('Users Store', () => {
     expect(!!userStore.getUserRef).toEqual(true)
     expect(userStore.isAdmin).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
-    expect(userStore.isWriterOrAbove).toEqual(true)
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isAuthenticated).toEqual(true)
     await userStore.updateProfile(userStore.getUser)
@@ -103,7 +102,7 @@ describe('Users Store', () => {
     expect(userStore.getUserRef).toEqual(undefined)
     expect(userStore.isAdmin).toEqual(false)
     expect(userStore.isEditorOrAbove).toEqual(false)
-    expect(userStore.isWriterOrAbove).toEqual(false)
+
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isAuthenticated).toEqual(false)
   })
@@ -263,8 +262,6 @@ describe('Users Store', () => {
     expect(userStore.getUser.role).toEqual('Editor')
     expect(userStore.isAuthenticated).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
-    expect(userStore.isWriterOrAbove).toEqual(true)
-
     user = auth.currentUser
     await deleteUser(user)
 

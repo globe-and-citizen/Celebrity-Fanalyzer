@@ -146,7 +146,7 @@ const uniqueUsers = computed(() => {
 
 onMounted(async () => {
   await userStore.fetchUsers()
-  await requestStore.readRequests()
+  // await requestStore.readRequests()
   await userStore.getStatsUsers()
   advertiseStore.fetchAdvertises().catch((error) => console.log(error))
 

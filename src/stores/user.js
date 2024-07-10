@@ -40,7 +40,6 @@ export const useUserStore = defineStore('user', {
     getUsers: (state) => state._users,
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
-    isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
     isAdvertiser: (getters) => getters.getUser.role === 'Advertiser',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading,
@@ -130,7 +129,7 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email })
+          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email, role: 'User' })
             .then(() => this.emailSignIn(user))
             .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
             .catch((error) => console.error(error))

@@ -1,5 +1,5 @@
 <template>
-  <q-table
+  <!-- <q-table
     v-if="requestStore.getRequests.length"
     :columns="columnsRequests"
     flat
@@ -28,7 +28,7 @@
         </q-btn>
       </q-td>
     </template>
-  </q-table>
+  </q-table> -->
 
   <q-table
     v-if="userStore.getUsers"
@@ -69,17 +69,17 @@ import { useRequestStore, useUserStore } from 'src/stores'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
+// const router = useRouter()
 
-const requestStore = useRequestStore()
+// const requestStore = useRequestStore()
 const userStore = useUserStore()
 
-const columnsRequests = [
-  { name: 'displayName', label: 'Name', field: (row) => row.user.displayName, sortable: true, align: 'left' },
-  { name: 'email', label: 'Email', field: (row) => row.user.email, sortable: true, align: 'left' },
-  { name: 'message', label: 'Message', field: 'message', sortable: true, align: 'left' },
-  { name: 'actions', label: '', field: 'actions', sortable: true }
-]
+// const columnsRequests = [
+//   { name: 'displayName', label: 'Name', field: (row) => row.user.displayName, sortable: true, align: 'left' },
+//   { name: 'email', label: 'Email', field: (row) => row.user.email, sortable: true, align: 'left' },
+//   { name: 'message', label: 'Message', field: 'message', sortable: true, align: 'left' },
+//   { name: 'actions', label: '', field: 'actions', sortable: true }
+// ]
 const columnsUser = [
   { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
