@@ -3,6 +3,7 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
+  getDoc,
   doc,
   getDocs,
   query,
@@ -178,13 +179,23 @@ export const useEntryStore = defineStore('entries', {
       const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
 
       //console.log('the promt ===', prompt );
+
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), {
           hasWinner: payload.isWinner == true ? true : false,
           updated: Timestamp.fromDate(new Date())
         })
         transaction.update(doc(db, 'entries', payload.entry.id), { isWinner: payload.isWinner, updated: Timestamp.fromDate(new Date()) })
-      }).finally(() => (this._isLoading = false))
+      })
+
+      // Fetch updated documents separately after the transaction
+      const updatedEntryDoc = await getDoc(doc(db, 'entries', payload.entry.id))
+      const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt.id))
+
+      return {
+        _entry: updatedEntryDoc.data(),
+        _prompt: updatedPromptDoc.data()
+      }
     },
 
     async deleteEntry(entryId) {
