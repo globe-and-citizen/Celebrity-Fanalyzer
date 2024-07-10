@@ -14,8 +14,8 @@ export async function uploadAndSetImage(imageFile, filePathAndName) {
       img.onload = async () => {
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
-        canvas.width = img.width > 2000 ? img.width / 2 : img.width
-        canvas.height = img.height > 1920 ? img.height / 2 : img.height
+        canvas.width = img.width > 2560 ? img.width / 2 : img.width
+        canvas.height = img.height > 1440 ? img.height / 2 : img.height
         ctx.drawImage(img, 0, 0, img.width > 2560 ? img.width / 2 : img.width, img.height > 1440 ? img.height / 2 : img.height)
 
         canvas.toBlob(async (blob) => {
