@@ -65,9 +65,9 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 5MB'"
+          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 2MB'"
           label="Image"
-          :max-total-size="5242880"
+          :max-total-size="2097152"
           :required="!id"
           v-model="imageModel"
           @rejected="onRejected()"
@@ -86,7 +86,7 @@
           data-test="button-submit"
           :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
           :label="id ? 'Save Edits' : 'Submit Entry'"
-          :loading="entryStore.isLoading"
+          :loading="promptStore.isLoading || storageStore.isLoading"
           rounded
           type="submit"
         />
@@ -99,6 +99,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref } from 'vue'
+import { uploadAndSetImage } from 'src/utils/imageConvertor'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
@@ -170,14 +171,12 @@ function onPaste(evt) {
 
 async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+  entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
-  entry.id = props.id || `${entry.prompt?.value}T${Date.now()}` // 2022-11T1670535123715
-
-  if (Object.keys(imageModel.value).length) {
-    await storageStore
-      .uploadFile(imageModel.value, `images/entry-${entry.id}`)
-      .then((url) => (entry.image = url))
-      .catch((error) => errorStore.throwError(error, 'Image upload failed'))
+  if (imageModel.value && Object.keys(imageModel.value).length !== 0) {
+    entry.image = await uploadAndSetImage(imageModel.value, `images/entry-${entry.id}`)
+  } else {
+    entry.image = props.image
   }
 
   if (props.id) {

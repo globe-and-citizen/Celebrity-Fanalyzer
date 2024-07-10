@@ -86,9 +86,9 @@
               counter
               data-test="file-image"
               hide-hint
-              hint="Max size is 5MB"
+              hint="Max size is 2MB"
               label="Image"
-              :max-total-size="5242880"
+              :max-total-size="2097152"
               :required="!id"
               v-model="imageModel"
               @rejected="onRejected()"
@@ -135,7 +135,7 @@
               data-test="button-submit"
               :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
               :label="id ? 'Save Edits' : 'Submit Prompt'"
-              :loading="promptStore.isLoading"
+              :loading="promptStore.isLoading || storageStore.isLoading"
               rounded
               type="submit"
             />
@@ -152,6 +152,7 @@ import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { uploadAndSetImage } from 'src/utils/imageConvertor'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -173,6 +174,7 @@ const prompt = reactive({
 const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
+const editorRef = ref(null)
 
 watchEffect(() => {
   if (props.id) {
@@ -239,7 +241,7 @@ async function onSubmit() {
   }
 
   if (imageModel.value) {
-    await uploadAndSetImage()
+    prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${prompt.date}`)
   }
 
   if (props.id) {
@@ -257,45 +259,7 @@ async function onSubmit() {
   emit('hideDialog')
 }
 
-async function uploadAndSetImage() {
-  const reader = new FileReader()
-
-  reader.onload = async (event) => {
-    const imageDataURL = event.target.result
-    const img = new Image()
-
-    img.onload = async () => {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0, img.width, img.height)
-
-      canvas.toBlob(async (blob) => {
-        await storageStore
-          .uploadFile(blob, `images/prompt-${prompt.date}`)
-          .then(async (url) => {
-            prompt.image = url
-          })
-          .catch((error) => {
-            console.log(error)
-            errorStore.throwError(error)
-          })
-      }, 'image/webp')
-    }
-
-    img.src = imageDataURL
-  }
-
-  reader.readAsDataURL(imageModel.value)
-}
-
-function handleImageChange(value) {
-  imagePreview.value = null
-  imageModel.value = value
-}
-
 function onRejected() {
-  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
+  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 2MB.' })
 }
 </script>

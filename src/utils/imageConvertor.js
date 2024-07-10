@@ -1,54 +1,36 @@
-export function processFile(file) {
-  if (!file) {
-    return
-  }
+import { useStorageStore, useErrorStore } from 'src/stores'
 
-  // Load the data into an image
-  new Promise(function (resolve, reject) {
-    let rawImage = new Image()
+export async function uploadAndSetImage(imageFile, filePathAndName) {
+  const storageStore = useStorageStore()
+  const errorStore = useErrorStore()
 
-    rawImage.addEventListener('load', function () {
-      resolve(rawImage)
-    })
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
 
-    rawImage.src = URL.createObjectURL(file)
-  })
-    .then(function (rawImage) {
-      // Convert image to webp ObjectURL via a canvas blob
-      return new Promise(function (resolve, reject) {
-        let canvas = document.createElement('canvas')
-        let ctx = canvas.getContext('2d')
+    reader.onload = async (event) => {
+      const imageDataURL = event?.target?.result
+      const img = new Image()
 
-        canvas.width = rawImage.width
-        canvas.height = rawImage.height
-        ctx.drawImage(rawImage, 0, 0)
+      img.onload = async () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        canvas.width = img.width > 2000 ? img.width / 2 : img.width
+        canvas.height = img.height > 1920 ? img.height / 2 : img.height
+        ctx.drawImage(img, 0, 0, img.width > 2560 ? img.width / 2 : img.width, img.height > 1440 ? img.height / 2 : img.height)
 
-        canvas.toBlob(function (blob) {
-          resolve(URL.createObjectURL(blob))
+        canvas.toBlob(async (blob) => {
+          try {
+            const imageUrl = await storageStore.uploadFile(blob, filePathAndName)
+            resolve(imageUrl)
+          } catch (error) {
+            await errorStore.throwError(error, 'Image upload failed')
+            reject(error)
+          }
         }, 'image/webp')
-      })
-    })
-    .then(function (imageURL) {
-      // Load image for display on the page
-      return new Promise(function (resolve, reject) {
-        let scaledImg = new Image()
+      }
+      img.src = imageDataURL
+    }
 
-        scaledImg.addEventListener('load', function () {
-          resolve({ imageURL, scaledImg })
-        })
-
-        scaledImg.setAttribute('src', imageURL)
-      })
-    })
-    .then(function (data) {
-      // Inject into the DOM
-      let imageLink = document.createElement('a')
-
-      imageLink.setAttribute('href', data.imageURL)
-      imageLink.setAttribute('download', `${file.name}.webp`)
-      imageLink.appendChild(data.scaledImg)
-
-      imageBox.innerHTML = ''
-      imageBox.appendChild(imageLink)
-    })
+    reader.readAsDataURL(imageFile)
+  })
 }
