@@ -12,7 +12,7 @@
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
-          <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
+          <p class="text-body2">{{ dayMonthYear(post.created) }}</p>
           <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
@@ -152,7 +152,7 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
-import { monthYear } from 'src/utils/date'
+import { dayMonthYear } from 'src/utils/date'
 import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
