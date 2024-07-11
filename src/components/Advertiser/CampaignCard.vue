@@ -100,18 +100,20 @@ $shadow: rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: row;
   background: $white;
-  filter: drop-shadow(1px 2px 4px $shadow);
+  // filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 0 5px $shadow
 }
 .text-blog-card {
   display: flex;
   flex-direction: row;
   background: $white;
-  filter: drop-shadow(1px 2px 4px $shadow);
+  // filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
   min-width: 400px;
+  box-shadow: 0 0 5px  $shadow
 }
 .card-link {
   position: relative;
@@ -209,11 +211,5 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-rows: 1fr;
   }
 
-  // @media (max-width: 32rem) {
-  //   .blog-card {
-  //     grid-template-columns: auto;
-  //     grid-template-rows: 18rem 1fr;
-  //   }
-  // }
 }
 </style>
