@@ -1,35 +1,4 @@
 <template>
-  <!-- <q-table
-    v-if="requestStore.getRequests.length"
-    :columns="columnsRequests"
-    flat
-    hide-bottom
-    :loading="userStore.isLoading"
-    :pagination="{ rowsPerPage: 0 }"
-    row-key="email"
-    :rows="requestStore.getRequests"
-    title="Manage Requests"
-  >
-    <template v-slot:body-cell-message="props">
-      <q-td :props="props" style="white-space: pre-line">
-        {{ props.row.message }}
-      </q-td>
-    </template>
-    <template v-slot:body-cell-actions="props">
-      <q-td class="text-right">
-        <q-btn color="warning" flat icon="account_circle" round @click="router.push(`/fan/${props.row.id}`)">
-          <q-tooltip>Visit Profile</q-tooltip>
-        </q-btn>
-        <q-btn color="negative" flat icon="do_not_disturb_on" round @click="requestStore.denyWriter(props.row.id)">
-          <q-tooltip>Deny as a Writer</q-tooltip>
-        </q-btn>
-        <q-btn color="positive" flat icon="verified" round @click="requestStore.acceptWriter(props.row.id)">
-          <q-tooltip>Approve as a Writer</q-tooltip>
-        </q-btn>
-      </q-td>
-    </template>
-  </q-table> -->
-
   <q-table
     v-if="userStore.getUsers"
     :columns="columnsUser"
@@ -65,21 +34,11 @@
 </template>
 
 <script setup>
-import { useRequestStore, useUserStore } from 'src/stores'
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useUserStore } from 'src/stores'
+import { ref } from 'vue'
 
-// const router = useRouter()
-
-// const requestStore = useRequestStore()
 const userStore = useUserStore()
 
-// const columnsRequests = [
-//   { name: 'displayName', label: 'Name', field: (row) => row.user.displayName, sortable: true, align: 'left' },
-//   { name: 'email', label: 'Email', field: (row) => row.user.email, sortable: true, align: 'left' },
-//   { name: 'message', label: 'Message', field: 'message', sortable: true, align: 'left' },
-//   { name: 'actions', label: '', field: 'actions', sortable: true }
-// ]
 const columnsUser = [
   { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
