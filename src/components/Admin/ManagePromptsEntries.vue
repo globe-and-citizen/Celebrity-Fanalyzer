@@ -28,7 +28,7 @@
             color="red"
             data-test="button-expand"
             :icon="props.expand ? 'expand_less' : 'expand_more'"
-            @click="props.expand = !props.expand"
+            @click="toggleExpand(props)"
           >
             <q-tooltip>
               {{ props.expand ? 'Collapse' : 'Expand' }}
@@ -68,7 +68,13 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :filter="filter" :rows="props.row.entries" :currentPrompt="props.row" @update-entry="handleUpdateEntry" />
+          <TableEntry
+            v-else
+            :filter="filter"
+            :rows="getEntriesForPrompt(props.row.id)"
+            :currentPrompt="props.row"
+            @update-entry="handleUpdateEntry"
+          />
         </q-td>
       </q-tr>
     </template>
@@ -120,28 +126,19 @@ const deleteDialog = ref({})
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-// Reactive state for prompts and entries
 const prompts = ref([])
+const loaded = ref([])
+const currentPrompt = ref({})
+
 onMounted(() => {
   promptStore.fetchPrompts()
-  entryStore.fetchEntries()
 })
-/**
- * @description computed property that returns if prompts and entries are loaded
- * @type {ComputedRef<Boolean>}
- */
-const isLoaded = computed(() => promptStore.getPrompts && entryStore.getEntries)
-/**
- * @description computed property that returns if prompts and entries are loading
- * @type {ComputedRef<Boolean>}
- */
+
+const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
 watchEffect(() => {
-  prompts.value = promptStore.getPrompts?.map((prompt) => ({
-    ...prompt,
-    entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
-  }))
+  prompts.value = promptStore.getPrompts
 })
 
 function openDeleteDialog(prompt) {
@@ -163,12 +160,8 @@ async function handleUpdateEntry({ _entry, _prompt }) {
   console.log('updateEntries called')
   const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
   if (promptIndex !== -1) {
-    console.log('the new prompt==== ', _prompt)
-    console.log('prompt index finded ==== ', promptIndex)
-
     const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
     if (entryIndex !== -1) {
-      console.log('entry index found == ', entryIndex)
       const { author, ...restOfEntry } = _entry
       // Merge the existing entry with the incoming _entry data
       const updatedEntry = { ...prompts.value[promptIndex].entries[entryIndex], ...restOfEntry }
@@ -182,6 +175,30 @@ async function handleUpdateEntry({ _entry, _prompt }) {
     // This reassignment ensures Vue's reactivity system is aware of the update
     prompts.value = [...prompts.value]
   }
-  console.log('the new prompts value ', prompts.value[promptIndex])
+}
+
+function toggleExpand(props) {
+  props.expand = !props.expand
+  if (props.expand && !loaded.value.some((el) => el?.promptId === props?.row?.id)) {
+    fetchEntriesForPrompt(props.row.entries, props.row.id)
+  }
+  if (props.expand) {
+    currentPrompt.value = props.row
+    console.log(currentPrompt.value)
+  }
+}
+
+async function fetchEntriesForPrompt(entriesIds, promptId) {
+  try {
+    const res = await entryStore.fetchPromptsEntries(entriesIds)
+    loaded.value.push({ promptId, entries: res })
+  } catch (error) {
+    await errorStore.throwError(error, 'Failed to fetch entries')
+  }
+}
+
+function getEntriesForPrompt(promptId) {
+  const loadedPrompt = loaded.value.find((el) => el.promptId === promptId)
+  return loadedPrompt ? loadedPrompt.entries : []
 }
 </script>

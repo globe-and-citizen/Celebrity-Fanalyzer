@@ -112,6 +112,7 @@ export const useEntryStore = defineStore('entries', {
         }
         this._entries = allEntries
         this._isLoading = false
+        return allEntries
       } catch (e) {
         console.error('Error fetching entries entries', e)
       }
@@ -175,14 +176,11 @@ export const useEntryStore = defineStore('entries', {
     //update not coming from form submission
     async dataUpdateEntry(payload) {
       const promptStore = usePromptStore()
-      //console.log('the payload ===', payload.entry.prompt );
       const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
-
-      //console.log('the promt ===', prompt );
 
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), {
-          hasWinner: payload.isWinner == true ? true : false,
+          hasWinner: payload.isWinner === true,
           updated: Timestamp.fromDate(new Date())
         })
         transaction.update(doc(db, 'entries', payload.entry.id), { isWinner: payload.isWinner, updated: Timestamp.fromDate(new Date()) })
