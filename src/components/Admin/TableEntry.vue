@@ -300,7 +300,7 @@ function onSelectWinner(entry) {
       //console.log('the entry  ====', _entry)
       //console.log('the prompt  ====', _prompt)
       if (_entry && _prompt) {
-        const index = entries.value.findIndex((e) => e.id === _entry.id)
+        //const index = entries.value.findIndex((e) => e.id === _entry.id)
         //console.log('the index ==== ', index)
         emit('update-entry', { _entry, _prompt })
       }
