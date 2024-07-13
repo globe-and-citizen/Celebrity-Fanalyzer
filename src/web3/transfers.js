@@ -151,8 +151,17 @@ const handleMetamaskError = async (error) => {
       case 4001:
         return 'Request was rejected by the user.'
       case -32603:
+        const errorMessage = error?.data?.message
+        if (errorMessage?.includes('insufficient funds for gas')) {
+          return 'Insufficient funds. Please check your balance and try again.'
+        } else {
+          if (errorMessage) {
+            return errorMessage
+          }
+        }
         return 'Internal JSON-RPC error. Please try again later.'
-      // Add other specific error codes as needed
+      case -32000:
+        return 'Insufficient funds. Please check your balance and try again.'
       case 'ACTION_REJECTED':
         return 'user rejected transaction'
       default:

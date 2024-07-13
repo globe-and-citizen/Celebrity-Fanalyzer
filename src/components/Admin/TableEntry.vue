@@ -145,7 +145,13 @@
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Payment Confirmation</h6>
       </q-card-section>
-      <WalletPaymentCard :walletAddress="proceedPaymentDialog.walletAddress" :entry="proceedPaymentDialog.entry" />
+      <WalletPaymentCard
+        :walletAddress="proceedPaymentDialog.walletAddress"
+        :entry="proceedPaymentDialog.entry"
+        :prompt="_currentPrompt"
+        @forward-update-entry="forwardHandleUpdateEntry"
+        @hideDialog="proceedPaymentDialog.show = false"
+      />
     </q-card>
   </q-dialog>
 
@@ -246,7 +252,7 @@ async function onProceedPaymentDialog(props) {
 
 function onSelectWinnerDialog(props) {
   // Toggle the isWinner state
-  console.log('the current prompt ==== ', _currentPrompt)
+  //console.log('the current prompt ==== ', _currentPrompt)
   const isWinner = props.isWinner == true ? false : true
   // Dynamically set the selectWinnerMessage and selectWinnerTitle based on isWinner
   selectWinnerMessage.value =
@@ -269,6 +275,11 @@ function onSelectWinnerDialog(props) {
   }
 }
 
+function forwardHandleUpdateEntry(payload) {
+  //console.log('forwardHandleUpdateEntry called==============', payload)
+  emit('update-entry', payload)
+}
+
 function onDeleteEntry(id) {
   entryStore
     .deleteEntry(id)
@@ -286,18 +297,18 @@ function onSelectWinner(entry) {
     .dataUpdateEntry(payload)
     .then(async (response) => {
       const { _entry, _prompt } = response
-      console.log('the entry  ====', _entry)
-      console.log('the prompt  ====', _prompt)
+      //console.log('the entry  ====', _entry)
+      //console.log('the prompt  ====', _prompt)
       if (_entry && _prompt) {
         const index = entries.value.findIndex((e) => e.id === _entry.id)
-        console.log('the index ==== ', index)
+        //console.log('the index ==== ', index)
         emit('update-entry', { _entry, _prompt })
       }
       $q.notify({ type: 'positive', message: 'Succeed' })
       $q.loading.hide()
     })
     .catch((error) => {
-      console.log('error selectign winner =====> ', error)
+      //console.log('error selectign winner =====> ', error)
       errorStore.throwError(error, 'Error selecting winner')
       $q.loading.hide()
     })

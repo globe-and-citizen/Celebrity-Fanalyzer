@@ -17,7 +17,7 @@
         <q-input data-text="ether-amount" v-model="maticAmount" label="Price in matic" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />
-          <q-btn label="proceed payment" :disable="!usdAmount" color="green" data-test="confirm-delete-entry" type="submit" v-close-popup />
+          <q-btn label="proceed payment" :disable="!usdAmount" color="green" data-test="confirm-delete-entry" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -36,11 +36,12 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const cryptoTransactionStore = useCryptoTransactionStore()
 
-const emit = defineEmits(['hideDialog'])
+const emit = defineEmits(['hideDialog', 'forward-update-entry'])
 
 const props = defineProps({
   walletAddress: { type: String, required: true },
-  entry: null
+  entry: null,
+  prompt: null
 })
 
 const _walletAddress = ref('')
@@ -92,6 +93,7 @@ async function onSubmit(event) {
         const payload = {
           initiator: userStore.getUser,
           entry: props.entry,
+          prompt: props.prompt,
           tHash: transactionResult.transactionId,
           status: transactionResult?.success,
           networkName: transactionResult.networkName,
@@ -99,32 +101,41 @@ async function onSubmit(event) {
         }
         cryptoTransactionStore
           .addCryptoTransaction(payload)
-          .then($q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' }))
+          .then(async (response) => {
+            const { _entry, _prompt } = response
+            if (_entry && _prompt) {
+              emit('forward-update-entry', { _entry, _prompt })
+              //console.log('the updated enty ==== ', _entry)
+            }
+            $q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' })
+            emit('hideDialog')
+            $q.loading.hide()
+          })
           .catch((error) => {
-            //console.log("error when saving transaction === ", error)
+            emit('hideDialog')
+            //console.log('error when saving transaction === ', error)
             errorStore.throwError(error, 'Error when saving the transaction')
+            $q.loading.hide()
           })
       } else {
         //console.log("the error=====mmmmm========= ", transactionResult  )
         var errorMessage = 'transaction failed'
-        console.log('the transaction result ', transactionResult)
+        //console.log('the transaction result ', transactionResult)
         if (transactionResult?.error) {
           errorMessage = transactionResult?.error
         }
         $q.notify({ type: 'negative', message: errorMessage })
-        console.log('error during payment  transaction ==== ', errorMessage)
+        //console.log('error during payment  transaction ==== ', errorMessage)
         $q.loading.hide()
+        emit('hideDialog')
         //errorStore.throwError(transactionResult?.error, 'Error when saving the transaction')
       }
-      $q.loading.hide()
     })
   } catch (error) {
     $q.notify({ type: 'negative', message: 'oups transaction failed' })
-    console.log('the error ==== ', error)
+    //console.log('the error ==== ', error)
+    emit('hideDialog')
+    $q.loading.hide()
   }
-
-  emit('hideDialog')
 }
-emit('hideDialog')
-$q.loading.hide()
 </script>

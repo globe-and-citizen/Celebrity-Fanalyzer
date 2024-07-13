@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, onSnapshot, query, addDoc, Timestamp, updateDoc, where } from 'firebase/firestore'
+import { collection, doc, getDocs, onSnapshot, query, addDoc, Timestamp, getDoc, updateDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useEntryStore, useNotificationStore, usePromptStore, useUserStore } from 'src/stores'
@@ -55,14 +55,15 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
       //console.log("the pay load ", payload);
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
-
+      //console.log('the payload ========== ', payload)
       //console.log("the payload === ", payload);
       // Clone the payload to avoid mutating the original object
-      const cryptoTransaction = { ...payload }
+      const { prompt, ...cryptoTransaction } = payload
+      //console.log('the prompt ======', prompt)
+      //console.log('the cryptoTransaction ======', cryptoTransaction)
 
-      
       // Get the prompt reference
-      const promptRef = promptStore.getPromptRef(cryptoTransaction.entry.prompt?.id)
+      const promptRef = promptStore.getPromptRef(prompt?.id)
 
       // Update fields with document references
       cryptoTransaction.entry = doc(db, 'entries', cryptoTransaction.entry.id)
@@ -76,7 +77,16 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
         await updateDoc(doc(db, 'prompts', promptRef.id), { isTreated: true, updated: Timestamp.fromDate(new Date()) })
         // Add the new transaction document to the 'cryptoTransactions' collection
         const cryptoTransactionRef = await addDoc(collection(db, 'cryptoTransactions'), cryptoTransaction)
-        
+
+        // Fetch updated documents separately after the transaction
+        const updatedEntryDoc = await getDoc(doc(db, 'entries', cryptoTransaction.entry.id))
+        //console.log('the updated entry doc', updatedEntryDoc)
+        const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt?.id))
+        //console.log(' updated prompt  doc', updatedPromptDoc)
+        return {
+          _entry: updatedEntryDoc.data(),
+          _prompt: updatedPromptDoc.data()
+        }
       } catch (error) {
         console.error('Error adding transaction:', error)
       } finally {

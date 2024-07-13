@@ -311,7 +311,7 @@ async function onSubmit() {
         .editAdvertise(advertise)
         .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
         .catch((error) => {
-          console.log(error)
+          //console.log(error)
           errorStore.throwError(error, 'Advertise edit failed')
         })
     } else {
