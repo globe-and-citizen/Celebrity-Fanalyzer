@@ -101,7 +101,7 @@ import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserS
 import { onMounted, reactive, ref } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 
-const emit = defineEmits(['hideDialog'])
+const emit = defineEmits(['hideDialog', 'forward-update-entry'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
 
 const $q = useQuasar()
@@ -182,15 +182,26 @@ async function onSubmit() {
   if (props.id) {
     await entryStore
       .editEntry(entry)
-      .then(() => $q.notify({ type: 'info', message: 'Entry successfully edited' }))
-      .catch((error) => errorStore.throwError(error, 'Entry edit failed'))
+      .then((response) => {
+        const { _entry, _prompt } = response
+        console.log('the entry ==== ', _entry)
+        console.log('the prompt ==== ', _prompt)
+        if (_entry && _prompt) {
+          emit('forward-update-entry', { _entry, _prompt })
+        }
+        $q.notify({ type: 'info', message: 'Entry successfully edited' })
+        emit('hideDialog')
+      })
+      .catch((error) => {
+        errorStore.throwError(error, 'Entry edit failed')
+        emit('hideDialog')
+      })
   } else {
     await entryStore
       .addEntry(entry)
       .then(() => $q.notify({ type: 'positive', message: 'Entry successfully submitted' }))
       .catch((error) => errorStore.throwError(error, 'Entry submission failed'))
+    emit('hideDialog')
   }
-
-  emit('hideDialog')
 }
 </script>

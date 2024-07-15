@@ -169,7 +169,17 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      }).finally(() => (this._isLoading = false))
+      })
+      this._isLoading = false
+      const prompt = promptStore.getPromptRef(entry.prompt?.id)
+      const updatedEntryDoc = await getDoc(doc(db, 'entries', entry.id))
+      const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt.id))
+
+      return {
+        _entry: updatedEntryDoc.data(),
+        _prompt: updatedPromptDoc.data()
+      }
+      //}).finally(() => (this._isLoading = false))
     },
 
     //update not coming from form submission
