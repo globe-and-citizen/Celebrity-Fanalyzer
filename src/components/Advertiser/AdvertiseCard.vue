@@ -297,7 +297,7 @@ async function onSubmit() {
         .catch((error) => {
           console.log(error)
           errorStore.throwError(error, 'Advertise edit failed')
-        })
+        }).finally(()=>$q.loading.hide())
     } else {
       //call contract create function
       const result = await createAdCampain({ budgetInMatic: advertise.budget })
@@ -310,13 +310,13 @@ async function onSubmit() {
           .addAdvertise(advertise)
           .then(() => {
             $q.notify({ type: 'positive', message: 'Advertise successfully submitted' })
-            $q.loading.hide()
             emit('hideDialog')
           })
           .catch((error) => {
             console.log(error)
             errorStore.throwError(error, 'Advertise submission failed')
           })
+          .finally(()=>$q.loading.hide())
       } else {
         $q.notify({ message: result?.error?.message, type: 'negative' })
         $q.loading.hide()
