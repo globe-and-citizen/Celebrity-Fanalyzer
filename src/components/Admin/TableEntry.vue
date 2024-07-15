@@ -207,11 +207,6 @@ const columns = [
 ]
 
 // Watch for changes in props.rows and log them
-// watchEffect(() => {
-//   console.log('Updated rows in TableEntry:', props.rows)
-// })
-
-// Watch for changes in props.rows and log them
 
 const deleteDialog = ref({})
 const entry = ref({})
@@ -252,7 +247,7 @@ async function onProceedPaymentDialog(props) {
 
 function onSelectWinnerDialog(props) {
   // Toggle the isWinner state
-  //console.log('the current prompt ==== ', _currentPrompt)
+
   const isWinner = props.isWinner == true ? false : true
   // Dynamically set the selectWinnerMessage and selectWinnerTitle based on isWinner
   selectWinnerMessage.value =
@@ -276,7 +271,6 @@ function onSelectWinnerDialog(props) {
 }
 
 function forwardHandleUpdateEntry(payload) {
-  //console.log('forwardHandleUpdateEntry called==============', payload)
   emit('update-entry', payload)
 }
 
@@ -297,18 +291,13 @@ function onSelectWinner(entry) {
     .dataUpdateEntry(payload)
     .then(async (response) => {
       const { _entry, _prompt } = response
-      //console.log('the entry  ====', _entry)
-      //console.log('the prompt  ====', _prompt)
       if (_entry && _prompt) {
-        //const index = entries.value.findIndex((e) => e.id === _entry.id)
-        //console.log('the index ==== ', index)
         emit('update-entry', { _entry, _prompt })
       }
       $q.notify({ type: 'positive', message: 'Succeed' })
       $q.loading.hide()
     })
     .catch((error) => {
-      //console.log('error selectign winner =====> ', error)
       errorStore.throwError(error, 'Error selecting winner')
       $q.loading.hide()
     })

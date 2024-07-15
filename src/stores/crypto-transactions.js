@@ -52,15 +52,11 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
     },
 
     async addCryptoTransaction(payload) {
-      //console.log("the pay load ", payload);
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
-      //console.log('the payload ========== ', payload)
-      //console.log("the payload === ", payload);
+
       // Clone the payload to avoid mutating the original object
       const { prompt, ...cryptoTransaction } = payload
-      //console.log('the prompt ======', prompt)
-      //console.log('the cryptoTransaction ======', cryptoTransaction)
 
       // Get the prompt reference
       const promptRef = promptStore.getPromptRef(prompt?.id)
@@ -80,9 +76,8 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
 
         // Fetch updated documents separately after the transaction
         const updatedEntryDoc = await getDoc(doc(db, 'entries', cryptoTransaction.entry.id))
-        //console.log('the updated entry doc', updatedEntryDoc)
+
         const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt?.id))
-        //console.log(' updated prompt  doc', updatedPromptDoc)
         return {
           _entry: updatedEntryDoc.data(),
           _prompt: updatedPromptDoc.data()
