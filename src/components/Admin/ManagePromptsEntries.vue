@@ -2,8 +2,10 @@
   <q-table
     v-if="prompts && userStore.isEditorOrAbove"
     flat
+    bordered
     hide-bottom
-    style="left: 0; right: 0"
+    class="q-ma-md prompts-table"
+    virtual-scroll
     title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
@@ -27,6 +29,7 @@
             round
             color="red"
             data-test="button-expand"
+            :disable="isLoading"
             :icon="props.expand ? 'expand_less' : 'expand_more'"
             @click="toggleExpand(props)"
           >
@@ -73,7 +76,9 @@
             :filter="filter"
             :rows="getEntriesForPrompt(props.row.id)"
             :currentPrompt="props.row"
+            :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"
+            @delete-entry="handleDeleteEntry"
           />
         </q-td>
       </q-tr>
@@ -107,7 +112,7 @@ import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, watchEffect, ref } from 'vue'
 
-defineEmits(['openPromptDialog'])
+defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -127,17 +132,20 @@ const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 const prompts = ref([])
-const loaded = ref([])
-const currentPrompt = ref({})
 
 onMounted(() => {
-  promptStore.fetchPrompts()
+  if (userStore.isEditorOrAbove) {
+    entryStore._loadedEntries = []
+    promptStore.fetchPrompts()
+  } else {
+    entryStore.fetchUserRelatedEntries(userStore.getUserId)
+  }
 })
 
 const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
-watchEffect(() => {
+watchEffect(async () => {
   prompts.value = promptStore.getPrompts
 })
 
@@ -157,7 +165,6 @@ function onDeletePrompt(id) {
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
-  console.log('updateEntries called')
   const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
   if (promptIndex !== -1) {
     const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
@@ -178,27 +185,65 @@ async function handleUpdateEntry({ _entry, _prompt }) {
 }
 
 function toggleExpand(props) {
-  props.expand = !props.expand
-  if (props.expand && !loaded.value.some((el) => el?.promptId === props?.row?.id)) {
+  props.expand = !props?.expand
+  if (props.expand && !entryStore._loadedEntries.some((el) => el?.promptId === props?.row?.id)) {
     fetchEntriesForPrompt(props.row.entries, props.row.id)
-  }
-  if (props.expand) {
-    currentPrompt.value = props.row
-    console.log(currentPrompt.value)
   }
 }
 
 async function fetchEntriesForPrompt(entriesIds, promptId) {
   try {
     const res = await entryStore.fetchPromptsEntries(entriesIds)
-    loaded.value.push({ promptId, entries: res })
+    entryStore._loadedEntries.push({ promptId, entries: res })
   } catch (error) {
     await errorStore.throwError(error, 'Failed to fetch entries')
   }
 }
 
 function getEntriesForPrompt(promptId) {
-  const loadedPrompt = loaded.value.find((el) => el.promptId === promptId)
-  return loadedPrompt ? loadedPrompt.entries : []
+  const loadedPrompt = entryStore._loadedEntries.find((el) => el?.promptId === promptId)
+  return loadedPrompt ? loadedPrompt?.entries : []
+}
+
+function handleDeleteEntry(entryId, promptId) {
+  entryStore._loadedEntries = entryStore._loadedEntries.map((prompt) => {
+    if (prompt?.promptId === promptId) {
+      return {
+        ...prompt,
+        entries: prompt?.entries.filter((entry) => entry.id !== entryId)
+      }
+    }
+    return prompt
+  })
+
+  prompts.value = prompts.value.map((prompt) => {
+    if (prompt.id === promptId) {
+      return {
+        ...prompt,
+        entries: prompt?.entries.filter((entry) => entry.id !== entryId)
+      }
+    }
+    return prompt
+  })
+
+  promptStore.fetchPrompts()
 }
 </script>
+
+<style>
+.prompts-table {
+  left: 0;
+  right: 0;
+  height: 76vh;
+
+  @media (max-width: 720px) {
+    height: 73vh;
+  }
+}
+.prompts-table .q-table__middle > .q-table > thead > tr {
+  background-color: white !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 1 !important;
+}
+</style>

@@ -28,13 +28,31 @@ import {
   useVisitorStore
 } from 'src/stores'
 
+function snapshotDocs(querySnapshot) {
+  const entries = []
+  for (const doc of querySnapshot) {
+    const entryData = doc.data()
+    const promptId = entryData.prompt.id
+
+    const entry = {
+      id: doc.id,
+      prompt: promptId,
+      ...entryData
+    }
+    entries.push(entry)
+  }
+  return entries
+}
+
 export const useEntryStore = defineStore('entries', {
   state: () => ({
     _entries: undefined,
     _isLoading: false,
     _unSubscribe: undefined,
     _tab: 'post',
-    entryDialog: {}
+    entryDialog: {},
+    userRelatedEntries: [],
+    _loadedEntries: []
   }),
 
   persist: true,
@@ -44,10 +62,8 @@ export const useEntryStore = defineStore('entries', {
     resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab,
-    getUserRelatedEntries: (state) => {
-      if (state._entries === undefined) return []
-      return state._entries.filter((element) => element?.author?.uid === useUserStore().getUserId)
-    }
+    getUserRelatedEntries: (state) => state._userRelatedEntries,
+    getLoadedEntries: (state) => state._loadedEntries
   },
 
   actions: {
@@ -61,24 +77,41 @@ export const useEntryStore = defineStore('entries', {
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(collection(db, 'entries'))
-        const entries = []
-        for (const doc of querySnapshot.docs) {
-          const entryData = doc.data()
-          const promptId = entryData.prompt.id
-
-          const entry = {
-            id: doc.id,
-            prompt: promptId,
-            ...entryData
-          }
-          entries.push(entry)
-        }
+        let entries
+        entries = snapshotDocs(querySnapshot.docs)
         for (const entry of entries) {
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }
         }
         this._entries = entries
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this._isLoading = false
+      }
+    },
+
+    async fetchUserRelatedEntries(userId) {
+      const userStore = useUserStore()
+
+      try {
+        this._isLoading = true
+
+        if (!userStore.getUsers) {
+          await userStore.fetchAdminsAndWriters()
+        }
+        let entries
+        const userDocRef = doc(db, 'users', userId)
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('author', '==', userDocRef)))
+        entries = snapshotDocs(querySnapshot.docs)
+
+        for (const entry of entries) {
+          if (entry.author.id) {
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+        }
+        this._userRelatedEntries = entries
       } catch (e) {
         console.error(e)
       } finally {
@@ -218,7 +251,7 @@ export const useEntryStore = defineStore('entries', {
 
         await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
       } catch (error) {
-        errorStore.throwError(error)
+        await errorStore.throwError(error, 'Error deleting entry')
       }
       this._isLoading = false
     },

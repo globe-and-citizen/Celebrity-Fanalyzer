@@ -1,5 +1,10 @@
 <template>
-  <q-spinner v-if="entryStore.isLoading" color="primary" size="2em" class="block q-mx-auto q-my-md" />
+  <q-spinner
+    v-if="entryStore.isLoading && !props.loadedEntries.map((el) => el.promptId).includes(props?.currentPrompt?.id)"
+    color="primary"
+    size="2em"
+    class="block q-mx-auto q-my-md"
+  />
   <q-table
     v-else
     flat
@@ -69,7 +74,7 @@
           <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
         </q-btn>
 
-        <span v-if="_currentPrompt.hasWinner !== true">
+        <span v-if="_currentPrompt?.hasWinner !== true">
           <span v-if="props.row.isWinner !== true">
             <q-btn
               v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
@@ -120,7 +125,13 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-delete-entry" flat label="Delete" @click="onDeleteEntry(deleteDialog.entry.id)" />
+        <q-btn
+          color="negative"
+          data-test="confirm-delete-entry"
+          flat
+          label="Delete"
+          @click="onDeleteEntry(deleteDialog.entry.id, deleteDialog.entry.prompt.id)"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -172,7 +183,8 @@ import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 const props = defineProps({
   filter: { type: String, required: false, default: '' },
   rows: { type: Array, required: true, default: () => [] },
-  currentPrompt: { type: Object }
+  currentPrompt: { type: Object },
+  loadedEntries: { type: Array, default: () => [] }
 })
 
 const entries = computed(() => {
@@ -185,7 +197,7 @@ watchEffect(() => {
 })
 
 // Emit event to parent
-const emit = defineEmits(['update-entry'])
+const emit = defineEmits(['update-entry', 'delete-entry'])
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -261,11 +273,21 @@ function onSelectWinnerDialog(props) {
   }
 }
 
-function onDeleteEntry(id) {
+function onDeleteEntry(entryId, promptId) {
   entryStore
-    .deleteEntry(id)
-    .then(() => $q.notify({ type: 'negative', message: 'Entry deleted' }))
-    .catch((error) => errorStore.throwError(error, 'Error deleting entry'))
+    .deleteEntry(entryId)
+    .then(() => {
+      if (!userStore.isEditorOrAbove) {
+        entryStore.fetchUserRelatedEntries(userStore.getUserId)
+      } else if (userStore.isEditorOrAbove) {
+        emit('delete-entry', entryId, promptId)
+      }
+    })
+    .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))
+    .catch((error) => {
+      $q.notify({ type: 'negative', message: 'Error deleting entry' })
+      errorStore.throwError(error, 'Error deleting entry')
+    })
   deleteDialog.value.show = false
 }
 

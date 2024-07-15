@@ -126,6 +126,13 @@ onMounted(async () => {
   color: #e54757 !important;
 }
 
+.tabs .q-tabs__content {
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 .tabs .q-tabs__arrow--left,
 .tabs .q-tabs__arrow--right {
   display: none;
