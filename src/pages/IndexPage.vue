@@ -11,6 +11,13 @@
             spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
+            @load="loaded = true"
+            :class="{ 'prompt-img': loaded }"
+            :srcset="`${monthPrompt?.image} 2x`"
+            sizes="(max-width: 560) 50vw, 100vw"
+            loading="eager"
+            decoding="async"
+            fetchpriority="low"
           />
         </RouterLink>
         <p class="q-my-md text-body1">
@@ -193,12 +200,13 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { currentYearMonth } from 'src/utils/date'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted } from 'vue'
+import { useErrorStore, usePromptStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
-const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+
+const loaded = ref(false)
 
 const monthPrompt = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
@@ -228,5 +236,9 @@ a {
   &:visited {
     color: #e54757;
   }
+}
+
+.prompt-img {
+  background-color: #e54757;
 }
 </style>
