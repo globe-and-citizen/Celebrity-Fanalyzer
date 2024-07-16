@@ -32,14 +32,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUserStore, useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
+import { useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getFormattedLink } from 'src/utils/getFormattedLink'
 
 const router = useRouter()
 const articleRef = ref(null)
-const userStore = useUserStore()
-const visitorStore = useVisitorStore()
 const errorStore = useErrorStore()
 const clicksStore = useClicksStore()
 const impressionsStore = useImpressionsStore()
@@ -52,7 +50,7 @@ const props = defineProps({
 })
 
 function onClick() {
-  clicksStore.addClick('advertises', props.advertise.id).catch((error) => console.log(error))
+  clicksStore.addClick('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
 }
 
 function goToUrl() {
@@ -65,15 +63,11 @@ onMounted(async () => {
     entries.forEach((entry) => {
       const intersecting = entry.isIntersecting
       if (intersecting) {
-        impressionsStore.addImpression('advertises', props.advertise.id).catch((error) => console.log(error))
+        impressionsStore.addImpression('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
       }
     })
   })
   observer.observe(articleRef.value)
-
-  visitorStore.readVisitors('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
-
-
 })
 </script>
 
