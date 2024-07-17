@@ -374,7 +374,7 @@ async function _completeAdvertise(advertise) {
     .editAdvertise(advertise)
     .then(() => $q.notify({ type: 'info', message: 'Advertise status Changed to complete ' }))
     .catch((error) => {
-      console.log(error)
+      //console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
@@ -382,7 +382,7 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
   const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
   if (result.status.includes('success')) {
-    console.log('the result claimPayment result ====', result)
+    //console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
     //let's change the advertise status
     await _completeAdvertise(advertise)
@@ -429,7 +429,7 @@ function changePublishDate() {
       })
     )
     .catch((error) => {
-      console.log(error)
+      //console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
     .finally(() => {
@@ -445,7 +445,7 @@ function onDeleteAdvertise() {
       .deleteAdvertise(id, type === 'Banner')
       .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
       .catch((error) => {
-        console.log(error)
+        //console.log(error)
         errorStore.throwError(error, 'Advertise deletion failed')
       })
       .finally(() => {
@@ -561,7 +561,7 @@ function changeActiveStatus(advertise, status) {
       $q.notify({ type: 'info', message: status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully' })
     )
     .catch((error) => {
-      console.log(error)
+      //console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }

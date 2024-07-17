@@ -160,15 +160,10 @@ function onDeletePrompt(id) {
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
-  console.log('updateEntries called')
   const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
   if (promptIndex !== -1) {
-    console.log('the new prompt==== ', _prompt)
-    console.log('prompt index finded ==== ', promptIndex)
-
     const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
     if (entryIndex !== -1) {
-      console.log('entry index found == ', entryIndex)
       const { author, ...restOfEntry } = _entry
       // Merge the existing entry with the incoming _entry data
       const updatedEntry = { ...prompts.value[promptIndex].entries[entryIndex], ...restOfEntry }
@@ -182,6 +177,5 @@ async function handleUpdateEntry({ _entry, _prompt }) {
     // This reassignment ensures Vue's reactivity system is aware of the update
     prompts.value = [...prompts.value]
   }
-  console.log('the new prompts value ', prompts.value[promptIndex])
 }
 </script>
