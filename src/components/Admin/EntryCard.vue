@@ -100,6 +100,7 @@ import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
@@ -110,6 +111,8 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
+const router = useRouter()
+const { href } = router.currentRoute.value
 
 const authorOptions = reactive([])
 const editorRef = ref(null)
@@ -179,18 +182,33 @@ async function onSubmit() {
     entry.image = props.image
   }
 
-  if (props.id) {
-    await entryStore
-      .editEntry(entry)
-      .then(() => $q.notify({ type: 'info', message: 'Entry successfully edited' }))
-      .catch((error) => errorStore.throwError(error, 'Entry edit failed'))
-  } else {
-    await entryStore
-      .addEntry(entry)
-      .then(() => $q.notify({ type: 'positive', message: 'Entry successfully submitted' }))
-      .catch((error) => errorStore.throwError(error, 'Entry submission failed'))
-  }
+  const action = props.id ? entryStore.editEntry : entryStore.addEntry
+  const successMessage = props.id ? 'Entry successfully edited' : 'Entry successfully submitted'
+  const failureMessage = props.id ? 'Entry edit failed' : 'Entry submission failed'
 
+  try {
+    await action(entry)
+    if (props.id) {
+      await entryStore.fetchUserRelatedEntries(userStore.getUserId)
+    }
+    if (href.includes('/admin') && !userStore.isEditorOrAbove) {
+      await entryStore.fetchUserRelatedEntries(userStore.getUserId)
+    } else if (userStore.isEditorOrAbove && href.includes('/admin')) {
+      const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
+      const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
+      const res = await entryStore.fetchPromptsEntries(updatedList)
+      let loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === entry.prompt.value)
+
+      if (loadedPrompt) {
+        const emptyList = !loadedPrompt.entries.length
+        loadedPrompt.entries = res
+        emptyList && (await promptStore.fetchPrompts())
+      }
+    }
+    $q.notify({ type: 'positive', message: successMessage })
+  } catch (e) {
+    await errorStore.throwError(e, failureMessage)
+  }
   emit('hideDialog')
 }
 </script>

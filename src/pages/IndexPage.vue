@@ -7,6 +7,9 @@
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
           <q-img
+            loading="lazy"
+            decoding="async"
+            fetchpriority="low"
             :src="monthPrompt?.image"
             spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
@@ -15,9 +18,6 @@
             :class="{ 'prompt-img': loaded }"
             :srcset="`${monthPrompt?.image} 2x`"
             sizes="(max-width: 560) 50vw, 100vw"
-            loading="eager"
-            decoding="async"
-            fetchpriority="low"
           />
         </RouterLink>
         <p class="q-my-md text-body1">
@@ -215,11 +215,9 @@ const monthPrompt = computed(() => {
 })
 
 onMounted(async () => {
-  // Fetch for new user and no monthPrompt.value
   if (!monthPrompt.value) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
   }
-  // If prompts are once per month check if last prompt date is different from current
   const lastPromptMonth = new Date(monthPrompt?.value?.created?.seconds * 1000).getMonth()
   const currentMonth = new Date().getMonth()
   if (lastPromptMonth !== currentMonth) {

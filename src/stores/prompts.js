@@ -1,18 +1,4 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  or,
-  query,
-  runTransaction,
-  setDoc,
-  Timestamp,
-  where,
-  limit,
-  orderBy,
-  getDoc
-} from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, or, query, runTransaction, setDoc, Timestamp, where, getDoc } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -92,7 +78,9 @@ export const usePromptStore = defineStore('prompts', {
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(collection(db, 'prompts'))
-        this._prompts = await getPrompts(querySnapshot, userStore)
+        const prompts = await getPrompts(querySnapshot, userStore)
+        this._prompts = prompts
+        return prompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
@@ -100,21 +88,16 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchPromptsByYear(slug) {
+    async fetchPromptById(id) {
       const userStore = useUserStore()
-      const year = new Date(slug).getFullYear()
       if (!userStore.getUsers) {
         await userStore.fetchAdminsAndWriters()
       }
 
       try {
         this._isLoading = true
-        const startDate = new Date(year, 0, 1)
-        const endDate = new Date(year + 1, 0, 1)
-        const querySnapshot = await getDocs(
-          query(collection(db, 'prompts'), where('created', '>=', startDate), where('created', '<', endDate))
-        )
-        this._prompts = await getPrompts(querySnapshot, userStore)
+        const querySnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', id)))
+        return await getPrompts(querySnapshot, userStore)
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
@@ -244,7 +227,7 @@ export const usePromptStore = defineStore('prompts', {
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
       } catch (error) {
-        errorStore.throwError(error)
+        await errorStore.throwError(error, 'Error deleting prompt')
       }
       this._isLoading = false
     },

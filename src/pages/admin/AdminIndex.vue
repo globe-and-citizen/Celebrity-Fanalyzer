@@ -113,7 +113,7 @@ import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useEntryStore, usePromptStore, useRequestStore, useUserStore, useAdvertiseStore } from 'src/stores'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const requestStore = useRequestStore()
