@@ -156,7 +156,13 @@
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Payment Confirmation</h6>
       </q-card-section>
-      <WalletPaymentCard :walletAddress="proceedPaymentDialog.walletAddress" :entry="proceedPaymentDialog.entry" />
+      <WalletPaymentCard
+        :walletAddress="proceedPaymentDialog.walletAddress"
+        :entry="proceedPaymentDialog.entry"
+        :prompt="_currentPrompt"
+        @forward-update-entry="forwardHandleUpdateEntry"
+        @hideDialog="proceedPaymentDialog.show = false"
+      />
     </q-card>
   </q-dialog>
 
@@ -273,6 +279,10 @@ function onSelectWinnerDialog(props) {
   }
 }
 
+function forwardHandleUpdateEntry(payload) {
+  emit('update-entry', payload)
+}
+
 function onDeleteEntry(entryId, promptId) {
   entryStore
     .deleteEntry(entryId)
@@ -301,7 +311,6 @@ function onSelectWinner(entry) {
     .then(async (response) => {
       const { _entry, _prompt } = response
       if (_entry && _prompt) {
-        const index = entries.value.findIndex((e) => e.id === _entry.id)
         emit('update-entry', { _entry, _prompt })
       }
       $q.notify({ type: 'positive', message: 'Succeed' })

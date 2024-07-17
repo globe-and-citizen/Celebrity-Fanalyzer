@@ -52,9 +52,6 @@ const getProvider = async () => {
 
     // With the walletProvider obtained, proceed to create the ethers provider and signer
     const provider = new ethers.providers.Web3Provider(walletProvider)
-    //const signer = provider.getSigner()
-    //console.log("the network =========== ", await provider.getNetwork().name)
-
     return provider
   } catch (error) {
     console.error('Error getting provider:', error)
@@ -81,14 +78,11 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       //$q.notify({ message: 'the wallet is not connected', type: 'negative' })
     }
   } catch (error) {
-    //console.log("the error ============================== ", error);
-    //$q.notify({ message: 'error when sending ether', type: 'negative' });
     const errorMessage = await handleMetamaskError(error)
     return {
       success: false,
       error: errorMessage
     }
-    //console.error('Error initiating sendEther:', error);
   }
 }
 
@@ -119,7 +113,7 @@ export const getTransactionDetails = async (txHash, networkName) => {
     // Fetch the transaction receipt to get the status
 
     const receipt = await provider.getTransactionReceipt(txHash)
-    //console.log("the transaction detail is called ==================== ", transaction)
+
     // Extracting the desired information
     const amount = ethers.utils.formatEther(transaction.value) // Convert Wei to Ether for the transaction amount
     const sender = transaction.from
@@ -134,7 +128,6 @@ export const getTransactionDetails = async (txHash, networkName) => {
     }
     return result
   } catch (error) {
-    //console.error('Error retrieving transaction details:', error);
     const errorMessage = await handleMetamaskError(error)
     return {
       success: false,
@@ -144,15 +137,23 @@ export const getTransactionDetails = async (txHash, networkName) => {
 }
 
 const handleMetamaskError = async (error) => {
-  console.log('metamask handle message is called================================')
   // Check if the error has a code property
   if (error.code) {
     switch (error.code) {
       case 4001:
         return 'Request was rejected by the user.'
       case -32603:
+        const errorMessage = error?.data?.message
+        if (errorMessage?.includes('insufficient funds for gas')) {
+          return 'Insufficient funds. Please check your balance and try again.'
+        } else {
+          if (errorMessage) {
+            return errorMessage
+          }
+        }
         return 'Internal JSON-RPC error. Please try again later.'
-      // Add other specific error codes as needed
+      case -32000:
+        return 'Insufficient funds. Please check your balance and try again.'
       case 'ACTION_REJECTED':
         return 'user rejected transaction'
       default:
