@@ -2,13 +2,15 @@
   <q-table
     v-if="requestStore.getRequests.length"
     :columns="columnsRequests"
-    flat
     hide-bottom
     :loading="userStore.isLoading"
     :pagination="{ rowsPerPage: 0 }"
     row-key="email"
     :rows="requestStore.getRequests"
     title="Manage Requests"
+    class="q-ma-md"
+    bordered
+    virtual-scroll
   >
     <template v-slot:body-cell-message="props">
       <q-td :props="props" style="white-space: pre-line">
@@ -33,23 +35,18 @@
   <q-table
     v-if="userStore.getUsers"
     :columns="columnsUser"
-    flat
+    bordered
+    virtual-scroll
     :filter="filter"
-    hide-bottom
     :loading="userStore.isLoading || !userStore.getUsers"
-    :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
+    :pagination="{ sortBy: 'role', rowsPerPage: 20 }"
     row-key="email"
-    :rows="computedUsers"
+    :rows="filteredUsers"
     title="Manage Users"
+    class="q-ma-md q-mb-xl users-table"
   >
     <template v-slot:top-right>
-      <q-input
-        debounce="300"
-        data-test="query-input"
-        dense
-        placeholder="Search"
-        v-model="userStore._searchQuery"
-      >
+      <q-input debounce="400" data-test="query-input" dense placeholder="Search" v-model="filter">
         <template v-slot:append>
           <q-icon name="search" />
         </template>
@@ -72,6 +69,15 @@ const router = useRouter()
 
 const requestStore = useRequestStore()
 const userStore = useUserStore()
+const filter = ref('')
+
+const filteredUsers = computed(() => {
+  if (!filter.value) return userStore.getUsers
+  const search = filter.value.toLowerCase()
+  return userStore.getUsers.filter((user) => {
+    return user.displayName.toLowerCase().includes(search) || user.email.toLowerCase().includes(search)
+  })
+})
 
 const columnsRequests = [
   { name: 'displayName', label: 'Name', field: (row) => row.user.displayName, sortable: true, align: 'left' },
@@ -84,13 +90,29 @@ const columnsUser = [
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
 ]
-const filter = ref('')
 const options = ['Admin', 'Editor', 'Advertiser', 'Writer', 'User']
 
-const computedUsers = computed(()=>{
-  if(!userStore._searchQuery) return userStore.getUsers
-  return userStore.getUsers.filter(item=>{
+const computedUsers = computed(() => {
+  if (!userStore._searchQuery) return userStore.getUsers
+  return userStore.getUsers.filter((item) => {
     return item?.displayName.toLowerCase().includes(userStore._searchQuery.toLowerCase())
   })
 })
 </script>
+
+<style>
+.users-table {
+  left: 0;
+  right: 0;
+  max-height: 76vh;
+  @media (max-width: 720px) {
+    max-height: 73vh;
+  }
+}
+.users-table .q-table__middle > .q-table > thead > tr {
+  background-color: white !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 1 !important;
+}
+</style>
