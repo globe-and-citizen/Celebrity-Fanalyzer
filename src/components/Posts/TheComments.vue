@@ -2,7 +2,7 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.getComments?.length > 0" class="q-pa-md" style="margin-bottom: 6rem">
+      <section v-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
           v-for="comment of comments"
           :collection-name="collectionName"
@@ -19,57 +19,71 @@
       </div>
 
       <q-form greedy @submit.prevent="commentStore.haveToReply ? addReply() : addComment()">
-        <q-input
-          class="bg-white fixed-bottom q-px-sm q-page-container z-fab"
-          :data-test="commentStore.haveToReply ? 'fill-add-reply' : 'comment-main-box'"
-          dense
-          :label="commentStore.haveToReply ? 'Reply' : 'Comment'"
-          lazy-rules
-          :name="commentStore.haveToReply ? commentId : ''"
-          ref="inputField"
-          :required="!commentStore.haveToReply"
-          rounded
-          standout="bg-secondary text-white"
-          style="margin-bottom: 6.5rem"
-          v-model="commentValue"
-          @blur="isMention = false"
-          @keydown.escape="inputField.blur()"
-        >
-          <q-list v-if="isMention" class="absolute bg-secondary rounded-borders text-caption" dark style="bottom: 40px">
-            <q-item v-for="(commenter, index) in commenters" clickable :key="index" @click="mentionUser(commenter)">
-              <q-item-section>{{ commenter.name }}</q-item-section>
-            </q-item>
-          </q-list>
-
-          <div v-if="commentStore.haveToReply" class="replyTop">
-            <p>
-              Replying to
-              <span class="text-bold">{{ getReplyAuthor() }}</span>
-            </p>
-            <q-btn dense flat icon="close" round size="sm" @click="commentStore.setReplyTo('')" />
-          </div>
-          <q-btn
-            color="grey-6"
-            :data-test="commentStore.haveToReply ? 'submit-fill-add-reply' : ''"
+        <div class="fixed-bottom q-px-sm q-page-container position-relative">
+          <q-input
+            class="bg-white z-fab"
+            :data-test="commentStore.haveToReply ? 'fill-add-reply' : 'comment-main-box'"
             dense
-            :disable="!commentValue"
-            flat
-            icon="send"
-            round
-            type="submit"
+            :label="commentStore.haveToReply ? 'Reply' : 'Comment'"
+            lazy-rules
+            :name="commentStore.haveToReply ? commentId : ''"
+            ref="inputField"
+            :required="!commentStore.haveToReply"
+            rounded
+            standout="bg-secondary text-white"
+            style="margin-bottom: 7rem"
+            v-model="commentValue"
+            @blur="isMention = false"
+            @keydown.escape="inputField.blur()"
+          >
+            <q-list v-if="isMention" class="absolute bg-secondary rounded-borders text-caption" dark style="bottom: 40px">
+              <q-item v-for="(commenter, index) in commenters" clickable :key="index" @click="mentionUser(commenter)">
+                <q-item-section>{{ commenter.name }}</q-item-section>
+              </q-item>
+            </q-list>
+
+            <div v-if="commentStore.haveToReply" class="replyTop">
+              <p>
+                Replying to
+                <span class="text-bold">{{ getReplyAuthor() }}</span>
+              </p>
+              <q-btn dense flat icon="close" round size="sm" @click="commentStore.setReplyTo('')" />
+            </div>
+            <q-btn
+              color="grey-6"
+              :data-test="commentStore.haveToReply ? 'submit-fill-add-reply' : ''"
+              dense
+              :disable="!commentValue"
+              flat
+              icon="send"
+              round
+              type="submit"
+            >
+              <q-tooltip v-if="commentValue">Send</q-tooltip>
+            </q-btn>
+          </q-input>
+          <q-btn
+            v-if="commentStore.getComments?.length >= 10"
+            class="analysis-btn"
+            :loading="statsStore.isLoading"
+            :disable="statsStore.isLoading"
+            color="primary"
+            @click="analyzeComments"
+            @click.stop.prevent
+            label="Sentiment analysis"
           />
-        </q-input>
+        </div>
       </q-form>
     </q-page>
   </q-page-container>
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { Notify, useQuasar } from 'quasar'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useCommentStore, useErrorStore, useNotificationStore, useUserStore } from 'src/stores'
-import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
+import { useCommentStore, useErrorStore, useNotificationStore, useStatStore, useUserStore } from 'src/stores'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue'
 
 const props = defineProps({
   collectionName: { type: String, required: true },
@@ -81,22 +95,27 @@ const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const notificationStore = useNotificationStore()
 const userStore = useUserStore()
+const statsStore = useStatStore()
 
 const commentId = ref('')
 const commentValue = ref('')
 const inputField = ref()
 const isMention = ref(false)
 const mentionedUsers = ref([])
+const commentsMessages = ref([])
 const reply = reactive({})
-
 const comments = computed(() => {
-  return commentStore.getComments.filter((comment) => !comment.parentId && comment.author)
+  return commentStore.getComments?.filter((comment) => !comment.parentId && comment.author)
 })
 
 const commenters = computed(() => {
   return commentStore.getComments
     .map((comment) => ({ id: comment.author?.uid, name: comment.author?.displayName }))
     .filter((value, index, self) => value.id && value.name && self.findIndex((t) => t.id === value.id && t.name === value.name) === index)
+})
+
+watch(comments, () => {
+  commentsMessages.value = comments.value?.map((comment) => comment.text)
 })
 
 watchEffect(() => {
@@ -134,12 +153,14 @@ async function addComment() {
       notificationStore.create(props.post.subscribers, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
+        slug: props.post.slug,
         message: 'New comment: ' + comment.text,
         type: 'comment'
       })
       notificationStore.create(mentionedUsers.value, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
+        slug: props.post.slug,
         message: userStore.getUser.displayName + ' mentioned you: ' + comment.text,
         type: 'mention'
       })
@@ -149,15 +170,40 @@ async function addComment() {
       $q.notify({ type: 'positive', message: 'Comment successfully submitted' })
     })
     .catch((error) => errorStore.throwError(error, 'Comment submission failed!'))
-    .finally(() => (commentValue.value = ''))
+    .finally(() => {
+      commentValue.value = ''
+    })
 }
+
+async function analyzeComments() {
+  await statsStore.getCommentsAnalysis(props.post?.id, commentsMessages.value).then(() => {
+    Notify.create({
+      message: `Users comments analyzed. Overall users' sentiment based on their comments is: ${statsStore.getSentiment}`,
+      color: 'primary',
+      multiLine: true,
+      timeout: 0,
+      avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
+      actions: [
+        {
+          label: 'Close',
+          color: 'yellow',
+          handler: () => {}
+        }
+      ]
+    })
+  })
+}
+
+watchEffect(async () => {
+  await commentStore.fetchComments(props.collectionName, props.post.id)
+})
 
 onUnmounted(() => {
   commentStore.setReplyTo('')
 })
 
 commentStore.$subscribe(() => {
-  commentStore.haveToReply ? inputField.value.focus() : inputField.value.blur()
+  commentStore.haveToReply ? inputField.value.focus() : inputField.value?.blur()
 })
 
 async function addReply() {
@@ -168,6 +214,7 @@ async function addReply() {
       notificationStore.create(props.post.subscribers, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
+        slug: props.post.slug,
         message: 'New comment: ' + comment.text,
         type: 'comment'
       })
@@ -181,6 +228,12 @@ async function addReply() {
   await nextTick()
   inputField.value.blur()
 }
+
+onMounted(async () => {
+  if (commentStore.getCommentsCount) {
+    await commentStore.fetchComments(props.collectionName, props.post?.id)
+  }
+})
 </script>
 
 <style scoped>
@@ -196,5 +249,20 @@ async function addReply() {
   position: absolute;
   top: -30px;
   width: 100%;
+}
+.analysis-btn {
+  position: absolute;
+  bottom: 115px;
+  right: -180px;
+
+  @media (max-width: 1024px) {
+    bottom: 160px;
+    right: 10px;
+  }
+
+  @media (max-width: 425px) {
+    bottom: 145px;
+    right: 10px;
+  }
 }
 </style>

@@ -1,6 +1,7 @@
 <template>
-  <article class="q-pt-md relative-position row">
-    <div class="col-8 flex column">
+  <article class="relative-position row" :class="{ 'q-pa-md article-card-item': !item.isAdd, 'full-width': item.isAdd }">
+    <CampaignCard v-if="item.isAdd" :advertise="item" />
+    <div v-if="!item.isAdd" class="col-8 flex column" data-test="prompt-card">
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
           <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />
@@ -23,15 +24,15 @@
         </div>
       </router-link>
     </div>
-    <router-link :to="link" class="col-4 text-primary">
+    <router-link v-if="!item.isAdd" :to="link" class="col-4 text-primary">
       <q-img :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
     </router-link>
     <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
-    <q-separator class="full-width q-mt-md" />
   </article>
 </template>
 
 <script setup>
+import CampaignCard from '../Advertiser/CampaignCard.vue'
 import { dayMonthYear } from 'src/utils/date'
 import { useRouter } from 'vue-router'
 
@@ -61,5 +62,29 @@ function goToUrl() {
 .link {
   text-decoration: none;
   color: black;
+}
+
+.article-card-item {
+  min-width: 619px;
+  width: 100%;
+  border: 1px solid #e54757;
+  border-radius: 24px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+
+  @media (max-width: 1440px) {
+    min-width: 590px;
+  }
+
+  @media (min-width: 1024px) {
+    min-width: 470px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 361px;
+  }
+
+  @media (max-width: 425px) {
+    min-width: 280px;
+  }
 }
 </style>

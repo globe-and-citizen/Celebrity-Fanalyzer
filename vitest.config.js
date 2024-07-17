@@ -30,5 +30,23 @@ export default defineConfig({
     }),
     jsconfigPaths(),
     viteCommonjs(['vue-echarts'])
-  ]
+  ],
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
+  // optimizeDeps: {
+  //   include: ['@web3modal/ethers5'],
+  //   esbuildOptions: {
+  //     target: 'es2020', // Ensure the target environment supports all features
+  //     define: {
+  //       global: 'globalThis'
+  //     },
+  //     supported: { 
+  //       bigint: true 
+  //     },
+  //   },
+   
+  // },
 })

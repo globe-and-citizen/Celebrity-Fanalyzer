@@ -7,35 +7,50 @@ service cloud.firestore {
       allow create: if request.auth.uid != null;
     }
     match /users/{document=**} {
-    	allow read, create, update, delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    	allow read, create, update, delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
-    match /prompts/{promptId}/likes/{document=**} {
-      allow read, create, update;
-    }
-    match /prompts/{promptId}/dislikes/{document=**} {
-      allow read, create, update;
-    }
-    match /prompts/{promptId}/shares/{document=**} {
-      allow read, create, update;
+    match /users/{userId}/notifications/{document=**} {
+    	allow read, create, update, delete, write;
     }
     match /prompts/{document=**} {
     	allow read;
       allow create, update, delete: if request.auth != null;
+    }
+    match /prompts/{promptId}/likes/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /prompts/{promptId}/dislikes/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /prompts/{promptId}/shares/{document=**} {
+      allow read, create, update;
+    }
+    match /prompts/{promptId}/comments/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /prompts/{promptId}/visitors/{document=**} {
+    	allow read, create, update, delete, write;
     }
     match /entries/{document=**} {
     	allow read;
       allow create, update, delete: if request.auth != null;
     }
     match /entries/{entryId}/likes/{document=**} {
-      allow read, create, update;
+      allow read, create, update, delete;
     }
     match /entries/{entryId}/dislikes/{document=**} {
-      allow read, create, update;
+      allow read, create, update, delete;
     }
     match /entries/{entryId}/shares/{document=**} {
       allow read, create, update;
     }
+    match /entries/{entryId}/stats/{document=**} {
+      allow read, create, update;
+    }
     match /entries/{entryId}/comments/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /entries/{entryId}/visitors/{document=**} {
     	allow read, create, update, delete, write;
     }
     match /errors/{document=**} {
@@ -43,6 +58,42 @@ service cloud.firestore {
     }
     match /feedbacks/{document=**} {
     	allow read, create, update, delete, write;
+    }
+    match /reports/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /cryptoTransactions/{document=**} {
+    	allow read, create, write;
+    }
+    match /requests/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /advertises/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /advertises/{advertiseId}/visitors/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /advertises/{advertiseId}/likes/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/dislikes/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/comments/{document=**} {
+    	allow read, create, update, delete, write;
+    }
+    match /advertises/{advertiseId}/shares/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/clicks/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/impressions/{document=**} {
+      allow read, create, update, delete;
+    }
+    match /advertises/{advertiseId}/lastViews/{document=**} {
+      allow read, create, update, delete;
     }
   }
 }

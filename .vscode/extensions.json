@@ -6,8 +6,7 @@
     "vue.volar",
     "gruntfuggly.todo-tree",
     "mhutchie.git-graph",
-    "vue.vscode-typescript-vue-plugin",
-    "Vue.volar"
+    "vue.vscode-typescript-vue-plugin"
   ],
   "unwantedRecommendations": ["octref.vetur", "hookyqr.beautify", "dbaeumer.jshint", "ms-vscode.vscode-typescript-tslint-plugin"]
 }

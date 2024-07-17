@@ -14,13 +14,13 @@ describe('Admin Prompt & Entry', () => {
   })
   it('Try To access non existing prompt page', () => {
     cy.visit('/not-exist-prompt')
-    cy.get('.q-notification__message').contains('Prompt Not found')
+    cy.get('.q-notification__message').contains('Not found')
     cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
     cy.location('pathname').should('eq', '/404')
   })
   it('Try To access non existing Entry page', () => {
     cy.visit('/not-exist-prompt')
-    cy.get('.q-notification__message').contains('Prompt Not found')
+    cy.get('.q-notification__message').contains('Not found')
     cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
     cy.location('pathname').should('eq', '/404')
     cy.get('.q-btn').click()
@@ -37,6 +37,8 @@ describe('Admin Prompt & Entry', () => {
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
     cy.get('.q-date__view > .no-wrap > :nth-child(1) > .q-btn > .q-btn__content').click()
+    cy.get('.q-date__view > :nth-child(1)> :nth-child(2) >:nth-child(1) ').click()
+    cy.contains('2022').click({ force: true })
     cy.get('.q-date__view > :nth-child(2)').click()
     cy.get('[data-test="close"]').click()
 
@@ -101,8 +103,9 @@ describe('Admin Prompt & Entry', () => {
     // cy.visit('/hello-world-')
     cy.visit('/2022/01')
     cy.contains('Hello World!')
-
+    cy.scrollTo('bottom')
     cy.get('[data-test="entries"]')
+    cy.scrollTo('top')
     const likedIcon = '/icons/thumbs-up-bolder.svg'
     const likeIcon = '/icons/thumbs-up.svg'
     const dislikedIcon = '/icons/thumbs-down-bolder.svg'

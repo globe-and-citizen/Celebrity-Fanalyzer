@@ -39,7 +39,7 @@
               >
                 <q-item-section>Delete</q-item-section>
               </q-item>
-              <q-item clickable data-test="comment-select-delete" v-close-popup @click="reportInput">
+              <q-item clickable data-test="comment-select-Report" v-close-popup @click="reportInput">
                 <q-item-section>Report</q-item-section>
               </q-item>
             </q-list>
@@ -184,9 +184,7 @@ const reportOptions = [
 
 const $q = useQuasar()
 onMounted(async () => {
-  await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
-
   window.addEventListener('keydown', handleKeydown)
 })
 
@@ -233,8 +231,8 @@ const dislikeIconClass = computed(() => {
   return (comment) => comment.dislikes?.some((dislike) => dislike === userId.value) || false
 })
 
-function likeComment(commentId) {
-  commentStore.likeComment(props.collectionName, props.documentId, commentId)
+async function likeComment(commentId) {
+  await commentStore.likeComment(props.collectionName, props.documentId, commentId)
 }
 
 function dislikeComment(commentId) {

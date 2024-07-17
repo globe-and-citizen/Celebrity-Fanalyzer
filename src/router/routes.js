@@ -1,5 +1,5 @@
-import { useUserStore } from 'stores'
-
+import profile from './profile'
+import admin from './admin'
 const routes = [
   {
     path: '/robots.txt',
@@ -57,18 +57,11 @@ const routes = [
         component: () => import('pages/PublicProfilePage.vue')
       },
       {
-        path: 'profile',
-        component: () => import('pages/ProfilePage.vue')
+        path: 'campaign/:campaignId',
+        component: () => import('pages/CampaignPage.vue')
       },
-      {
-        path: 'admin',
-        component: () => import('pages/AdminPage.vue'),
-        beforeEnter: (_to, _from, next) => {
-          const userStore = useUserStore()
-          if (userStore.isWriterOrAbove) next()
-          else next('/')
-        }
-      }
+      ...profile,
+      ...admin
     ]
   },
   {

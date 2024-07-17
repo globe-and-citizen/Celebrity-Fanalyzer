@@ -40,7 +40,9 @@ Cypress.Commands.add('login', () => {
     cy.get('[data-test="password-field"]').type('12345678')
     cy.get('[data-test="sign-button"]').click()
     // Visits the Admin Page
-    cy.get('[href="/admin"]').click()
-    cy.location('pathname').should('eq', '/admin')
+    cy.getByData('tab-profile').click({ force: true })
+    cy.visit('/admin')
+    // cy.get('[href="/admin"]').click()
+    cy.location('pathname').should('eq', '/admin/prompts')
   })
 })

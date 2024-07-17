@@ -11,6 +11,13 @@
             spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
+            @load="loaded = true"
+            :class="{ 'prompt-img': loaded }"
+            :srcset="`${monthPrompt?.image} 2x`"
+            sizes="(max-width: 560) 50vw, 100vw"
+            loading="eager"
+            decoding="async"
+            fetchpriority="low"
           />
         </RouterLink>
         <p class="q-my-md text-body1">
@@ -99,7 +106,7 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item caption="2023/24" default-opened expand-separator header-class="text-primary" icon="code" label="Build Layer 8">
+          <q-expansion-item caption="2023/24" expand-separator icon="code" label="Build Layer 8">
             <q-card>
               <q-card-section>
                 Ultimately, our goal is to launch Celebrity Fanalyzer behind a custom built anonymizing reverse proxy scheduled for
@@ -108,7 +115,14 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item caption="2024" expand-separator icon="language" label="Make it a DAPP">
+          <q-expansion-item
+            caption="2024"
+            default-opened
+            expand-separator
+            icon="language"
+            header-class="text-primary"
+            label="Make it a DAPP"
+          >
             <q-card>
               <q-card-section>
                 Celebrity Fanalyzer is one of many projects exploring how crypto currency can be used. Our goal is to make Celebrity
@@ -118,7 +132,14 @@
             </q-card>
           </q-expansion-item>
 
-          <q-expansion-item caption="2024" expand-separator icon="assessment" label="Connect Celebrity Fanalyzer to Layer 8">
+          <q-expansion-item
+            caption="2024"
+            default-opened
+            expand-separator
+            icon="assessment"
+            header-class="text-primary"
+            label="Connect Celebrity Fanalyzer to Layer 8"
+          >
             <q-card>
               <q-card-section>
                 How to determine the definition of "better" when opinions are subjective by definition? The simplest way is to implement a
@@ -179,12 +200,13 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { currentYearMonth } from 'src/utils/date'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted } from 'vue'
+import { useErrorStore, usePromptStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
-const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+
+const loaded = ref(false)
 
 const monthPrompt = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
@@ -193,8 +215,16 @@ const monthPrompt = computed(() => {
 })
 
 onMounted(async () => {
-  await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
-  await entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
+  // Fetch for new user and no monthPrompt.value
+  if (!monthPrompt.value) {
+    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
+  }
+  // If prompts are once per month check if last prompt date is different from current
+  const lastPromptMonth = new Date(monthPrompt?.value?.created?.seconds * 1000).getMonth()
+  const currentMonth = new Date().getMonth()
+  if (lastPromptMonth !== currentMonth) {
+    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
+  }
 })
 </script>
 
@@ -206,5 +236,9 @@ a {
   &:visited {
     color: #e54757;
   }
+}
+
+.prompt-img {
+  background-color: #e54757;
 }
 </style>

@@ -15,65 +15,43 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 module.exports = configure(function (ctx) {
   return {
     eslint: {
-      // fix: true,
-      // include = [],
-      // exclude = [],
-      // rawOptions = {},
       warnings: true,
       errors: true
     },
 
-    // https://v2.quasar.dev/quasar-cli/prefetch-feature
-    // preFetch: true,
-
-    // app boot file (/src/boot)
-    // --> boot files are part of "main.js"
-    // https://v2.quasar.dev/quasar-cli/boot-files
+    // App boot file (/src/boot)
     boot: [],
 
-    // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
+    // CSS to include
     css: ['app.css'],
 
-    // https://github.com/quasarframework/quasar/tree/dev/extras
-    extras: [
-      // 'ionicons-v4',
-      // 'mdi-v5',
-      // 'fontawesome-v6',
-      // 'eva-icons',
-      // 'themify',
-      // 'line-awesome',
-      // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
-      'roboto-font', // optional, you are not bound to it
-      'material-icons' // optional, you are not bound to it
-    ],
+    // Extras to include (like fonts, icons)
+    extras: ['roboto-font', 'material-icons'],
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
+    // Build configuration
     build: {
-      sourceMap: true,
+      sourceMap: false, // Disable source maps for production
       target: {
-        browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
-        node: 'node16'
+        browser: 'es2020', // Use modern ECMAScript for browser support
+        node: 'node18' // Ensure compatibility with Node.js 18
       },
-      vueRouterMode: 'history', // available values: 'hash', 'history'
-      // vueRouterBase,
-      // vueDevtools,
-      // vueOptionsAPI: false,
-
-      // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
-
-      // publicPath: '/',
-      // analyze: true,
-      // env: {},
-      // rawDefine: {}
-      // ignorePublicFolder: true,
-      // minify: false,
-      // polyfillModulePreload: true,
+      vueRouterMode: 'history', // Use 'history' mode for Vue Router
 
       extendViteConf(viteConf) {
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {
-              const chunks = ['@quasar/extras', 'echarts', 'firebase', 'pinia', 'quasar', 'vue', 'vue-echarts', 'vue-router']
+              const chunks = [
+                '@quasar/extras',
+                'echarts',
+                'firebase',
+                'pinia',
+                'quasar',
+                'vue',
+                'vue-echarts',
+                'vue-router',
+                'layer8_interceptor'
+              ]
               if (id.includes('/node_modules/')) {
                 for (const chunkName of chunks) {
                   if (id.includes(chunkName)) {
@@ -84,18 +62,24 @@ module.exports = configure(function (ctx) {
             }
           }
         }
+        viteConf.optimizeDeps = {
+          include: ['@web3modal/ethers5'],
+          esbuildOptions: {
+            target: 'es2020', // Ensure the target environment supports all features
+            define: {
+              global: 'globalThis'
+            },
+            supported: {
+              bigint: true
+            }
+          }
+        }
       }
-      // viteVuePluginOptions: {},
-
-      // vitePlugins: [
-      //   [ 'package-name', { ..options.. } ]
-      // ]
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
-      // https: true
-      open: true // opens browser window automatically
+      open: false // Disable automatic browser opening
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
@@ -133,7 +117,7 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['BottomSheet', 'LocalStorage', 'Notify']
+      plugins: ['BottomSheet', 'LocalStorage', 'Notify', 'Loading']
     },
 
     // animations: 'all', // --- includes all animations
@@ -182,16 +166,6 @@ module.exports = configure(function (ctx) {
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: false
-      // useFilenameHashes: true,
-      // extendGenerateSWOptions (cfg) {}
-      // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
-      // extendPWACustomSWConf (esbuildConf) {}
-    },
-
-    // Full list of options: https://v2.quasar.dev/quasar-cli/developing-cordova-apps/configuring-cordova
-    cordova: {
-      // noIosLegacyBuildFlag: true, // uncomment only if you know what you are doing
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli/developing-capacitor-apps/configuring-capacitor
@@ -209,19 +183,6 @@ module.exports = configure(function (ctx) {
       bundler: 'packager', // 'packager' or 'builder'
 
       packager: {
-        // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
-        // OS X / Mac App Store
-        // appBundleId: '',
-        // appCategoryType: '',
-        // osxSign: '',
-        // protocol: 'myapp://path',
-        // Windows only
-        // win32metadata: { ... }
-      },
-
-      builder: {
-        // https://www.electron.build/configuration/configuration
-
         appId: 'celebrity-fanalyzer'
       }
     },

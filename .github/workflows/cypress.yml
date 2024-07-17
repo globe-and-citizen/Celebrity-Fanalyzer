@@ -2,7 +2,7 @@ name: Cypress End-to-End Tests
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -23,6 +23,7 @@ jobs:
         with:
           start: npm run dev:e2e
           wait-on: http://localhost:9200/
+          wait-on-timeout: 600
           browser: chrome
           headed: true
           record: true

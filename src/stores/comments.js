@@ -5,19 +5,39 @@ import {
   deleteDoc,
   doc,
   getDocs,
-  onSnapshot,
   runTransaction,
   setDoc,
   Timestamp,
-  updateDoc
+  updateDoc,
+  getCountFromServer,
+  onSnapshot,
+  query,
+  where,
+  or,
+  orderBy
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
+import layer8 from 'layer8_interceptor'
+import { baseURL } from 'stores/stats'
+
+const pushCommentToStats = async (user_id, id, content) =>
+  await layer8
+    .fetch(`${baseURL}/comment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_id, id, content })
+    })
+    .then((res) => res.json())
+    .catch((err) => console.log(err))
 
 export const useCommentStore = defineStore('comments', {
   state: () => ({
     _comments: undefined,
+    _commentsCount: 0,
     _unSubscribe: undefined,
     _isLoading: false,
     _replyTo: ''
@@ -27,6 +47,7 @@ export const useCommentStore = defineStore('comments', {
 
   getters: {
     getComments: (state) => state._comments,
+    getCommentsCount: (state) => state._commentsCount,
     /**
      * @returns undefined|Object
      */
@@ -52,12 +73,21 @@ export const useCommentStore = defineStore('comments', {
       if (this._unSubscribe) {
         this._unSubscribe()
       }
-      this._unSubscribe = onSnapshot(collection(db, collectionName, documentId, 'comments'), async (querySnapshot) => {
-        const comments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      const q = query(
+        collection(db, collectionName, documentId, 'comments'),
+        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+      )
+      this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
+        const comments = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((data) => {
+            if (data.isDeleted) return false
+            return true
+          })
 
         for (const comment of comments) {
           if (!comment.isAnonymous) {
-            comment.author = userStore.getUserById(comment.author.id) || comment.author.id
+            comment.author = userStore.getUserById(comment.author?.id) || comment.author?.id
           }
           comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
           comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
@@ -80,23 +110,56 @@ export const useCommentStore = defineStore('comments', {
       })
     },
 
-    async addComment(collectionName, comment, document) {
+    async getTotalComments(collectionName, documentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
+      if (!userStore.getUsers) {
+        await userStore.fetchUsers()
+      }
+      if (this._unSubscribe) {
+        this._unSubscribe()
+      }
+
+      try {
+        const q1 = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+        )
+        const q2 = query(
+          collection(db, collectionName, documentId, 'comments'),
+          or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false)),
+          orderBy('parentId')
+        )
+
+        const totalCountFunc = await getCountFromServer(q1)
+        const totalChildCommentCountFunc = await getCountFromServer(q2)
+
+        const totalComments = totalCountFunc.data().count
+        const totalChildComments = totalChildCommentCountFunc.data().count
+
+        this.$patch({ _commentsCount: totalComments - totalChildComments })
+      } catch (e) {
+        console.error('Failed fetching comments count', e)
+      }
+    },
+
+    async addComment(collectionName, comment, document, isTest = false) {
+      const userStore = useUserStore()
+      const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 
       comment.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
       comment.created = Timestamp.fromDate(new Date())
       comment.id = Date.now() + '-' + (comment.author.id || comment.author)
       comment.isAnonymous = !userStore.isAuthenticated
 
+      if (!isTest) {
+        await pushCommentToStats(user_id, document.id, comment.text)
+      }
+
       this._isLoading = true
       await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
     },
 
     async editComment(collectionName, documentId, id, editedComment, userId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const comment = this.getComments?.find((comment) => comment.id === id)
       const index = this._comments.findIndex((comment) => comment.id === id)
 
@@ -123,8 +186,6 @@ export const useCommentStore = defineStore('comments', {
 
     async likeComment(collectionName, documentId, commentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const comment = this._comments.find((comment) => comment.id === commentId)
       const commentRef = doc(db, collectionName, documentId, 'comments', commentId)
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
@@ -142,12 +203,11 @@ export const useCommentStore = defineStore('comments', {
       if (comment.dislikes?.includes(userId)) {
         await updateDoc(commentRef, { dislikes: arrayRemove(user) })
       }
+      await this.fetchComments(collectionName, documentId)
     },
 
     async dislikeComment(collectionName, documentId, commentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const comment = this._comments.find((comment) => comment.id === commentId)
       const commentRef = doc(db, collectionName, documentId, 'comments', commentId)
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
@@ -165,21 +225,32 @@ export const useCommentStore = defineStore('comments', {
       if (comment.likes?.includes(userId)) {
         await updateDoc(commentRef, { likes: arrayRemove(user) })
       }
+      await this.fetchComments(collectionName, documentId)
     },
 
     async deleteComment(collectionName, documentId, commentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
+        const relatedCommentsQuery = query(collection(db, collectionName, documentId, 'comments'), where('parentId', '==', commentId))
+        const relatedCommentsSnapshot = await getDocs(relatedCommentsQuery)
         transaction.update(doc(db, collectionName, documentId, 'comments', commentId), {
           author: userStore.getUserIpHash,
           isAnonymous: true,
           text: 'Comment Deleted',
           isDeleted: true
         })
-      }).finally(() => (this._isLoading = false))
+        relatedCommentsSnapshot.forEach((relatedCommentDocs) => {
+          transaction.update(relatedCommentDocs.ref, {
+            isAnonymous: true,
+            text: 'Comment Deleted',
+            isDeleted: true
+          })
+        })
+      }).finally(async () => {
+        this._isLoading = false
+        await this.fetchComments(collectionName, documentId)
+      })
     },
 
     async deleteCommentsCollection(collectionName, documentId) {
@@ -194,8 +265,6 @@ export const useCommentStore = defineStore('comments', {
 
     async addReply(collectionName, documentId, reply) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       reply.author = userStore.getUserRef || userStore.getUserIpHash
       reply.created = Timestamp.fromDate(new Date())
       reply.id ??= Date.now() + '-' + (reply.author.id || reply.author)
@@ -203,12 +272,10 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, documentId, 'comments', reply.id), reply).finally(() => (this._isLoading = false))
+      await this.fetchComments(collectionName, documentId)
     },
 
     async removeCommentFromFirestore(collectionName, documentId, commentId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       this._isLoading = true
       await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId)).finally(() => (this._isLoading = false))
     },
