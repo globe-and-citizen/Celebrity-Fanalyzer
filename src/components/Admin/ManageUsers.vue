@@ -91,13 +91,6 @@ const columnsUser = [
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
 ]
 const options = ['Admin', 'Editor', 'Advertiser', 'Writer', 'User']
-
-const computedUsers = computed(() => {
-  if (!userStore._searchQuery) return userStore.getUsers
-  return userStore.getUsers.filter((item) => {
-    return item?.displayName.toLowerCase().includes(userStore._searchQuery.toLowerCase())
-  })
-})
 </script>
 
 <style>
