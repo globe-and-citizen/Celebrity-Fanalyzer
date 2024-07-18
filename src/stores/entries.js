@@ -51,7 +51,7 @@ export const useEntryStore = defineStore('entries', {
     _unSubscribe: undefined,
     _tab: 'post',
     entryDialog: {},
-    userRelatedEntries: [],
+    _userRelatedEntries: [],
     _loadedEntries: []
   }),
 
@@ -173,6 +173,7 @@ export const useEntryStore = defineStore('entries', {
     async addEntry(payload) {
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
+      const userStore = useUserStore()
 
       const entry = { ...payload }
 
@@ -188,6 +189,8 @@ export const useEntryStore = defineStore('entries', {
 
       await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
 
+      entry.author = await userStore.fetchUser(entry.author.id)
+      this._entries = [...this.getEntries, entry]
       await notificationStore.toggleSubscription('entries', entry.id)
     },
 
