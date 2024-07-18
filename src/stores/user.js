@@ -68,18 +68,6 @@ export const useUserStore = defineStore('user', {
       this._isLoading = false
     },
 
-    async queryUsers(search) {
-      this._isLoading = true
-      return await getDocs(
-        query(collection(db, 'users'), where('displayName', '>=', search), where('displayName', '<=', search + '\uf8ff'))
-      )
-        .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
-        })
-        .finally(() => (this._isLoading = false))
-    },
-
     async getUserByUidOrUsername(id) {
       this._isLoading = true
       const user = await getDoc(doc(db, 'users', id)).catch((error) => console.error(error))

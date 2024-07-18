@@ -22,7 +22,7 @@ const routes = [
         component: () => import('pages/TermsOfService.vue')
       },
       {
-        path: 'search|:year(\\d{4})',
+        path: 'search',
         component: () => import('pages/SearchPage.vue')
       },
       {
