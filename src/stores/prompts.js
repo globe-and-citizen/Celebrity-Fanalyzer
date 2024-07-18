@@ -184,6 +184,11 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
+      const userStore = useUserStore()
+      prompt.author = await userStore.fetchUser(prompt.author.id)
+      prompt.entries = []
+      const prompts = [prompt, ...this.getPrompts]
+      this._prompts = prompts
 
       await notificationStore.toggleSubscription('prompts', prompt.id)
     },
