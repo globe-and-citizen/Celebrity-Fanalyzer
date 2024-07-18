@@ -175,6 +175,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
+      const userStore = useUserStore()
 
       const prompt = { ...payload }
 
@@ -184,7 +185,7 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
-      const userStore = useUserStore()
+
       prompt.author = await userStore.fetchUser(prompt.author.id)
       prompt.entries = []
       const prompts = [prompt, ...this.getPrompts]
