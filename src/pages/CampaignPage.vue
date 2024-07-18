@@ -25,7 +25,6 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from '../components/Posts/ThePost.vue'
 import {
-  useCommentStore,
   useErrorStore,
   useLikeStore,
   useAdvertiseStore,
@@ -42,7 +41,6 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 const router = useRouter()
 
 const $q = useQuasar()
-const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const advertiseStore = useAdvertiseStore()
@@ -126,11 +124,7 @@ onUnmounted(async () => {
     await statStore.addStats(advertise.value?.id, stats, 'advertisement')
   }
   advertiseStore.setTab('post')
-  await likeStore.resetLikes()
-  await shareStore.resetShares()
-  await commentStore.resetComments()
-  await impressionStore.resetImpressions()
-  await likeStore.resetLikes()
+  await statStore.resetPostImpressions()
 })
 </script>
 
