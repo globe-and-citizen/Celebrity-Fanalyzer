@@ -231,6 +231,8 @@ export const usePromptStore = defineStore('prompts', {
         const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
+        const updatedPrompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
+        this._prompts = updatedPrompts
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting prompt')
       }
