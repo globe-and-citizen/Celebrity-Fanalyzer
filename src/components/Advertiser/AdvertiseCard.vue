@@ -286,8 +286,6 @@ function convertToMatic() {
 }
 
 async function onSubmit() {
-  // if (currentWalletAddress.value)
-  // {
   try {
     if (!advertise.budget) advertise.budget = 0
 
@@ -311,7 +309,6 @@ async function onSubmit() {
         .editAdvertise(advertise)
         .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
         .catch((error) => {
-          console.log(error)
           errorStore.throwError(error, 'Advertise edit failed')
         })
     } else {
@@ -345,9 +342,6 @@ async function onSubmit() {
     emit('hideDialog')
     $q.loading.hide()
   }
-  // }else{
-  //   $q.notify({ message: "please connect your blockchain wallet", type: 'negative' })
-  // }
   emit('hideDialog')
 }
 </script>

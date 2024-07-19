@@ -3,7 +3,7 @@
     feedbackButton
     notificationButton
     searchInput
-    :title="`${router.currentRoute.value.params.year} Search Archive`"
+    :title="`${router.currentRoute.value.params.year??''} Search Archive`"
     v-model="search"
   />
   <q-page-container class="search-page-container">

@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
-  </div>
+  <ManagePromptsEntries @openPromptDialog="openPromptDialog" />
 </template>
 
 <script setup>

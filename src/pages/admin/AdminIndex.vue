@@ -112,7 +112,7 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, usePromptStore,  useUserStore, useAdvertiseStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 

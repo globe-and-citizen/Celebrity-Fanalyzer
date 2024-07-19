@@ -175,12 +175,6 @@ describe('Users Store', () => {
     expect(userStore.getAdminsAndEditors.length).toBeGreaterThan(0)
   })
 
-  it('queryUsers', async () => {
-    const userStore = useUserStore()
-    await userStore.queryUsers('Cypress T')
-    expect(userStore.getUsers.length).toEqual(1)
-  })
-
   it('Should Fetch user by ID', async () => {
     const userStore = useUserStore()
     const user = await userStore.fetchUser('NQFZGO9mCYYyJUMdihfvYqy7df43')

@@ -7,10 +7,17 @@
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
           <q-img
+            loading="lazy"
+            decoding="async"
+            fetchpriority="low"
             :src="monthPrompt?.image"
             spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
+            @load="loaded = true"
+            :class="{ 'prompt-img': loaded }"
+            :srcset="`${monthPrompt?.image} 2x`"
+            sizes="(max-width: 560) 50vw, 100vw"
           />
         </RouterLink>
         <p class="q-my-md text-body1">
@@ -193,12 +200,13 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { currentYearMonth } from 'src/utils/date'
-import { useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted } from 'vue'
+import { useErrorStore, usePromptStore } from 'src/stores'
+import { computed, onMounted, ref } from 'vue'
 
-const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
+
+const loaded = ref(false)
 
 const monthPrompt = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
@@ -207,11 +215,9 @@ const monthPrompt = computed(() => {
 })
 
 onMounted(async () => {
-  // Fetch for new user and no monthPrompt.value
   if (!monthPrompt.value) {
     await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
   }
-  // If prompts are once per month check if last prompt date is different from current
   const lastPromptMonth = new Date(monthPrompt?.value?.created?.seconds * 1000).getMonth()
   const currentMonth = new Date().getMonth()
   if (lastPromptMonth !== currentMonth) {
@@ -228,5 +234,9 @@ a {
   &:visited {
     color: #e54757;
   }
+}
+
+.prompt-img {
+  background-color: #e54757;
 }
 </style>
