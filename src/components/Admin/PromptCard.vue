@@ -192,7 +192,7 @@ watchEffect(() => {
 })
 
 onMounted(() => {
-  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function onUpdateMonth() {

@@ -32,7 +32,7 @@ describe('Users Store', () => {
   it('Should Access the store initial state with the getter as an anonymous user', async () => {
     const userStore = useUserStore()
     expect(userStore.getAdmins).toEqual([])
-    expect(userStore.getAdminsAndWriters).toEqual([])
+    expect(userStore.getAdminsAndEditors).toEqual([])
     expect(userStore.getProfileTab).toEqual('profile')
     expect(userStore.getSubscriptions).toEqual(undefined)
     expect(userStore.getUser).toEqual({})
@@ -143,7 +143,7 @@ describe('Users Store', () => {
     // 3) Verify that the user is redirected to the Index Page.
     expect(router.currentRoute.value.path).toBe('/fan/arnonrdp')
 
-    await userStore.fetchAdminsAndWriters()
+    await userStore.fetchAdminsAndEditors()
 
     // 4) Get the user's prompts and entries
     await promptStore.fetchPrompts()
@@ -172,7 +172,7 @@ describe('Users Store', () => {
 
     expect(userStore.getUsers.length).toBeGreaterThan(0)
     expect(userStore.getAdmins.length).toBeGreaterThan(0)
-    expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
+    expect(userStore.getAdminsAndEditors.length).toBeGreaterThan(0)
   })
 
   it('queryUsers', async () => {

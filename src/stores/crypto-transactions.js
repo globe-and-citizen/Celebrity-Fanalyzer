@@ -25,7 +25,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       this._isLoading = true
@@ -60,7 +60,6 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
       // Clone the payload to avoid mutating the original object
       const cryptoTransaction = { ...payload }
 
-      
       // Get the prompt reference
       const promptRef = promptStore.getPromptRef(cryptoTransaction.entry.prompt?.id)
 
@@ -76,7 +75,6 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
         await updateDoc(doc(db, 'prompts', promptRef.id), { isTreated: true, updated: Timestamp.fromDate(new Date()) })
         // Add the new transaction document to the 'cryptoTransactions' collection
         const cryptoTransactionRef = await addDoc(collection(db, 'cryptoTransactions'), cryptoTransaction)
-        
       } catch (error) {
         console.error('Error adding transaction:', error)
       } finally {

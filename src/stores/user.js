@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', {
 
   getters: {
     getAdmins: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin') || [],
-    getAdminsAndWriters: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin' || user.role === 'Writer') || [],
+    getAdminsAndEditors: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin' || user.role === 'Editor') || [],
     getProfileTab: (state) => state._profileTab,
     getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
@@ -91,11 +91,9 @@ export const useUserStore = defineStore('user', {
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchAdminsAndWriters() {
+    async fetchAdminsAndEditors() {
       this._isLoading = true
-      await getDocs(
-        query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'), where('population', '==', 'Writer')))
-      )
+      await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'))))
         .then((querySnapshot) => {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })
