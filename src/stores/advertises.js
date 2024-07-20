@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { collection, doc, Timestamp, runTransaction, onSnapshot, deleteDoc, where, query, setDoc, orderBy } from 'firebase/firestore'
+import { collection, deleteDoc, doc, onSnapshot, orderBy, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
+  useClicksStore,
   useCommentStore,
   useErrorStore,
+  useImpressionsStore,
   useLikeStore,
   useShareStore,
   useUserStore,
-  useVisitorStore,
-  useClicksStore,
-  useImpressionsStore
+  useVisitorStore
 } from 'src/stores'
 
 export const useAdvertiseStore = defineStore('advertises', {
@@ -42,19 +42,13 @@ export const useAdvertiseStore = defineStore('advertises', {
         this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
           this.setLoaderTrue()
           let advertises = querySnapshot.docs.map((doc) => {
-            const data = { id: doc.id, ...doc.data() }
-            return data
+            return { id: doc.id, ...doc.data() }
           })
 
           if (!userStore.isAdmin) {
-            const filterData = advertises.filter((advertise) => {
-              if (advertise.author.id === userStore.getUserId) {
-                return true
-              } else {
-                return false
-              }
+            advertises = advertises.filter((advertise) => {
+              return advertise.author.id === userStore.getUserId
             })
-            advertises = filterData
           }
 
           for (const advertise of advertises) {
@@ -63,7 +57,7 @@ export const useAdvertiseStore = defineStore('advertises', {
 
           this._advertises = []
           this.$patch({ _advertises: advertises })
-          this.computeValues()
+          await this.computeValues()
           this.setLoaderFalse()
         })
       }
@@ -193,13 +187,10 @@ export const useAdvertiseStore = defineStore('advertises', {
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteAdvertiseDoc, deleteVisitors, deleteClicks, deleteImpressions])
       } catch (error) {
         console.log(error)
-        errorStore.throwError(error)
+        await errorStore.throwError(error)
       }
 
       this._isLoading = false
-    },
-    resetAdvertises() {
-      this._advertises = []
     },
     setTab(tab) {
       this.$patch({ _tab: tab })

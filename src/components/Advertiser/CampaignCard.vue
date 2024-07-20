@@ -32,13 +32,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUserStore, useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
+import { useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getFormattedLink } from 'src/utils/getFormattedLink'
 
 const router = useRouter()
 const articleRef = ref(null)
-const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 const errorStore = useErrorStore()
 const clicksStore = useClicksStore()
@@ -208,12 +207,5 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-columns: 1fr 2fr;
     grid-template-rows: 1fr;
   }
-
-  // @media (max-width: 32rem) {
-  //   .blog-card {
-  //     grid-template-columns: auto;
-  //     grid-template-rows: 18rem 1fr;
-  //   }
-  // }
 }
 </style>

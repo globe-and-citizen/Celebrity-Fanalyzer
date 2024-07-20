@@ -127,10 +127,9 @@
 import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
-import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
-import { currentYearMonth, getCurrentDate, calculateEndDate } from 'src/utils/date'
-import { reactive, ref, watchEffect, computed, onMounted } from 'vue'
-import { useWalletStore } from 'src/stores'
+import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
+import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
+import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 import { fetchMaticRate } from 'app/src/web3/transfers.js'
@@ -154,21 +153,17 @@ const props = defineProps([
   'campaignCode'
 ])
 
-const walletStore = useWalletStore()
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const advertiseStore = useAdvertiseStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
-const editorRef = ref(null)
 const contentModel = ref([])
 const datePickerVisible = ref(false)
 const fileErrorMessage = ref('Max size is 5MB')
 const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
-
-const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_address)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -248,27 +243,6 @@ function onRejected() {
   fileError.value = true
 }
 
-function onPaste(evt) {
-  // Let inputs do their thing, so we don't break pasting of links.
-  if (evt.target.nodeName === 'INPUT') return
-  let text, onPasteStripFormattingIEPaste
-  evt.preventDefault()
-  evt.stopPropagation()
-  if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
-    text = evt.originalEvent.clipboardData.getData('text/plain')
-    editorRef.value.runCmd('insertText', text)
-  } else if (evt.clipboardData && evt.clipboardData.getData) {
-    text = evt.clipboardData.getData('text/plain')
-    editorRef.value.runCmd('insertText', text)
-  } else if (window.clipboardData && window.clipboardData.getData) {
-    if (!onPasteStripFormattingIEPaste) {
-      onPasteStripFormattingIEPaste = true
-      editorRef.value.runCmd('ms-pasteTextOnly', text)
-    }
-    onPasteStripFormattingIEPaste = false
-  }
-}
-
 function isUrlValid(userInput = '') {
   var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
   if (res == null) return false
@@ -276,8 +250,7 @@ function isUrlValid(userInput = '') {
 }
 
 async function createAdCampain(payload) {
-  const result = await contractCreateAdCampaign(payload)
-  return result
+  return await contractCreateAdCampaign(payload)
 }
 function convertToMatic() {
   if (maticRate.value && usdAmount.value && maticRate.value) {
@@ -315,9 +288,7 @@ async function onSubmit() {
       //call contract create function
       const result = await createAdCampain({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
-        //currentCampaignCode.value=result.events[0].args.campaignCode;
         advertise.campaignCode = result.events[0].args.campaignCode
-        //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
         //save advertisement to database
         await advertiseStore
           .addAdvertise(advertise)

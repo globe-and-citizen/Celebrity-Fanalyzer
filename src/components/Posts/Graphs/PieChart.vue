@@ -1,5 +1,5 @@
 <template>
-  <div :id="chartId" autoresize></div>
+  <div :id="chartId"></div>
 </template>
 
 <script>
@@ -8,8 +8,8 @@ import * as echarts from 'echarts'
 export default {
   data() {
     return {
-      chartId: 'piechart', // ID of the chart container element
-      myChart: null // Placeholder for the ECharts instance
+      chartId: 'piechart',
+      myChart: null
     }
   },
   mounted() {
@@ -17,10 +17,7 @@ export default {
   },
   methods: {
     initChart() {
-      // Initialize ECharts instance
       this.myChart = echarts.init(document.getElementById(this.chartId))
-
-      // Specify chart options
       const option = {
         backgroundColor: 'white',
         title: {
@@ -75,20 +72,12 @@ export default {
               shadowColor: 'rgba(0, 0, 0, 0.5)'
             },
             animationType: 'scale',
-            animationEasing: 'elasticOut',
-            animationDelay: function (idx) {
-              return Math.random() * 200
-            }
+            animationEasing: 'elasticOut'
           }
         ]
       }
-      // Set chart options and render the chart
       this.myChart.setOption(option)
     }
   }
 }
 </script>
-
-<style>
-/* Add any custom styles here */
-</style>

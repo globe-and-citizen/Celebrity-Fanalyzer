@@ -100,7 +100,7 @@ onMounted(async () => {
 })
 
 function confirmDelete(report, value) {
-  if (value == 'comment') {
+  if (value === 'comment') {
     isComment.value = true
   } else {
     isComment.value = false
