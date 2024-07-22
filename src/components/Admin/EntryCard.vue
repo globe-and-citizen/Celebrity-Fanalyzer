@@ -193,7 +193,7 @@ async function onSubmit() {
     }
     if (href.includes('/admin') && !userStore.isEditorOrAbove) {
       await entryStore.fetchUserRelatedEntries(userStore.getUserId)
-    } else if (userStore.isEditorOrAbove && href.includes('/admin')) {
+    } else {
       const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
       const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
       const res = await entryStore.fetchPromptsEntries(updatedList)
