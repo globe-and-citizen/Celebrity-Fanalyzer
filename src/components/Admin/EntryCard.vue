@@ -127,7 +127,7 @@ const promptOptions =
   promptStore.getPrompts?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse() || []
 
 onMounted(() => {
-  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }

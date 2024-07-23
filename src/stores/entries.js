@@ -71,7 +71,7 @@ export const useEntryStore = defineStore('entries', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       try {
@@ -123,7 +123,7 @@ export const useEntryStore = defineStore('entries', {
       const userStore = useUserStore()
       try {
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         this._isLoading = true

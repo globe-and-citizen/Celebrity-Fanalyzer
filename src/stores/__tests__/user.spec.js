@@ -32,7 +32,7 @@ describe('Users Store', () => {
   it('Should Access the store initial state with the getter as an anonymous user', async () => {
     const userStore = useUserStore()
     expect(userStore.getAdmins).toEqual([])
-    expect(userStore.getAdminsAndWriters).toEqual([])
+    expect(userStore.getAdminsAndEditors).toEqual([])
     expect(userStore.getProfileTab).toEqual('profile')
     expect(userStore.getSubscriptions).toEqual(undefined)
     expect(userStore.getUser).toEqual({})
@@ -43,7 +43,7 @@ describe('Users Store', () => {
     expect(userStore.getUsers).toEqual(undefined)
     expect(userStore.isAdmin).toEqual(false)
     expect(userStore.isEditorOrAbove).toEqual(false)
-    expect(userStore.isWriterOrAbove).toEqual(false)
+
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isLoading).toEqual(false)
     expect(userStore.isAuthenticated).toEqual(false)
@@ -84,7 +84,6 @@ describe('Users Store', () => {
     expect(!!userStore.getUserRef).toEqual(true)
     expect(userStore.isAdmin).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
-    expect(userStore.isWriterOrAbove).toEqual(true)
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isAuthenticated).toEqual(true)
     await userStore.updateProfile(userStore.getUser)
@@ -103,7 +102,7 @@ describe('Users Store', () => {
     expect(userStore.getUserRef).toEqual(undefined)
     expect(userStore.isAdmin).toEqual(false)
     expect(userStore.isEditorOrAbove).toEqual(false)
-    expect(userStore.isWriterOrAbove).toEqual(false)
+
     expect(userStore.isAnonymous).toEqual(undefined)
     expect(userStore.isAuthenticated).toEqual(false)
   })
@@ -144,7 +143,7 @@ describe('Users Store', () => {
     // 3) Verify that the user is redirected to the Index Page.
     expect(router.currentRoute.value.path).toBe('/fan/arnonrdp')
 
-    await userStore.fetchAdminsAndWriters()
+    await userStore.fetchAdminsAndEditors()
 
     // 4) Get the user's prompts and entries
     await promptStore.fetchPrompts()
@@ -173,7 +172,7 @@ describe('Users Store', () => {
 
     expect(userStore.getUsers.length).toBeGreaterThan(0)
     expect(userStore.getAdmins.length).toBeGreaterThan(0)
-    expect(userStore.getAdminsAndWriters.length).toBeGreaterThan(0)
+    expect(userStore.getAdminsAndEditors.length).toBeGreaterThan(0)
   })
 
   it('Should Fetch user by ID', async () => {
@@ -257,8 +256,6 @@ describe('Users Store', () => {
     expect(userStore.getUser.role).toEqual('Editor')
     expect(userStore.isAuthenticated).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
-    expect(userStore.isWriterOrAbove).toEqual(true)
-
     user = auth.currentUser
     await deleteUser(user)
 
