@@ -2,7 +2,7 @@
   <article
     ref="articleRef"
     id="test"
-    class="max-width full-height full-width"
+    class="max-width full-height full-width search-page"
     :class="[{ 'blog-card': advertise.type !== 'Text', 'text-blog-card': advertise.type === 'Text' }]"
     @click="onClick"
   >
@@ -94,18 +94,18 @@ $shadow: rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: row;
   background: $white;
-  filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 0 5px $shadow;
 }
 .text-blog-card {
   display: flex;
   flex-direction: row;
   background: $white;
-  filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
   min-width: 400px;
+  box-shadow: 0 0 5px $shadow;
 }
 .card-link {
   position: relative;
@@ -163,6 +163,9 @@ $shadow: rgba(0, 0, 0, 0.2);
   @media (max-width: 425px) {
     min-width: 280px;
   }
+  @media (max-width: 500px) {
+    margin: 0 3px !important;
+  }
 }
 
 @media (max-width: 40rem) {
@@ -202,12 +205,5 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-columns: 1fr 2fr;
     grid-template-rows: 1fr;
   }
-
-  // @media (max-width: 32rem) {
-  //   .blog-card {
-  //     grid-template-columns: auto;
-  //     grid-template-rows: 18rem 1fr;
-  //   }
-  // }
 }
 </style>
