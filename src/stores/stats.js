@@ -43,8 +43,8 @@ export const useStatStore = defineStore('stats', {
           'Content-Type': 'application/json'
         }
       })
-
-      this._summary = await response.json() // Parsing the JSON data
+      // Parsing the JSON data
+      this._summary = await response.json()
       this._isLoading = false
     },
 

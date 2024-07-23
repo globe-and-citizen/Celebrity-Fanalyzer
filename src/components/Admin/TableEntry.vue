@@ -272,7 +272,7 @@ function onSelectWinnerDialog(props) {
     if (isWinner === true && promptHasWinner === true) {
       $q.notify({ type: 'negative', message: 'The corresponding prompt already has a winner ' })
     } else {
-      let payload = { ...props }
+      const payload = { ...props }
       selectWinnerDialog.value.show = true
       selectWinnerDialog.value.entry = payload
     }

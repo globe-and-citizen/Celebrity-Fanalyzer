@@ -125,7 +125,6 @@ const newPhoto = ref(null)
 const origin = window.location.origin + '/'
 const user = ref(userStore.getUser)
 
-
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
@@ -145,7 +144,6 @@ async function uploadPhoto() {
     .catch((error) => errorStore.throwError(error))
 }
 
-
 async function usernameValidator(username) {
   if (!username) return true
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
@@ -162,7 +160,7 @@ function switchAddressUpdated(value) {
   addressUpdated.value = value
 }
 function save() {
-  if (currentWalletAddress.value && addressUpdated.value == true) {
+  if (currentWalletAddress.value && addressUpdated.value === true) {
     user.value.walletAddress = currentWalletAddress.value
   }
 

@@ -32,7 +32,8 @@ const getProvider = async () => {
     console.error('Error getting provider:', error)
     const errorMessage = 'please connect your wallet'
     error = 'please connect your wallet'
-    throw error // Rethrow the error to handle it where getProvider is called
+    // Rethrow the error to handle it where getProvider is called
+    throw error
   }
 }
 
@@ -93,7 +94,7 @@ export const claimPayment = async (payload = { campaignCode: '', currentAmounSpe
       const adCampaignManager = await getContractInstance()
       if (
         customWeb3modal.getAddress() &&
-        customWeb3modal.getAddress().toLowerCase() == import.meta.env.VITE_ADVERTISEMENT_COMPAIGN_CONTRACT_OWNER.toLowerCase()
+        customWeb3modal.getAddress().toLowerCase() === import.meta.env.VITE_ADVERTISEMENT_COMPAIGN_CONTRACT_OWNER.toLowerCase()
       ) {
         const tx = await adCampaignManager.claimPayment(
           payload.campaignCode,

@@ -28,8 +28,8 @@ import { useImpressionsStore } from './impressions'
  * async/await or return a Promise which resolves
  * with the Store instance.
  */
-
-export default store((/* { ssrContext } */) => {
+/* { ssrContext } */
+export default store(() => {
   const pinia = createPinia()
 
   pinia.use(

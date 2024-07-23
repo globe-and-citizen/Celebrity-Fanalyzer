@@ -72,7 +72,7 @@ async function onSubmit(event) {
   $q.loading.show()
   try {
     await initiateSendEther(props.walletAddress, maticAmount.value).then((transactionResult) => {
-      if (transactionResult?.success == true) {
+      if (transactionResult?.success === true) {
         const payload = {
           initiator: userStore.getUser,
           entry: props.entry,
@@ -100,7 +100,7 @@ async function onSubmit(event) {
             $q.loading.hide()
           })
       } else {
-        var errorMessage = 'transaction failed'
+        let errorMessage = 'transaction failed'
 
         if (transactionResult?.error) {
           errorMessage = transactionResult?.error

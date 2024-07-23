@@ -6,7 +6,9 @@
   >
     <h2 class="q-my-auto text-bold text-h5 q-pa-md">
       Entries
-      <q-icon class="cursor-pointer" name="add" size="30px" @click="openEntryDialog()"><q-tooltip>Add entries</q-tooltip></q-icon>
+      <q-icon v-if="!hasWinner" class="cursor-pointer" name="add" size="30px" @click="openEntryDialog()">
+        <q-tooltip>Add entries</q-tooltip>
+      </q-icon>
     </h2>
     <div class="card-items-wrapper">
       <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" data-test="entry" />
@@ -25,13 +27,13 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import { useEntryStore } from 'src/stores'
 import { ref } from 'vue'
 
-const props = defineProps(['entries','promptDate'])
+const props = defineProps(['entries', 'promptDate', 'hasWinner'])
 
 const entryStore = useEntryStore()
 const entry = ref({})
 
 function openEntryDialog() {
-  entry.value = {};
+  entry.value = {}
   entry.value.dialog = true
 }
 </script>

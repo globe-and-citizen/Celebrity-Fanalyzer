@@ -1,4 +1,4 @@
-import { createWeb3Modal,defaultConfig } from '@web3modal/ethers5'
+import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5'
 
 import { useWalletStore } from '../stores'
 
@@ -7,19 +7,19 @@ import { useWalletStore } from '../stores'
 const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID
 
 const baseUrl = window.location.origin
-const chains= useWalletStore().getChains;
+const chains = useWalletStore().getChains
 
-const currentNetworkName = import.meta.env.VITE_CURRENT_NETWORK_NAME.toLowerCase();
+const currentNetworkName = import.meta.env.VITE_CURRENT_NETWORK_NAME.toLowerCase()
 //console.log("Current network name: ", currentNetworkName);
 
 // 3. Define a function to get the chain configuration based on the current network name
 
 // 4. Get the chain configuration
-const chainConfig = useWalletStore().getChainConfig(currentNetworkName);
+const chainConfig = useWalletStore().getChainConfig(currentNetworkName)
 
 //console.log("Chain configuration: ", chainConfig);
 
-//default chain polygon amoy... 
+//default chain polygon amoy...
 // var chain={
 //   chainId: import.meta.env.VITE_POLYGON_AMOY_NETWORK_ID,
 //   name: "Polygon Mainnet",
@@ -42,7 +42,8 @@ const chainConfig = useWalletStore().getChainConfig(currentNetworkName);
 const metadata = {
   name: 'Celebrity Fanalyser',
   description: 'Celebrity Fanalyser',
-  url: baseUrl, // url must match your domain & subdomain
+  // url must match your domain & subdomain
+  url: baseUrl,
   icons: ['']
 }
 
@@ -58,6 +59,8 @@ export const customWeb3modal = createWeb3Modal({
   ethersConfig,
   chains: [chainConfig],
   projectId,
-  enableAnalytics: true, // Optional - defaults to your Cloud configuration
-  enableOnramp: true // Optional - false as default
+  // Optional - defaults to your Cloud configuration
+  enableAnalytics: true,
+  // Optional - false as default
+  enableOnramp: true
 })

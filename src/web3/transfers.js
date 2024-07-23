@@ -55,7 +55,8 @@ const getProvider = async () => {
     return provider
   } catch (error) {
     console.error('Error getting provider:', error)
-    throw error // Rethrow the error to handle it where getProvider is called
+    // Rethrow the error to handle it where getProvider is called
+    throw error
   }
 }
 
@@ -66,7 +67,8 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       await customWeb3modal.open()
     }
     if (customWeb3modal.getAddress()) {
-      const provider = await getProvider() // Get the signer
+      // Get the signer
+      const provider = await getProvider()
       const signer = provider.getSigner()
 
       if (signer) {
@@ -115,7 +117,8 @@ export const getTransactionDetails = async (txHash, networkName) => {
     const receipt = await provider.getTransactionReceipt(txHash)
 
     // Extracting the desired information
-    const amount = ethers.utils.formatEther(transaction.value) // Convert Wei to Ether for the transaction amount
+    // Convert Wei to Ether for the transaction amount
+    const amount = ethers.utils.formatEther(transaction.value)
     const sender = transaction.from
     const receiver = transaction.to
     const status = receipt.status === 1 ? 'Success' : 'Failed'
