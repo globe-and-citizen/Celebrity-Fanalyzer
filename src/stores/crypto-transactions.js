@@ -25,7 +25,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       this._isLoading = true

@@ -6,7 +6,7 @@ export default [
     name: 'admin',
     beforeEnter: (_to, _from, next) => {
       const userStore = useUserStore()
-      if (userStore.isWriterOrAbove || userStore.isAuthenticated) next()
+      if (userStore.isAuthenticated) next()
       else next('/')
     },
     component: () => import('pages/admin/AdminIndex.vue'),

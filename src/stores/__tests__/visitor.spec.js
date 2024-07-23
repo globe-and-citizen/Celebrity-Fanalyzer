@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Necessary Components
-import { usePromptStore, useVisitorStore } from 'src/stores'
+import { usePromptStore, useVisitorStore, useUserStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Users Store', () => {
@@ -22,7 +22,9 @@ describe('Users Store', () => {
   it('Should read visitors and add a new one', async () => {
     const promptStore = usePromptStore()
     const visitorStore = useVisitorStore()
+    const userStore = useUserStore()
 
+    await userStore.fetchUserIp()
     await promptStore.fetchPrompts()
     await waitUntil(() => promptStore.getPrompts)
     const firstPrompt = promptStore.getPrompts[0]
