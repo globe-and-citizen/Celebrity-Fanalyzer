@@ -29,13 +29,12 @@ import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
+import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
-const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
@@ -121,17 +120,14 @@ watch(entriesRef, (newVal) => {
 })
 
 onBeforeRouteLeave(async () => {
-  await statStore.resetStats()
-  await statStore.resetUserRating()
-})
-
-onUnmounted(async () => {
   const stats = stopTracking()
   await statStore.addStats(prompt.value?.id, stats, 'topic')
-  promptStore.setTab('post')
-  await likeStore.resetLikes()
-  await shareStore.resetShares()
-  await commentStore.resetComments()
+  statStore.resetStats()
+  statStore.resetUserRating()
+})
+
+onUnmounted(() => {
+  statStore.resetPostImpressions()
   window.removeEventListener('scroll', onScroll)
 })
 </script>

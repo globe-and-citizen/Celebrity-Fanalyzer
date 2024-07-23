@@ -149,11 +149,6 @@ export const useLikeStore = defineStore('likes', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
-    },
-
-    async resetLikes() {
-      this._likes = undefined
-      this._dislikes = undefined
     }
   }
 })

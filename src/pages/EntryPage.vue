@@ -22,7 +22,6 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
@@ -33,7 +32,6 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()

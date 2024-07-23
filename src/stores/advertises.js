@@ -198,9 +198,6 @@ export const useAdvertiseStore = defineStore('advertises', {
 
       this._isLoading = false
     },
-    resetAdvertises() {
-      this._advertises = []
-    },
     setTab(tab) {
       this.$patch({ _tab: tab })
     }
