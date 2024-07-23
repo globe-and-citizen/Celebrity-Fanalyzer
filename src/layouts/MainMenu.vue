@@ -7,7 +7,7 @@
 
       <q-route-tab
         class="adminTab"
-        v-if="userStore.isWriterOrAbove || userStore.isAuthenticated"
+        v-if=" userStore.isAuthenticated"
         icon="admin_panel_settings"
         @click="onAdminTabClick"
       >

@@ -127,7 +127,7 @@ const promptOptions =
   promptStore.getPrompts?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse() || []
 
 onMounted(() => {
-  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
@@ -193,7 +193,7 @@ async function onSubmit() {
     }
     if (href.includes('/admin') && !userStore.isEditorOrAbove) {
       await entryStore.fetchUserRelatedEntries(userStore.getUserId)
-    } else if (userStore.isEditorOrAbove && href.includes('/admin')) {
+    } else {
       const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
       const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
       const res = await entryStore.fetchPromptsEntries(updatedList)

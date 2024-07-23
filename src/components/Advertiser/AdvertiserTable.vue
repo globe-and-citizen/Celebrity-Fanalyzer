@@ -471,7 +471,7 @@ const columns = ref([
     name: 'published',
     required: true,
     label: 'Published',
-    align: 'left',
+    align: 'center',
     field: 'status',
     style: 'width:100px'
   },
@@ -479,64 +479,75 @@ const columns = ref([
     name: 'name',
     required: true,
     label: 'Advertise Title',
+    align: 'left',
     field: 'title'
   },
   {
     name: 'content',
     required: true,
     field: 'content',
+    align: 'left',
     label: 'Advertise Content'
   },
   {
     name: 'type',
     required: true,
+    align: 'center',
     field: 'type',
     label: 'Advertise Type'
   },
   {
     name: 'status',
     field: 'publishDate',
+    align: 'center',
     label: 'Status'
   },
   {
     name: 'budget',
     field: 'budget',
+    align: 'center',
     label: 'Budget',
     sortable: true
   },
   {
     name: 'clicks',
     field: 'clicks',
+    align: 'center',
     label: 'Number of Click',
     sortable: true
   },
   {
     name: 'impression',
     field: 'impressions',
+    align: 'center',
     label: 'Number of Impression',
     sortable: true
   },
   {
     name: 'visits',
     field: 'visits',
+    align: 'center',
     label: 'Number of Visits',
     sortable: true
   },
   {
     name: 'total_cost',
     field: 'total_cost',
+    align: 'right',
     label: 'Total Cost',
     sortable: true
   },
   {
     name: 'durations',
     field: 'duration',
+    align: 'right',
     label: 'Durations'
   },
 
   {
     name: 'action',
     field: 'action',
+    align: 'right',
     label: ''
   }
 ])

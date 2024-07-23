@@ -80,6 +80,7 @@
               :rules="[(duration) => duration > 0 || 'Enter a positive number']"
             />
             <q-input
+              v-if="!isEditing"
               v-model="usdAmount"
               label="Price in USD"
               min="0"
@@ -89,6 +90,7 @@
               @update:model-value="convertToMatic()"
             />
             <q-input
+              v-if="!isEditing"
               v-model="advertise.budget"
               readonly
               label="Budget In Matic"
@@ -164,6 +166,7 @@ const fileErrorMessage = ref('Max size is 5MB')
 const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
+const isEditing = ref(false)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -205,6 +208,7 @@ watchEffect(() => {
     advertise.status = props.status
     advertise.contentURL = props.contentURL ?? ''
     ;(advertise.budget = props.budget), (advertise.type = props.type)
+    isEditing.value = true
   } else {
     const collectionRef = collection(db, 'advertises')
     const docRef = doc(collectionRef)
@@ -216,6 +220,7 @@ watchEffect(() => {
     advertise.status = 'Inactive'
     advertise.cost = 0
     advertise.id = docRef.id
+    isEditing.value = false
   }
 })
 
@@ -242,6 +247,7 @@ function onRejected() {
   fileErrorMessage.value = 'Max file size is 5MB.'
   fileError.value = true
 }
+
 
 function isUrlValid(userInput = '') {
   var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
@@ -283,7 +289,7 @@ async function onSubmit() {
         .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
         .catch((error) => {
           errorStore.throwError(error, 'Advertise edit failed')
-        })
+        }).finally(()=>$q.loading.hide())
     } else {
       //call contract create function
       const result = await createAdCampain({ budgetInMatic: advertise.budget })
@@ -294,13 +300,13 @@ async function onSubmit() {
           .addAdvertise(advertise)
           .then(() => {
             $q.notify({ type: 'positive', message: 'Advertise successfully submitted' })
-            $q.loading.hide()
             emit('hideDialog')
           })
           .catch((error) => {
             console.log(error)
             errorStore.throwError(error, 'Advertise submission failed')
           })
+          .finally(()=>$q.loading.hide())
       } else {
         $q.notify({ message: result?.error?.message, type: 'negative' })
         $q.loading.hide()

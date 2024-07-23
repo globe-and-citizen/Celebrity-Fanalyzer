@@ -65,7 +65,7 @@ const category = ref('All')
 const router = useRouter()
 const search = ref('')
 
-advertiseStore.getActiveAdvertise().catch((error) => console.log(error))
+advertiseStore.getActiveAdvertise().catch((error) =>errorStore.throwError(error))
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 
 const computedCategories = computed(() => {

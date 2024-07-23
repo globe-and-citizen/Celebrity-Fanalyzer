@@ -92,10 +92,6 @@ export const useShareStore = defineStore('shares', {
       })
       await Promise.all(promises)
       this._isLoading = false
-    },
-
-    async resetShares() {
-      this._sharesCount = undefined
     }
   }
 })

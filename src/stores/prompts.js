@@ -72,7 +72,7 @@ export const usePromptStore = defineStore('prompts', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       try {
@@ -91,7 +91,7 @@ export const usePromptStore = defineStore('prompts', {
     async fetchPromptById(id) {
       const userStore = useUserStore()
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       try {
@@ -111,7 +111,7 @@ export const usePromptStore = defineStore('prompts', {
         const userStore = useUserStore()
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
         const promptRef = await getDocs(query(collection(db, 'prompts'), or(where('slug', '==', slug), where('date', '==', slug))))
         const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
@@ -143,7 +143,7 @@ export const usePromptStore = defineStore('prompts', {
         const userStore = useUserStore()
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         const promptDocRef = doc(db, 'prompts', currentYearMonth())
@@ -175,6 +175,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
+      const userStore = useUserStore()
 
       const prompt = { ...payload }
 
@@ -184,6 +185,11 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
+
+      prompt.author = await userStore.fetchUser(prompt.author.id)
+      prompt.entries = []
+      const prompts = [prompt, ...this.getPrompts]
+      this._prompts = prompts
 
       await notificationStore.toggleSubscription('prompts', prompt.id)
     },
@@ -226,6 +232,8 @@ export const usePromptStore = defineStore('prompts', {
         const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
+        const updatedPrompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
+        this._prompts = updatedPrompts
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting prompt')
       }
