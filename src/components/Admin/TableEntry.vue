@@ -19,6 +19,12 @@
     :rows="rows"
     :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
   >
+    <template #body-cell-created="props">
+      <td class="text-center relative-position">
+        <img v-if="props.row.isWinner" src="/favicon-16x16.png" style="position:absolute; left:3%" />
+        {{ shortMonthDayTime(props.row.created) }}
+      </td>
+    </template>
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
         <q-btn
