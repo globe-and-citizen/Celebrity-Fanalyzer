@@ -119,7 +119,7 @@ const computedEntries = computed(() => {
   padding-bottom: 0;
   padding-top: 0;
   @media (max-width: 500px) {
-    padding: 1;
+    padding: 0;
   }
 }
 
