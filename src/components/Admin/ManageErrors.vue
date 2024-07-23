@@ -3,13 +3,15 @@
   <q-table
     v-if="!errorStore.isLoaded || (errorStore.isLoaded && errorStore.getErrors.length > 0)"
     :columns="columns"
+    bordered
     flat
+    virtual-scroll
     hide-pagination
     :rows-per-page-options="[0]"
     :loading="!errorStore.isLoaded || errorStore.isLoading"
     :rows="errorStore.getErrors"
-    style="left: 0; right: 0"
     title="Manage Errors"
+    class="q-ma-md errors-table"
   >
     <template v-slot:body="props">
       <q-tr :props="props">
@@ -46,7 +48,7 @@
     @click="fetchMoreErrors"
     label="Load More"
     color="primary"
-    class="q-mt-md q-mb-xl q-mr-md float-right"
+    class="q-mr-md float-right"
   />
 </template>
 
@@ -91,3 +93,18 @@ function fetchMoreErrors() {
   errorStore.fetchErrors({ loadMore: true })
 }
 </script>
+
+<style scoped>
+.errors-table {
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - 300px);
+}
+
+.errors-table .q-table__middle > .q-table > thead > tr {
+  background-color: white !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 1 !important;
+}
+</style>

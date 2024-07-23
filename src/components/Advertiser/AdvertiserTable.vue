@@ -4,24 +4,35 @@
       <q-table
         v-if="advertises.length > 0"
         flat
+        class="custom-table"
         bordered
         virtual-scroll
         hide-bottom
         title="Manage Advertisements"
         row-key="name"
-        style="margin: 10px 0px"
         :filter="filter"
         :rows="advertises"
         :columns="columns"
         :loading="advertiseStore.isLoading"
         :rows-per-page-options="[0]"
+        @request="console.log('on req')"
       >
         <template v-slot:top-right>
-          <q-input v-model="filter" debounce="300" dense placeholder="Search">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
+          <div class="flex no-wrap">
+            <q-input v-model="filter" debounce="300" dense placeholder="Search">
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-select
+              v-model="selectedDataType"
+              :options="dataOptions"
+              label="Filter By Status"
+              outlined
+              dense
+              class="q-ml-lg ads-select"
+            />
+          </div>
         </template>
         <template #body-cell-published="props">
           <q-td :props="props">
@@ -260,12 +271,33 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-
+const selectedDataType = ref({ label: 'Active', value: 'active' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
+
+const initialDataOptions = [
+  { label: 'Active', value: 'active' },
+  { label: 'Inactive', value: 'inactive' },
+  { label: 'Budget Crossed', value: 'budget-crossed' },
+  { label: 'Complete', value: 'complete' },
+  { label: 'Ready to Publish', value: 'ready-to-publish' },
+  { label: 'All', value: 'all' }
+]
+
+const dataOptions = ref(
+  initialDataOptions.filter(
+    (option) =>
+      option.value === 'budget-crossed' ||
+      option.value === 'ready-to-publish' ||
+      option.value === 'complete' ||
+      option.value === 'all' ||
+      option.value === 'inactive' ||
+      option.value === 'active'
+  )
+)
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -623,3 +655,17 @@ function showStatus(data) {
   return 'Pending: Publish date not yet reached'
 }
 </script>
+
+<style>
+.ads-select {
+  width: 60%;
+
+  @media (max-width: 720px) {
+    width: 50%;
+  }
+}
+
+.ads-select > :first-child > :first-child {
+  background-color: white !important;
+}
+</style>
