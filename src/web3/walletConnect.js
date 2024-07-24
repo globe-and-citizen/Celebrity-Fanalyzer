@@ -18,7 +18,8 @@ const chainConfig = useWalletStore().getChainConfig(currentNetworkName)
 const metadata = {
   name: 'Celebrity Fanalyser',
   description: 'Celebrity Fanalyser',
-  url: baseUrl, // url must match your domain & subdomain
+  // url must match your domain & subdomain
+  url: baseUrl,
   icons: ['']
 }
 
@@ -34,6 +35,8 @@ export const customWeb3modal = createWeb3Modal({
   ethersConfig,
   chains: [chainConfig],
   projectId,
-  enableAnalytics: true, // Optional - defaults to your Cloud configuration
-  enableOnramp: true // Optional - false as default
+  // Optional - defaults to your Cloud configuration
+  enableAnalytics: true,
+  // Optional - false as default
+  enableOnramp: true
 })

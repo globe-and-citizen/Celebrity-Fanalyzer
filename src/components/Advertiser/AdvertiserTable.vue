@@ -577,7 +577,7 @@ function computedDuration(endDate) {
   const date2 = new Date(endDate)
   date1.setHours(0, 0, 0, 0)
   date2.setHours(0, 0, 0, 0)
-  let Difference_In_Time = date2.getTime() - date1.getTime()
+  const Difference_In_Time = date2.getTime() - date1.getTime()
   return Math.round(Difference_In_Time / (1000 * 3600 * 24))
 }
 
@@ -588,9 +588,9 @@ function calculateStatus(date) {
   return publishDate <= currentDate
 }
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
-  let impressionsMatic = impressions / 100
-  let clicksMatic = clicks / 20
-  let viewsMatic = views / 20
+  const impressionsMatic = impressions / 100
+  const clicksMatic = clicks / 20
+  const viewsMatic = views / 20
   return impressionsMatic + clicksMatic + viewsMatic
 }
 function viewMatic(matic) {

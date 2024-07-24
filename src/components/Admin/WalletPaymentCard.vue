@@ -96,7 +96,7 @@ async function onSubmit(event) {
             $q.loading.hide()
           })
       } else {
-        var errorMessage = 'transaction failed'
+        let errorMessage = 'transaction failed'
 
         if (transactionResult?.error) {
           errorMessage = transactionResult?.error

@@ -124,7 +124,10 @@ const entry = reactive({
 })
 const imageModel = ref([])
 const promptOptions =
-  promptStore.getPrompts?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date })).reverse() || []
+  promptStore.getPrompts
+    ?.filter((prompt) => !prompt.hasWinner)
+    .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+    .reverse() || []
 
 onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
@@ -197,7 +200,7 @@ async function onSubmit() {
       const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
       const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
       const res = await entryStore.fetchPromptsEntries(updatedList)
-      let loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === entry.prompt.value)
+      const loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === entry.prompt.value)
 
       if (loadedPrompt) {
         const emptyList = !loadedPrompt.entries.length

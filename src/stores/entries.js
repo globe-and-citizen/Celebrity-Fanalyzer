@@ -77,8 +77,7 @@ export const useEntryStore = defineStore('entries', {
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(collection(db, 'entries'))
-        let entries
-        entries = snapshotDocs(querySnapshot.docs)
+        const entries = snapshotDocs(querySnapshot.docs)
         for (const entry of entries) {
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
@@ -101,10 +100,10 @@ export const useEntryStore = defineStore('entries', {
         if (!userStore.getUsers) {
           await userStore.fetchAdminsAndWriters()
         }
-        let entries
+
         const userDocRef = doc(db, 'users', userId)
         const querySnapshot = await getDocs(query(collection(db, 'entries'), where('author', '==', userDocRef)))
-        entries = snapshotDocs(querySnapshot.docs)
+        const entries = snapshotDocs(querySnapshot.docs)
 
         for (const entry of entries) {
           if (entry.author.id) {

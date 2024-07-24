@@ -47,7 +47,7 @@ function onUploadArtist() {
 }
 
 async function addArts(files) {
-  for (let index in files) {
+  for (const index in files) {
     await storageStore
       .uploadFile(files[index], `images/${props.collectionName}-${props.date}-art-${index}`)
       .then((url) => modelArts.value.push(url))

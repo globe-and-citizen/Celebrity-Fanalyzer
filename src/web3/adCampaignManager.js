@@ -24,7 +24,8 @@ const getProvider = async () => {
   } catch (error) {
     console.error('Error getting provider:', error)
     error = 'please connect your wallet'
-    throw error // Rethrow the error to handle it where getProvider is called
+    // Rethrow the error to handle it where getProvider is called
+    throw error
   }
 }
 

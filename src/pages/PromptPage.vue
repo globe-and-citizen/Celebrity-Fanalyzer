@@ -8,7 +8,7 @@
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
       <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date" />
+      <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
