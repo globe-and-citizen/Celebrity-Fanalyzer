@@ -76,7 +76,7 @@ const transformData = (data) => {
   const today = new Date()
   const firstDate = new Date(uniqueDates[0])
 
-  let currentDate = new Date(firstDate)
+  const currentDate = new Date(firstDate)
 
   // Generate missing dates between the first provided date and today's date
   while (currentDate <= today) {

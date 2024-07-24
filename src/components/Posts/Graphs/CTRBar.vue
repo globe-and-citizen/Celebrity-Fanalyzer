@@ -92,7 +92,7 @@ const transformData = (data) => {
     const today = new Date()
     const firstDate = new Date(data.impressions[0].id.replaceAll('-', '/'))
 
-    let currentDate = new Date(firstDate)
+    const currentDate = new Date(firstDate)
 
     while (currentDate <= today) {
       const formattedDate = currentDate.toLocaleDateString('en-US')

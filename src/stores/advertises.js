@@ -190,7 +190,7 @@ export const useAdvertiseStore = defineStore('advertises', {
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteAdvertiseDoc, deleteVisitors, deleteClicks, deleteImpressions])
       } catch (error) {
         console.log(error)
-        errorStore.throwError(error)
+        await errorStore.throwError(error)
       }
 
       this._isLoading = false

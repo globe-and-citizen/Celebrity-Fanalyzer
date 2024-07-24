@@ -129,10 +129,9 @@
 import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
-import { useErrorStore, useStorageStore, useUserStore, useAdvertiseStore } from 'src/stores'
-import { currentYearMonth, getCurrentDate, calculateEndDate } from 'src/utils/date'
-import { reactive, ref, watchEffect, computed, onMounted } from 'vue'
-import { useWalletStore } from 'src/stores'
+import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore, useWalletStore } from 'src/stores'
+import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
+import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 import { fetchMaticRate } from 'app/src/web3/transfers.js'
@@ -156,7 +155,6 @@ const props = defineProps([
   'campaignCode'
 ])
 
-const walletStore = useWalletStore()
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const advertiseStore = useAdvertiseStore()
@@ -169,8 +167,6 @@ const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
 const isEditing = ref(false)
-
-const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_address)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -234,7 +230,7 @@ function uploadPhoto() {
   reader.readAsDataURL(contentModel.value)
   reader.onload = () => (advertise.contentURL = reader.result)
   reader.onloadend = function (e) {
-    let image = new Image()
+    const image = new Image()
     image.src = e.target.result
     image.onload = function () {
       if (image.width < 500 || image.height < 252) {
@@ -252,16 +248,13 @@ function onRejected() {
   fileError.value = true
 }
 
-
 function isUrlValid(userInput = '') {
-  var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
-  if (res == null) return false
-  else return true
+  const res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
+  return res !== null
 }
 
 async function createAdCampain(payload) {
-  const result = await contractCreateAdCampaign(payload)
-  return result
+  return await contractCreateAdCampaign(payload)
 }
 function convertToMatic() {
   if (maticRate.value && usdAmount.value && maticRate.value) {
@@ -294,14 +287,13 @@ async function onSubmit() {
         .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
         .catch((error) => {
           errorStore.throwError(error, 'Advertise edit failed')
-        }).finally(()=>$q.loading.hide())
+        })
+        .finally(() => $q.loading.hide())
     } else {
       //call contract create function
       const result = await createAdCampain({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
-        //currentCampaignCode.value=result.events[0].args.campaignCode;
         advertise.campaignCode = result.events[0].args.campaignCode
-        //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
         //save advertisement to database
         await advertiseStore
           .addAdvertise(advertise)
@@ -313,7 +305,7 @@ async function onSubmit() {
             console.log(error)
             errorStore.throwError(error, 'Advertise submission failed')
           })
-          .finally(()=>$q.loading.hide())
+          .finally(() => $q.loading.hide())
       } else {
         $q.notify({ message: result?.error?.message, type: 'negative' })
         $q.loading.hide()

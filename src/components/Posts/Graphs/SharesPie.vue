@@ -31,7 +31,6 @@ const platforms = [
   { name: 'WhatsApp', color: '#25D366' }
 ]
 const shares = ref([])
-const sharesCount = ref(0)
 
 function compute() {
   option.value = {

@@ -180,7 +180,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { shortMonthDayTime } from 'src/utils/date'
-import { ref, computed, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
@@ -193,9 +193,6 @@ const props = defineProps({
   loadedEntries: { type: Array, default: () => [] }
 })
 
-const entries = computed(() => {
-  return props.rows
-})
 const _currentPrompt = ref({})
 
 watchEffect(() => {
@@ -272,7 +269,7 @@ function onSelectWinnerDialog(props) {
     if (isWinner === true && promptHasWinner === true) {
       $q.notify({ type: 'negative', message: 'The corresponding prompt already has a winner ' })
     } else {
-      let payload = { ...props }
+      const payload = { ...props }
       selectWinnerDialog.value.show = true
       selectWinnerDialog.value.entry = payload
     }
