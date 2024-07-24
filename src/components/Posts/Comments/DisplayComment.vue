@@ -245,10 +245,6 @@ const replyCounter = (id) => {
 
 function handleKeydown(event) {
   if (event.key === 'Escape' || event.key === 'Esc') {
-    // expanded.value = false
-    // commentId.value = ''
-    // expandedReply.value = false
-    // inputField.value.blur()
   }
 }
 

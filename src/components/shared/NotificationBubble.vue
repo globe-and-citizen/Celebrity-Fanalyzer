@@ -3,13 +3,6 @@
     <q-tooltip>Notifications</q-tooltip>
     <q-badge v-if="unreadNotifications.length" color="red" floating rounded>{{ unreadNotifications.length }}</q-badge>
     <q-menu v-if="notificationStore.getNotifications.length" anchor="bottom right" self="top right">
-      <!-- TODO: Check need for this button -->
-      <!-- <q-item class="column" style="max-width: 400px">
-        <p class="q-my-sm text-center">This App requires your permission to send notifications. Please click the button below to allow.</p>
-        <q-item-section>
-          <q-btn color="primary" dense icon="notifications_active" label="Request Permission" outline @click="notify" />
-        </q-item-section>
-      </q-item> -->
       <q-separator spaced />
       <q-item style="min-width: 320px">
         <q-item-section class="text-center">
@@ -83,8 +76,6 @@ function goToLink(notification) {
     promptStore.setTab('comments')
   }
   if (notification.collection === 'entries') {
-    // const entry = entryStore.getEntries?.find((entry) => entry.id === notification.link.slice(1))
-    // router.push(entry?.slug)
     const entry = notification.slug || notification.link.slice(0, 8) + '/' + notification.link.slice(8) + '_id'
     router.push(entry)
     entryStore.setTab('comments')
@@ -97,18 +88,5 @@ function deleteOne(id) {
 
 function deleteAll() {
   notificationStore.deleteAll()
-}
-
-function notify() {
-  Notification.requestPermission().then((result) => {
-    if (result === 'granted') {
-      const options = {
-        body: `Hello, this is a notification!`,
-        icon: 'logo.svg',
-        vibrate: [100, 50, 100]
-      }
-      new Notification('CelebrityFanalyzer', options)
-    }
-  })
 }
 </script>

@@ -54,7 +54,7 @@
         <Web3ModalComponent page_name="profile" />
 
         <q-btn
-          v-if="currentWalletAddress && addressUpdated == false"
+          v-if="currentWalletAddress && addressUpdated === false"
           color="black"
           flat
           size="sm"
@@ -64,7 +64,7 @@
           <q-tooltip class="positive" :offset="[10, 10]">set as your wallet address!</q-tooltip>
         </q-btn>
 
-        <q-btn v-if="addressUpdated == true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
+        <q-btn v-if="addressUpdated === true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
           <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
         </q-btn>
       </q-input>

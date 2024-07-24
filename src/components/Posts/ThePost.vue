@@ -152,7 +152,6 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import {
   useCommentStore,
-  useEntryStore,
   useErrorStore,
   useLikeStore,
   useNotificationStore,
@@ -181,7 +180,6 @@ const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
-const entryStore = useEntryStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
 const userRating = ref(0)
@@ -248,7 +246,7 @@ async function subscribe() {
 
 watchEffect(async () => {
   if (statsStore.getUserRate?.userRating) {
-    userRating.value = ((await statsStore.getUserRate?.userRating) / 100) * 5
+    userRating.value = (statsStore.getUserRate?.userRating / 100) * 5
   }
 })
 </script>

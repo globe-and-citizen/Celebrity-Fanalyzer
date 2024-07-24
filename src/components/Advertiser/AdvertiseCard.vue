@@ -131,7 +131,7 @@ import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore, useWalletStore } from 'src/stores'
 import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
+import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 import { fetchMaticRate } from 'app/src/web3/transfers.js'
@@ -155,7 +155,6 @@ const props = defineProps([
   'campaignCode'
 ])
 
-const walletStore = useWalletStore()
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const advertiseStore = useAdvertiseStore()
@@ -168,8 +167,6 @@ const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
 const isEditing = ref(false)
-
-const currentWalletAddress = computed(() => walletStore.getWalletInfo.wallet_address)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -296,9 +293,7 @@ async function onSubmit() {
       //call contract create function
       const result = await createAdCampain({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
-        //currentCampaignCode.value=result.events[0].args.campaignCode;
         advertise.campaignCode = result.events[0].args.campaignCode
-        //$q.notify({ message: 'add campain saved in blockchain ', type: 'positive' })
         //save advertisement to database
         await advertiseStore
           .addAdvertise(advertise)

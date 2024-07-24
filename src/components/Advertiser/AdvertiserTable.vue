@@ -9,7 +9,7 @@
         hide-bottom
         title="Manage Advertisements"
         row-key="name"
-        style="margin: 10px 0px"
+        style="margin: 10px 0"
         :filter="filter"
         :rows="advertises"
         :columns="columns"
@@ -70,14 +70,16 @@
               <q-tooltip class="positive" :offset="[10, 10]">withdraw amount spent!</q-tooltip>
             </q-icon>
             <q-icon
-              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              v-if="
+                userStore.getUser.email === props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status === 'Active'
+              "
               flat
               color="primary"
               name="free_cancellation"
               size="18px"
               label=""
               class="q-mr-sm"
-              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
+              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email !== props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw remaining budget!</q-tooltip>
@@ -234,12 +236,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { getCurrentDate, calculateEndDate } from 'src/utils/date'
-import { claimPayment, getAdCampaignByCode, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
+import { calculateEndDate, getCurrentDate } from 'src/utils/date'
+import { claimPayment, getEventsForCampaign, requestAndApproveWithdrawal } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
   advertises: {
@@ -310,8 +312,6 @@ async function _getEventsForCampaign(advertise) {
       ]
       //let's change the advertise status.
       advertismentPaymentEventsDialog.value.show = true
-      //console.log('the result ======= ', result)
-      //console.log('the event rows=== ', this.eventRows.value)
     } else {
       $q.notify({ message: result?.error?.message, type: 'negative' })
     }
@@ -374,7 +374,6 @@ async function _completeAdvertise(advertise) {
     .editAdvertise(advertise)
     .then(() => $q.notify({ type: 'info', message: 'Advertise status Changed to complete ' }))
     .catch((error) => {
-      //console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
@@ -382,7 +381,6 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
   const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
   if (result.status.includes('success')) {
-    //console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
     //let's change the advertise status
     await _completeAdvertise(advertise)
@@ -392,7 +390,7 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.hide()
 }
 
-function goToUrl(id, type) {
+function goToUrl(id) {
   router.push('/campaign/' + id)
 }
 onMounted(() => {
@@ -429,7 +427,6 @@ function changePublishDate() {
       })
     )
     .catch((error) => {
-      //console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
     .finally(() => {
@@ -445,7 +442,6 @@ function onDeleteAdvertise() {
       .deleteAdvertise(id, type === 'Banner')
       .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
       .catch((error) => {
-        //console.log(error)
         errorStore.throwError(error, 'Advertise deletion failed')
       })
       .finally(() => {
@@ -572,7 +568,6 @@ function changeActiveStatus(advertise, status) {
       $q.notify({ type: 'info', message: status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully' })
     )
     .catch((error) => {
-      //console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
@@ -583,8 +578,7 @@ function computedDuration(endDate) {
   date1.setHours(0, 0, 0, 0)
   date2.setHours(0, 0, 0, 0)
   const Difference_In_Time = date2.getTime() - date1.getTime()
-  const Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
-  return Difference_In_Days
+  return Math.round(Difference_In_Time / (1000 * 3600 * 24))
 }
 
 function calculateStatus(date) {

@@ -2,7 +2,6 @@
   <q-card>
     <q-card-section class="q-pt-none">
       <q-form @submit="onSubmit">
-        <!-- <q-input hide-hint label="sender wallet address" maxlength="80" required v-model="userStore.getUser.walletAddress" disable /> -->
         <q-input hide-hint label="Winner wallet address" maxlength="80" required v-model="_walletAddress" disable />
         <q-input
           v-model="usdAmount"
@@ -25,14 +24,12 @@
 </template>
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useErrorStore, useUserStore } from 'src/stores'
 import { ref, onMounted } from 'vue'
 import { initiateSendEther, fetchMaticRate } from 'app/src/web3/transfers.js'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 const $q = useQuasar()
-const entryStore = useEntryStore()
 const errorStore = useErrorStore()
-const promptStore = usePromptStore()
 const userStore = useUserStore()
 const cryptoTransactionStore = useCryptoTransactionStore()
 
@@ -45,7 +42,6 @@ const props = defineProps({
 })
 
 const _walletAddress = ref('')
-const amount = ref(0)
 const usdAmount = ref(0)
 const maticAmount = ref(0)
 const maticRate = ref(0)

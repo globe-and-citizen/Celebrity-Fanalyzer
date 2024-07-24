@@ -1,7 +1,7 @@
-import { collection, doc, getDocs, onSnapshot, query, addDoc, Timestamp, getDoc, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, query, Timestamp, updateDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { useEntryStore, useNotificationStore, usePromptStore, useUserStore } from 'src/stores'
+import { usePromptStore } from 'src/stores'
 
 export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
   state: () => ({
@@ -20,39 +20,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
   },
 
   actions: {
-    async fetchETransactions() {
-      const entryStore = useEntryStore()
-      const userStore = useUserStore()
-
-      if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndEditors()
-      }
-
-      this._isLoading = true
-
-      if (this._unSubscribe) {
-        this._unSubscribe()
-      }
-      this._unSubscribe = onSnapshot(collection(db, 'cryptoTransactions'), async (querySnapshot) => {
-        const cryptoTransactions = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-
-        for (const cryptoTransaction of cryptoTransactions) {
-          //entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
-          if (cryptoTransaction.initiator.id) {
-            cryptoTransaction.initiator = userStore.getUserById(cryptoTransaction.initiator.id)
-          }
-          if (cryptoTransaction.entry.id) {
-            cryptoTransaction.entry = entryStore.getEntryById(cryptoTransaction.entry.id)
-          }
-        }
-
-        this.$patch({ _cryptoTransactions: cryptoTransactions })
-      })
-      this._isLoading = false
-    },
-
     async addCryptoTransaction(payload) {
-      const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
 
       // Clone the payload to avoid mutating the original object
@@ -97,8 +65,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
 
       try {
         const querySnapshot = await getDocs(cryptoTransactionsQuery)
-        const cryptoTransaction = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        return cryptoTransaction
+        return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       } catch (error) {
         console.error('Error fetching cryptoTransaction :', error)
         return []
