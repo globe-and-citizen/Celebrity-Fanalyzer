@@ -35,31 +35,34 @@ export const useAdvertiseStore = defineStore('advertises', {
   },
 
   actions: {
-    async fetchAdvertises() {
+    async fetchAdvertises(type) {
       const userStore = useUserStore()
-      if (!this._unSubscribe) {
-        const q = query(collection(db, 'advertises'), orderBy('created', 'desc'))
-        this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
-          this.setLoaderTrue()
-          let advertises = querySnapshot.docs.map((doc) => {
-            return { id: doc.id, ...doc.data() }
-          })
-
-          if (!userStore.isAdmin) {
-            advertises = advertises.filter((advertise) => {
-              return advertise.author.id === userStore.getUserId
+      if (type) {
+        try {
+          const q = query(collection(db, 'advertises'), type !== 'All' ? where('status', '==', type) : '', orderBy('created', 'desc'))
+          this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
+            this.setLoaderTrue()
+            let advertises = querySnapshot.docs.map((doc) => {
+              return { id: doc.id, ...doc.data() }
             })
-          }
 
-          for (const advertise of advertises) {
-            advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
-          }
+            if (!userStore.isAdmin) {
+              advertises = advertises.filter((advertise) => {
+                return advertise.author.id === userStore.getUserId
+              })
+            }
 
-          this._advertises = []
-          this.$patch({ _advertises: advertises })
-          await this.computeValues()
-          this.setLoaderFalse()
-        })
+            for (const advertise of advertises) {
+              advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
+            }
+            this._advertises = []
+            this.$patch({ _advertises: advertises })
+            await this.computeValues()
+            this.setLoaderFalse()
+          })
+        } catch (err) {
+          console.error(err)
+        }
       }
     },
     setLoaderTrue() {

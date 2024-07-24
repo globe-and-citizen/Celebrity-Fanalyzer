@@ -4,7 +4,7 @@
     flat
     bordered
     hide-bottom
-    class="q-ma-md prompts-table"
+    class="q-ma-md custom-table"
     virtual-scroll
     title="Manage Prompts & Entries"
     :columns="columns"
@@ -229,21 +229,3 @@ function handleDeleteEntry(entryId, promptId) {
   promptStore.fetchPrompts()
 }
 </script>
-
-<style>
-.prompts-table {
-  left: 0;
-  right: 0;
-  height: 76vh;
-
-  @media (max-width: 720px) {
-    height: 73vh;
-  }
-}
-.prompts-table .q-table__middle > .q-table > thead > tr {
-  background-color: white !important;
-  position: sticky !important;
-  top: 0;
-  z-index: 1 !important;
-}
-</style>
