@@ -2,20 +2,20 @@
   <div>
     <div class="q-pa-md">
       <q-table
-        v-if="advertises.length > 0"
         flat
         class="custom-table"
         bordered
         virtual-scroll
-        hide-bottom
+        :hide-bottom="advertises.length && !filter.length"
         title="Manage Advertisements"
         row-key="name"
+        no-data-label="No advertisements found."
+        no-results-label="No advertisements found for your search."
         :filter="filter"
         :rows="advertises"
-        :columns="columns"
+        :columns="advertises.length > 0 ? columns : []"
         :loading="advertiseStore.isLoading"
         :rows-per-page-options="[0]"
-        @request="console.log('on req')"
       >
         <template v-slot:top-right>
           <div class="flex no-wrap">
@@ -30,6 +30,7 @@
               label="Filter By Status"
               outlined
               dense
+              @update:model-value="onUpdate"
               class="q-ml-lg ads-select"
             />
           </div>
@@ -163,7 +164,6 @@
           </q-td>
         </template>
       </q-table>
-      <h4 v-else class="text-center">Add advertises to view and manage them</h4>
     </div>
     <q-dialog v-model="dialog.open">
       <q-card style="min-width: 20rem; max-width: 30rem">
@@ -245,12 +245,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getCurrentDate, calculateEndDate } from 'src/utils/date'
-import { claimPayment, getAdCampaignByCode, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
+import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
   advertises: {
@@ -277,13 +277,11 @@ const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
-
 const initialDataOptions = [
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
   { label: 'Budget Crossed', value: 'budget-crossed' },
   { label: 'Complete', value: 'complete' },
-  { label: 'Ready to Publish', value: 'ready-to-publish' },
   { label: 'All', value: 'all' }
 ]
 
@@ -291,7 +289,6 @@ const dataOptions = ref(
   initialDataOptions.filter(
     (option) =>
       option.value === 'budget-crossed' ||
-      option.value === 'ready-to-publish' ||
       option.value === 'complete' ||
       option.value === 'all' ||
       option.value === 'inactive' ||
@@ -427,8 +424,8 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
 function goToUrl(id, type) {
   router.push('/campaign/' + id)
 }
-onMounted(() => {
-  advertiseStore.fetchAdvertises()
+onMounted(async () => {
+  await advertiseStore.fetchAdvertises(selectedDataType?.value.label)
 })
 
 function openDeleteDialog(id, type) {
@@ -654,6 +651,17 @@ function showStatus(data) {
   }
   return 'Pending: Publish date not yet reached'
 }
+
+async function onUpdate(e) {
+  selectedDataType.value = {
+    value: e.value,
+    label: e.label
+  }
+}
+
+watch(selectedDataType, (newType) => {
+  advertiseStore.fetchAdvertises(newType.label)
+})
 </script>
 
 <style>
