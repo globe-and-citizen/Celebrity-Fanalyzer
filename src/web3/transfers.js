@@ -1,10 +1,8 @@
 import { ethers } from 'ethers'
 import { customWeb3modal } from './walletConnect'
-import { Notify, useQuasar } from 'quasar'
 import { useWalletStore } from '../stores'
 
 const walletStore = useWalletStore()
-const $q = useQuasar()
 
 export const sendEther = async (recipientAddress, amountInEther, signer, provider) => {
   //initate transaction..
@@ -29,7 +27,6 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
       explorerUrl: explorerUrl
     }
   } catch (error) {
-    //$q.notify({ message: error.data.message, type: 'negative' })
     return {
       success: false,
       error: await handleMetamaskError(error)
@@ -51,8 +48,7 @@ const getProvider = async () => {
     const walletProvider = customWeb3modal.getWalletProvider()
 
     // With the walletProvider obtained, proceed to create the ethers provider and signer
-    const provider = new ethers.providers.Web3Provider(walletProvider)
-    return provider
+    return new ethers.providers.Web3Provider(walletProvider)
   } catch (error) {
     console.error('Error getting provider:', error)
     throw error // Rethrow the error to handle it where getProvider is called
@@ -70,12 +66,9 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       const signer = provider.getSigner()
 
       if (signer) {
-        const transactionResult = await sendEther(recipientAddress, amountInEther, signer, provider)
-        return transactionResult
+        return await sendEther(recipientAddress, amountInEther, signer, provider)
         // Further logic to handle successful transaction
       }
-    } else {
-      //$q.notify({ message: 'the wallet is not connected', type: 'negative' })
     }
   } catch (error) {
     const errorMessage = await handleMetamaskError(error)
@@ -120,13 +113,12 @@ export const getTransactionDetails = async (txHash, networkName) => {
     const receiver = transaction.to
     const status = receipt.status === 1 ? 'Success' : 'Failed'
 
-    const result = {
+    return {
       amount: amount,
       sender: sender,
       receiver: receiver,
       status: status
     }
-    return result
   } catch (error) {
     const errorMessage = await handleMetamaskError(error)
     return {

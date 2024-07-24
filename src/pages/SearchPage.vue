@@ -3,7 +3,7 @@
     feedbackButton
     notificationButton
     searchInput
-    :title="`${router.currentRoute.value.params.year??''} Search Archive`"
+    :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
   />
   <q-page-container class="search-page-container">
@@ -53,7 +53,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -141,11 +141,10 @@ const computedEntries = computed(() => {
 
 .card-items-wrapper {
   display: grid;
-  margin: 0;
   justify-items: center;
   row-gap: 16px;
   column-gap: 16px;
-  margin: 10px 0px;
+  margin: 10px 0;
   grid-template-columns: repeat(auto-fill, minmax(619px, 1fr));
 
   @media (max-width: 1440px) {
