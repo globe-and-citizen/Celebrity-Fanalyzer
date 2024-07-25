@@ -2,6 +2,9 @@
   <article class="relative-position row" :class="{ 'q-pa-md article-card-item': !item.isAdd, 'full-width': item.isAdd }">
     <CampaignCard v-if="item.isAdd" :advertise="item" />
     <div v-if="!item.isAdd" class="col-8 flex column" data-test="prompt-card">
+      <div v-if="item?.isWinner || item?.hasWinner" class="winner-badge">
+        <img height="40px" src="/favicon-128x128.png" />
+      </div>
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
           <q-img v-if="item.author.photoURL" :src="item.author.photoURL" />
@@ -63,6 +66,13 @@ function goToUrl() {
   text-decoration: none;
   color: black;
 }
+.winner-badge {
+  position: absolute;
+  top: 7%;
+  left: 90%;
+  z-index: 3;
+}
+
 
 .article-card-item {
   min-width: 619px;
@@ -85,6 +95,21 @@ function goToUrl() {
 
   @media (max-width: 425px) {
     min-width: 280px;
+  }
+  @media screen and (max-width: 1473px) and (min-width: 1243px) {
+    .winner-badge {
+      left: 92%;
+    }
+  }
+  @media screen and (max-width: 1020px) and (min-width: 800px) {
+    .winner-badge {
+      left: 93%;
+    }
+  }
+  @media screen and (max-width: 600px) {
+    .winner-badge {
+      left: 88%;
+    }
   }
 }
 </style>
