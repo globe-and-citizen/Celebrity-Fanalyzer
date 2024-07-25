@@ -23,7 +23,9 @@
         round
         size="1rem"
         @click="goToFeedback"
-      ><q-tooltip>Feedback</q-tooltip></q-btn>
+      >
+        <q-tooltip>Feedback</q-tooltip>
+      </q-btn>
       <slot />
     </q-toolbar>
     <q-toolbar v-if="searchInput">
@@ -73,6 +75,5 @@ function goBack() {
 
 function goToFeedback() {
   router.push('/profile/feedback')
-  // userStore.setProfileTab('feedback')
 }
 </script>

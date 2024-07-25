@@ -3,6 +3,7 @@
     v-if="userStore.getUsers"
     :columns="columnsUser"
     bordered
+    flat
     virtual-scroll
     :filter="filter"
     :loading="userStore.isLoading || !userStore.getUsers"
@@ -10,7 +11,7 @@
     row-key="email"
     :rows="filteredUsers"
     title="Manage Users"
-    class="q-ma-md q-mb-xl users-table"
+    class="q-ma-md custom-table"
   >
     <template v-slot:top-right>
       <q-input debounce="400" data-test="query-input" dense placeholder="Search" v-model="filter">
@@ -49,20 +50,3 @@ const columnsUser = [
 ]
 const options = ['Admin', 'Editor', 'Advertiser', 'User']
 </script>
-
-<style>
-.users-table {
-  left: 0;
-  right: 0;
-  max-height: 76vh;
-  @media (max-width: 720px) {
-    max-height: 73vh;
-  }
-}
-.users-table .q-table__middle > .q-table > thead > tr {
-  background-color: white !important;
-  position: sticky !important;
-  top: 0;
-  z-index: 1 !important;
-}
-</style>

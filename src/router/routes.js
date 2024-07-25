@@ -31,10 +31,6 @@ const routes = [
         component: () => import('pages/PromptPage.vue')
       },
       {
-        path: 'stats',
-        component: () => import('pages/StatsPage.vue')
-      },
-      {
         path: ':slug',
         name: 'slug',
         component: () => import('pages/PromptPage.vue')
@@ -47,10 +43,6 @@ const routes = [
       {
         path: ':year(\\d{4})/:month(\\d{2})/:id',
         component: () => import('pages/EntryPage.vue')
-      },
-      {
-        path: ':year(\\d{4})/:month(\\d{2})/:id/stats',
-        component: () => import('pages/EntryStatsPage.vue')
       },
       {
         path: 'fan/:username',

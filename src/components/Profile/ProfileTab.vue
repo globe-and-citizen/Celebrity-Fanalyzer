@@ -54,7 +54,7 @@
         <Web3ModalComponent page_name="profile" />
 
         <q-btn
-          v-if="currentWalletAddress && addressUpdated == false"
+          v-if="currentWalletAddress && addressUpdated === false"
           color="black"
           flat
           size="sm"
@@ -64,7 +64,7 @@
           <q-tooltip class="positive" :offset="[10, 10]">set as your wallet address!</q-tooltip>
         </q-btn>
 
-        <q-btn v-if="addressUpdated == true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
+        <q-btn v-if="addressUpdated === true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
           <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
         </q-btn>
       </q-input>
@@ -125,7 +125,6 @@ const newPhoto = ref(null)
 const origin = window.location.origin + '/'
 const user = ref(userStore.getUser)
 
-
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
@@ -145,7 +144,6 @@ async function uploadPhoto() {
     .catch((error) => errorStore.throwError(error))
 }
 
-
 async function usernameValidator(username) {
   if (!username) return true
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
@@ -162,7 +160,7 @@ function switchAddressUpdated(value) {
   addressUpdated.value = value
 }
 function save() {
-  if (currentWalletAddress.value && addressUpdated.value == true) {
+  if (currentWalletAddress.value && addressUpdated.value === true) {
     user.value.walletAddress = currentWalletAddress.value
   }
 
