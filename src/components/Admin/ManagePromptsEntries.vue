@@ -2,8 +2,10 @@
   <q-table
     v-if="prompts && userStore.isEditorOrAbove"
     flat
+    bordered
     hide-bottom
-    style="left: 0; right: 0"
+    class="q-ma-md custom-table"
+    virtual-scroll
     title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
@@ -27,8 +29,9 @@
             round
             color="red"
             data-test="button-expand"
+            :disable="isLoading"
             :icon="props.expand ? 'expand_less' : 'expand_more'"
-            @click="props.expand = !props.expand"
+            @click="toggleExpand(props)"
           >
             <q-tooltip>
               {{ props.expand ? 'Collapse' : 'Expand' }}
@@ -68,7 +71,15 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :filter="filter" :rows="props.row.entries" :currentPrompt="props.row" @update-entry="handleUpdateEntry" />
+          <TableEntry
+            v-else
+            :filter="filter"
+            :rows="getEntriesForPrompt(props.row.id)"
+            :currentPrompt="props.row"
+            :loaded-entries="entryStore._loadedEntries"
+            @update-entry="handleUpdateEntry"
+            @delete-entry="handleDeleteEntry"
+          />
         </q-td>
       </q-tr>
     </template>
@@ -101,7 +112,7 @@ import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, watchEffect, ref } from 'vue'
 
-defineEmits(['openPromptDialog'])
+defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -120,28 +131,22 @@ const deleteDialog = ref({})
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-// Reactive state for prompts and entries
 const prompts = ref([])
+
 onMounted(() => {
-  promptStore.fetchPrompts()
-  entryStore.fetchEntries()
+  if (userStore.isEditorOrAbove) {
+    entryStore._loadedEntries = []
+    promptStore.fetchPrompts()
+  } else {
+    entryStore.fetchUserRelatedEntries(userStore.getUserId)
+  }
 })
-/**
- * @description computed property that returns if prompts and entries are loaded
- * @type {ComputedRef<Boolean>}
- */
-const isLoaded = computed(() => promptStore.getPrompts && entryStore.getEntries)
-/**
- * @description computed property that returns if prompts and entries are loading
- * @type {ComputedRef<Boolean>}
- */
+
+const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
-watchEffect(() => {
-  prompts.value = promptStore.getPrompts?.map((prompt) => ({
-    ...prompt,
-    entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
-  }))
+watchEffect(async () => {
+  prompts.value = promptStore.getPrompts
 })
 
 function openDeleteDialog(prompt) {
@@ -160,15 +165,10 @@ function onDeletePrompt(id) {
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
-  console.log('updateEntries called')
   const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
   if (promptIndex !== -1) {
-    console.log('the new prompt==== ', _prompt)
-    console.log('prompt index finded ==== ', promptIndex)
-
     const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
     if (entryIndex !== -1) {
-      console.log('entry index found == ', entryIndex)
       const { author, ...restOfEntry } = _entry
       // Merge the existing entry with the incoming _entry data
       const updatedEntry = { ...prompts.value[promptIndex].entries[entryIndex], ...restOfEntry }
@@ -182,6 +182,50 @@ async function handleUpdateEntry({ _entry, _prompt }) {
     // This reassignment ensures Vue's reactivity system is aware of the update
     prompts.value = [...prompts.value]
   }
-  console.log('the new prompts value ', prompts.value[promptIndex])
+}
+
+function toggleExpand(props) {
+  props.expand = !props?.expand
+  if (props.expand && !entryStore._loadedEntries.some((el) => el?.promptId === props?.row?.id)) {
+    fetchEntriesForPrompt(props.row.entries, props.row.id)
+  }
+}
+
+async function fetchEntriesForPrompt(entriesIds, promptId) {
+  try {
+    const res = await entryStore.fetchPromptsEntries(entriesIds)
+    entryStore._loadedEntries.push({ promptId, entries: res })
+  } catch (error) {
+    await errorStore.throwError(error, 'Failed to fetch entries')
+  }
+}
+
+function getEntriesForPrompt(promptId) {
+  const loadedPrompt = entryStore._loadedEntries.find((el) => el?.promptId === promptId)
+  return loadedPrompt ? loadedPrompt?.entries : []
+}
+
+function handleDeleteEntry(entryId, promptId) {
+  entryStore._loadedEntries = entryStore._loadedEntries.map((prompt) => {
+    if (prompt?.promptId === promptId) {
+      return {
+        ...prompt,
+        entries: prompt?.entries.filter((entry) => entry.id !== entryId)
+      }
+    }
+    return prompt
+  })
+
+  prompts.value = prompts.value.map((prompt) => {
+    if (prompt.id === promptId) {
+      return {
+        ...prompt,
+        entries: prompt?.entries.filter((entry) => entry.id !== entryId)
+      }
+    }
+    return prompt
+  })
+
+  promptStore.fetchPrompts()
 }
 </script>

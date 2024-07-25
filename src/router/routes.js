@@ -22,17 +22,13 @@ const routes = [
         component: () => import('pages/TermsOfService.vue')
       },
       {
-        path: 'search|:year(\\d{4})',
+        path: 'search',
         component: () => import('pages/SearchPage.vue')
       },
       {
         path: 'month',
         name: 'month',
         component: () => import('pages/PromptPage.vue')
-      },
-      {
-        path: 'stats',
-        component: () => import('pages/StatsPage.vue')
       },
       {
         path: ':slug',
@@ -47,10 +43,6 @@ const routes = [
       {
         path: ':year(\\d{4})/:month(\\d{2})/:id',
         component: () => import('pages/EntryPage.vue')
-      },
-      {
-        path: ':year(\\d{4})/:month(\\d{2})/:id/stats',
-        component: () => import('pages/EntryStatsPage.vue')
       },
       {
         path: 'fan/:username',

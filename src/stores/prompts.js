@@ -1,18 +1,4 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  or,
-  query,
-  runTransaction,
-  setDoc,
-  Timestamp,
-  where,
-  limit,
-  orderBy,
-  getDoc
-} from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, or, query, runTransaction, setDoc, Timestamp, where, getDoc } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
@@ -86,13 +72,15 @@ export const usePromptStore = defineStore('prompts', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(collection(db, 'prompts'))
-        this._prompts = await getPrompts(querySnapshot, userStore)
+        const prompts = await getPrompts(querySnapshot, userStore)
+        this._prompts = prompts
+        return prompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
@@ -100,21 +88,16 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchPromptsByYear(slug) {
+    async fetchPromptById(id) {
       const userStore = useUserStore()
-      const year = new Date(slug).getFullYear()
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       try {
         this._isLoading = true
-        const startDate = new Date(year, 0, 1)
-        const endDate = new Date(year + 1, 0, 1)
-        const querySnapshot = await getDocs(
-          query(collection(db, 'prompts'), where('created', '>=', startDate), where('created', '<', endDate))
-        )
-        this._prompts = await getPrompts(querySnapshot, userStore)
+        const querySnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', id)))
+        return await getPrompts(querySnapshot, userStore)
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
@@ -128,7 +111,7 @@ export const usePromptStore = defineStore('prompts', {
         const userStore = useUserStore()
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
         const promptRef = await getDocs(query(collection(db, 'prompts'), or(where('slug', '==', slug), where('date', '==', slug))))
         const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
@@ -160,7 +143,7 @@ export const usePromptStore = defineStore('prompts', {
         const userStore = useUserStore()
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         const promptDocRef = doc(db, 'prompts', currentYearMonth())
@@ -192,6 +175,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
+      const userStore = useUserStore()
 
       const prompt = { ...payload }
 
@@ -201,6 +185,11 @@ export const usePromptStore = defineStore('prompts', {
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
+
+      prompt.author = await userStore.fetchUser(prompt.author.id)
+      prompt.entries = []
+      const prompts = [prompt, ...this.getPrompts]
+      this._prompts = prompts
 
       await notificationStore.toggleSubscription('prompts', prompt.id)
     },
@@ -243,8 +232,10 @@ export const usePromptStore = defineStore('prompts', {
         const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
+        const updatedPrompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
+        this._prompts = updatedPrompts
       } catch (error) {
-        errorStore.throwError(error)
+        await errorStore.throwError(error, 'Error deleting prompt')
       }
       this._isLoading = false
     },

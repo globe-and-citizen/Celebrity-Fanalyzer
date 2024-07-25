@@ -7,7 +7,7 @@
 
       <q-route-tab
         class="adminTab"
-        v-if="userStore.isWriterOrAbove || userStore.isAuthenticated"
+        v-if=" userStore.isAuthenticated"
         icon="admin_panel_settings"
         @click="onAdminTabClick"
       >
@@ -124,6 +124,13 @@ onMounted(async () => {
 
 .admin_tab {
   color: #e54757 !important;
+}
+
+.tabs .q-tabs__content {
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .tabs .q-tabs__arrow--left,

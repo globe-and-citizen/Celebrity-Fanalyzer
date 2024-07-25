@@ -66,10 +66,6 @@ export const useImpressionsStore = defineStore('impressions', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
-    },
-    async resetImpressions() {
-      this._likes = undefined
-      this._dislikes = undefined
     }
   }
 })

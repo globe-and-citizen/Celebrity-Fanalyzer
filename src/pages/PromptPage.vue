@@ -8,7 +8,7 @@
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
       <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
-      <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date"  />
+      <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -29,19 +29,19 @@ import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
+import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
-const commentStore = useCommentStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
+const route = useRoute()
 
 const entriesRef = ref(null)
 
@@ -49,13 +49,13 @@ const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
-const { params, name } = router.currentRoute.value
+const params = router.currentRoute.value?.params
 const prompt = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
   return promptStore.getPrompts
     ?.sort((a, b) => a.id - b.id)
     ?.find((prompt) => {
-      switch (name) {
+      switch (route.name) {
         case 'month':
           return prompt.id <= currentYearMonth()
         case 'year-month':
@@ -120,17 +120,14 @@ watch(entriesRef, (newVal) => {
 })
 
 onBeforeRouteLeave(async () => {
-  await statStore.resetStats()
-  await statStore.resetUserRating()
-})
-
-onUnmounted(async () => {
   const stats = stopTracking()
   await statStore.addStats(prompt.value?.id, stats, 'topic')
-  promptStore.setTab('post')
-  await likeStore.resetLikes()
-  await shareStore.resetShares()
-  await commentStore.resetComments()
+  statStore.resetStats()
+  statStore.resetUserRating()
+})
+
+onUnmounted(() => {
+  statStore.resetPostImpressions()
   window.removeEventListener('scroll', onScroll)
 })
 </script>

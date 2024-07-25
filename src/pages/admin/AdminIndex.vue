@@ -112,20 +112,19 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useEntryStore, usePromptStore, useRequestStore, useUserStore, useAdvertiseStore } from 'src/stores'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useEntryStore, usePromptStore, useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRoute, useRouter } from 'vue-router'
 
-const requestStore = useRequestStore()
 const userStore = useUserStore()
 
 const entry = ref({})
 const prompt = ref({})
 const advertise = ref({})
-const tab = ref('posts')
 const entryStore = useEntryStore()
 const promptStore = usePromptStore()
 const advertiseStore = useAdvertiseStore()
+const errorStore = useErrorStore()
 const currentPath = ref('')
 
 const router = useRouter()
@@ -146,9 +145,8 @@ const uniqueUsers = computed(() => {
 
 onMounted(async () => {
   await userStore.fetchUsers()
-  await requestStore.readRequests()
   await userStore.getStatsUsers()
-  advertiseStore.fetchAdvertises().catch((error) => console.log(error))
+  advertiseStore.fetchAdvertises().catch((error) => errorStore.throwError(error))
 
   currentPath.value = router.currentRoute.value.path
   const adminTab = document.querySelector('.adminTab')

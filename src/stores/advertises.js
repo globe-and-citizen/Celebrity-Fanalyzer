@@ -2,27 +2,27 @@ import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
 import {
   collection,
-  doc,
-  Timestamp,
-  runTransaction,
-  onSnapshot,
   deleteDoc,
-  where,
-  query,
-  setDoc,
+  doc,
+  onSnapshot,
   orderBy,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where,
   getDoc
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
+  useClicksStore,
   useCommentStore,
   useErrorStore,
+  useImpressionsStore,
   useLikeStore,
   useShareStore,
   useUserStore,
-  useVisitorStore,
-  useClicksStore,
-  useImpressionsStore
+  useVisitorStore
 } from 'src/stores'
 
 export const useAdvertiseStore = defineStore('advertises', {
@@ -48,37 +48,34 @@ export const useAdvertiseStore = defineStore('advertises', {
   },
 
   actions: {
-    async fetchAdvertises() {
+    async fetchAdvertises(type) {
       const userStore = useUserStore()
-      if (!this._unSubscribe) {
-        const q = query(collection(db, 'advertises'), orderBy('created', 'desc'))
-        this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
-          this.setLoaderTrue()
-          let advertises = querySnapshot.docs.map((doc) => {
-            const data = { id: doc.id, ...doc.data() }
-            return data
-          })
-
-          if (!userStore.isAdmin) {
-            const filterData = advertises.filter((advertise) => {
-              if (advertise.author.id === userStore.getUserId) {
-                return true
-              } else {
-                return false
-              }
+      if (type) {
+        try {
+          const q = query(collection(db, 'advertises'), type !== 'All' ? where('status', '==', type) : '', orderBy('created', 'desc'))
+          this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
+            this.setLoaderTrue()
+            let advertises = querySnapshot.docs.map((doc) => {
+              return { id: doc.id, ...doc.data() }
             })
-            advertises = filterData
-          }
 
-          for (const advertise of advertises) {
-            advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
-          }
+            if (!userStore.isAdmin) {
+              advertises = advertises.filter((advertise) => {
+                return advertise.author.id === userStore.getUserId
+              })
+            }
 
-          this._advertises = []
-          this.$patch({ _advertises: advertises })
-          this.computeValues()
-          this.setLoaderFalse()
-        })
+            for (const advertise of advertises) {
+              advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
+            }
+            this._advertises = []
+            this.$patch({ _advertises: advertises })
+            await this.computeValues()
+            this.setLoaderFalse()
+          })
+        } catch (err) {
+          console.error(err)
+        }
       }
     },
     setLoaderTrue() {
@@ -263,13 +260,10 @@ export const useAdvertiseStore = defineStore('advertises', {
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteAdvertiseDoc, deleteVisitors, deleteClicks, deleteImpressions])
       } catch (error) {
         console.log(error)
-        errorStore.throwError(error)
+        await errorStore.throwError(error)
       }
 
       this._isLoading = false
-    },
-    resetAdvertises() {
-      this._advertises = []
     },
     setTab(tab) {
       this.$patch({ _tab: tab })

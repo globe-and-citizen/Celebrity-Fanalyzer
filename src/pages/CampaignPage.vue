@@ -25,7 +25,6 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from '../components/Posts/ThePost.vue'
 import {
-  useCommentStore,
   useErrorStore,
   useLikeStore,
   useAdvertiseStore,
@@ -42,7 +41,6 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 const router = useRouter()
 
 const $q = useQuasar()
-const commentStore = useCommentStore()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const advertiseStore = useAdvertiseStore()
@@ -55,8 +53,8 @@ const tab = ref(advertiseStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
-advertiseStore.fetchAdvertises().catch((error) => console.log(error))
-advertiseStore.getActiveAdvertise().catch((error) => console.log(error))
+advertiseStore.fetchAdvertises().catch((error) =>errorStore.throwError(error))
+advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
 const { params } = router.currentRoute.value
 const advertise = computed(() => {
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
@@ -88,8 +86,8 @@ watchEffect(async () => {
   if (advertise.value?.id) {
     const advertiseId = advertise.value?.id
     await likeStore.getAllLikesDislikes('advertises', advertiseId).catch((error) => errorStore.throwError(error))
-    await impressionStore.readImpressions('advertises', advertiseId).catch((error) => console.log(error))
-    await clickStore.readClicks('advertises', advertiseId).catch((error) => console.log(error))
+    await impressionStore.readImpressions('advertises', advertiseId).catch((error) => errorStore.throwError(error))
+    await clickStore.readClicks('advertises', advertiseId).catch((error) => errorStore.throwError(error))
 
     shareIsLoading.value = true
     await shareStore
@@ -126,11 +124,7 @@ onUnmounted(async () => {
     await statStore.addStats(advertise.value?.id, stats, 'advertisement')
   }
   advertiseStore.setTab('post')
-  await likeStore.resetLikes()
-  await shareStore.resetShares()
-  await commentStore.resetComments()
-  await impressionStore.resetImpressions()
-  await likeStore.resetLikes()
+  await statStore.resetPostImpressions()
 })
 </script>
 

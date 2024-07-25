@@ -1,56 +1,20 @@
 <template>
   <q-table
-    v-if="requestStore.getRequests.length"
-    :columns="columnsRequests"
-    flat
-    hide-bottom
-    :loading="userStore.isLoading"
-    :pagination="{ rowsPerPage: 0 }"
-    row-key="email"
-    :rows="requestStore.getRequests"
-    title="Manage Requests"
-  >
-    <template v-slot:body-cell-message="props">
-      <q-td :props="props" style="white-space: pre-line">
-        {{ props.row.message }}
-      </q-td>
-    </template>
-    <template v-slot:body-cell-actions="props">
-      <q-td class="text-right">
-        <q-btn color="warning" flat icon="account_circle" round @click="router.push(`/fan/${props.row.id}`)">
-          <q-tooltip>Visit Profile</q-tooltip>
-        </q-btn>
-        <q-btn color="negative" flat icon="do_not_disturb_on" round @click="requestStore.denyWriter(props.row.id)">
-          <q-tooltip>Deny as a Writer</q-tooltip>
-        </q-btn>
-        <q-btn color="positive" flat icon="verified" round @click="requestStore.acceptWriter(props.row.id)">
-          <q-tooltip>Approve as a Writer</q-tooltip>
-        </q-btn>
-      </q-td>
-    </template>
-  </q-table>
-
-  <q-table
     v-if="userStore.getUsers"
     :columns="columnsUser"
+    bordered
     flat
+    virtual-scroll
     :filter="filter"
-    hide-bottom
     :loading="userStore.isLoading || !userStore.getUsers"
-    :pagination="{ sortBy: 'role', rowsPerPage: 0 }"
+    :pagination="{ sortBy: 'role', rowsPerPage: 20 }"
     row-key="email"
-    :rows="userStore.getUsers"
+    :rows="filteredUsers"
     title="Manage Users"
+    class="q-ma-md custom-table"
   >
     <template v-slot:top-right>
-      <q-input
-        debounce="300"
-        data-test="query-input"
-        dense
-        placeholder="Search"
-        v-model="filter"
-        @update:model-value="userStore.queryUsers(filter)"
-      >
+      <q-input debounce="400" data-test="query-input" dense placeholder="Search" v-model="filter">
         <template v-slot:append>
           <q-icon name="search" />
         </template>
@@ -65,26 +29,24 @@
 </template>
 
 <script setup>
-import { useRequestStore, useUserStore } from 'src/stores'
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useUserStore } from 'src/stores'
+import { ref, computed } from 'vue'
 
-const router = useRouter()
-
-const requestStore = useRequestStore()
 const userStore = useUserStore()
+const filter = ref('')
 
-const columnsRequests = [
-  { name: 'displayName', label: 'Name', field: (row) => row.user.displayName, sortable: true, align: 'left' },
-  { name: 'email', label: 'Email', field: (row) => row.user.email, sortable: true, align: 'left' },
-  { name: 'message', label: 'Message', field: 'message', sortable: true, align: 'left' },
-  { name: 'actions', label: '', field: 'actions', sortable: true }
-]
+const filteredUsers = computed(() => {
+  if (!filter.value) return userStore.getUsers
+  const search = filter.value.toLowerCase()
+  return userStore.getUsers.filter((user) => {
+    return user.displayName.toLowerCase().includes(search) || user.email.toLowerCase().includes(search)
+  })
+})
+
 const columnsUser = [
   { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
   { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
 ]
-const filter = ref('')
-const options = ['Admin', 'Editor', 'Advertiser', 'Writer', 'User']
+const options = ['Admin', 'Editor', 'Advertiser', 'User']
 </script>

@@ -30,3 +30,17 @@ html {
 .leaflet-pane {
   z-index: 2 !important;
 }
+
+/* Q-Table Custom styles */
+.custom-table {
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - 240px);
+}
+
+.custom-table .q-table__middle > .q-table > thead > tr {
+  background-color: white !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 1 !important;
+}

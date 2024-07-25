@@ -1,10 +1,7 @@
 import { ethers } from 'ethers'
 import { customWeb3modal } from './walletConnect'
-import { Notify, useQuasar } from 'quasar'
-import { useWalletStore } from '../stores'
 import AdCampaignManager from 'src/contracts/artifacts/contracts/AdCampaignManager.sol/AdCampaignManager.json'
 
-const walletStore = useWalletStore()
 const iface = new ethers.utils.Interface(AdCampaignManager.abi)
 
 const checkConnection = async () => {
@@ -22,37 +19,25 @@ const getProvider = async () => {
       const walletProvider = customWeb3modal.getWalletProvider()
 
       // With the walletProvider obtained, proceed to create the ethers provider and signer
-      const provider = new ethers.providers.Web3Provider(walletProvider)
-      //const signer = provider.getSigner()
-      //console.log("the network =========== ", await provider.getNetwork().name)
-
-      return provider
+      return new ethers.providers.Web3Provider(walletProvider)
     }
   } catch (error) {
     console.error('Error getting provider:', error)
-    const errorMessage = 'please connect your wallet'
     error = 'please connect your wallet'
-    throw error // Rethrow the error to handle it where getProvider is called
+    // Rethrow the error to handle it where getProvider is called
+    throw error
   }
 }
 
 const getContractInstance = async () => {
   const provider = await getProvider()
 
-  //console.log("the wallet provider ==== ", walletProvider);
   // With the walletProvider obtained, proceed to create the ethers provider and signer
-  //const provider = new ethers.providers.Web3Provider(walletProvider)
-  //console.log("the provider ============ ", provider);
-  //const signer = provider.getSigner()
-  //console.log("the network =========== ", await provider.getNetwork().name)
-
   const signer = provider.getSigner()
   const contractAddress = import.meta.env.VITE_ADVERTISEMENT_CAMPAIGN_CONTRACT_ADDRESS
 
   // Create a new instance of the contract
-  const adCampaignManager = new ethers.Contract(contractAddress, AdCampaignManager.abi, signer)
-
-  return adCampaignManager
+  return new ethers.Contract(contractAddress, AdCampaignManager.abi, signer)
 }
 //advertiser preferably
 export const contractCreateAdCampaign = async (payload = { budgetInMatic: 0 }) => {
@@ -62,15 +47,12 @@ export const contractCreateAdCampaign = async (payload = { budgetInMatic: 0 }) =
       const amountInWei = ethers.utils.parseUnits(payload.budgetInMatic.toString(), 'ether')
       // Get the contract instance
       const adCampaignManager = await getContractInstance()
-      //console.log("the contract instance === ", adCampaignManager);
       // Call the createAdCampaign function on the contract
 
       const tx = await adCampaignManager.createAdCampaign({ value: amountInWei })
 
       const receipt = await tx.wait()
-      //const events = receipt.logs.map(log => adCampaignManager.interface.parseLog(log));
       const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-      //console.log('Ad campaign created successfully')
       return { status: 'success', events }
     } catch (error) {
       console.error('Error creating ad campaign:', error)
@@ -93,7 +75,7 @@ export const claimPayment = async (payload = { campaignCode: '', currentAmounSpe
       const adCampaignManager = await getContractInstance()
       if (
         customWeb3modal.getAddress() &&
-        customWeb3modal.getAddress().toLowerCase() == import.meta.env.VITE_ADVERTISEMENT_COMPAIGN_CONTRACT_OWNER.toLowerCase()
+        customWeb3modal.getAddress().toLowerCase() === import.meta.env.VITE_ADVERTISEMENT_COMPAIGN_CONTRACT_OWNER.toLowerCase()
       ) {
         const tx = await adCampaignManager.claimPayment(
           payload.campaignCode,
@@ -130,7 +112,6 @@ export const requestAndApproveWithdrawal = async (payload = { campaignCode: '', 
       )
       const receipt = await tx.wait()
       const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-      //console.log('Withdrawal requested and approved successfully')
       return { status: 'success', events }
     } catch (error) {
       console.error('Error claiming payment:', error)
@@ -148,7 +129,6 @@ export const getAdCampaignByCode = async (payload = { campaignCode: '' }) => {
     try {
       const adCampaignManager = await getContractInstance()
       const campaign = await adCampaignManager.getAdCampaignByCode(payload.campaignCode)
-      //console.log('Ad campaign details:', campaign)
       return { status: 'success', data: campaign }
     } catch (error) {
       console.error('Error fetching ad campaign details:', error)
@@ -183,36 +163,6 @@ function decodeLog(log) {
   } catch (error) {
     console.log(`Log could not be decoded:`, error)
     return null
-  }
-}
-
-//only contract owner
-export const pauseContract = async () => {
-  try {
-    const adCampaignManager = await getContractInstance()
-    const tx = await adCampaignManager.pause()
-    const receipt = await tx.wait()
-    const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-    //console.log('Contract paused successfully')
-    return { status: 'success', events }
-  } catch (error) {
-    console.error('Error pausing contract:', error)
-    return { status: 'error', error: error }
-  }
-}
-//only contract owner
-
-export const unpauseContract = async () => {
-  try {
-    const adCampaignManager = await getContractInstance()
-    const tx = await adCampaignManager.unpause()
-    const receipt = await tx.wait()
-    const events = receipt.logs.map((log) => decodeLog(log)).filter((log) => log !== null)
-    //console.log('Contract unpaused successfully')
-    return { status: 'success', events }
-  } catch (error) {
-    console.error('Error unpausing contract:', error)
-    return { status: 'error', error: error }
   }
 }
 

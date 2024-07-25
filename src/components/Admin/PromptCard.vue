@@ -190,14 +190,14 @@ watchEffect(() => {
       imagePreview.value = props.image
     }
   } else {
-    prompt.author = userStore.isWriterOrAbove ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
     prompt.date = currentYearMonth()
   }
 })
 
 onMounted(() => {
-  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function onUpdateMonth() {
