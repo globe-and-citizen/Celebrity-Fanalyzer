@@ -60,7 +60,7 @@ export const useUserStore = defineStore('user', {
 
     async fetchUsers() {
       this._isLoading = true
-      onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {
+      onSnapshot(query(collection(db, 'users')), (querySnapshot) => {
         const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
         this.$patch({ _users: users })
       })
@@ -155,7 +155,7 @@ export const useUserStore = defineStore('user', {
           const { email, displayName, photoURL, uid } = result.user
 
           if (isNewUser) {
-            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
+            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL, role: 'User' })
           }
 
           onSnapshot(doc(db, 'users', result.user.uid), (doc) => {
