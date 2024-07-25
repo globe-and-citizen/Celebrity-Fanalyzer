@@ -15,7 +15,7 @@
       </q-toolbar-title>
       <NotificationBubble v-if="notificationButton && userStore.isAuthenticated" />
       <q-btn
-        v-if="feedbackButton"
+        v-if="feedbackButton && userStore.isAuthenticated"
         color="secondary"
         data-test="feedback-button"
         flat
