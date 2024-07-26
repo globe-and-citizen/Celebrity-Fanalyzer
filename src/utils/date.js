@@ -6,45 +6,47 @@ const ONE_WEEK_IN_SECONDS = 604800
 export function monthYear(date) {
   const [year, month] = date.split('-')
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
-  return `${monthName} ${year}` // Dec 2022
+  // Dec 2022
+  return `${monthName} ${year}`
 }
 
 export function monthDay(date) {
   const seconds = date.split('T')[1]
   const dateObj = new Date(seconds * 1000)
-  return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Dec 10
+  // Dec 10
+  return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 export function shortMonthDayTime(timestamp) {
   const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
-
+  // Dec 10 - 14:18
   return date
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false })
     .split(', ')
-    .join(' - ') // Dec 10 - 14:18
+    .join(' - ')
 }
 
 export function dayMonthYear(timestamp) {
   const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
-
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) // 10 Dec, 2022
+  // 10 Dec, 2022
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export function monthDayYear(timestamp) {
   const date = timestamp ? new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000) : new Date()
-
-  return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) // 12/10/2022
+  // 12/10/2022
+  return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
 }
-
 export function currentYearMonth() {
-  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-11
+  // 2022-11
+  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-')
 }
 
 export function previousYearMonth() {
   const date = new Date()
   date.setMonth(date.getMonth() - 1)
-
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-') // 2022-10
+  // 2022-10
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit' }).split('/').reverse().join('-')
 }
 
 export function startEndDay(timeStamp) {
@@ -67,7 +69,7 @@ export function nextWeekDate(timeStamp) {
  * @returns {Array<Timestamp>}
  */
 export function calendarDay(startDate, endDate) {
-  let calendar = []
+  const calendar = []
   for (
     let currentDate = startEndDay(startDate).start;
     currentDate.seconds < endDate.seconds + ONE_DAY_IN_SECONDS;
@@ -88,7 +90,7 @@ export function calendarDay(startDate, endDate) {
  * @returns {*[]}
  */
 export function calendarWeek(startDate, endDate) {
-  let calendar = []
+  const calendar = []
   const dayStart = startEndDay(startDate).start
   for (let currentDate = dayStart; currentDate.seconds < startEndDay(endDate).end.seconds; currentDate = nextWeekDate(currentDate)) {
     calendar.push(currentDate)

@@ -2,30 +2,48 @@
   <div>
     <div class="q-pa-md">
       <q-table
-        v-if="advertises.length > 0"
         flat
+        class="custom-table"
         bordered
         virtual-scroll
-        hide-bottom
+        :hide-bottom="advertises.length && !filter.length"
         title="Manage Advertisements"
         row-key="name"
-        style="margin: 10px 0px"
+        no-data-label="No advertisements found."
+        no-results-label="No advertisements found for your search."
         :filter="filter"
         :rows="advertises"
-        :columns="columns"
-        :rows-per-page-options="[0]"
+        :columns="advertises.length > 0 ? columns : []"
         :loading="advertiseStore.isLoading"
+        :rows-per-page-options="[0]"
       >
         <template v-slot:top-right>
-          <q-input debounce="300" dense placeholder="Search" v-model="filter">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
+          <div class="flex no-wrap">
+            <q-input v-model="filter" debounce="300" dense placeholder="Search">
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-select
+              v-model="selectedDataType"
+              :options="dataOptions"
+              label="Filter By Status"
+              outlined
+              dense
+              @update:model-value="onUpdate"
+              class="q-ml-lg ads-select"
+            />
+          </div>
         </template>
         <template #body-cell-published="props">
           <q-td :props="props">
             <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue"><q-tooltip>Pending</q-tooltip></q-icon>
+            <q-icon v-else-if="props.row.status === 'Budget Crossed'" name="close" size="18px" color="primary">
+              <q-tooltip>Budget crossed</q-tooltip>
+            </q-icon>
+            <q-icon v-else-if="props.row.status === 'Complete'" name="task_alt" size="18px" color="green">
+              <q-tooltip>Complete</q-tooltip>
+            </q-icon>
             <q-icon
               v-else-if="props.value === 'Inactive'"
               name="play_circle"
@@ -64,14 +82,16 @@
               <q-tooltip class="positive" :offset="[10, 10]">withdraw amount spent!</q-tooltip>
             </q-icon>
             <q-icon
-              v-if="userStore.getUser.email == props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              v-if="
+                userStore.getUser.email === props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status === 'Active'
+              "
               flat
               color="primary"
               name="free_cancellation"
               size="18px"
               label=""
               class="q-mr-sm"
-              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email != props.row.author.email"
+              :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email !== props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">withdraw remaining budget!</q-tooltip>
@@ -88,6 +108,7 @@
             >
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
             </q-icon>
+
             <q-icon
               v-if="userStore.isAdmin && !props.row.isApproved"
               name="done_outline"
@@ -99,7 +120,11 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="props.row.status === 'Inactive'"
+              v-show="
+                props.row.status === 'Inactive' &&
+                computedDuration(props.row.endDate) > 0 &&
+                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
+              "
               name="edit"
               color="blue"
               size="18px"
@@ -114,28 +139,33 @@
           </q-td>
         </template>
         <template #body-cell-durations="props">
-          <q-td>
-            {{ props.row.status === 'Inactive' ? props.row.duration : computedDuration(props.row.endDate) }} day's
+          <q-td class="text-right">
+            {{ computedDuration(props.row.endDate) }} day's
             <q-tooltip>{{ props.row.publishDate }} to {{ props.row.endDate }}</q-tooltip>
           </q-td>
         </template>
         <template #body-cell-status="props">
-          <q-td>
-            {{ props.row.status }}
+          <q-td class="text-right">
+            {{ showStatus(props.row) }}
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             {{ props.row.content?.length > 30 ? props.row.content.substring(0, 30) + '...' : props.row.content }}
           </q-td>
         </template>
         <template #body-cell-name="props">
-          <q-td @click="goToUrl(props.row.id)" class="cursor-pointer">
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             {{ props.row.title?.length > 30 ? props.row.title.substring(0, 30) + '...' : props.row.title }}
           </q-td>
         </template>
+        <template #body-cell-total_cost="props">
+          <q-td class="text-right">
+            {{ viewMatic(computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits)) }}
+            <q-tooltip>{{ computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) }}</q-tooltip>
+          </q-td>
+        </template>
       </q-table>
-      <h4 v-else class="text-center">Add advertises to view and manage them</h4>
     </div>
     <q-dialog v-model="dialog.open">
       <q-card style="min-width: 20rem; max-width: 30rem">
@@ -217,12 +247,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getCurrentDate, calculateEndDate } from 'src/utils/date'
-import { claimPayment, getAdCampaignByCode, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
+import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
   advertises: {
@@ -243,12 +273,30 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-
+const selectedDataType = ref({ label: 'Active', value: 'active' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
+const initialDataOptions = [
+  { label: 'Active', value: 'active' },
+  { label: 'Inactive', value: 'inactive' },
+  { label: 'Budget Crossed', value: 'budget-crossed' },
+  { label: 'Complete', value: 'complete' },
+  { label: 'All', value: 'all' }
+]
+
+const dataOptions = ref(
+  initialDataOptions.filter(
+    (option) =>
+      option.value === 'budget-crossed' ||
+      option.value === 'complete' ||
+      option.value === 'all' ||
+      option.value === 'inactive' ||
+      option.value === 'active'
+  )
+)
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -293,8 +341,6 @@ async function _getEventsForCampaign(advertise) {
       ]
       //let's change the advertise status.
       advertismentPaymentEventsDialog.value.show = true
-      console.log('the result ======= ', result)
-      console.log('the event rows=== ', this.eventRows.value)
     } else {
       $q.notify({ message: result?.error?.message, type: 'negative' })
     }
@@ -357,7 +403,6 @@ async function _completeAdvertise(advertise) {
     .editAdvertise(advertise)
     .then(() => $q.notify({ type: 'info', message: 'Advertise status Changed to complete ' }))
     .catch((error) => {
-      console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
@@ -365,7 +410,6 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
   const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
   if (result.status.includes('success')) {
-    console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
     //let's change the advertise status
     await _completeAdvertise(advertise)
@@ -375,11 +419,11 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.hide()
 }
 
-function goToUrl(id, type) {
+function goToUrl(id) {
   router.push('/campaign/' + id)
 }
-onMounted(() => {
-  advertiseStore.fetchAdvertises()
+onMounted(async () => {
+  await advertiseStore.fetchAdvertises(selectedDataType?.value.label)
 })
 
 function openDeleteDialog(id, type) {
@@ -412,7 +456,6 @@ function changePublishDate() {
       })
     )
     .catch((error) => {
-      console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
     .finally(() => {
@@ -428,7 +471,6 @@ function onDeleteAdvertise() {
       .deleteAdvertise(id, type === 'Banner')
       .then(() => $q.notify({ type: 'negative', message: 'Advertise successfully deleted' }))
       .catch((error) => {
-        console.log(error)
         errorStore.throwError(error, 'Advertise deletion failed')
       })
       .finally(() => {
@@ -458,61 +500,83 @@ const columns = ref([
     name: 'published',
     required: true,
     label: 'Published',
-    align: 'left',
+    align: 'center',
     field: 'status',
     style: 'width:100px'
   },
   {
     name: 'name',
     required: true,
-    label: 'Advertiser Name',
+    label: 'Advertise Title',
+    align: 'left',
     field: 'title'
   },
   {
     name: 'content',
     required: true,
     field: 'content',
-    label: 'Advertiser Content'
+    align: 'left',
+    label: 'Advertise Content'
   },
   {
     name: 'type',
     required: true,
+    align: 'center',
     field: 'type',
-    label: 'Advertiser Type'
+    label: 'Advertise Type'
   },
   {
     name: 'status',
     field: 'publishDate',
+    align: 'center',
     label: 'Status'
   },
   {
     name: 'budget',
     field: 'budget',
+    align: 'center',
     label: 'Budget',
     sortable: true
   },
   {
     name: 'clicks',
     field: 'clicks',
+    align: 'center',
     label: 'Number of Click',
     sortable: true
   },
   {
     name: 'impression',
     field: 'impressions',
+    align: 'center',
     label: 'Number of Impression',
+    sortable: true
+  },
+  {
+    name: 'visits',
+    field: 'visits',
+    align: 'center',
+    label: 'Number of Visits',
+    sortable: true
+  },
+  {
+    name: 'total_cost',
+    field: 'total_cost',
+    align: 'right',
+    label: 'Total Cost',
     sortable: true
   },
   {
     name: 'durations',
     field: 'duration',
-    label: 'Durations',
-    sortable: true
+    align: 'right',
+    label: 'Durations'
   },
 
   {
     name: 'action',
     field: 'action',
+    align: 'right',
     label: ''
   }
 ])
@@ -533,7 +597,6 @@ function changeActiveStatus(advertise, status) {
       $q.notify({ type: 'info', message: status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully' })
     )
     .catch((error) => {
-      console.log(error)
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
@@ -543,9 +606,8 @@ function computedDuration(endDate) {
   const date2 = new Date(endDate)
   date1.setHours(0, 0, 0, 0)
   date2.setHours(0, 0, 0, 0)
-  let Difference_In_Time = date2.getTime() - date1.getTime()
-  let Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
-  return Difference_In_Days
+  const Difference_In_Time = date2.getTime() - date1.getTime()
+  return Math.round(Difference_In_Time / (1000 * 3600 * 24))
 }
 
 function calculateStatus(date) {
@@ -554,6 +616,58 @@ function calculateStatus(date) {
 
   return publishDate <= currentDate
 }
+function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
+  const impressionsMatic = impressions / 100
+  const clicksMatic = clicks / 20
+  const viewsMatic = views / 20
+  return impressionsMatic + clicksMatic + viewsMatic
+}
+function viewMatic(matic) {
+  if (Number.isInteger(matic)) return matic
+  const maticSplit = String(matic).split('.')
+  let floatNumbers = maticSplit[1]
+  if (floatNumbers.length > 3) {
+    floatNumbers = floatNumbers.slice(0, 3) + '...'
+  }
+  return maticSplit[0] + '.' + floatNumbers
+}
+function showStatus(data) {
+  const create = calculateStatus(data.publishDate)
+  const ended = calculateStatus(data.endDate)
+  if (!create) {
+    return 'Publish date pending'
+  } else if (computeAdvertisementMatic(data.impressions, data.clicks, data.visits) > Number(data.budget)) {
+    return 'Budget Crossed'
+  } else if (ended) {
+    return 'Complete'
+  } else if (create && !ended) {
+    return 'Ready to Publish'
+  }
+  return 'Pending: Publish date not yet reached'
+}
+
+async function onUpdate(e) {
+  selectedDataType.value = {
+    value: e.value,
+    label: e.label
+  }
+}
+
+watch(selectedDataType, (newType) => {
+  advertiseStore.fetchAdvertises(newType.label)
+})
 </script>
 
-<style lang="scss" scoped></style>
+<style>
+.ads-select {
+  width: 60%;
+
+  @media (max-width: 720px) {
+    width: 50%;
+  }
+}
+
+.ads-select > :first-child > :first-child {
+  background-color: white !important;
+}
+</style>

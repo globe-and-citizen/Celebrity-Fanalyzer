@@ -9,8 +9,7 @@
     {
       "type": "Feature",
       "id": 0,
-      "properties": { "STATEFP": "31", "STUSPS": "NE", "NAME": "Nebraska"
-      },
+      "properties": { "STATEFP": "31", "STUSPS": "NE", "NAME": "Nebraska" },
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -176,8 +175,7 @@
     {
       "type": "Feature",
       "id": 1,
-      "properties": { "STATEFP": "53", "STUSPS": "WA", "NAME": "Washington"
-      },
+      "properties": { "STATEFP": "53", "STUSPS": "WA", "NAME": "Washington" },
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -710,8 +708,7 @@
     {
       "type": "Feature",
       "id": 2,
-      "properties": { "STATEFP": "35", "STUSPS": "NM", "NAME": "New Mexico"
-      },
+      "properties": { "STATEFP": "35", "STUSPS": "NM", "NAME": "New Mexico" },
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [

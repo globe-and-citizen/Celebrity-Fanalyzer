@@ -5,12 +5,7 @@
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
 
-      <q-route-tab
-        class="adminTab"
-        v-if="userStore.isWriterOrAbove || userStore.isAuthenticated"
-        icon="admin_panel_settings"
-        @click="onAdminTabClick"
-      >
+      <q-route-tab class="adminTab" v-if="userStore.isAuthenticated" icon="admin_panel_settings" @click="onAdminTabClick">
         <q-tooltip>Admin Panel</q-tooltip>
       </q-route-tab>
       <div class="q-tab__indicator absolute-top"></div>
@@ -94,6 +89,9 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
+  if (!userStore.getUserIp.length) {
+    await userStore.fetchUserIp()
+  }
   if (params.year && params.month && !params.id) {
     promptStore.fetchPromptBySlug(`${params.year}-${params.month}`).catch((error) => errorStore.throwError(error))
   }
@@ -121,6 +119,13 @@ onMounted(async () => {
 
 .admin_tab {
   color: #e54757 !important;
+}
+
+.tabs .q-tabs__content {
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .tabs .q-tabs__arrow--left,

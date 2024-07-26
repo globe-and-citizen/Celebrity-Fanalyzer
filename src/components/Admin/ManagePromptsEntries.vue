@@ -1,15 +1,17 @@
 <template>
   <q-table
-    v-if="prompts"
+    v-if="prompts && userStore.isEditorOrAbove"
+    flat
+    bordered
+    hide-bottom
+    class="q-ma-md custom-table"
+    virtual-scroll
+    title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
-    flat
-    hide-bottom
     :loading="isLoading"
     :pagination="pagination"
     :rows="prompts"
-    style="left: 0; right: 0"
-    title="Manage Prompts & Entries"
   >
     <template v-slot:top-right>
       <q-input :data-test="isLoading ? '' : 'input-search'" debounce="300" dense placeholder="Search" v-model="filter">
@@ -22,13 +24,14 @@
       <q-tr class="new" :data-test="props.key" :props="props">
         <q-td auto-width>
           <q-btn
-            color="red"
-            data-test="button-expand"
             dense
             flat
-            :icon="props.expand ? 'expand_less' : 'expand_more'"
             round
-            @click="props.expand = !props.expand"
+            color="red"
+            data-test="button-expand"
+            :disable="isLoading"
+            :icon="props.expand ? 'expand_less' : 'expand_more'"
+            @click="toggleExpand(props)"
           >
             <q-tooltip>
               {{ props.expand ? 'Collapse' : 'Expand' }}
@@ -39,26 +42,26 @@
         <q-td class="text-right">
           <q-btn
             v-if="userStore.isEditorOrAbove"
+            flat
+            round
             color="warning"
             data-test="button-edit"
-            :disable="promptStore.isLoading"
-            flat
             icon="edit"
-            round
             size="sm"
+            :disable="promptStore.isLoading"
             @click="$emit('openPromptDialog', props.row)"
           >
             <q-tooltip>Edit</q-tooltip>
           </q-btn>
           <q-btn
             v-if="userStore.isEditorOrAbove"
+            flat
+            round
             color="negative"
             data-test="button-delete-prompt"
-            :disable="promptStore.isLoading"
-            flat
-            icon="delete"
-            round
             size="sm"
+            icon="delete"
+            :disable="promptStore.isLoading"
             @click="openDeleteDialog(props.row)"
           >
             <q-tooltip>Delete</q-tooltip>
@@ -68,11 +71,20 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-          <TableEntry v-else :filter="filter" :rows="props.row.entries" />
+          <TableEntry
+            v-else
+            :filter="filter"
+            :rows="getEntriesForPrompt(props.row.id)"
+            :currentPrompt="props.row"
+            :loaded-entries="entryStore._loadedEntries"
+            @update-entry="handleUpdateEntry"
+            @delete-entry="handleDeleteEntry"
+          />
         </q-td>
       </q-tr>
     </template>
   </q-table>
+  <TableEntry v-else :filter="filter" :rows="entryStore.getUserRelatedEntries" />
 
   <q-dialog v-model="deleteDialog.show">
     <q-card>
@@ -98,9 +110,9 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, watchEffect, ref } from 'vue'
 
-defineEmits(['openPromptDialog'])
+defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -119,26 +131,22 @@ const deleteDialog = ref({})
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
+const prompts = ref([])
+
 onMounted(() => {
-  promptStore.fetchPrompts()
-  entryStore.fetchEntries()
+  if (userStore.isEditorOrAbove) {
+    entryStore._loadedEntries = []
+    promptStore.fetchPrompts()
+  } else {
+    entryStore.fetchUserRelatedEntries(userStore.getUserId)
+  }
 })
-/**
- * @description computed property that returns if prompts and entries are loaded
- * @type {ComputedRef<Boolean>}
- */
-const isLoaded = computed(() => promptStore.getPrompts && entryStore.getEntries)
-/**
- * @description computed property that returns if prompts and entries are loading
- * @type {ComputedRef<Boolean>}
- */
+
+const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
-const prompts = computed(() => {
-  return promptStore.getPrompts?.map((prompt) => ({
-    ...prompt,
-    entries: entryStore.getEntries?.filter((entry) => [entry.prompt, entry.prompt?.id].includes(prompt.id))
-  }))
+watchEffect(async () => {
+  prompts.value = promptStore.getPrompts
 })
 
 function openDeleteDialog(prompt) {
@@ -154,5 +162,70 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+async function handleUpdateEntry({ _entry, _prompt }) {
+  const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
+  if (promptIndex !== -1) {
+    const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
+    if (entryIndex !== -1) {
+      const { author, ...restOfEntry } = _entry
+      // Merge the existing entry with the incoming _entry data
+      const updatedEntry = { ...prompts.value[promptIndex].entries[entryIndex], ...restOfEntry }
+      prompts.value[promptIndex].entries.splice(entryIndex, 1, updatedEntry)
+    }
+
+    // Update other properties of the prompt if necessary
+    const { entries, ...restOfPrompt } = _prompt
+    Object.assign(prompts.value[promptIndex], restOfPrompt)
+
+    // This reassignment ensures Vue's reactivity system is aware of the update
+    prompts.value = [...prompts.value]
+  }
+}
+
+function toggleExpand(props) {
+  props.expand = !props?.expand
+  if (props.expand && !entryStore._loadedEntries.some((el) => el?.promptId === props?.row?.id)) {
+    fetchEntriesForPrompt(props.row.entries, props.row.id)
+  }
+}
+
+async function fetchEntriesForPrompt(entriesIds, promptId) {
+  try {
+    const res = await entryStore.fetchPromptsEntries(entriesIds)
+    entryStore._loadedEntries.push({ promptId, entries: res })
+  } catch (error) {
+    await errorStore.throwError(error, 'Failed to fetch entries')
+  }
+}
+
+function getEntriesForPrompt(promptId) {
+  const loadedPrompt = entryStore._loadedEntries.find((el) => el?.promptId === promptId)
+  return loadedPrompt ? loadedPrompt?.entries : []
+}
+
+function handleDeleteEntry(entryId, promptId) {
+  entryStore._loadedEntries = entryStore._loadedEntries.map((prompt) => {
+    if (prompt?.promptId === promptId) {
+      return {
+        ...prompt,
+        entries: prompt?.entries.filter((entry) => entry.id !== entryId)
+      }
+    }
+    return prompt
+  })
+
+  prompts.value = prompts.value.map((prompt) => {
+    if (prompt.id === promptId) {
+      return {
+        ...prompt,
+        entries: prompt?.entries.filter((entry) => entry.id !== entryId)
+      }
+    }
+    return prompt
+  })
+
+  promptStore.fetchPrompts()
 }
 </script>

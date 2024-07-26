@@ -4,7 +4,17 @@
       <TheHeader feedbackButton :title="title" />
       <q-responsive :ratio="1" v-if="!isAdd" :style="{ backgroundImage: `url(${post?.image})` }">
         <div class="bg-blur flex">
-          <q-img fit="contain" ratio="1" spinner-color="primary" :src="post?.image" />
+          <q-img
+            fit="contain"
+            ratio="1"
+            spinner-color="primary"
+            :src="post?.image"
+            :srcset="`${post.image} 2x`"
+            sizes="(max-width: 560) 50vw, 100vw"
+            loading="lazy"
+            decoding="async"
+            fetchpriority="high"
+          />
         </div>
       </q-responsive>
       <div v-else-if="post.contentURL" class="bg-blur flex">
@@ -12,7 +22,7 @@
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
-          <p v-if="post?.date" class="text-body2">{{ monthYear(post.date) }}</p>
+          <p class="text-body2">{{ dayMonthYear(post.created) }}</p>
           <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
@@ -142,7 +152,6 @@
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import {
   useCommentStore,
-  useEntryStore,
   useErrorStore,
   useLikeStore,
   useNotificationStore,
@@ -152,7 +161,7 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
-import { monthYear } from 'src/utils/date'
+import { dayMonthYear } from 'src/utils/date'
 import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
@@ -171,18 +180,16 @@ const notificationStore = useNotificationStore()
 const shareStore = useShareStore()
 const userStore = useUserStore()
 const visitorStore = useVisitorStore()
-const entryStore = useEntryStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
 const userRating = ref(0)
 
 onMounted(async () => {
   // =========== STATS ===========
-  await userStore.fetchUserIp()
   const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
   const userLocation = userStore.getUserLocation
   await statsStore.addUser(userId, userLocation)
-  if (typeof props.post.entries !== 'undefined') {
+  if (typeof props.post?.entries !== 'undefined') {
     await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
   }
   if (typeof props.post.prompt !== 'undefined') {
@@ -239,7 +246,7 @@ async function subscribe() {
 
 watchEffect(async () => {
   if (statsStore.getUserRate?.userRating) {
-    userRating.value = ((await statsStore.getUserRate?.userRating) / 100) * 5
+    userRating.value = (statsStore.getUserRate?.userRating / 100) * 5
   }
 })
 </script>

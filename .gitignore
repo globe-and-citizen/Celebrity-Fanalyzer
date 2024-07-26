@@ -39,4 +39,5 @@ firebase-debug.log
 .nyc_output
 coverage/
 conf-example
+functions/node_modules
 package-lock.json

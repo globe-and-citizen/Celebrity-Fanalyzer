@@ -97,7 +97,6 @@ export const useLikeStore = defineStore('likes', {
       try {
         this._isLoading = true
         const userStore = useUserStore()
-        await userStore.fetchUserIp()
         const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 
         const dislikesRef = doc(db, collectionName, documentId, 'dislikes', userStore.getUserId)
@@ -150,11 +149,6 @@ export const useLikeStore = defineStore('likes', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
-    },
-
-    async resetLikes() {
-      this._likes = undefined
-      this._dislikes = undefined
     }
   }
 })

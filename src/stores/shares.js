@@ -60,8 +60,6 @@ export const useShareStore = defineStore('shares', {
       try {
         this._isLoading = true
         const userStore = useUserStore()
-        await userStore.fetchUserIp()
-
         const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
         const docId = socialNetwork + '-' + (userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIpHash)
 
@@ -94,10 +92,6 @@ export const useShareStore = defineStore('shares', {
       })
       await Promise.all(promises)
       this._isLoading = false
-    },
-
-    async resetShares() {
-      this._sharesCount = undefined
     }
   }
 })

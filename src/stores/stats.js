@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useUserStore } from 'src/stores'
+import { useClicksStore, useCommentStore, useImpressionsStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
 import layer8 from 'layer8_interceptor'
 
 export const baseURL = 'https://stats-api.up.railway.app/v1'
@@ -43,8 +43,8 @@ export const useStatStore = defineStore('stats', {
           'Content-Type': 'application/json'
         }
       })
-
-      this._summary = await response.json() // Parsing the JSON data
+      // Parsing the JSON data
+      this._summary = await response.json()
       this._isLoading = false
     },
 
@@ -232,6 +232,26 @@ export const useStatStore = defineStore('stats', {
         console.log(err)
         return null
       }
+    },
+
+    // Reset comments, likes, shares, impressions, clicks for the posts
+    async resetPostImpressions() {
+      const commentsStore = useCommentStore()
+      const likesStore = useLikeStore()
+      const sharesStore = useShareStore()
+      const impressionsStore = useImpressionsStore()
+      const clicksStore = useClicksStore()
+
+      commentsStore._comments = undefined
+      likesStore._likes = undefined
+      likesStore._dislikes = undefined
+      sharesStore._sharesCount = undefined
+      impressionsStore._likes = undefined
+      impressionsStore._dislikes = undefined
+      clicksStore._clicks = undefined
+      this._stats = []
+      this._allInteractionsByCountry = []
+      this._articleRating = undefined
     }
   }
 })

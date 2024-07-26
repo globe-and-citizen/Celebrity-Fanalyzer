@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', {
 
   getters: {
     getAdmins: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin') || [],
-    getAdminsAndWriters: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin' || user.role === 'Writer') || [],
+    getAdminsAndEditors: (getters) => getters.getUsers?.filter((user) => user.role === 'Admin' || user.role === 'Editor') || [],
     getProfileTab: (state) => state._profileTab,
     getSubscriptions: (state) => state._user.subscriptions,
     getUser: (state) => state._user,
@@ -40,7 +40,6 @@ export const useUserStore = defineStore('user', {
     getUsers: (state) => state._users,
     isAdmin: (getters) => getters.getUser.role === 'Admin',
     isEditorOrAbove: (getters) => ['Admin', 'Editor'].includes(getters.getUser.role),
-    isWriterOrAbove: (getters) => ['Admin', 'Editor', 'Writer'].includes(getters.getUser.role),
     isAdvertiser: (getters) => getters.getUser.role === 'Advertiser',
     isAuthenticated: (getters) => Boolean(getters.getUser?.uid),
     isLoading: (state) => state._isLoading,
@@ -61,23 +60,11 @@ export const useUserStore = defineStore('user', {
 
     async fetchUsers() {
       this._isLoading = true
-      onSnapshot(query(collection(db, 'users'), where('role', '!=', 'User')), (querySnapshot) => {
+      onSnapshot(query(collection(db, 'users')), (querySnapshot) => {
         const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
         this.$patch({ _users: users })
       })
       this._isLoading = false
-    },
-
-    async queryUsers(search) {
-      this._isLoading = true
-      return await getDocs(
-        query(collection(db, 'users'), where('displayName', '>=', search), where('displayName', '<=', search + '\uf8ff'))
-      )
-        .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
-        })
-        .finally(() => (this._isLoading = false))
     },
 
     async getUserByUidOrUsername(id) {
@@ -92,11 +79,9 @@ export const useUserStore = defineStore('user', {
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchAdminsAndWriters() {
+    async fetchAdminsAndEditors() {
       this._isLoading = true
-      await getDocs(
-        query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'), where('population', '==', 'Writer')))
-      )
+      await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'))))
         .then((querySnapshot) => {
           const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
           this.$patch({ _users: users })
@@ -109,6 +94,8 @@ export const useUserStore = defineStore('user', {
      * @SaveState <string> IPV6
      */
     async fetchUserIp() {
+      this._userIp = ''
+      this._userLocation = ''
       await fetch('https://www.cloudflare.com/cdn-cgi/trace')
         .then((res) => res.text())
         .then((text) => {
@@ -128,7 +115,7 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email })
+          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email, role: 'User' })
             .then(() => this.emailSignIn(user))
             .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
             .catch((error) => console.error(error))
@@ -168,7 +155,7 @@ export const useUserStore = defineStore('user', {
           const { email, displayName, photoURL, uid } = result.user
 
           if (isNewUser) {
-            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL })
+            await setDoc(doc(db, 'users', uid), { email, displayName, photoURL, role: 'User' })
           }
 
           onSnapshot(doc(db, 'users', result.user.uid), (doc) => {

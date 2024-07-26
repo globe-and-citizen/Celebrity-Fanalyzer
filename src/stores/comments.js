@@ -14,7 +14,6 @@ import {
   query,
   where,
   or,
-  and,
   orderBy
 } from 'firebase/firestore'
 import { defineStore } from 'pinia'
@@ -145,7 +144,6 @@ export const useCommentStore = defineStore('comments', {
 
     async addComment(collectionName, comment, document, isTest = false) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
       const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 
       comment.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
@@ -162,9 +160,6 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async editComment(collectionName, documentId, id, editedComment, userId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const comment = this.getComments?.find((comment) => comment.id === id)
       const index = this._comments.findIndex((comment) => comment.id === id)
 
@@ -191,8 +186,6 @@ export const useCommentStore = defineStore('comments', {
 
     async likeComment(collectionName, documentId, commentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const comment = this._comments.find((comment) => comment.id === commentId)
       const commentRef = doc(db, collectionName, documentId, 'comments', commentId)
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
@@ -215,8 +208,6 @@ export const useCommentStore = defineStore('comments', {
 
     async dislikeComment(collectionName, documentId, commentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const comment = this._comments.find((comment) => comment.id === commentId)
       const commentRef = doc(db, collectionName, documentId, 'comments', commentId)
       const user = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
@@ -239,8 +230,6 @@ export const useCommentStore = defineStore('comments', {
 
     async deleteComment(collectionName, documentId, commentId) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         const relatedCommentsQuery = query(collection(db, collectionName, documentId, 'comments'), where('parentId', '==', commentId))
@@ -276,8 +265,6 @@ export const useCommentStore = defineStore('comments', {
 
     async addReply(collectionName, documentId, reply) {
       const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       reply.author = userStore.getUserRef || userStore.getUserIpHash
       reply.created = Timestamp.fromDate(new Date())
       reply.id ??= Date.now() + '-' + (reply.author.id || reply.author)
@@ -289,9 +276,6 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async removeCommentFromFirestore(collectionName, documentId, commentId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       this._isLoading = true
       await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId)).finally(() => (this._isLoading = false))
     },

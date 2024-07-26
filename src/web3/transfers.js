@@ -1,10 +1,8 @@
 import { ethers } from 'ethers'
 import { customWeb3modal } from './walletConnect'
-import { Notify, useQuasar } from 'quasar'
 import { useWalletStore } from '../stores'
 
 const walletStore = useWalletStore()
-const $q = useQuasar()
 
 export const sendEther = async (recipientAddress, amountInEther, signer, provider) => {
   //initate transaction..
@@ -29,10 +27,9 @@ export const sendEther = async (recipientAddress, amountInEther, signer, provide
       explorerUrl: explorerUrl
     }
   } catch (error) {
-    //$q.notify({ message: error.data.message, type: 'negative' })
     return {
       success: false,
-      error: error.data.message
+      error: await handleMetamaskError(error)
     }
   }
 }
@@ -51,14 +48,11 @@ const getProvider = async () => {
     const walletProvider = customWeb3modal.getWalletProvider()
 
     // With the walletProvider obtained, proceed to create the ethers provider and signer
-    const provider = new ethers.providers.Web3Provider(walletProvider)
-    //const signer = provider.getSigner()
-    //console.log("the network =========== ", await provider.getNetwork().name)
-
-    return provider
+    return new ethers.providers.Web3Provider(walletProvider)
   } catch (error) {
     console.error('Error getting provider:', error)
-    throw error // Rethrow the error to handle it where getProvider is called
+    // Rethrow the error to handle it where getProvider is called
+    throw error
   }
 }
 
@@ -69,25 +63,21 @@ export const initiateSendEther = async (recipientAddress, amountInEther) => {
       await customWeb3modal.open()
     }
     if (customWeb3modal.getAddress()) {
-      const provider = await getProvider() // Get the signer
+      // Get the signer
+      const provider = await getProvider()
       const signer = provider.getSigner()
 
       if (signer) {
-        const transactionResult = await sendEther(recipientAddress, amountInEther, signer, provider)
-        return transactionResult
+        return await sendEther(recipientAddress, amountInEther, signer, provider)
         // Further logic to handle successful transaction
       }
-    } else {
-      //$q.notify({ message: 'the wallet is not connected', type: 'negative' })
     }
   } catch (error) {
-    //console.log("the error ============================== ", error);
-    //$q.notify({ message: 'error when sending ether', type: 'negative' });
+    const errorMessage = await handleMetamaskError(error)
     return {
       success: false,
-      error: error.data.message
+      error: errorMessage
     }
-    //console.error('Error initiating sendEther:', error);
   }
 }
 
@@ -118,21 +108,62 @@ export const getTransactionDetails = async (txHash, networkName) => {
     // Fetch the transaction receipt to get the status
 
     const receipt = await provider.getTransactionReceipt(txHash)
-    //console.log("the transaction detail is called ==================== ", transaction)
+
     // Extracting the desired information
-    const amount = ethers.utils.formatEther(transaction.value) // Convert Wei to Ether for the transaction amount
+    // Convert Wei to Ether for the transaction amount
+    const amount = ethers.utils.formatEther(transaction.value)
     const sender = transaction.from
     const receiver = transaction.to
     const status = receipt.status === 1 ? 'Success' : 'Failed'
 
-    const result = {
+    return {
       amount: amount,
       sender: sender,
       receiver: receiver,
       status: status
     }
-    return result
   } catch (error) {
-    //console.error('Error retrieving transaction details:', error);
+    const errorMessage = await handleMetamaskError(error)
+    return {
+      success: false,
+      error: errorMessage
+    }
+  }
+}
+
+const handleMetamaskError = async (error) => {
+  // Check if the error has a code property
+  if (error.code) {
+    switch (error.code) {
+      case 4001:
+        return 'Request was rejected by the user.'
+      case -32603:
+        const errorMessage = error?.data?.message
+        if (errorMessage?.includes('insufficient funds for gas')) {
+          return 'Insufficient funds. Please check your balance and try again.'
+        } else {
+          if (errorMessage) {
+            return errorMessage
+          }
+        }
+        return 'Internal JSON-RPC error. Please try again later.'
+      case -32000:
+        return 'Insufficient funds. Please check your balance and try again.'
+      case 'ACTION_REJECTED':
+        return 'user rejected transaction'
+      default:
+        return `An unknown error occurred (code: ${error.code}). Please try again later.`
+    }
+  } else {
+    // Handle errors without a code property by checking the message
+    if (error.message.includes('network')) {
+      return 'Network error. Please check your connection and try again.'
+    } else if (error.message.includes('insufficient funds')) {
+      return 'Insufficient funds. Please check your balance and try again.'
+    } else if (error.message.includes('User denied')) {
+      return 'Request was denied by the user.'
+    } else {
+      return 'An unknown error occurred. Please try again later.'
+    }
   }
 }

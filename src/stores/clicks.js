@@ -1,7 +1,6 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { useUserStore } from 'src/stores'
 import { monthDayYear } from 'src/utils/date'
 
 export const useClicksStore = defineStore('clicks', {
@@ -19,9 +18,6 @@ export const useClicksStore = defineStore('clicks', {
 
   actions: {
     async addClick(collectionName, documentId) {
-      const userStore = useUserStore()
-      await userStore.fetchUserIp()
-
       const visitorRef = doc(db, collectionName, documentId, 'clicks', monthDayYear().replaceAll('/', '-'))
       const visitorSnap = await getDoc(visitorRef)
 
@@ -40,8 +36,7 @@ export const useClicksStore = defineStore('clicks', {
 
     async readClicks(collectionName, documentId) {
       onSnapshot(collection(db, collectionName, documentId, 'clicks'), (querySnapshot) => {
-        const clicks = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        this._clicks = clicks
+        this._clicks = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       })
     },
 
@@ -55,10 +50,6 @@ export const useClicksStore = defineStore('clicks', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
-    },
-    async resetClicks() {
-      this._likes = undefined
-      this._dislikes = undefined
     }
   }
 })

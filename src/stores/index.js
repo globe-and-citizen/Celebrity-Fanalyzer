@@ -10,7 +10,6 @@ import { useReportStore } from './reports'
 import { useLikeStore } from './likes'
 import { useNotificationStore } from './notifications'
 import { usePromptStore } from './prompts'
-import { useRequestStore } from './requests'
 import { useShareStore } from './shares'
 import { useStatStore } from './stats'
 import { useStorageStore } from './storage'
@@ -29,8 +28,8 @@ import { useImpressionsStore } from './impressions'
  * async/await or return a Promise which resolves
  * with the Store instance.
  */
-
-export default store((/* { ssrContext } */) => {
+/* { ssrContext } */
+export default store(() => {
   const pinia = createPinia()
 
   pinia.use(
@@ -64,7 +63,6 @@ export {
   useLikeStore,
   useNotificationStore,
   usePromptStore,
-  useRequestStore,
   useShareStore,
   useStatStore,
   useStorageStore,

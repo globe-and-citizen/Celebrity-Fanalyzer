@@ -3,6 +3,7 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
+  getDoc,
   doc,
   getDocs,
   query,
@@ -27,13 +28,31 @@ import {
   useVisitorStore
 } from 'src/stores'
 
+function snapshotDocs(querySnapshot) {
+  const entries = []
+  for (const doc of querySnapshot) {
+    const entryData = doc.data()
+    const promptId = entryData.prompt.id
+
+    const entry = {
+      id: doc.id,
+      prompt: promptId,
+      ...entryData
+    }
+    entries.push(entry)
+  }
+  return entries
+}
+
 export const useEntryStore = defineStore('entries', {
   state: () => ({
     _entries: undefined,
     _isLoading: false,
     _unSubscribe: undefined,
     _tab: 'post',
-    entryDialog: {}
+    entryDialog: {},
+    userRelatedEntries: [],
+    _loadedEntries: []
   }),
 
   persist: true,
@@ -42,7 +61,9 @@ export const useEntryStore = defineStore('entries', {
     getEntries: (state) => state._entries,
     resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
-    tab: (state) => state._tab
+    tab: (state) => state._tab,
+    getUserRelatedEntries: (state) => state._userRelatedEntries,
+    getLoadedEntries: (state) => state._loadedEntries
   },
 
   actions: {
@@ -50,24 +71,13 @@ export const useEntryStore = defineStore('entries', {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndWriters()
+        await userStore.fetchAdminsAndEditors()
       }
 
       try {
         this._isLoading = true
         const querySnapshot = await getDocs(collection(db, 'entries'))
-        const entries = []
-        for (const doc of querySnapshot.docs) {
-          const entryData = doc.data()
-          const promptId = entryData.prompt.id
-
-          const entry = {
-            id: doc.id,
-            prompt: promptId,
-            ...entryData
-          }
-          entries.push(entry)
-        }
+        const entries = snapshotDocs(querySnapshot.docs)
         for (const entry of entries) {
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
@@ -81,11 +91,38 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
+    async fetchUserRelatedEntries(userId) {
+      const userStore = useUserStore()
+
+      try {
+        this._isLoading = true
+
+        if (!userStore.getUsers) {
+          await userStore.fetchAdminsAndWriters()
+        }
+
+        const userDocRef = doc(db, 'users', userId)
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('author', '==', userDocRef)))
+        const entries = snapshotDocs(querySnapshot.docs)
+
+        for (const entry of entries) {
+          if (entry.author.id) {
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+        }
+        this._userRelatedEntries = entries
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this._isLoading = false
+      }
+    },
+
     async fetchPromptsEntries(slugArray) {
       const userStore = useUserStore()
       try {
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         this._isLoading = true
@@ -107,6 +144,7 @@ export const useEntryStore = defineStore('entries', {
         }
         this._entries = allEntries
         this._isLoading = false
+        return allEntries
       } catch (e) {
         console.error('Error fetching entries entries', e)
       }
@@ -169,19 +207,25 @@ export const useEntryStore = defineStore('entries', {
 
     //update not coming from form submission
     async dataUpdateEntry(payload) {
-      
       const promptStore = usePromptStore()
-      //console.log('the payload ===', payload.entry.prompt );
       const prompt = promptStore.getPromptRef(payload.entry.prompt?.id)
-       
-      //console.log('the promt ===', prompt );
+
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), {
-          hasWinner: payload.isWinner == true ? true : false,
+          hasWinner: payload.isWinner === true,
           updated: Timestamp.fromDate(new Date())
         })
         transaction.update(doc(db, 'entries', payload.entry.id), { isWinner: payload.isWinner, updated: Timestamp.fromDate(new Date()) })
-      }).finally(() => (this._isLoading = false))
+      })
+
+      // Fetch updated documents separately after the transaction
+      const updatedEntryDoc = await getDoc(doc(db, 'entries', payload.entry.id))
+      const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt.id))
+
+      return {
+        _entry: updatedEntryDoc.data(),
+        _prompt: updatedPromptDoc.data()
+      }
     },
 
     async deleteEntry(entryId) {
@@ -206,7 +250,7 @@ export const useEntryStore = defineStore('entries', {
 
         await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
       } catch (error) {
-        errorStore.throwError(error)
+        await errorStore.throwError(error, 'Error deleting entry')
       }
       this._isLoading = false
     },

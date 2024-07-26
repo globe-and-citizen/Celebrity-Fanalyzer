@@ -86,9 +86,9 @@
               counter
               data-test="file-image"
               hide-hint
-              hint="Max size is 5MB"
+              hint="Max size is 2MB"
               label="Image"
-              :max-total-size="5242880"
+              :max-total-size="2097152"
               :required="!id"
               v-model="imageModel"
               @rejected="onRejected()"
@@ -135,7 +135,7 @@
               data-test="button-submit"
               :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
               :label="id ? 'Save Edits' : 'Submit Prompt'"
-              :loading="promptStore.isLoading"
+              :loading="promptStore.isLoading || storageStore.isLoading"
               rounded
               type="submit"
             />
@@ -152,6 +152,7 @@ import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { uploadAndSetImage } from 'src/utils/imageConvertor'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -164,8 +165,6 @@ const userStore = useUserStore()
 
 const authorOptions = reactive([])
 const dataKey = ref(Date.now())
-const editorRef = ref(null)
-const imageModel = ref([])
 const prompt = reactive({
   description: '',
   image: '',
@@ -173,6 +172,9 @@ const prompt = reactive({
   title: ''
 })
 const step = ref(1)
+const imageModel = ref(null)
+const imagePreview = ref(null)
+const editorRef = ref(null)
 
 watchEffect(() => {
   if (props.id) {
@@ -184,15 +186,18 @@ watchEffect(() => {
     prompt.image = props.image
     prompt.showcase = props.showcase
     prompt.title = props.title
+    if (props.image) {
+      imagePreview.value = props.image
+    }
   } else {
-    prompt.author = userStore.isWriterOrAbove ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
     prompt.date = currentYearMonth()
   }
 })
 
 onMounted(() => {
-  userStore.getAdminsAndWriters.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function onUpdateMonth() {
@@ -204,10 +209,6 @@ function uploadPhoto() {
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (prompt.image = reader.result)
-}
-
-function onRejected() {
-  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 
 function onPaste(evt) {
@@ -239,11 +240,8 @@ async function onSubmit() {
     return
   }
 
-  if (Object.keys(imageModel.value).length) {
-    await storageStore
-      .uploadFile(imageModel.value, `images/prompt-${prompt.date}`)
-      .then((url) => (prompt.image = url))
-      .catch((error) => errorStore.throwError(error))
+  if (imageModel.value) {
+    prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${prompt.date}`)
   }
 
   if (props.id) {
@@ -259,5 +257,9 @@ async function onSubmit() {
   }
 
   emit('hideDialog')
+}
+
+function onRejected() {
+  $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 2MB.' })
 }
 </script>

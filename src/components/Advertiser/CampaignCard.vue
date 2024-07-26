@@ -2,7 +2,7 @@
   <article
     ref="articleRef"
     id="test"
-    class="max-width full-height full-width"
+    class="max-width full-height full-width search-page"
     :class="[{ 'blog-card': advertise.type !== 'Text', 'text-blog-card': advertise.type === 'Text' }]"
     @click="onClick"
   >
@@ -32,14 +32,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUserStore, useVisitorStore, useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
+import { useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getFormattedLink } from 'src/utils/getFormattedLink'
 
 const router = useRouter()
 const articleRef = ref(null)
-const userStore = useUserStore()
-const visitorStore = useVisitorStore()
 const errorStore = useErrorStore()
 const clicksStore = useClicksStore()
 const impressionsStore = useImpressionsStore()
@@ -52,7 +50,7 @@ const props = defineProps({
 })
 
 function onClick() {
-  clicksStore.addClick('advertises', props.advertise.id).catch((error) => console.log(error))
+  clicksStore.addClick('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
 }
 
 function goToUrl() {
@@ -65,17 +63,11 @@ onMounted(async () => {
     entries.forEach((entry) => {
       const intersecting = entry.isIntersecting
       if (intersecting) {
-        impressionsStore.addImpression('advertises', props.advertise.id).catch((error) => console.log(error))
+        impressionsStore.addImpression('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
       }
     })
   })
   observer.observe(articleRef.value)
-
-  await userStore.fetchUserIp()
-
-  visitorStore.readVisitors('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
-
-  await visitorStore.addVisitor('advertises', props.advertise.id).catch((error) => errorStore.throwError(error))
 })
 </script>
 
@@ -102,18 +94,18 @@ $shadow: rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: row;
   background: $white;
-  filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 0 5px $shadow;
 }
 .text-blog-card {
   display: flex;
   flex-direction: row;
   background: $white;
-  filter: drop-shadow(1px 2px 4px $shadow);
   border-radius: 24px;
   overflow: hidden;
   min-width: 400px;
+  box-shadow: 0 0 5px $shadow;
 }
 .card-link {
   position: relative;
@@ -171,6 +163,9 @@ $shadow: rgba(0, 0, 0, 0.2);
   @media (max-width: 425px) {
     min-width: 280px;
   }
+  @media (max-width: 500px) {
+    margin: 0 3px !important;
+  }
 }
 
 @media (max-width: 40rem) {
@@ -210,12 +205,5 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-columns: 1fr 2fr;
     grid-template-rows: 1fr;
   }
-
-  // @media (max-width: 32rem) {
-  //   .blog-card {
-  //     grid-template-columns: auto;
-  //     grid-template-rows: 18rem 1fr;
-  //   }
-  // }
 }
 </style>

@@ -184,10 +184,7 @@ const reportOptions = [
 
 const $q = useQuasar()
 onMounted(async () => {
-  await userStore.fetchUserIp()
   userId.value = userStore.isAuthenticated ? userStore.getUserRef?.id : userStore.getUserIpHash
-
-  window.addEventListener('keydown', handleKeydown)
 })
 
 async function editComment(commentId, editedComment) {
@@ -243,15 +240,6 @@ function dislikeComment(commentId) {
 
 const replyCounter = (id) => {
   return commentStore.getComments ? commentStore.getComments.filter((comment) => comment.parentId === id).length : 0
-}
-
-function handleKeydown(event) {
-  if (event.key === 'Escape' || event.key === 'Esc') {
-    // expanded.value = false
-    // commentId.value = ''
-    // expandedReply.value = false
-    // inputField.value.blur()
-  }
 }
 
 function editInput(commentId) {
