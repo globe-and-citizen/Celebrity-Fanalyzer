@@ -199,7 +199,6 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { currentYearMonth } from 'src/utils/date'
 import { useErrorStore, usePromptStore } from 'src/stores'
 import { computed, onMounted, ref } from 'vue'
 
@@ -209,20 +208,11 @@ const promptStore = usePromptStore()
 const loaded = ref(false)
 
 const monthPrompt = computed(() => {
-  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-  const sortedPrompts = promptStore.getPrompts?.sort((a, b) => a.id - b.id)
-  return sortedPrompts?.find((prompt) => prompt.id <= currentYearMonth())
+  return promptStore.getMonthPrompt?.[0]
 })
 
 onMounted(async () => {
-  if (!monthPrompt.value) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
-  }
-  const lastPromptMonth = new Date(monthPrompt?.value?.created?.seconds * 1000).getMonth()
-  const currentMonth = new Date().getMonth()
-  if (lastPromptMonth !== currentMonth) {
-    await promptStore.fetchPrompts().catch((error) => errorStore.throwError(error, error))
-  }
+  await promptStore.fetchMonthsPrompt().catch((error) => errorStore.throwError(error, error))
 })
 </script>
 
