@@ -73,7 +73,6 @@ function goToUrl() {
   z-index: 3;
 }
 
-
 .article-card-item {
   min-width: 619px;
   width: 100%;

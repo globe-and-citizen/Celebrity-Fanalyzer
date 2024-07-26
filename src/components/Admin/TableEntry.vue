@@ -21,7 +21,7 @@
   >
     <template #body-cell-created="props">
       <td class="text-center relative-position">
-        <img v-if="props.row.isWinner" src="/favicon-16x16.png" style="position:absolute; left:3%" />
+        <img v-if="props.row.isWinner" src="/favicon-16x16.png" style="position: absolute; left: 3%" />
         {{ shortMonthDayTime(props.row.created) }}
       </td>
     </template>

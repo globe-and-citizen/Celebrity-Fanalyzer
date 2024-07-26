@@ -33,9 +33,9 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/src',
-    },
-  },
+      '@': '/src'
+    }
+  }
   // optimizeDeps: {
   //   include: ['@web3modal/ethers5'],
   //   esbuildOptions: {
@@ -43,10 +43,10 @@ export default defineConfig({
   //     define: {
   //       global: 'globalThis'
   //     },
-  //     supported: { 
-  //       bigint: true 
+  //     supported: {
+  //       bigint: true
   //     },
   //   },
-   
+
   // },
 })

@@ -25,7 +25,6 @@
           >
             <HalfDonought :stats="statStore.getStats" :title="'User\'s total activity'" />
           </div>
-
         </div>
         <div v-if="isAdd" class="anthogram-border q-my-sm">
           <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />

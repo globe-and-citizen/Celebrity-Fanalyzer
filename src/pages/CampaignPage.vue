@@ -53,7 +53,7 @@ const tab = ref(advertiseStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 
-advertiseStore.fetchAdvertises().catch((error) =>errorStore.throwError(error))
+advertiseStore.fetchAdvertises().catch((error) => errorStore.throwError(error))
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
 const { params } = router.currentRoute.value
 const advertise = computed(() => {

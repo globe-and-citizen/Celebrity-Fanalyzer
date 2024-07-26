@@ -4,10 +4,9 @@
 </template>
 
 <script setup>
-import {  useUserStore } from 'app/src/stores'
+import { useUserStore } from 'app/src/stores'
 
 const userStore = useUserStore()
-
 
 function onLogout() {
   userStore.logout()
