@@ -89,7 +89,11 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
-  if (!userStore.getUserIp.length) {
+  if (!userStore.getUserIp && !userStore.isAuthenticated) {
+    await userStore.fetchUserIp()
+  }
+
+  if (userStore.isAuthenticated && userStore.getUser && !userStore.getUser.location) {
     await userStore.fetchUserIp()
   }
   if (params.year && params.month && !params.id) {
