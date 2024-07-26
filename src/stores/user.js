@@ -96,19 +96,24 @@ export const useUserStore = defineStore('user', {
     async fetchUserIp() {
       this._userIp = ''
       this._userLocation = ''
-      await fetch('https://www.cloudflare.com/cdn-cgi/trace')
-        .then((res) => res.text())
-        .then((text) => {
-          text.split('\n').forEach((line) => {
-            const [key, value] = line.split('=')
-            if (key === 'ip') {
-              this._userIp = value
-            }
-            if (key === 'loc') {
-              this._userLocation = value
-            }
-          })
-        })
+      const trace = await fetch('https://stats-api.up.railway.app/v1/trace')
+      const data = await trace.json()
+
+      if (data.ip) {
+        this._userIp = data.ip
+      }
+
+      if (data.country) {
+        this._userLocation = data.country
+      }
+
+      if (this.getUser.uid && !this.getUser.location) {
+        try {
+          await this.updateProfile({ location: this._userLocation })
+        } catch (e) {
+          console.error(e)
+        }
+      }
     },
 
     async emailSignUp(user) {

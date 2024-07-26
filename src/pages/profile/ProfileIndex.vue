@@ -31,11 +31,17 @@
 import LoginForm from 'src/components/Profile/LoginForm.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useUserStore } from 'src/stores'
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 
 const userStore = useUserStore()
 
 const user = ref(userStore.getUser)
+
+watchEffect(async () => {
+  if (userStore.isAuthenticated && userStore.getUser && !userStore.getUser.location) {
+    await userStore.fetchUserIp()
+  }
+})
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
