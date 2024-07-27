@@ -187,7 +187,7 @@ const userRating = ref(0)
 onMounted(async () => {
   // =========== STATS ===========
   const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
-  const userLocation = userStore.getUserLocation
+  const userLocation = userStore.getUser?.location || userStore.getUserLocation
   await statsStore.addUser(userId, userLocation)
   if (typeof props.post?.entries !== 'undefined') {
     await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
