@@ -165,23 +165,40 @@ function onDeletePrompt(id) {
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
-  const promptIndex = prompts.value.findIndex((p) => p.id === _prompt.id)
-  if (promptIndex !== -1) {
-    const entryIndex = prompts.value[promptIndex].entries.findIndex((e) => e.id === _entry.id)
-    if (entryIndex !== -1) {
-      const { author, ...restOfEntry } = _entry
-      // Merge the existing entry with the incoming _entry data
-      const updatedEntry = { ...prompts.value[promptIndex].entries[entryIndex], ...restOfEntry }
-      prompts.value[promptIndex].entries.splice(entryIndex, 1, updatedEntry)
+  const promptId = _prompt.id
+  const entryId = _entry.id
+
+  // Destructure properties from _prompt excluding entries
+  const { entries: _entries, ...restOfPrompt } = _prompt
+  // Destructure properties from _prompt excluding entries
+  const { author, ...restOfEntry } = _entry
+
+  // Update entryStore._loadedEntries
+  entryStore._loadedEntries = entryStore._loadedEntries.map((prompt) => {
+    if (prompt?.promptId === promptId) {
+      return {
+        ...prompt,
+        ...restOfPrompt,
+        entries: prompt.entries.map((entry) => (entry.id === entryId ? { ...entry, ...restOfEntry } : entry))
+      }
     }
+    return prompt
+  })
 
-    // Update other properties of the prompt if necessary
-    const { entries, ...restOfPrompt } = _prompt
-    Object.assign(prompts.value[promptIndex], restOfPrompt)
+  // Update prompts.value
+  prompts.value = prompts.value.map((prompt) => {
+    if (prompt.id === promptId) {
+      return {
+        ...prompt,
+        ...restOfPrompt,
+        entries: prompt.entries.map((entry) => (entry.id === entryId ? { ...entry, ...restOfEntry } : entry))
+      }
+    }
+    return prompt
+  })
 
-    // This reassignment ensures Vue's reactivity system is aware of the update
-    prompts.value = [...prompts.value]
-  }
+  // Fetch updated prompts
+  promptStore.fetchPrompts()
 }
 
 function toggleExpand(props) {

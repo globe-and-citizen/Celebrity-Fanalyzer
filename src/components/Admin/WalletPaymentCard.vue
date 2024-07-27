@@ -105,7 +105,7 @@ async function onSubmit(event) {
 
         $q.loading.hide()
         emit('hideDialog')
-        errorStore.throwError(errorMessage, 'Error when saving the transaction')
+        //errorStore.throwError(errorMessage, 'Error when saving the transaction')
       }
     })
   } catch (error) {

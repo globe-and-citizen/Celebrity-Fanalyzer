@@ -40,6 +40,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
         // Update the prompt document
         await updateDoc(doc(db, 'prompts', promptRef.id), { isTreated: true, updated: Timestamp.fromDate(new Date()) })
         // Add the new transaction document to the 'cryptoTransactions' collection
+        console.log('the error is comming from here ')
         const cryptoTransactionRef = await addDoc(collection(db, 'cryptoTransactions'), cryptoTransaction)
 
         // Fetch updated documents separately after the transaction
