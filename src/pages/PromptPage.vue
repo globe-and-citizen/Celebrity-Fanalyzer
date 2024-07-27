@@ -30,7 +30,6 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
-import { currentYearMonth } from 'src/utils/date'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
 
@@ -51,13 +50,15 @@ const shareIsLoaded = ref(false)
 
 const params = router.currentRoute.value?.params
 const prompt = computed(() => {
+  if (route.name === 'month') {
+    return promptStore.getMonthPrompt?.[0]
+  }
+
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
   return promptStore.getPrompts
     ?.sort((a, b) => a.id - b.id)
     ?.find((prompt) => {
       switch (route.name) {
-        case 'month':
-          return prompt.id <= currentYearMonth()
         case 'year-month':
           return prompt.date === params.year + '-' + params.month
         case 'slug':
@@ -103,6 +104,10 @@ watchEffect(async () => {
 })
 
 onMounted(async () => {
+  if (route.name === 'month') {
+    await promptStore.fetchMonthsPrompt()
+  }
+
   entriesRef.value = document.querySelector('.entries-page-container')
   window.addEventListener('scroll', onScroll)
   await entryStore.resetEntries
