@@ -11,8 +11,8 @@
       <q-toolbar-title v-if="backButton || title || subtitle">
         <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
         <b class="text-secondary" data-test="title"> {{ title }}</b>
-        <q-icon v-if="subtitle" name="arrow_forward" color="secondary" class="q-px-sm" />
-        <span class=" text-secondary">{{ subtitle }}</span>
+
+        <span v-if="subtitle" class=" text-secondary"> / {{ subtitle }}</span>
       </q-toolbar-title>
       <NotificationBubble v-if="notificationButton && userStore.isAuthenticated" />
       <q-btn
