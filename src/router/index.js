@@ -1,7 +1,7 @@
 import { route } from 'quasar/wrappers'
 import { createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import routes from './routes'
-
+import { Loading } from 'quasar'
 /*
  * If not building with SSR mode, you can
  * directly export the Router instantiation;
@@ -26,6 +26,16 @@ export default route(function () {
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE)
+  })
+
+  Router.beforeEach((to, from, next) => {
+    Loading.show({
+      spinnerColor: 'primary'
+    })
+    next()
+  })
+  Router.afterEach(() => {
+    Loading.hide()
   })
 
   return Router
