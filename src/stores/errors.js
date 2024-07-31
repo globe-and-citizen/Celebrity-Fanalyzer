@@ -91,7 +91,10 @@ export const useErrorStore = defineStore('errors', {
         user: userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIp
       }
 
-      await addDoc(collection(db, 'errors'), err)
+      // Utility function to remove undefined fields
+      // Sanitize the err object
+      const sanitizedErr = Object.fromEntries(Object.entries(err).filter(([_, v]) => v !== undefined))
+      await addDoc(collection(db, 'errors'), sanitizedErr)
         .then(() => console.log('Error stored in database'))
         .catch((e) => console.error(e))
         .finally(() => {

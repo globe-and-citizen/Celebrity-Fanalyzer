@@ -102,7 +102,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 
-const emit = defineEmits(['hideDialog'])
+const emit = defineEmits(['hideDialog', 'forward-update-entry'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
 
 const $q = useQuasar()
