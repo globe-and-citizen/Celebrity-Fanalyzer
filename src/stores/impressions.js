@@ -1,5 +1,6 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc, Timestamp, arrayUnion } from 'firebase/firestore'
 import { defineStore } from 'pinia'
+import { useUserStore } from 'src/stores'
 import { db } from 'src/firebase'
 import { monthDayYear } from 'src/utils/date'
 
@@ -20,6 +21,11 @@ export const useImpressionsStore = defineStore('impressions', {
     async addImpression(collectionName, documentId) {
       const visitorRef = doc(db, collectionName, documentId, 'impressions', monthDayYear().replaceAll('/', '-'))
       const visitorSnap = await getDoc(visitorRef)
+      const userStore = useUserStore()
+      const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+
+      const lastViewsRef = doc(db, collectionName, documentId, 'lastViews', user_id)
+      const lastViewsSnap = await getDoc(lastViewsRef)
 
       this._isLoading = true
       if (visitorSnap.exists()) {
@@ -32,6 +38,16 @@ export const useImpressionsStore = defineStore('impressions', {
         await setDoc(visitorRef, visitor)
       }
       this._isLoading = false
+
+      if (lastViewsSnap.exists()) {
+        await updateDoc(lastViewsRef, { views: arrayUnion(Timestamp.fromDate(new Date())) })
+      } else {
+        const visitor = {
+          id: user_id,
+          views: [Timestamp.fromDate(new Date())]
+        }
+        await setDoc(lastViewsRef, visitor)
+      }
     },
 
     async readImpressions(collectionName, documentId) {

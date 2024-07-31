@@ -1,6 +1,18 @@
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { collection, deleteDoc, doc, onSnapshot, orderBy, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where,
+  getDoc
+} from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
   useClicksStore,
@@ -21,7 +33,8 @@ export const useAdvertiseStore = defineStore('advertises', {
     _tab: 'post',
     _activeAdvertises: [],
     _unSubscribeActive: undefined,
-    _singleAdvertise: undefined
+    _singleAdvertise: undefined,
+    _allActiveAdvertises: []
   }),
 
   persist: true,
@@ -31,7 +44,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab,
     getActiveAdvertises: (state) => state._activeAdvertises,
-    getMapAdvertises: (state) => Object.values(state._advertisesMap)
+    getALlActiveAdvertises: (state) => state._allActiveAdvertises
   },
 
   actions: {
@@ -158,9 +171,66 @@ export const useAdvertiseStore = defineStore('advertises', {
           })
           const activeAdvertises = await Promise.all(activeAdvertisePromises)
           this._activeAdvertises = []
-          this.$patch({ _activeAdvertises: activeAdvertises })
+          const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+          const activeAds = await this.fetchActiveAdvertises(activeAdvertises, visitorId)
+          const finalAds = this.selectAds(activeAds, activeAdvertises)
+          this.$patch({ _activeAdvertises: finalAds })
+          this.$patch({ _allActiveAdvertises: activeAdvertises })
         })
+      } else if (this.getALlActiveAdvertises.length > 0) {
+        this.recomputeActiveAdvertises()
       }
+    },
+    async recomputeActiveAdvertises() {
+      const userStore = useUserStore()
+      const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+      const ads = this.getALlActiveAdvertises
+      const activeAds = await this.fetchActiveAdvertises(ads, visitorId)
+      const finalAds = this.selectAds(activeAds, ads)
+      this.$patch({ _activeAdvertises: finalAds })
+    },
+    async fetchActiveAdvertises(advertises, visitorId) {
+      const promises = advertises.map((ad) => this.processAdvertise(ad, visitorId))
+      const results = await Promise.all(promises)
+      return results.filter((ad) => ad !== undefined)
+    },
+    async processAdvertise(advertise, visitorId) {
+      const data = { ...advertise, isAdd: true }
+      const lastViewsRef = doc(db, `advertises/${data.id}/lastViews/${visitorId}`)
+
+      try {
+        const lastViewsSnap = await getDoc(lastViewsRef)
+        if (this.isDurationGreaterThanHours(lastViewsSnap)) {
+          return data
+        }
+      } catch (error) {
+        console.error(`Error processing advertise ${data.id}:`, error)
+      }
+    },
+
+    selectAds(activeAds, allAds) {
+      const topAds = activeAds.slice(0, 5)
+      const shuffledAds = this.shuffle(allAds)
+      return [...topAds, ...shuffledAds].slice(0, 5)
+    },
+    shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[array[i], array[j]] = [array[j], array[i]]
+      }
+      return array
+    },
+    isDurationGreaterThanHours(lastViewsSnap, hours = 4) {
+      if (!lastViewsSnap.exists() || lastViewsSnap.data().views?.length < 3) return true
+      const views = lastViewsSnap.data().views
+
+      const currentTime = new Date()
+      const timeDifference = currentTime - views[views.length - 3].toDate()
+      const timeDifferenceInHours = timeDifference / (1000 * 60 * 60)
+      if (timeDifferenceInHours > hours) {
+        return true
+      }
+      return false
     },
 
     async deleteAdvertise(id, isBanner) {
