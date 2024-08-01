@@ -3,16 +3,16 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
-  getDoc,
   doc,
+  getDoc,
   getDocs,
+  or,
   query,
   runTransaction,
   setDoc,
   Timestamp,
   updateDoc,
-  where,
-  or
+  where
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -259,6 +259,7 @@ export const useEntryStore = defineStore('entries', {
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
         await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
+        this._entries = this._entries.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')
       }
