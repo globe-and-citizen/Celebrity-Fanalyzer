@@ -259,11 +259,11 @@ export const useEntryStore = defineStore('entries', {
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
 
         await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
+        this._entries = this._entries.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')
       }
       this._isLoading = false
-      this._entries = this._entries.filter((entry) => entry.id !== entryId)
     },
 
     setTab(tab) {
