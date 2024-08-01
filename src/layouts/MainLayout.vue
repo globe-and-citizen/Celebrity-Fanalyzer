@@ -1,5 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
+    <LoadingSpinner v-if="loadingStore.isLoading" />
     <router-view />
 
     <MainMenu />
@@ -8,6 +9,10 @@
 
 <script setup>
 import MainMenu from './MainMenu.vue'
+import LoadingSpinner from '../components/shared/LoadingSpinner.vue'
+import { useLoadingStore } from '../stores/index'
+
+const loadingStore = useLoadingStore()
 </script>
 
 <style>

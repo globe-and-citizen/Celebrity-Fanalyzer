@@ -1,7 +1,7 @@
 import { route } from 'quasar/wrappers'
 import { createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import routes from './routes'
-import { Loading } from 'quasar'
+import { useLoadingStore } from '../stores'
 /*
  * If not building with SSR mode, you can
  * directly export the Router instantiation;
@@ -29,13 +29,13 @@ export default route(function () {
   })
 
   Router.beforeEach((to, from, next) => {
-    Loading.show({
-      spinnerColor: 'primary'
-    })
+    const loadingStore = useLoadingStore()
+    loadingStore.showLoading()
     next()
   })
   Router.afterEach(() => {
-    Loading.hide()
+    const loadingStore = useLoadingStore()
+    loadingStore.hideLoading()
   })
 
   return Router
