@@ -6,7 +6,7 @@
   >
     <div class="flex items-center">
       <h2 class="q-my-auto text-bold text-h5 q-pa-md">Entries</h2>
-      <q-btn v-if="!hasWinner" color="primary" dense icon="add" outline round @click="openEntryDialog">
+      <q-btn v-if="hasWinner" color="primary" dense icon="add" outline round @click="openEntryDialog">
         <q-tooltip>Create entry</q-tooltip>
       </q-btn>
     </div>
@@ -24,17 +24,23 @@
 <script setup>
 import ItemCard from 'src/components/shared/ItemCard.vue'
 import EntryCard from 'src/components/Admin/EntryCard.vue'
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps(['entries', 'promptDate', 'hasWinner'])
-
+const userStore = useUserStore()
 const entryStore = useEntryStore()
 const entry = ref({})
+const router = useRouter()
 
 function openEntryDialog() {
-  entry.value = {}
-  entry.value.dialog = true
+  if (userStore.isAuthenticated) {
+    entry.value = {}
+    entry.value.dialog = true
+  } else {
+    router.push({ path: '/profile' })
+  }
 }
 </script>
 

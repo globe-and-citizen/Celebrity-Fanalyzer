@@ -62,7 +62,7 @@ onMounted(async () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const intersecting = entry.isIntersecting
-      if (intersecting && props.advertise?.status==='Active') {
+      if (intersecting && props.advertise?.status === 'Active') {
         impressionsStore.addImpression('advertises', props.advertise?.id).catch((error) => errorStore.throwError(error))
       }
     })
