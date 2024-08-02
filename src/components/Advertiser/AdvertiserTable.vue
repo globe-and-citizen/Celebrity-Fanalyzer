@@ -6,7 +6,7 @@
         class="custom-table"
         bordered
         virtual-scroll
-        :hide-bottom="advertises.length && !filter.length"
+        :hide-bottom="!!advertises.length && !filter.length"
         title="Manage Advertisements"
         row-key="name"
         no-data-label="No advertisements found."
