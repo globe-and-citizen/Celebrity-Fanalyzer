@@ -40,7 +40,39 @@
                 :src="advertise.contentURL"
               />
             </div>
-            <q-input counter data-test="input-title" hide-hint label="Description" type="textarea" required v-model="advertise.content" />
+            <q-field counter label="Description" maxlength="400" v-model="advertise.content">
+              <template v-slot:control>
+                <q-editor
+                  class="q-mt-md"
+                  data-test="input-description"
+                  dense
+                  flat
+                  min-height="5rem"
+                  ref="editorRef"
+                  :toolbar="[
+                    [
+                      {
+                        icon: $q.iconSet.editor.align,
+                        options: ['left', 'center', 'right', 'justify']
+                      },
+                      {
+                        icon: $q.iconSet.editor.fontSize,
+                        list: 'no-icons',
+                        options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
+                      },
+                      {
+                        icon: $q.iconSet.editor.formatting,
+                        options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
+                      },
+                      ['link']
+                    ],
+                    ['undo', 'redo']
+                  ]"
+                  v-model="advertise.content"
+                  @paste="onPaste($event)"
+                />
+              </template>
+            </q-field>
             <q-input
               v-model="advertise.productLink"
               counter
@@ -167,6 +199,7 @@ const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
 const isEditing = ref(false)
+const editorRef = ref(null)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -259,6 +292,26 @@ async function createAdCampain(payload) {
 function convertToMatic() {
   if (maticRate.value && usdAmount.value && maticRate.value) {
     advertise.budget = (usdAmount.value / maticRate.value).toFixed(6)
+  }
+}
+
+function onPaste(evt) {
+  if (evt.target.nodeName === 'INPUT') return
+  let text, onPasteStripFormattingIEPaste
+  evt.preventDefault()
+  evt.stopPropagation()
+  if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
+    text = evt.originalEvent.clipboardData.getData('text/plain')
+    editorRef.value.runCmd('insertText', text)
+  } else if (evt.clipboardData && evt.clipboardData.getData) {
+    text = evt.clipboardData.getData('text/plain')
+    editorRef.value.runCmd('insertText', text)
+  } else if (window.clipboardData && window.clipboardData.getData) {
+    if (!onPasteStripFormattingIEPaste) {
+      onPasteStripFormattingIEPaste = true
+      editorRef.value.runCmd('ms-pasteTextOnly', text)
+    }
+    onPasteStripFormattingIEPaste = false
   }
 }
 
