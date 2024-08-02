@@ -124,10 +124,14 @@ const entry = reactive({
 })
 const imageModel = ref([])
 const promptOptions =
-  promptStore.getPrompts
-    ?.filter((prompt) => !prompt.hasWinner)
-    .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
-    .reverse() || []
+  (href === '/month'
+    ? promptStore.getMonthPrompt
+        ?.filter((prompt) => !prompt.hasWinner)
+        .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+    : promptStore.getPrompts
+        ?.filter((prompt) => !prompt.hasWinner)
+        .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+        .reverse()) || []
 
 onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
