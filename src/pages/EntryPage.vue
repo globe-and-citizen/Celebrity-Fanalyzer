@@ -8,7 +8,15 @@
   <q-tab-panels v-else-if="entry" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Entry -->
     <q-tab-panel name="post" style="padding: 0" data-test="entry-page">
-      <ThePost collectionName="entries" :post="entry" title="Entry Page" style="padding-bottom: 7rem" @clickComments="tab = 'comments'" />
+      <ThePost
+        collectionName="entries"
+        :post="entry"
+        title="Entry Page"
+        style="padding-bottom: 7rem"
+        :isEntry="true"
+        @clickComments="tab = 'comments'"
+        @openEntryDialog="openEntryDialog"
+      />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="stats" class="bg-white">
@@ -19,13 +27,17 @@
       <TheComments v-if="entry" collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
+  <q-dialog full-width position="bottom" v-model="editEntry.dialog">
+    <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
+  </q-dialog>
 </template>
 
 <script setup>
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore } from 'src/stores'
+import EntryCard from '../components/Admin/EntryCard.vue'
+import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore, usePromptStore } from 'src/stores'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
@@ -38,7 +50,9 @@ const likeStore = useLikeStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
 const commentStore = useCommentStore()
+const promptStore = usePromptStore()
 const tab = ref(entryStore.tab)
+const editEntry = ref({})
 
 const entry = computed(() => {
   return entryStore.getEntries?.find(
@@ -73,6 +87,17 @@ onUnmounted(() => {
   statStore.resetStats()
   entryStore.setTab('post')
 })
+
+async function openEntryDialog() {
+  editEntry.value = entry.value
+  editEntry.value.prompt = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
+  editEntry.value.dialog = true
+}
+
+function closeEntryDialog(slug) {
+  editEntry.value = {}
+  router.push(slug)
+}
 </script>
 
 <style scoped lang="scss">
