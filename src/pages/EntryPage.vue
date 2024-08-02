@@ -14,6 +14,7 @@
         title="Entry Page"
         style="padding-bottom: 7rem"
         :isEntry="true"
+        :showEditEntry="userStore.getUserId === entry.author.uid"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
       />
@@ -37,7 +38,16 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import EntryCard from '../components/Admin/EntryCard.vue'
-import { useCommentStore, useEntryStore, useErrorStore, useLikeStore, useShareStore, useStatStore, usePromptStore } from 'src/stores'
+import {
+  useCommentStore,
+  useEntryStore,
+  useErrorStore,
+  useLikeStore,
+  useShareStore,
+  useStatStore,
+  usePromptStore,
+  useUserStore
+} from 'src/stores'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
@@ -51,8 +61,10 @@ const shareStore = useShareStore()
 const statStore = useStatStore()
 const commentStore = useCommentStore()
 const promptStore = usePromptStore()
+const userStore = useUserStore()
 const tab = ref(entryStore.tab)
 const editEntry = ref({})
+const prompt = ref({})
 
 const entry = computed(() => {
   return entryStore.getEntries?.find(
@@ -65,7 +77,9 @@ watchEffect(async () => {
   if (entry.value?.author?.uid) {
     await statStore.getUserRating(entry.value?.author?.uid)
   }
-
+  if (entry.value?.prompt?.id) {
+    prompt.value = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
+  }
   if (entry.value?.id) {
     await likeStore.getAllLikesDislikes('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
     await shareStore.fetchSharesCount('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
@@ -90,7 +104,7 @@ onUnmounted(() => {
 
 async function openEntryDialog() {
   editEntry.value = entry.value
-  editEntry.value.prompt = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
+  editEntry.value.prompt = prompt
   editEntry.value.dialog = true
 }
 

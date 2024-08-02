@@ -140,7 +140,7 @@
           >
             <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
           </q-btn>
-          <q-btn v-if="isEntry && userStore.getUserId===post.author.uid" color="blue" flat icon="edit" rounded size="0.75rem" @click="$emit('openEntryDialog')">
+          <q-btn v-if="showEditEntry" color="blue" flat icon="edit" rounded size="0.75rem" @click="$emit('openEntryDialog')">
             <q-tooltip>Edit entry</q-tooltip>
           </q-btn>
         </div>
@@ -171,7 +171,7 @@ import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
-const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'isEntry'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd','showEditEntry'])
 defineEmits(['clickComments', 'openEntryDialog'])
 
 const router = useRouter()
