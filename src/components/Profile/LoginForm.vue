@@ -6,7 +6,7 @@
         <q-tab data-test="signup-tab" label="Sign Up" name="signup" />
       </q-tabs>
 
-      <q-form class="q-pa-md text-center" greedy @submit="emailSign">
+      <q-form class="q-px-md q-pt-md text-center" :class="{'q-pb-md': tab === 'signup'}" greedy @submit="emailSign">
         <q-input
           v-if="tab === 'signup'"
           data-test="name-field"
@@ -49,6 +49,9 @@
 
         <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
+      <div v-if="tab !== 'signup'" class="column items-center q-py-sm">
+        <span class="cursor-pointer self-center" @click="openResetDialog = true">forgot password?</span>
+      </div>
 
       <q-separator inset />
 
@@ -57,6 +60,29 @@
       </div>
     </q-card>
   </q-page>
+  <q-dialog v-model="openResetDialog">
+    <q-card style="width: 400px">
+      <q-card-section>
+        <div class="text-h6">Reset Password</div>
+      </q-card-section>
+      <q-card-section class="row items-center">
+        <q-input
+          class="full-width"
+          data-test="email-field"
+          label="Enter your email"
+          lazy-rules
+          required
+          :rules="[(val, rules) => rules.email(val) || 'Invalid Email']"
+          v-model="user.email"
+        />
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="primary" v-close-popup />
+        <q-btn flat label="Ok" color="primary" v-close-popup @click="handleResetPassword" :disable="!validateEmail(user.email)" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -64,12 +90,14 @@ import { Notify } from 'quasar'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { passwordResetEmail } from '../../firebase'
 
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const user = ref({ email: '', name: '', password: '' })
 const tab = ref('signin')
+const openResetDialog = ref(false)
 const route = useRoute()
 const isVisibleOn = ref(false)
 
@@ -92,6 +120,22 @@ async function emailSign() {
 
 async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
+}
+
+function handleResetPassword() {
+  if (user.value.email) {
+    passwordResetEmail(user.value.email)
+      .then((data) => {
+        Notify.create({ message: 'Email sent successfully', type: 'positive' })
+      })
+      .catch((error) => {
+        Notify.create({ message: 'Something went wrong', type: 'negative' })
+      })
+  }
+}
+function validateEmail(email){
+  const pattern=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return pattern.test(email)
 }
 
 watch(
