@@ -125,10 +125,10 @@ async function googleSign() {
 function handleResetPassword() {
   if (user.value.email) {
     passwordResetEmail(user.value.email)
-      .then((data) => {
-        Notify.create({ message: 'Email sent successfully', type: 'positive' })
+      .then(() => {
+        Notify.create({ message: 'Password reset link sent. Please check your email.', type: 'positive' })
       })
-      .catch((error) => {
+      .catch(() => {
         Notify.create({ message: 'Something went wrong', type: 'negative' })
       })
   }
