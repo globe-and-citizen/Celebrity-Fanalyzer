@@ -2,7 +2,13 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
+      <section v-if="commentStore.isInitialLoading">
+        <CommentsSkeleton/>
+        <CommentsSkeleton/>
+        <CommentsSkeleton/>
+        <CommentsSkeleton/>
+      </section>
+      <section v-else-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
           v-for="comment of comments"
           :collection-name="collectionName"
@@ -82,6 +88,7 @@
 import { Notify, useQuasar } from 'quasar'
 import DisplayComment from 'src/components/Posts/Comments/DisplayComment.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
+import CommentsSkeleton from 'src/components/shared/CommentsSkeleton.vue'
 import { useCommentStore, useErrorStore, useNotificationStore, useStatStore, useUserStore } from 'src/stores'
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch, watchEffect } from 'vue'
 
@@ -200,6 +207,9 @@ watchEffect(async () => {
 
 onUnmounted(() => {
   commentStore.setReplyTo('')
+  if(commentStore._unSubscribe){
+    commentStore._unSubscribe()
+  }
 })
 
 commentStore.$subscribe(() => {
