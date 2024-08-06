@@ -7,7 +7,15 @@
   <q-tab-panels v-if="prompt" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <!-- Panel 1: Prompt -->
     <q-tab-panel name="post" style="padding: 0">
-      <ThePost collectionName="prompts" :post="prompt" title="Prompt Page" @clickComments="tab = 'comments'" />
+      <ThePost
+        collectionName="prompts"
+        :post="prompt"
+        title="Prompt Page"
+        :isPrompt="true"
+        :showEditPrompt="userStore.getUserId === prompt.author.uid"
+        @clickComments="tab = 'comments'"
+        @openPromptDialog="openPromptDialog"
+      />
       <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -21,6 +29,9 @@
   </q-tab-panels>
 
   <q-spinner v-else class="absolute-center" color="primary" size="3em" />
+  <q-dialog full-width position="bottom" v-model="editPrompt.dialog">
+    <PromptCard v-bind="editPrompt" @hideDialog="closePromptDialog" />
+  </q-dialog>
 </template>
 
 <script setup>
@@ -28,8 +39,9 @@ import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
+import PromptCard from '../components/Admin/PromptCard.vue'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
-import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore } from 'src/stores'
+import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore } from 'src/stores'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
 
@@ -40,6 +52,7 @@ const likeStore = useLikeStore()
 const promptStore = usePromptStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
+const userStore = useUserStore()
 const route = useRoute()
 
 const entriesRef = ref(null)
@@ -47,6 +60,7 @@ const entriesRef = ref(null)
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
+const editPrompt = ref({})
 
 const params = router.currentRoute.value?.params
 const prompt = computed(() => {
@@ -123,7 +137,16 @@ watch(entriesRef, (newVal) => {
     }
   }
 })
-
+function closePromptDialog(slug) {
+  editPrompt.value = {}
+  if (route.name === 'slug') {
+    router.push(slug)
+  }
+}
+async function openPromptDialog() {
+  editPrompt.value = prompt.value
+  editPrompt.value.dialog = true
+}
 onBeforeRouteLeave(async () => {
   const stats = stopTracking()
   await statStore.addStats(prompt.value?.id, stats, 'topic')

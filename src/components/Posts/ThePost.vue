@@ -128,6 +128,9 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">{{ getFormattedLink(post?.productLink) }}</q-tooltip>
           </q-btn>
+          <q-btn v-if="showEditPrompt" color="blue" flat icon="edit" rounded size="0.75rem" @click="$emit('openPromptDialog')">
+            <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
+          </q-btn>
           <q-btn
             v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
@@ -168,8 +171,8 @@ import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
-const props = defineProps(['collectionName', 'post', 'title', 'isAdd'])
-defineEmits(['clickComments'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'isPrompt', 'showEditPrompt'])
+defineEmits(['clickComments', 'openPromptDialog'])
 
 const router = useRouter()
 
