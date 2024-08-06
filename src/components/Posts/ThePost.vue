@@ -68,7 +68,7 @@
           </p>
         </section>
         <q-separator v-if="!isAdd" spaced />
-        <p v-if="isAdd" class="q-mt-sm text-body1">{{ post.content }}</p>
+        <p v-if="isAdd" v-html="post?.content" class="q-mt-sm text-body1"></p>
         <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
         <q-separator spaced="lg" />
         <div class="text-center">

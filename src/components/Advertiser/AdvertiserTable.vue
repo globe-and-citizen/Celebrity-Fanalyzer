@@ -6,7 +6,7 @@
         class="custom-table"
         bordered
         virtual-scroll
-        :hide-bottom="advertises.length && !filter.length"
+        :hide-bottom="!!advertises.length && !filter.length"
         title="Manage Advertisements"
         row-key="name"
         no-data-label="No advertisements found."
@@ -150,8 +150,8 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
-            {{ props.row.content?.length > 30 ? props.row.content.substring(0, 30) + '...' : props.row.content }}
+          <q-td  class="cursor-pointer " @click="goToUrl(props.row.id)" >
+            <div v-html="props.row.content" class="singleLine_ellipsis"></div>
           </q-td>
         </template>
         <template #body-cell-name="props">
@@ -669,5 +669,12 @@ watch(selectedDataType, (newType) => {
 
 .ads-select > :first-child > :first-child {
   background-color: white !important;
+}
+.singleLine_ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 300px;
+  height: 20px;
 }
 </style>

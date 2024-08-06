@@ -19,6 +19,7 @@ import { useWalletStore } from './wallet'
 import { useAdvertiseStore } from './advertises'
 import { useClicksStore } from './clicks'
 import { useImpressionsStore } from './impressions'
+import { useLoadingStore } from './loading'
 
 /*
  * If not building with SSR mode, you can
@@ -71,5 +72,6 @@ export {
   useWalletStore,
   useAdvertiseStore,
   useClicksStore,
-  useImpressionsStore
+  useImpressionsStore,
+  useLoadingStore
 }

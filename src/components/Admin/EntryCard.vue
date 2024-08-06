@@ -65,7 +65,7 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 2MB'"
+          :hint="!entry.prompt ? 'Select prompt first' : '*Image is required. Max size is 2MB.'"
           label="Image"
           :max-total-size="2097152"
           :required="!id"
@@ -89,7 +89,23 @@
           :loading="promptStore.isLoading || storageStore.isLoading"
           rounded
           type="submit"
-        />
+        >
+          <q-tooltip
+            v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
+            class="text-center"
+            style="white-space: pre-line"
+          >
+            {{
+              !entry.title || !entry.description
+                ? 'Please make sure you have a title and description'
+                : !entry.prompt
+                  ? 'Please select a prompt'
+                  : !entry.image
+                    ? 'Please select an image'
+                    : 'Please make sure all fields are filled'
+            }}
+          </q-tooltip>
+        </q-btn>
       </q-form>
     </q-card-section>
   </q-card>
@@ -124,10 +140,14 @@ const entry = reactive({
 })
 const imageModel = ref([])
 const promptOptions =
-  promptStore.getPrompts
-    ?.filter((prompt) => !prompt.hasWinner)
-    .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
-    .reverse() || []
+  (href === '/month'
+    ? promptStore.getMonthPrompt
+        ?.filter((prompt) => !prompt.hasWinner)
+        .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+    : promptStore.getPrompts
+        ?.filter((prompt) => !prompt.hasWinner)
+        .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+        .reverse()) || []
 
 onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))

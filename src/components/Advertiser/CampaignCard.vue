@@ -14,8 +14,8 @@
     <div class="article-details">
       <h4 class="post-category">Advertise</h4>
       <h3 class="post-title">{{ advertise.title?.length > 30 ? advertise.title.substring(0, 30) + '...' : advertise.title }}</h3>
-      <p class="post-description">
-        {{ advertise.content?.length > 80 ? advertise.content.substring(0, 80) + '...' : advertise.content }}
+      <p v-html="advertise.content" class="multiline_ellipsis full-width">
+
       </p>
       <span class="cursor-pointer text-black link" @click="goToUrl">Learn more</span>
       <a
@@ -136,9 +136,7 @@ $shadow: rgba(0, 0, 0, 0.2);
   padding: 0 0 0.25rem 0;
   border-bottom: 0.125rem solid $border;
 }
-.post-description {
-  overflow-wrap: break-word;
-}
+
 .post-title {
   font-size: 1.125rem;
   line-height: 1.4;
@@ -206,4 +204,11 @@ $shadow: rgba(0, 0, 0, 0.2);
     grid-template-rows: 1fr;
   }
 }
+.multiline_ellipsis {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 </style>
