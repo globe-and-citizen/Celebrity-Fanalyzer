@@ -6,7 +6,15 @@
   </q-tabs>
   <q-tab-panels v-if="advertise" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="post" style="padding: 0">
-      <ThePost title="Campaign Page" @clickComments="tab = 'comments'" :post="advertise" :isAdd="true" collectionName="advertises" />
+      <ThePost
+        title="Campaign Page"
+        collectionName="advertises"
+        :post="advertise"
+        :isAdd="true"
+        :showEdit="userStore.getUserId === advertise.author.uid"
+        @clickComments="tab = 'comments'"
+        @openAdvertiseDialog="openAdvertiseDialog"
+      />
     </q-tab-panel>
 
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -19,11 +27,15 @@
   </q-tab-panels>
 
   <q-spinner v-else class="absolute-center" color="primary" size="3em" />
+  <q-dialog full-width position="bottom" v-model="editAdvertise.dialog">
+    <AdvertiseCard v-bind="editAdvertise" @hideDialog="closeAdvertiseDialog" />
+  </q-dialog>
 </template>
 <script setup>
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from '../components/Posts/ThePost.vue'
+import AdvertiseCard from '../components/Advertiser/AdvertiseCard.vue'
 import {
   useErrorStore,
   useLikeStore,
@@ -31,7 +43,8 @@ import {
   useShareStore,
   useClicksStore,
   useImpressionsStore,
-  useStatStore
+  useStatStore,
+  useUserStore
 } from 'src/stores'
 import { computed, onUnmounted, ref, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -48,10 +61,12 @@ const shareStore = useShareStore()
 const impressionStore = useImpressionsStore()
 const clickStore = useClicksStore()
 const statStore = useStatStore()
+const userStore = useUserStore()
 
 const tab = ref(advertiseStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
+const editAdvertise = ref({})
 
 advertiseStore.fetchAdvertises().catch((error) => errorStore.throwError(error))
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
@@ -117,6 +132,14 @@ onMounted(async () => {
     startTracking()
   }
 })
+
+function closeAdvertiseDialog(slug) {
+  editAdvertise.value = {}
+}
+function openAdvertiseDialog() {
+  editAdvertise.value = advertise.value
+  editAdvertise.value.dialog = true
+}
 
 onUnmounted(async () => {
   if (advertise.value.status === 'Active') {

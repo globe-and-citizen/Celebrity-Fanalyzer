@@ -128,7 +128,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">{{ getFormattedLink(post?.productLink) }}</q-tooltip>
           </q-btn>
-          <q-btn v-if="showEditPrompt" color="blue" flat icon="edit" rounded size="0.75rem" @click="$emit('openPromptDialog')">
+          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit">
             <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
           </q-btn>
           <q-btn
@@ -171,8 +171,8 @@ import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
-const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'isPrompt', 'showEditPrompt'])
-defineEmits(['clickComments', 'openPromptDialog'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'isPrompt', 'showEdit'])
+const emit= defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog'])
 
 const router = useRouter()
 
@@ -245,6 +245,13 @@ async function share(socialNetwork) {
 
 async function subscribe() {
   await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+}
+function manageEdit() {
+  if (props.isAdd) {
+    emit('openAdvertiseDialog')
+  } else if (props.isPrompt) {
+    emit('openPromptDialog')
+  }
 }
 
 watchEffect(async () => {
