@@ -18,7 +18,7 @@
     <div ref="scrollTopObserver" class="absolute-center" style="height: 1px"></div>
   </div>
   <q-page-container class="search-page-container">
-    <q-page class="q-pa-md">
+    <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
           v-model="category"
@@ -81,9 +81,8 @@ const router = useRouter()
 const search = ref('')
 const observer = ref(null)
 const scrollTopObserver = ref(null)
+const pageRef = ref(null)
 
-advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
-promptStore.fetchPrompts(true).catch((error) => errorStore.throwError(error))
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
   const uniqueCategories = Array.from(new Set(allPromptCategories), (category) => ({ label: category, value: category }))
@@ -171,10 +170,28 @@ function onScrollTopIntersect(entries) {
     promptStore.fetchLatestPrompt()
   }
 }
+function computeFetchPromptCount(height, width) {
+  const basePromptCount = 3
+
+  const heightFactor = height / 400
+  const widthFactor = width / 700
+
+  const computedCount = Math.round(basePromptCount + heightFactor * widthFactor)
+
+  return computedCount
+}
 
 onMounted(() => {
+
   observer.value.focus()
   initIntersectionObserver()
+
+  const height = pageRef.value.$el.clientHeight
+  const width = pageRef.value.$el.clientWidth
+  const promptFetchCount = computeFetchPromptCount(height, width)
+
+  advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
+  promptStore.fetchPrompts(true, promptFetchCount).catch((error) => errorStore.throwError(error))
 })
 </script>
 
