@@ -30,7 +30,7 @@ import {
 import { Notify } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
 
-const set = new Set()
+let updatedBefore = false
 const getPrompts = async (querySnapshot, userStore) => {
   const prompts = []
 
@@ -58,7 +58,8 @@ export const usePromptStore = defineStore('prompts', {
     promptDialog: false,
     entryDialog: {},
     loadCount: 5,
-    _lastVisible: null
+    _lastVisible: null,
+    _hasMore: true
   }),
 
   persist: true,
@@ -68,7 +69,8 @@ export const usePromptStore = defineStore('prompts', {
     getPrompts: (state) => state._prompts,
     getMonthPrompt: (state) => state._monthPrompt,
     isLoading: (state) => state._isLoading,
-    tab: (state) => state._tab
+    tab: (state) => state._tab,
+    hasMore: (state) => state._hasMore
   },
 
   actions: {
@@ -97,7 +99,7 @@ export const usePromptStore = defineStore('prompts', {
 
       try {
         this._isLoading = true
-        console.log('last', this._lastVisible)
+
         let queryRef = collection(db, 'prompts')
 
         if (loadMore && this._lastVisible) {
@@ -109,13 +111,17 @@ export const usePromptStore = defineStore('prompts', {
         const querySnapshot = await getDocs(queryRef)
 
         const newPrompts = await getPrompts(querySnapshot, userStore)
-        console.log(newPrompts)
+
         if (newPrompts.length > 0) {
           this._lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1]
+          this._hasMore = true
+        } else {
+          this._hasMore = false
         }
-        // let totalPrompts=[]
+
         if (loadMore) {
-          this._prompts = this._prompts ? [...this._prompts, ...newPrompts] : newPrompts
+          this._prompts = updatedBefore ? [...this._prompts, ...newPrompts] : newPrompts
+          updatedBefore = true
         } else {
           this._prompts = newPrompts
         }
@@ -292,6 +298,12 @@ export const usePromptStore = defineStore('prompts', {
 
     setTab(tab) {
       this.$patch({ _tab: tab })
+    },
+    reset() {
+      this._lastVisible = null
+      this._prompts = undefined
+      this._hasMore = true
+      updatedBefore = false
     }
   }
 })

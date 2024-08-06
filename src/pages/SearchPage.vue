@@ -71,7 +71,7 @@ const search = ref('')
 const observer = ref(null)
 
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
-
+promptStore.fetchPrompts(true).catch((error) => errorStore.throwError(error))
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
   const uniqueCategories = Array.from(new Set(allPromptCategories), (category) => ({ label: category, value: category }))
@@ -82,33 +82,50 @@ const computedAdvertises = computed(() => {
   return advertiseStore.getActiveAdvertises
 })
 const computedPrompts = computed(() => {
-  return promptStore.getPrompts?.filter((item) => {
-    const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
-    return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
-  })
+  return promptStore.getPrompts
+    ?.filter((item) => {
+      const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
+      return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
+    })
+    .sort((a, b) => new Date(b?.created?.seconds) - new Date(a?.created?.seconds))
 })
 const computedPromptsAndAdvertises = computed(() => {
-  let i = 0,
-    j = 0
-  let arr = []
+  const map = new Map()
   const promptsLength = computedPrompts.value?.length ?? 0
   const advertisesLength = computedAdvertises.value?.length ?? 0
+
+  let i = 0,
+    j = 0
+
   while (i < promptsLength && j < advertisesLength) {
     if (Math.random() > 0.5) {
-      arr.push(computedPrompts.value[i])
+      if (!map.has(computedPrompts.value[i].id)) {
+        map.set(computedPrompts.value[i].id, computedPrompts.value[i])
+      }
       i++
     } else {
-      arr.push(computedAdvertises.value[j])
+      if (!map.has(computedAdvertises.value[j].id)) {
+        map.set(computedAdvertises.value[j].id, computedAdvertises.value[j])
+      }
       j++
     }
   }
-  if (i < promptsLength) {
-    arr = [...arr, ...computedPrompts.value.slice(i)]
+
+  while (i < promptsLength) {
+    if (!map.has(computedPrompts.value[i].id)) {
+      map.set(computedPrompts.value[i].id, computedPrompts.value[i])
+    }
+    i++
   }
-  if (j < advertisesLength) {
-    arr = [...arr, ...computedAdvertises.value.slice(j)]
+
+  while (j < advertisesLength) {
+    if (!map.has(computedAdvertises.value[j].id)) {
+      map.set(computedAdvertises.value[j].id, computedAdvertises.value[j])
+    }
+    j++
   }
-  return arr
+
+  return Array.from(map.values())
 })
 
 const computedEntries = computed(() => {
@@ -129,7 +146,9 @@ const initIntersectionObserver = () => {
 function onIntersect(entries) {
   const [entry] = entries
   if (entry.isIntersecting) {
-    promptStore.fetchPrompts(true,false)
+    if(promptStore.hasMore){
+      promptStore.fetchPrompts(true)
+    }
   }
 }
 onMounted(() => {
