@@ -162,7 +162,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { dayMonthYear } from 'src/utils/date'
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -182,23 +182,18 @@ const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
+
 const userRating = ref(0)
+const isPrompt = !!props.post?.entries
+const isEntry = props.post?.prompt
+const isAd = props.post?.isAdd
+const id = props.post.id
+const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+const userLocation = userStore.getUser?.location || userStore.getUserLocation
+const layer8Initialized = ref(undefined)
 
 onMounted(async () => {
-  // =========== STATS ===========
-  const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
-  const userLocation = userStore.getUser?.location || userStore.getUserLocation
   await statsStore.addUser(userId, userLocation)
-  if (typeof props.post?.entries !== 'undefined') {
-    await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
-  }
-  if (typeof props.post.prompt !== 'undefined') {
-    const promptId = props.post.prompt?.id
-      ? props.post.prompt?.id
-      : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0].id
-    await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
-  }
-  // =========== ------ ===========
 
   if (props.post?.id) {
     await commentStore.getTotalComments(props.collectionName, props.post?.id)
@@ -208,9 +203,31 @@ onMounted(async () => {
   }
 })
 
-const isPrompt = !!props.post.entries
-const isAd = props.post?.isAdd
-const id = props.post.id
+watch(layer8Initialized, async () => {
+  if (layer8Initialized.value) {
+    if (isPrompt) {
+      await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
+    }
+
+    if (isEntry) {
+      const promptId = props.post.prompt?.id
+        ? props.post.prompt?.id
+        : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0].id
+      await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
+    }
+
+    if (isAd) {
+      await statsStore.addAdvertisement(
+        props.post.id,
+        props.post.author?.uid,
+        props.post.title,
+        props.post.content,
+        props.post.budget,
+        props.post.duration
+      )
+    }
+  }
+})
 
 async function like() {
   if (isPrompt) {
@@ -245,6 +262,10 @@ async function subscribe() {
 }
 
 watchEffect(async () => {
+  if (statsStore.getInitializedState) {
+    layer8Initialized.value = statsStore.getInitializedState
+  }
+
   if (statsStore.getUserRate?.userRating) {
     userRating.value = (statsStore.getUserRate?.userRating / 100) * 5
   }

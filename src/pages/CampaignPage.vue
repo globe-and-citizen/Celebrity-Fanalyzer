@@ -102,17 +102,7 @@ watchEffect(async () => {
   setTimeout(redirect, 5000)
 })
 
-onMounted(async () => {
-  if (advertise.value?.id) {
-    await statStore.addAdvertisement(
-      advertise?.value?.id,
-      advertise?.value?.author?.uid,
-      advertise?.value?.title,
-      advertise?.value?.content,
-      advertise?.value?.budget,
-      advertise?.value?.duration
-    )
-  }
+onMounted(() => {
   if (advertise.value?.status === 'Active') {
     startTracking()
   }
@@ -121,10 +111,14 @@ onMounted(async () => {
 onUnmounted(async () => {
   if (advertise.value.status === 'Active') {
     const stats = stopTracking()
-    await statStore.addStats(advertise.value?.id, stats, 'advertisement')
+    try {
+      await statStore.addStats(advertise.value?.id, advertise?.value?.author?.uid, stats, 'advertisement')
+    } catch (error) {
+      console.error('Error adding stats:', error)
+    }
   }
   advertiseStore.setTab('post')
-  await statStore.resetPostImpressions()
+  statStore.resetPostImpressions()
 })
 </script>
 

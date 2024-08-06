@@ -21,6 +21,7 @@ import {
   useImpressionsStore,
   useLikeStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
@@ -241,8 +242,9 @@ export const useAdvertiseStore = defineStore('advertises', {
       const visitorStore = useVisitorStore()
       const clicksStore = useClicksStore()
       const impressionsStore = useImpressionsStore()
-      const imagePath = `advertise/content-${id}`
+      const statStore = useStatStore()
 
+      const imagePath = `advertise/content-${id}`
       const imageRef = ref(storage, imagePath)
 
       if (isBanner) {
@@ -256,8 +258,18 @@ export const useAdvertiseStore = defineStore('advertises', {
         const deleteVisitors = visitorStore.deleteAllVisitors('advertises', id)
         const deleteClicks = clicksStore.deleteAllClicks('advertises', id)
         const deleteImpressions = impressionsStore.deleteAllImpressions('advertises', id)
+        const deleteAdFromStats = statStore.removeAd(id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteAdvertiseDoc, deleteVisitors, deleteClicks, deleteImpressions])
+        await Promise.all([
+          deleteComments,
+          deleteLikes,
+          deleteShares,
+          deleteAdvertiseDoc,
+          deleteVisitors,
+          deleteClicks,
+          deleteImpressions,
+          deleteAdFromStats
+        ])
       } catch (error) {
         console.log(error)
         await errorStore.throwError(error)

@@ -39,7 +39,8 @@ const shareStore = useShareStore()
 const statStore = useStatStore()
 const commentStore = useCommentStore()
 const tab = ref(entryStore.tab)
-
+let entryId
+let entryAuthor
 const entry = computed(() => {
   return entryStore.getEntries?.find(
     (entry) =>
@@ -53,9 +54,11 @@ watchEffect(async () => {
   }
 
   if (entry.value?.id) {
-    await likeStore.getAllLikesDislikes('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
-    await commentStore.getTotalComments('entries', entry.value?.id)
+    entryId = entry.value.id
+    entryAuthor = entry.value?.author?.uid
+    await likeStore.getAllLikesDislikes('entries', entryId).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchSharesCount('entries', entryId).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entryId)
   }
 })
 
@@ -63,15 +66,17 @@ onMounted(async () => {
   startTracking()
 })
 
-onBeforeRouteLeave(async () => {
+onUnmounted(async () => {
   const stats = stopTracking()
-  await statStore.addStats(entry.value.id, stats, 'article')
-})
-
-onUnmounted(() => {
-  commentStore.resetComments()
-  statStore.resetStats()
-  entryStore.setTab('post')
+  try {
+    await statStore.addStats(entryId, entryAuthor, stats, 'article')
+  } catch (e) {
+    console.error('Error adding stats:', e)
+  } finally {
+    await commentStore.resetComments()
+    statStore.resetStats()
+    entryStore.setTab('post')
+  }
 })
 </script>
 
