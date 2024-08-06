@@ -44,6 +44,10 @@
         <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
       </TransitionGroup>
     </q-page>
+    <div class="row justify-center">
+      <q-spinner v-if="promptStore.isLoading" color="primary" size="3em" />
+      <div ref="observer" style="height: 20px"></div>
+    </div>
   </q-page-container>
 </template>
 
@@ -53,7 +57,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -64,9 +68,9 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
+const observer = ref(null)
 
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
-promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
@@ -111,6 +115,26 @@ const computedEntries = computed(() => {
   return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
+})
+const initIntersectionObserver = () => {
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1.0
+  }
+  const observerInstance = new IntersectionObserver(onIntersect, options)
+  observerInstance.observe(observer.value)
+}
+
+function onIntersect(entries) {
+  const [entry] = entries
+  if (entry.isIntersecting) {
+    promptStore.fetchPrompts(true,false)
+  }
+}
+onMounted(() => {
+  observer.value.focus()
+  initIntersectionObserver()
 })
 </script>
 

@@ -11,7 +11,8 @@ import {
   where,
   getDoc,
   orderBy,
-  limit
+  limit,
+  startAfter
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -29,6 +30,7 @@ import {
 import { Notify } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
 
+const set = new Set()
 const getPrompts = async (querySnapshot, userStore) => {
   const prompts = []
 
@@ -44,7 +46,7 @@ const getPrompts = async (querySnapshot, userStore) => {
       entries: promptData.entries?.map((entry) => entry.id) || []
     })
   }
-  return prompts.reverse()
+  return prompts
 }
 
 export const usePromptStore = defineStore('prompts', {
@@ -54,7 +56,9 @@ export const usePromptStore = defineStore('prompts', {
     _monthPrompt: undefined,
     _tab: 'post',
     promptDialog: false,
-    entryDialog: {}
+    entryDialog: {},
+    loadCount: 5,
+    _lastVisible: null
   }),
 
   persist: true,
@@ -84,19 +88,38 @@ export const usePromptStore = defineStore('prompts', {
       }, 6000)
     },
 
-    async fetchPrompts() {
+    async fetchPrompts(loadMore = false) {
       const userStore = useUserStore()
-
+      console.log('fetch called with')
       if (!userStore.getUsers) {
         await userStore.fetchAdminsAndEditors()
       }
 
       try {
         this._isLoading = true
-        const querySnapshot = await getDocs(collection(db, 'prompts'))
-        const prompts = await getPrompts(querySnapshot, userStore)
-        this._prompts = prompts
-        return prompts
+        console.log('last', this._lastVisible)
+        let queryRef = collection(db, 'prompts')
+
+        if (loadMore && this._lastVisible) {
+          queryRef = query(queryRef, orderBy('created', 'desc'), startAfter(this._lastVisible), limit(5))
+        } else if (loadMore) {
+          queryRef = query(queryRef, orderBy('created', 'desc'), limit(5))
+        }
+
+        const querySnapshot = await getDocs(queryRef)
+
+        const newPrompts = await getPrompts(querySnapshot, userStore)
+        console.log(newPrompts)
+        if (newPrompts.length > 0) {
+          this._lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1]
+        }
+        // let totalPrompts=[]
+        if (loadMore) {
+          this._prompts = this._prompts ? [...this._prompts, ...newPrompts] : newPrompts
+        } else {
+          this._prompts = newPrompts
+        }
+        return newPrompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
       } finally {
