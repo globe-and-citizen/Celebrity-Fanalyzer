@@ -57,7 +57,7 @@ export const usePromptStore = defineStore('prompts', {
     _tab: 'post',
     promptDialog: false,
     entryDialog: {},
-    loadCount: 5,
+    loadCount: 6,
     _lastVisible: null,
     _hasMore: true
   }),
@@ -92,7 +92,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchPrompts(loadMore = false) {
       const userStore = useUserStore()
-      console.log('fetch called with')
+
       if (!userStore.getUsers) {
         await userStore.fetchAdminsAndEditors()
       }
@@ -128,6 +128,34 @@ export const usePromptStore = defineStore('prompts', {
         return newPrompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
+      } finally {
+        this._isLoading = false
+      }
+    },
+    async fetchLatestPrompt() {
+      if (!this._prompts || this._prompts.length === 0) return
+
+      const userStore = useUserStore()
+
+      if (!userStore.getUsers) {
+        await userStore.fetchAdminsAndEditors()
+      }
+
+      try {
+        this._isLoading = true
+
+        const latestPromptDate = this._prompts[0].created
+        const queryRef = query(collection(db, 'prompts'), orderBy('created'), startAfter(latestPromptDate), limit(5))
+
+        const querySnapshot = await getDocs(queryRef)
+        const newPrompts = await getPrompts(querySnapshot, userStore)
+
+        if (newPrompts.length) {
+          console.log(newPrompts)
+          this._prompts = [...newPrompts.reverse(), ...this._prompts]
+        }
+      } catch (error) {
+        console.error('Error fetching latest prompts:', error)
       } finally {
         this._isLoading = false
       }

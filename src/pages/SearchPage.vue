@@ -6,6 +6,17 @@
     :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
   />
+  <div class="relative-position">
+    <q-spinner
+      v-if="promptStore.isLoading"
+      color="primary"
+      size="70px"
+      :thickness="5"
+      class="absolute-center"
+      style="z-index: 2000; margin-top: 14rem"
+    />
+    <div ref="scrollTopObserver" class="absolute-center" style="height: 1px"></div>
+  </div>
   <q-page-container class="search-page-container">
     <q-page class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
@@ -45,8 +56,8 @@
       </TransitionGroup>
     </q-page>
     <div class="row justify-center">
-      <q-spinner v-if="promptStore.isLoading" color="primary" size="3em" />
-      <div ref="observer" style="height: 20px"></div>
+      <q-spinner v-if="promptStore.isLoading" color="primary" size="70px" :thickness="5" />
+      <div ref="observer" style="height: 1px"></div>
     </div>
   </q-page-container>
 </template>
@@ -69,6 +80,7 @@ const category = ref('All')
 const router = useRouter()
 const search = ref('')
 const observer = ref(null)
+const scrollTopObserver = ref(null)
 
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
 promptStore.fetchPrompts(true).catch((error) => errorStore.throwError(error))
@@ -141,16 +153,25 @@ const initIntersectionObserver = () => {
   }
   const observerInstance = new IntersectionObserver(onIntersect, options)
   observerInstance.observe(observer.value)
+  const scrollTopIntersectionObserver = new IntersectionObserver(onScrollTopIntersect, options)
+  scrollTopIntersectionObserver.observe(scrollTopObserver.value)
 }
 
 function onIntersect(entries) {
   const [entry] = entries
   if (entry.isIntersecting) {
-    if(promptStore.hasMore){
+    if (promptStore.hasMore) {
       promptStore.fetchPrompts(true)
     }
   }
 }
+function onScrollTopIntersect(entries) {
+  const [entry] = entries
+  if (entry.isIntersecting) {
+    promptStore.fetchLatestPrompt()
+  }
+}
+
 onMounted(() => {
   observer.value.focus()
   initIntersectionObserver()
