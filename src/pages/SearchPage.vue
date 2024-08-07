@@ -7,14 +7,7 @@
     v-model="search"
   />
   <div class="relative-position">
-    <q-spinner
-      v-if="promptStore.isLoading"
-      color="primary"
-      size="70px"
-      :thickness="5"
-      class="absolute-center"
-      style="z-index: 2000; margin-top: 14rem"
-    />
+    <q-spinner v-if="loader" color="primary" size="70px" :thickness="5" class="absolute-center" style="z-index: 2000; margin-top: 14rem" />
     <div ref="scrollTopObserver" class="absolute-center" style="height: 1px"></div>
   </div>
   <q-page-container class="search-page-container">
@@ -82,6 +75,7 @@ const search = ref('')
 const observer = ref(null)
 const scrollTopObserver = ref(null)
 const pageRef = ref(null)
+const loader = ref(false)
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
@@ -164,10 +158,11 @@ function onIntersect(entries) {
     }
   }
 }
-function onScrollTopIntersect(entries) {
+async function onScrollTopIntersect(entries) {
   const [entry] = entries
   if (entry.isIntersecting) {
-    promptStore.fetchLatestPrompt()
+    loader.value = true
+    promptStore.fetchLatestPrompt().finally(() => (loader.value = false))
   }
 }
 function computeFetchPromptCount(height, width) {
@@ -182,7 +177,6 @@ function computeFetchPromptCount(height, width) {
 }
 
 onMounted(() => {
-
   observer.value.focus()
   initIntersectionObserver()
 
