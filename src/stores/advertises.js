@@ -11,7 +11,8 @@ import {
   setDoc,
   Timestamp,
   where,
-  getDoc
+  getDoc,
+  getDocs
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
@@ -24,6 +25,7 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
+import { Notify } from 'quasar'
 
 export const useAdvertiseStore = defineStore('advertises', {
   state: () => ({
@@ -48,6 +50,21 @@ export const useAdvertiseStore = defineStore('advertises', {
   },
 
   actions: {
+    async redirect() {
+      Notify.create({
+        type: 'info',
+        message: 'Not found'
+      })
+      setTimeout(async () => {
+        Notify.create({
+          type: 'info',
+          message: 'You will be redirected in 3 seconds'
+        })
+      }, 3000)
+      setTimeout(async () => {
+        window.location.href = '/404'
+      }, 6000)
+    },
     async fetchAdvertises(type) {
       const userStore = useUserStore()
       if (type) {
@@ -76,6 +93,38 @@ export const useAdvertiseStore = defineStore('advertises', {
         } catch (err) {
           console.error(err)
         }
+      }
+    },
+    async fetchAdvertiseById(campaignId) {
+      let advertise
+      if (this.getALlActiveAdvertises.length || this.getAdvertises.length) {
+        advertise =
+          this.getALlActiveAdvertises?.find((advertise) => advertise.id === campaignId) ||
+          this.getAdvertises?.find((advertise) => advertise.id === campaignId)
+      }
+      if (advertise) {
+        return advertise
+      }
+      try {
+        this.setLoaderTrue()
+        const userStore = useUserStore()
+        const docData = await getDocs(query(collection(db, 'advertises'), where('id', '==', campaignId)))
+        if (docData.empty) {
+          return await this.redirect()
+        }
+        advertise = docData.docs[0].data()
+        if (advertise.author.id === userStore.getUserId) {
+          advertise.author = userStore.getUser
+        } else if (userStore.isAdmin) {
+          advertise.author = userStore.getUserById(advertise.author.id)
+        } else {
+          return await this.redirect()
+        }
+        return advertise
+      } catch (error) {
+        return await this.redirect()
+      } finally {
+        this.setLoaderFalse()
       }
     },
     setLoaderTrue() {
