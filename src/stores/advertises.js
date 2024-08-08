@@ -96,15 +96,13 @@ export const useAdvertiseStore = defineStore('advertises', {
       }
     },
     async fetchAdvertiseById(campaignId) {
-      let advertise
       if (this.getALlActiveAdvertises.length || this.getAdvertises.length) {
-        advertise =
+        const advertise =
           this.getALlActiveAdvertises?.find((advertise) => advertise.id === campaignId) ||
           this.getAdvertises?.find((advertise) => advertise.id === campaignId)
+        if (advertise) return advertise
       }
-      if (advertise) {
-        return advertise
-      }
+      const errorStore = useErrorStore()
       try {
         this.setLoaderTrue()
         const userStore = useUserStore()
@@ -112,7 +110,7 @@ export const useAdvertiseStore = defineStore('advertises', {
         if (docData.empty) {
           return await this.redirect()
         }
-        advertise = docData.docs[0].data()
+        const advertise = docData.docs[0].data()
         if (advertise.author.id === userStore.getUserId) {
           advertise.author = userStore.getUser
         } else if (userStore.isAdmin) {
@@ -122,6 +120,8 @@ export const useAdvertiseStore = defineStore('advertises', {
         }
         return advertise
       } catch (error) {
+        console.log(error)
+        errorStore.throwError(error)
         return await this.redirect()
       } finally {
         this.setLoaderFalse()
