@@ -103,9 +103,9 @@ export const usePromptStore = defineStore('prompts', {
         let queryRef = collection(db, 'prompts')
 
         if (loadMore && this._lastVisible) {
-          queryRef = query(queryRef, orderBy('created', 'desc'), startAfter(this._lastVisible), limit(count ?? this.loadCount))
+          queryRef = query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(count ?? this.loadCount))
         } else if (loadMore) {
-          queryRef = query(queryRef, orderBy('created', 'desc'), limit(this.loadCount))
+          queryRef = query(queryRef, orderBy('id', 'desc'), limit(this.loadCount))
         }
 
         const querySnapshot = await getDocs(queryRef)
@@ -144,8 +144,8 @@ export const usePromptStore = defineStore('prompts', {
       try {
         this._isLoading = true
 
-        const latestPromptDate = this._prompts[0].created
-        const queryRef = query(collection(db, 'prompts'), orderBy('created'), startAfter(latestPromptDate), limit(this.loadCount))
+        const latestPromptId = this._prompts[0].id
+        const queryRef = query(collection(db, 'prompts'), orderBy('id'), startAfter(latestPromptId), limit(this.loadCount))
 
         const querySnapshot = await getDocs(queryRef)
         const newPrompts = await getPrompts(querySnapshot, userStore)
