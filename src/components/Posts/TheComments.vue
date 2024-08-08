@@ -3,10 +3,10 @@
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
       <section v-if="commentStore.isInitialLoading">
-        <CommentsSkeleton/>
-        <CommentsSkeleton/>
-        <CommentsSkeleton/>
-        <CommentsSkeleton/>
+        <CommentsSkeleton />
+        <CommentsSkeleton />
+        <CommentsSkeleton />
+        <CommentsSkeleton />
       </section>
       <section v-else-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
@@ -24,7 +24,7 @@
         <p class="text-body1">Be the first to share what you think!</p>
       </div>
 
-      <q-form greedy @submit.prevent="commentStore.haveToReply ? addReply() : addComment()">
+      <q-form v-if="!commentStore.isInitialLoading" greedy @submit.prevent="commentStore.haveToReply ? addReply() : addComment()">
         <div class="fixed-bottom q-px-sm q-page-container position-relative">
           <q-input
             class="bg-white z-fab"
@@ -207,7 +207,7 @@ watchEffect(async () => {
 
 onUnmounted(() => {
   commentStore.setReplyTo('')
-  if(commentStore._unSubscribe){
+  if (commentStore._unSubscribe) {
     commentStore._unSubscribe()
   }
 })

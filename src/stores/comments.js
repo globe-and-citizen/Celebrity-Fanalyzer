@@ -123,9 +123,6 @@ export const useCommentStore = defineStore('comments', {
       if (!userStore.getUsers) {
         await userStore.fetchUsers()
       }
-      // if (this._unSubscribe) {
-      //   this._unSubscribe()
-      // }
 
       try {
         const q1 = query(
