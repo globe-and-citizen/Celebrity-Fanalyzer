@@ -114,7 +114,7 @@ export const useAdvertiseStore = defineStore('advertises', {
         if (advertise.author.id === userStore.getUserId) {
           advertise.author = userStore.getUser
         } else if (userStore.isAdmin) {
-          advertise.author = userStore.getUserById(advertise.author.id)
+          advertise.author = await userStore.getUserByUidOrUsername(advertise.author.id)
         } else {
           return await this.redirect()
         }
