@@ -232,6 +232,6 @@ async function onSubmit() {
   } catch (e) {
     await errorStore.throwError(e, failureMessage)
   }
-  emit('hideDialog')
+  emit('hideDialog',entry.slug)
 }
 </script>
