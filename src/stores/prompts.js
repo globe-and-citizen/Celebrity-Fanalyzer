@@ -151,7 +151,6 @@ export const usePromptStore = defineStore('prompts', {
         const newPrompts = await getPrompts(querySnapshot, userStore)
 
         if (newPrompts.length) {
-          console.log(newPrompts)
           this._prompts = [...newPrompts.reverse(), ...this._prompts]
         }
       } catch (error) {
