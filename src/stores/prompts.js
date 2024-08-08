@@ -11,7 +11,8 @@ import {
   where,
   getDoc,
   orderBy,
-  limit
+  limit,
+  startAfter
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -29,6 +30,7 @@ import {
 import { Notify } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
 
+let updatedBefore = false
 const getPrompts = async (querySnapshot, userStore) => {
   const prompts = []
 
@@ -44,7 +46,7 @@ const getPrompts = async (querySnapshot, userStore) => {
       entries: promptData.entries?.map((entry) => entry.id) || []
     })
   }
-  return prompts.reverse()
+  return prompts
 }
 
 export const usePromptStore = defineStore('prompts', {
@@ -54,7 +56,10 @@ export const usePromptStore = defineStore('prompts', {
     _monthPrompt: undefined,
     _tab: 'post',
     promptDialog: false,
-    entryDialog: {}
+    entryDialog: {},
+    loadCount: 6,
+    _lastVisible: null,
+    _hasMore: true
   }),
 
   persist: true,
@@ -64,7 +69,8 @@ export const usePromptStore = defineStore('prompts', {
     getPrompts: (state) => state._prompts,
     getMonthPrompt: (state) => state._monthPrompt,
     isLoading: (state) => state._isLoading,
-    tab: (state) => state._tab
+    tab: (state) => state._tab,
+    hasMore: (state) => state._hasMore
   },
 
   actions: {
@@ -84,7 +90,7 @@ export const usePromptStore = defineStore('prompts', {
       }, 6000)
     },
 
-    async fetchPrompts() {
+    async fetchPrompts(loadMore = false, count) {
       const userStore = useUserStore()
 
       if (!userStore.getUsers) {
@@ -93,12 +99,62 @@ export const usePromptStore = defineStore('prompts', {
 
       try {
         this._isLoading = true
-        const querySnapshot = await getDocs(collection(db, 'prompts'))
-        const prompts = await getPrompts(querySnapshot, userStore)
-        this._prompts = prompts
-        return prompts
+
+        let queryRef = collection(db, 'prompts')
+
+        if (loadMore && this._lastVisible) {
+          queryRef = query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(count ?? this.loadCount))
+        } else if (loadMore) {
+          queryRef = query(queryRef, orderBy('id', 'desc'), limit(this.loadCount))
+        }
+
+        const querySnapshot = await getDocs(queryRef)
+
+        const newPrompts = await getPrompts(querySnapshot, userStore)
+
+        if (newPrompts.length > 0) {
+          this._lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1]
+          this._hasMore = true
+        } else {
+          this._hasMore = false
+        }
+
+        if (loadMore) {
+          this._prompts = updatedBefore ? [...this._prompts, ...newPrompts] : newPrompts
+          updatedBefore = true
+        } else {
+          this._prompts = newPrompts
+        }
+        return newPrompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
+      } finally {
+        this._isLoading = false
+      }
+    },
+    async fetchLatestPrompt() {
+      if (!this._prompts || this._prompts.length === 0) return
+
+      const userStore = useUserStore()
+
+      if (!userStore.getUsers) {
+        await userStore.fetchAdminsAndEditors()
+      }
+
+      try {
+        this._isLoading = true
+
+        const latestPromptId = this._prompts[0].id
+        const queryRef = query(collection(db, 'prompts'), orderBy('id'), startAfter(latestPromptId), limit(this.loadCount))
+
+        const querySnapshot = await getDocs(queryRef)
+        const newPrompts = await getPrompts(querySnapshot, userStore)
+
+        if (newPrompts.length) {
+          this._prompts = [...newPrompts.reverse(), ...this._prompts]
+        }
+      } catch (error) {
+        console.error('Error fetching latest prompts:', error)
       } finally {
         this._isLoading = false
       }
@@ -269,6 +325,12 @@ export const usePromptStore = defineStore('prompts', {
 
     setTab(tab) {
       this.$patch({ _tab: tab })
+    },
+    reset() {
+      this._lastVisible = null
+      this._prompts = undefined
+      this._hasMore = true
+      updatedBefore = false
     }
   }
 })
