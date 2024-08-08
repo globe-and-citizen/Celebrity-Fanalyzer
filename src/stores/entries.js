@@ -98,7 +98,7 @@ export const useEntryStore = defineStore('entries', {
         this._isLoading = true
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         const userDocRef = doc(db, 'users', userId)
