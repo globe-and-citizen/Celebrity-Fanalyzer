@@ -139,6 +139,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
 
     async editAdvertise(payload) {
+      const userStore = useUserStore()
       const advertise = { ...payload }
       advertise.updated = Timestamp.fromDate(new Date())
 
@@ -147,7 +148,12 @@ export const useAdvertiseStore = defineStore('advertises', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'advertises', advertise.id), advertise)
-      }).finally(() => (this._isLoading = false))
+      })
+        .then(async () => {
+          advertise.author = await userStore.fetchUser(advertise.author.id)
+          this._advertises = this._advertises.map((element) => (element.id === advertise.id ? advertise : element))
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async getActiveAdvertise() {

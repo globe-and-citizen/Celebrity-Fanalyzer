@@ -142,3 +142,12 @@ export function getCurrentDate() {
   }
   return `${currentDate.getFullYear()}/${month}/${day}`
 }
+
+export function computedDuration(endDate) {
+  const date1 = new Date()
+  const date2 = new Date(endDate)
+  date1.setHours(0, 0, 0, 0)
+  date2.setHours(0, 0, 0, 0)
+  const Difference_In_Time = date2.getTime() - date1.getTime()
+  return Math.round(Difference_In_Time / (1000 * 3600 * 24))
+}
