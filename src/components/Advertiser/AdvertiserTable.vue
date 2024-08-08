@@ -251,7 +251,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { getCurrentDate, calculateEndDate } from 'src/utils/date'
+import { getCurrentDate, calculateEndDate, computedDuration } from 'src/utils/date'
 import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
@@ -601,14 +601,6 @@ function changeActiveStatus(advertise, status) {
     })
 }
 
-function computedDuration(endDate) {
-  const date1 = new Date()
-  const date2 = new Date(endDate)
-  date1.setHours(0, 0, 0, 0)
-  date2.setHours(0, 0, 0, 0)
-  const Difference_In_Time = date2.getTime() - date1.getTime()
-  return Math.round(Difference_In_Time / (1000 * 3600 * 24))
-}
 
 function calculateStatus(date) {
   const currentDate = new Date()

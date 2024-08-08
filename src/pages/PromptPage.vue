@@ -12,7 +12,7 @@
         :post="prompt"
         title="Prompt Page"
         :isPrompt="true"
-        :showEdit="userStore.getUserId === prompt.author.uid"
+        :showEdit="userStore.getUserId === prompt.author.uid && !prompt?.hasWinner"
         @clickComments="tab = 'comments'"
         @openPromptDialog="openPromptDialog"
       />

@@ -11,7 +11,7 @@
         collectionName="advertises"
         :post="advertise"
         :isAdd="true"
-        :showEdit="userStore.getUserId === advertise.author.uid"
+        :showEdit="userStore.getUserId === advertise.author.uid && computedDuration(advertise.endDate)>=0"
         @clickComments="tab = 'comments'"
         @openAdvertiseDialog="openAdvertiseDialog"
       />
@@ -50,6 +50,7 @@ import { computed, onUnmounted, ref, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
+import {  computedDuration } from 'src/utils/date'
 
 const router = useRouter()
 
