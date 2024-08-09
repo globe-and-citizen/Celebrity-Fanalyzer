@@ -2,12 +2,10 @@ const INITIAL_WAIT = 3000
 const INTERVAL_WAIT = 10000
 const ONE_SECOND = 1000
 
-// List of events to track
 const events = ['mouseup', 'keydown', 'scroll', 'mousemove']
 
-// Start time is set to current time and end time is set to current time plus
 let startTime = Date.now()
-let endTime = startTime + INITIAL_WAIT
+const endTime = startTime + INITIAL_WAIT
 
 // Counts for each event
 const counts = {
@@ -18,10 +16,24 @@ const counts = {
   totalTime: 0
 }
 
-// Interval id for tracking time intervals
 let intervalId = null
 
-// Starts tracking user events and updates counts and time intervals
+// Event listener functions
+const eventHandlers = {
+  mouseup: function () {
+    counts.clicks++
+  },
+  keydown: function () {
+    counts.keypresses++
+  },
+  scroll: function () {
+    counts.scrolls++
+  },
+  mousemove: function () {
+    counts.mouseMovements++
+  }
+}
+
 export function startTracking() {
   intervalId = setInterval(function () {
     if (!document.hidden && startTime <= endTime) {
@@ -31,22 +43,10 @@ export function startTracking() {
   }, ONE_SECOND)
 
   events.forEach(function (e) {
-    document.addEventListener(e, function () {
-      endTime = Date.now() + INTERVAL_WAIT
-      if (e === 'mouseup') {
-        counts.clicks++
-      } else if (e === 'keydown') {
-        counts.keypresses++
-      } else if (e === 'scroll') {
-        counts.scrolls++
-      } else if (e === 'mousemove') {
-        counts.mousemovements++
-      }
-    })
+    document.addEventListener(e, eventHandlers[e])
   })
 }
 
-// Stops tracking user events and returns counts and time intervals
 export function stopTracking() {
   clearInterval(intervalId)
   const data = {
@@ -57,6 +57,10 @@ export function stopTracking() {
   for (const key in counts) {
     counts[key] = 0
   }
+
+  events.forEach(function (e) {
+    document.removeEventListener(e, eventHandlers[e])
+  })
 
   return data
 }

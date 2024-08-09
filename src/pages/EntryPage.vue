@@ -50,7 +50,7 @@ import {
 } from 'src/stores'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -66,6 +66,8 @@ const tab = ref(entryStore.tab)
 const editEntry = ref({})
 const prompt = ref({})
 
+let entryId
+let entryAuthor
 const entry = computed(() => {
   return entryStore.getEntries?.find(
     (entry) =>
@@ -81,9 +83,11 @@ watchEffect(async () => {
     prompt.value = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
   }
   if (entry.value?.id) {
-    await likeStore.getAllLikesDislikes('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entry.value?.id).catch((error) => errorStore.throwError(error))
-    await commentStore.getTotalComments('entries', entry.value?.id)
+    entryId = entry.value.id
+    entryAuthor = entry.value?.author?.uid
+    await likeStore.getAllLikesDislikes('entries', entryId).catch((error) => errorStore.throwError(error))
+    await shareStore.fetchSharesCount('entries', entryId).catch((error) => errorStore.throwError(error))
+    await commentStore.getTotalComments('entries', entryId)
   }
 })
 
@@ -91,15 +95,17 @@ onMounted(async () => {
   startTracking()
 })
 
-onBeforeRouteLeave(async () => {
+onUnmounted(async () => {
   const stats = stopTracking()
-  await statStore.addStats(entry.value.id, stats, 'article')
-})
-
-onUnmounted(() => {
-  commentStore.resetComments()
-  statStore.resetStats()
-  entryStore.setTab('post')
+  try {
+    await statStore.addStats(entryId, entryAuthor, stats, 'article')
+  } catch (e) {
+    console.error('Error adding stats:', e)
+  } finally {
+    await commentStore.resetComments()
+    statStore.resetStats()
+    entryStore.setTab('post')
+  }
 })
 
 async function openEntryDialog() {
