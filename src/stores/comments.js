@@ -40,6 +40,7 @@ export const useCommentStore = defineStore('comments', {
     _commentsCount: 0,
     _unSubscribe: undefined,
     _isLoading: false,
+    _initialLoading: false,
     _replyTo: ''
   }),
 
@@ -54,6 +55,7 @@ export const useCommentStore = defineStore('comments', {
     getCommentById: (state) => (commentId) => state._comments?.find((comment) => comment.id === commentId),
     isLoading: (state) => state._isLoading,
     isLoaded: (state) => !!state._comments,
+    isInitialLoading: (state) => state._initialLoading,
     /**
      * Return A comment children
      * @param state
@@ -77,36 +79,42 @@ export const useCommentStore = defineStore('comments', {
         collection(db, collectionName, documentId, 'comments'),
         or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
       )
+      this._initialLoading = true
       this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
-        const comments = querySnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((data) => {
-            if (data.isDeleted) return false
-            return true
-          })
+        try {
+          const comments = querySnapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .filter((data) => {
+              if (data.isDeleted) return false
+              return true
+            })
 
-        for (const comment of comments) {
-          if (!comment.isAnonymous) {
-            comment.author = userStore.getUserById(comment.author?.id) || comment.author?.id
+          for (const comment of comments) {
+            if (!comment.isAnonymous) {
+              comment.author = userStore.getUserById(comment.author?.id) || comment.author?.id
+            }
+            comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
+            comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
           }
-          comment.likes = comment.likes ? comment.likes.map((like) => like.id || like) : []
-          comment.dislikes = comment.dislikes ? comment.dislikes.map((dislike) => dislike.id || dislike) : []
-        }
 
-        const authors = await Promise.all(
-          comments
-            .filter((comment) => !comment.isAnonymous && typeof comment.author === 'string')
-            .map((comment) => comment.author)
-            .filter((author, index, self) => self.indexOf(author) === index)
-            .map((author) => userStore.fetchUser(author))
-        )
+          const authors = await Promise.all(
+            comments
+              .filter((comment) => !comment.isAnonymous && typeof comment.author === 'string')
+              .map((comment) => comment.author)
+              .filter((author, index, self) => self.indexOf(author) === index)
+              .map((author) => userStore.fetchUser(author))
+          )
 
-        for (const comment of comments) {
-          if (!comment.isAnonymous && typeof comment.author === 'string') {
-            comment.author = authors.find((author) => author.uid === comment.author)
+          for (const comment of comments) {
+            if (!comment.isAnonymous && typeof comment.author === 'string') {
+              comment.author = authors.find((author) => author.uid === comment.author)
+            }
           }
+          this._initialLoading = false
+          this.$patch({ _comments: comments })
+        } finally {
+          this._initialLoading = false
         }
-        this.$patch({ _comments: comments })
       })
     },
 
@@ -114,9 +122,6 @@ export const useCommentStore = defineStore('comments', {
       const userStore = useUserStore()
       if (!userStore.getUsers) {
         await userStore.fetchUsers()
-      }
-      if (this._unSubscribe) {
-        this._unSubscribe()
       }
 
       try {
