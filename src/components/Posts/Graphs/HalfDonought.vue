@@ -80,7 +80,24 @@ function resetSummedData() {
 }
 
 function updateChartOption() {
-  chartOption.value.series[0].radius = calculateRadius()
+  const screenWidth = window.innerWidth
+  const screenHeight = window.innerHeight
+  const calculatedRadius = calculateRadius()
+  chartOption.value.title.left = 'center'
+  chartOption.value.legend.bottom = '0%'
+
+  if (screenWidth < 720 && screenWidth > 425) {
+    chartOption.value.series[0].center = ['50%', '55%']
+    chartOption.value.series[0].radius = [calculatedRadius[0], calculatedRadius[1] * (screenHeight < 740 ? 0.7 : 1)]
+    chartOption.value.legend.bottom = '-1%'
+  } else if (screenWidth < 426) {
+    chartOption.value.series[0].center = ['50%', '45%']
+    chartOption.value.series[0].radius = [calculatedRadius[0], calculatedRadius[1]]
+    chartOption.value.series[0].radius = [calculatedRadius[0], calculatedRadius[1] * (screenHeight < 740 ? 0.6 : 1)]
+  } else {
+    chartOption.value.series[0].center = ['50%', '50%']
+    chartOption.value.series[0].radius = calculatedRadius
+  }
 
   resetSummedData()
 
@@ -124,10 +141,13 @@ onUnmounted(() => {
   height: 100%;
 
   @media (max-width: 1024px) {
-    height: 45vh;
+    height: 55vh;
   }
   @media (max-width: 720px) {
-    height: 45vh;
+    height: 50vh;
+  }
+  @media (max-width: 426px) {
+    height: 50vh;
   }
 }
 </style>

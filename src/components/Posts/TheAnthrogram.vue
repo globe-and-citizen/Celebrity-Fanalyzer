@@ -19,7 +19,7 @@
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
           <div
-            v-if="!!statStore.getStats?.length"
+            v-if="hasValidStats"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
             class="col-12 anthogram-border"
           >
@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import LikesBar from './Graphs/LikesBar.vue'
 import SharesPie from './Graphs/SharesPie.vue'
 import VisitorsBar from './Graphs/VisitorsBar.vue'
@@ -99,6 +99,12 @@ const errorStore = useErrorStore()
 const statStore = useStatStore()
 
 const interval = ref('daily')
+
+const hasValidStats = computed(() => {
+  return statStore.getStats?.some(
+    (stat) => stat.clicks > 0 || stat.keypresses > 0 || stat.mouseMovements > 0 || stat.scrolls > 0 || stat.totalTime > 0
+  )
+})
 
 onMounted(async () => {
   await visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
