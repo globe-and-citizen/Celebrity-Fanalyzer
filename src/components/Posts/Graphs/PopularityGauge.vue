@@ -42,13 +42,13 @@ const getChartOption = (width) => ({
       startAngle: 180,
       endAngle: 0,
       center: ['50%', '80%'],
-      radius: '90%',
+      radius: width < 425 ? '75%' : '90%',
       min: 0,
       max: 100,
       splitNumber: 10,
       axisLine: {
         lineStyle: {
-          width: 6,
+          width: width < 425 ? 3 : 6,
           color: [
             [0.2, '#FF6E76'],
             [0.4, '#FDDD60'],
@@ -75,7 +75,7 @@ const getChartOption = (width) => ({
       axisLabel: {
         color: '#464646',
         fontSize: width < 720 ? 10 : 15,
-        distance: width < 720 ? -50 : -60,
+        distance: width < 425 ? -45 : width < 720 ? -50 : -60,
         rotate: 'tangential',
         formatter: function (value) {
           if (value === 10) {

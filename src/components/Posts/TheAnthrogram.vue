@@ -132,6 +132,11 @@ onUnmounted(() => {
 
 .rating-chart {
   min-height: 350px;
+
+  @media (max-width: 426px) {
+    min-height: 250px;
+  }
+
   margin-top: 10px;
 }
 </style>
