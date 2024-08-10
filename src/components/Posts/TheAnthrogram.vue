@@ -19,7 +19,7 @@
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
           <div
-            v-if="hasValidStats"
+            v-if="hasValidStats && statStore.getStats"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
             class="col-12 anthogram-border"
           >
@@ -50,17 +50,17 @@
         <div class="row" style="justify-content: space-between; gap: 10px">
           <div
             class="col-12 anthogram-border rating-chart"
-            v-if="!!statStore.getArticleRate?.postRating"
-            v-bind:class="!!statStore.getUserRate?.userRating ? 'col-md-6' : 'col-md-12'"
+            v-if="!!statStore.getArticleRate"
+            v-bind:class="!!statStore.getUserRate ? 'col-md-6' : 'col-md-12'"
           >
-            <PopularityGauge :postRating="statStore.getArticleRate" :title="'Post popularity rating'" />
+            <PopularityGauge :ratingValue="statStore.getArticleRate" :title="'Post popularity rating'" />
           </div>
           <div
             class="col-12 anthogram-border rating-chart"
-            v-if="!!statStore.getUserRate?.userRating"
-            v-bind:class="!!statStore.getArticleRate?.postRating ? 'col-md-6' : 'col-md-12'"
+            v-if="!!statStore.getUserRate"
+            v-bind:class="!!statStore.getArticleRate ? 'col-md-6' : 'col-md-12'"
           >
-            <UserRatingGauge :userRating="statStore.getUserRate" :title="'User rating'" />
+            <PopularityGauge :ratingValue="statStore.getUserRate" :title="'User rating'" />
           </div>
         </div>
 
@@ -85,7 +85,6 @@ import LeafletMap from './Graphs/Map/LeafletMap.vue'
 import { useClicksStore, useErrorStore, useImpressionsStore, useLikeStore, useShareStore, useStatStore, useVisitorStore } from 'src/stores'
 import HalfDonought from './Graphs/HalfDonought.vue'
 import PopularityGauge from './Graphs/PopularityGauge.vue'
-import UserRatingGauge from './Graphs/UserRatingGauge.vue'
 import CTRBar from './Graphs/CTRBar.vue'
 
 const props = defineProps(['post', 'isAdd', 'collectionName'])
@@ -132,11 +131,7 @@ onUnmounted(() => {
 }
 
 .rating-chart {
-  height: 350px;
+  min-height: 350px;
   margin-top: 10px;
-
-  @media (max-width: 720px) {
-    height: 280px;
-  }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <v-chart v-if="props.stats.length" class="chart" :option="chartOption" autoresize />
+  <v-chart class="chart" :option="chartOption" autoresize />
 </template>
 
 <script setup>
@@ -36,9 +36,9 @@ const chartOption = ref({
     {
       name: 'User Activity',
       type: 'pie',
-      radius: [],
+      radius: ['90%'],
       center: ['50%', '50%'],
-      data: [],
+      data: [{ value: 0 }],
       emphasis: {
         itemStyle: {
           shadowBlur: 20,
@@ -56,7 +56,7 @@ function calculateRadius() {
 
   const minRadius = 20
   const maxRadius = 100
-  const radius = Math.min(screenWidth, screenHeight) * 0.21
+  const radius = Math.min(screenWidth, screenHeight) * 0.19
 
   return [minRadius, Math.min(radius, maxRadius)]
 }
@@ -80,29 +80,15 @@ function resetSummedData() {
 }
 
 function updateChartOption() {
-  const screenWidth = window.innerWidth
-  const screenHeight = window.innerHeight
-  const calculatedRadius = calculateRadius()
   chartOption.value.title.left = 'center'
   chartOption.value.legend.bottom = '0%'
 
-  if (screenWidth < 720 && screenWidth > 425) {
-    chartOption.value.series[0].center = ['50%', '55%']
-    chartOption.value.series[0].radius = [calculatedRadius[0], calculatedRadius[1] * (screenHeight < 740 ? 0.7 : 1)]
-    chartOption.value.legend.bottom = '-1%'
-  } else if (screenWidth < 426) {
-    chartOption.value.series[0].center = ['50%', '45%']
-    chartOption.value.series[0].radius = [calculatedRadius[0], calculatedRadius[1]]
-    chartOption.value.series[0].radius = [calculatedRadius[0], calculatedRadius[1] * (screenHeight < 740 ? 0.6 : 1)]
-  } else {
-    chartOption.value.series[0].center = ['50%', '50%']
-    chartOption.value.series[0].radius = calculatedRadius
-  }
+  chartOption.value.series[0].center = ['50%', '50%']
+  chartOption.value.series[0].radius = calculateRadius()
 
   resetSummedData()
 
-  const userData = props.stats
-  userData.map((user) => {
+  props.stats?.map((user) => {
     summedData.clicks += user.clicks
     summedData.keypresses += user.keypresses
     summedData.scrolls += user.scrolls
@@ -139,15 +125,6 @@ onUnmounted(() => {
 <style scoped>
 .chart {
   height: 100%;
-
-  @media (max-width: 1024px) {
-    height: 55vh;
-  }
-  @media (max-width: 720px) {
-    height: 50vh;
-  }
-  @media (max-width: 426px) {
-    height: 50vh;
-  }
+  min-height: 330px;
 }
 </style>
