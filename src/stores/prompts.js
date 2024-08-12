@@ -12,8 +12,6 @@ import {
   setDoc,
   Timestamp,
   where,
-  orderBy,
-  limit,
   startAfter
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
