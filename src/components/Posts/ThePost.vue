@@ -216,7 +216,7 @@ watch(layer8Initialized, async () => {
     if (isEntry) {
       const promptId = props.post.prompt?.id
         ? props.post.prompt?.id
-        : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0].id
+        : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0]?.id
       await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
     }
 
