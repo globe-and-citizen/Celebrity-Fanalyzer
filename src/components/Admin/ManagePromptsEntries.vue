@@ -74,7 +74,7 @@
           <TableEntry
             v-else
             :filter="filter"
-            :rows="getEntriesForPrompt(props.row.id)"
+            :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
             :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"
@@ -84,7 +84,11 @@
       </q-tr>
     </template>
   </q-table>
-  <TableEntry v-else :filter="filter" :rows="entryStore.getUserRelatedEntries" />
+  <TableEntry
+    v-else
+    :filter="filter"
+    :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
+  />
 
   <q-dialog v-model="deleteDialog.show">
     <q-card>
@@ -133,12 +137,12 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 const prompts = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   if (userStore.isEditorOrAbove) {
     entryStore._loadedEntries = []
-    promptStore.fetchPrompts()
+    await promptStore.fetchPrompts()
   } else {
-    entryStore.fetchUserRelatedEntries(userStore.getUserId)
+    await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }
 })
 
@@ -198,7 +202,7 @@ async function handleUpdateEntry({ _entry, _prompt }) {
   })
 
   // Fetch updated prompts
-  promptStore.fetchPrompts()
+  await promptStore.fetchPrompts()
 }
 
 function toggleExpand(props) {

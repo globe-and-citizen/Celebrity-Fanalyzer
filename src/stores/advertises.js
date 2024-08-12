@@ -11,7 +11,8 @@ import {
   setDoc,
   Timestamp,
   where,
-  getDoc
+  getDoc,
+  getDocs
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
@@ -21,9 +22,11 @@ import {
   useImpressionsStore,
   useLikeStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
+import { Notify } from 'quasar'
 
 export const useAdvertiseStore = defineStore('advertises', {
   state: () => ({
@@ -48,6 +51,21 @@ export const useAdvertiseStore = defineStore('advertises', {
   },
 
   actions: {
+    async redirect() {
+      Notify.create({
+        type: 'info',
+        message: 'Not found'
+      })
+      setTimeout(async () => {
+        Notify.create({
+          type: 'info',
+          message: 'You will be redirected in 3 seconds'
+        })
+      }, 3000)
+      setTimeout(async () => {
+        window.location.href = '/404'
+      }, 6000)
+    },
     async fetchAdvertises(type) {
       const userStore = useUserStore()
       if (type) {
@@ -76,6 +94,38 @@ export const useAdvertiseStore = defineStore('advertises', {
         } catch (err) {
           console.error(err)
         }
+      }
+    },
+    async fetchAdvertiseById(campaignId) {
+      if (this.getALlActiveAdvertises.length || this.getAdvertises.length) {
+        const advertise =
+          this.getALlActiveAdvertises?.find((advertise) => advertise.id === campaignId) ||
+          this.getAdvertises?.find((advertise) => advertise.id === campaignId)
+        if (advertise) return advertise
+      }
+      const errorStore = useErrorStore()
+      try {
+        this.setLoaderTrue()
+        const userStore = useUserStore()
+        const docData = await getDocs(query(collection(db, 'advertises'), where('id', '==', campaignId)))
+        if (docData.empty) {
+          return await this.redirect()
+        }
+        const advertise = docData.docs[0].data()
+        if (advertise.author.id === userStore.getUserId) {
+          advertise.author = userStore.getUser
+        } else if (userStore.isAdmin) {
+          advertise.author = await userStore.getUserByUidOrUsername(advertise.author.id)
+        } else {
+          return await this.redirect()
+        }
+        return advertise
+      } catch (error) {
+        console.log(error)
+        errorStore.throwError(error)
+        return await this.redirect()
+      } finally {
+        this.setLoaderFalse()
       }
     },
     setLoaderTrue() {
@@ -241,8 +291,9 @@ export const useAdvertiseStore = defineStore('advertises', {
       const visitorStore = useVisitorStore()
       const clicksStore = useClicksStore()
       const impressionsStore = useImpressionsStore()
-      const imagePath = `advertise/content-${id}`
+      const statStore = useStatStore()
 
+      const imagePath = `advertise/content-${id}`
       const imageRef = ref(storage, imagePath)
 
       if (isBanner) {
@@ -256,8 +307,18 @@ export const useAdvertiseStore = defineStore('advertises', {
         const deleteVisitors = visitorStore.deleteAllVisitors('advertises', id)
         const deleteClicks = clicksStore.deleteAllClicks('advertises', id)
         const deleteImpressions = impressionsStore.deleteAllImpressions('advertises', id)
+        const deleteAdFromStats = statStore.removeAd(id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteAdvertiseDoc, deleteVisitors, deleteClicks, deleteImpressions])
+        await Promise.all([
+          deleteComments,
+          deleteLikes,
+          deleteShares,
+          deleteAdvertiseDoc,
+          deleteVisitors,
+          deleteClicks,
+          deleteImpressions,
+          deleteAdFromStats
+        ])
       } catch (error) {
         console.log(error)
         await errorStore.throwError(error)

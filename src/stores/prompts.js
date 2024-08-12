@@ -2,8 +2,11 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
+  limit,
   or,
+  orderBy,
   query,
   runTransaction,
   setDoc,
@@ -24,6 +27,7 @@ import {
   useLikeStore,
   useNotificationStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
@@ -296,6 +300,7 @@ export const usePromptStore = defineStore('prompts', {
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
       const visitorStore = useVisitorStore()
+      const statStore = useStatStore()
 
       const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
 
@@ -313,10 +318,10 @@ export const usePromptStore = defineStore('prompts', {
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
         const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
+        const deletePromptFromStats = statStore.removeTopic(id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
-        const updatedPrompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
-        this._prompts = updatedPrompts
+        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors, deletePromptFromStats])
+        this._prompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting prompt')
       }

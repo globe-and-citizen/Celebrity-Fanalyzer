@@ -24,6 +24,7 @@ import {
   useNotificationStore,
   usePromptStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
@@ -98,7 +99,7 @@ export const useEntryStore = defineStore('entries', {
         this._isLoading = true
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         const userDocRef = doc(db, 'users', userId)
@@ -244,6 +245,7 @@ export const useEntryStore = defineStore('entries', {
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
       const visitorStore = useVisitorStore()
+      const statStore = useStatStore()
 
       const promptId = entryId.split('T')[0]
       const entryRef = doc(db, 'entries', entryId)
@@ -257,8 +259,18 @@ export const useEntryStore = defineStore('entries', {
         const deleteVisitors = visitorStore.deleteAllVisitors('entries', entryId)
         const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
+        const deleteEntryFromStats = statStore.removeArticle(entryId)
 
-        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
+        await Promise.all([
+          deleteImage,
+          deleteEntryDoc,
+          deleteEntryRef,
+          deleteComments,
+          deleteLikes,
+          deleteShares,
+          deleteVisitors,
+          deleteEntryFromStats
+        ])
         this._entries = this._entries.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')

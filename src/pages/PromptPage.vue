@@ -41,9 +41,11 @@ const promptStore = usePromptStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
 const route = useRoute()
+let promptId
+let authorId
+let stats
 
 const entriesRef = ref(null)
-
 const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
@@ -83,13 +85,19 @@ const onScroll = () => {
   }
 }
 
+watchEffect(() => {
+  if (prompt.value?.id) {
+    promptId = prompt.value?.id
+    authorId = prompt.value?.author?.uid
+  }
+})
+
 watchEffect(async () => {
   if (prompt?.value?.author?.uid) {
     await statStore.getUserRating(prompt?.value?.author?.uid)
   }
 
   if (prompt.value?.id) {
-    const promptId = prompt.value?.id
     await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
 
     shareIsLoading.value = true
@@ -125,14 +133,20 @@ watch(entriesRef, (newVal) => {
 })
 
 onBeforeRouteLeave(async () => {
-  const stats = stopTracking()
-  await statStore.addStats(prompt.value?.id, stats, 'topic')
-  statStore.resetStats()
-  statStore.resetUserRating()
+  stats = stopTracking()
 })
 
-onUnmounted(() => {
-  statStore.resetPostImpressions()
+onUnmounted(async () => {
+  try {
+    await statStore.addStats(promptId, authorId, stats, 'topic')
+  } catch (e) {
+    console.error('Error adding stats:', e)
+  } finally {
+    statStore.resetStats()
+    statStore.resetUserRating()
+    statStore.resetPostImpressions()
+  }
+
   window.removeEventListener('scroll', onScroll)
 })
 </script>
