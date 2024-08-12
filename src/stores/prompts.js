@@ -12,7 +12,6 @@ import {
   setDoc,
   Timestamp,
   where,
-  getDoc,
   orderBy,
   limit,
   startAfter
