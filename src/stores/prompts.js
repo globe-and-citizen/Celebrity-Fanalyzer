@@ -17,6 +17,7 @@ import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
 import {
+  useCacheStore,
   useCommentStore,
   useEntryStore,
   useErrorStore,
@@ -157,6 +158,7 @@ export const usePromptStore = defineStore('prompts', {
       try {
         this._isLoading = true
         const userStore = useUserStore()
+        const cacheStore = useCacheStore()
 
         if (!userStore.getUsers) {
           await userStore.fetchAdminsAndEditors()
@@ -176,6 +178,7 @@ export const usePromptStore = defineStore('prompts', {
           this._monthPrompt = [
             {
               ...promptSnapshot,
+              image: cacheStore.request(promptSnapshot.image, "cf-cache"),
               entries: promptSnapshot?.entries?.map((entry) => entry.id) || []
             }
           ]
