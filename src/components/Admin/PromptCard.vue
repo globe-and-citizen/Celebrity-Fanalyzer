@@ -261,7 +261,7 @@ async function onSubmit() {
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 
-  emit('hideDialog')
+  emit('hideDialog', prompt.slug)
 }
 
 function onRejected() {

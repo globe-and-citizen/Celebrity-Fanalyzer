@@ -128,6 +128,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">{{ getFormattedLink(post?.productLink) }}</q-tooltip>
           </q-btn>
+
           <q-btn
             v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
@@ -140,8 +141,8 @@
           >
             <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
           </q-btn>
-          <q-btn v-if="showEditEntry" color="blue" flat icon="edit" rounded size="0.75rem" @click="$emit('openEntryDialog')">
-            <q-tooltip>Edit entry</q-tooltip>
+          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit">
+            <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
           </q-btn>
         </div>
       </section>
@@ -171,8 +172,8 @@ import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
-const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEditEntry'])
-defineEmits(['clickComments', 'openEntryDialog'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit'])
+const emit= defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog','openEntryDialog'])
 
 const router = useRouter()
 
@@ -262,6 +263,16 @@ async function share(socialNetwork) {
 
 async function subscribe() {
   await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
+}
+function manageEdit() {
+  if (props.isAdd) {
+    emit('openAdvertiseDialog')
+  } else if (isPrompt) {
+    emit('openPromptDialog')
+  }
+  else if(isEntry){
+    emit('openEntryDialog')
+  }
 }
 
 watchEffect(async () => {
