@@ -142,10 +142,10 @@ const imageModel = ref([])
 const promptOptions =
   (href === '/month'
     ? promptStore.getMonthPrompt
-        ?.filter((prompt) => !prompt.hasWinner)
+        ?.filter((prompt) => !prompt.hasWinner && userStore.getUserId !==prompt.author.uid)
         .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
     : promptStore.getPrompts
-        ?.filter((prompt) => !prompt.hasWinner)
+        ?.filter((prompt) => !prompt.hasWinner && userStore.getUserId !==prompt.author.uid)
         .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
         .reverse()) || []
 
