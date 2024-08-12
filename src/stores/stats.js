@@ -222,8 +222,12 @@ export const useStatStore = defineStore('stats', {
           body: JSON.stringify({ id })
         })
         const data = await res.json()
-        this._articleRating = data
-        return data
+        if (data && data.postRating !== undefined) {
+          this._articleRating = data.postRating
+          return data.postRating
+        } else {
+          return null
+        }
       } catch (err) {
         console.log(err)
         return null
@@ -240,8 +244,12 @@ export const useStatStore = defineStore('stats', {
           body: JSON.stringify({ user_id })
         })
         const data = await res.json()
-        this._userRating = data
-        return data
+        if (data && data.userRating !== undefined) {
+          this._userRating = data.userRating
+          return data.userRating
+        } else {
+          return null
+        }
       } catch (err) {
         console.log(err)
         return null
