@@ -92,7 +92,7 @@ const computedPrompts = computed(() => {
       const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
       return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
     })
-    .sort((a, b) => new Date(b?.created?.seconds) - new Date(a?.created?.seconds))
+    .sort((a, b) => new Date(b?.id) - new Date(a?.id))
 })
 const computedPromptsAndAdvertises = computed(() => {
   const map = new Map()
