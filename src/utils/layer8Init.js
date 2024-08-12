@@ -4,11 +4,14 @@ import { useQuasar } from 'quasar'
 export async function Layer8Init() {
   const $q = useQuasar()
   const statsStore = useStatStore()
+  const statsApiUrl = import.meta.env.VITE_STATS_API_URL
+  const layer8Proxy = import.meta.env.VITE_LAYER8_PROXY
+
   try {
     await layer8.initEncryptedTunnel(
       {
-        providers: ['https://stats-api.up.railway.app/v1'],
-        proxy: 'https://layer8proxy.net'
+        providers: [`${statsApiUrl}`],
+        proxy: layer8Proxy
       },
       'dev'
     )

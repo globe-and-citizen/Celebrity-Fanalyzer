@@ -1,6 +1,6 @@
 import { getAnalytics } from 'firebase/analytics'
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getMessaging, isSupported } from 'firebase/messaging'
 import { getStorage } from 'firebase/storage'
@@ -31,4 +31,8 @@ if (import.meta.env.VITE_RELEASE_STAGE === 'production') {
   getAnalytics(app)
 }
 
-export { auth, db, messaging, storage }
+async function passwordResetEmail(email) {
+  return sendPasswordResetEmail(auth, email)
+}
+
+export { auth, db, messaging, storage, passwordResetEmail }
