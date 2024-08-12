@@ -10,7 +10,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
 import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 
-const props = defineProps({ postRating: {}, title: String })
+const props = defineProps({ ratingValue: {}, title: String })
 const rating = ref(0)
 const screenWidth = ref(window.innerWidth)
 
@@ -41,14 +41,14 @@ const getChartOption = (width) => ({
       data: [{ value: 0 }],
       startAngle: 180,
       endAngle: 0,
-      center: width < 720 ? ['50%', '68%'] : ['50%', '80%'],
-      radius: width < 720 ? '80%' : '90%',
+      center: ['50%', '80%'],
+      radius: width < 425 ? '75%' : '90%',
       min: 0,
       max: 100,
       splitNumber: 10,
       axisLine: {
         lineStyle: {
-          width: 6,
+          width: width < 425 ? 3 : 6,
           color: [
             [0.2, '#FF6E76'],
             [0.4, '#FDDD60'],
@@ -75,7 +75,7 @@ const getChartOption = (width) => ({
       axisLabel: {
         color: '#464646',
         fontSize: width < 720 ? 10 : 15,
-        distance: width < 720 ? -50 : -60,
+        distance: width < 425 ? -45 : width < 720 ? -50 : -60,
         rotate: 'tangential',
         formatter: function (value) {
           if (value === 10) {
@@ -107,7 +107,7 @@ const getChartOption = (width) => ({
 const chartOption = ref(getChartOption(screenWidth.value))
 
 function updateChartOption() {
-  rating.value = props.postRating?.postRating || 0
+  rating.value = props.ratingValue || 0
   chartOption.value.series[0].data[0].value = Math.ceil(rating.value)
 }
 
@@ -130,9 +130,5 @@ onUnmounted(() => {
 <style scoped>
 .chart {
   height: 100%;
-
-  @media (max-width: 720px) {
-    height: 35vh;
-  }
 }
 </style>

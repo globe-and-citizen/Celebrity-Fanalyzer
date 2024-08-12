@@ -224,6 +224,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async editPrompt(payload) {
       const prompt = { ...payload }
+      const userStore = useUserStore()
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
@@ -231,7 +232,15 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
-      }).finally(() => (this._isLoading = false))
+      })
+        .then(async () => {
+          prompt.entries = []
+          prompt.author = await userStore.fetchUser(prompt.author.id)
+
+          this._prompts = this._prompts.map((element) => (element.id === prompt.id ? prompt : element))
+          this._monthPrompt = this._monthPrompt.map((element) => (element.id === prompt.id ? prompt : element))
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
