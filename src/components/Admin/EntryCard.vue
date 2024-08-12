@@ -12,7 +12,7 @@
           behavior="menu"
           counter
           data-test="select-prompt"
-          :disable="Boolean(entry.image)"
+          :disable="Boolean(entry.id)"
           :hint="entry.image ? 'Image is attached to this prompt' : ''"
           label="Prompt"
           :options="promptOptions"
@@ -142,10 +142,10 @@ const imageModel = ref([])
 const promptOptions =
   (href === '/month'
     ? promptStore.getMonthPrompt
-        ?.filter((prompt) => !prompt.hasWinner && userStore.getUserId !==prompt.author.uid)
+        ?.filter((prompt) => !prompt.hasWinner)
         .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
     : promptStore.getPrompts
-        ?.filter((prompt) => !prompt.hasWinner && userStore.getUserId !==prompt.author.uid)
+        ?.filter((prompt) => !prompt.hasWinner)
         .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
         .reverse()) || []
 
@@ -196,6 +196,11 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
+  const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
+  if (hasEntry) {
+    $q.notify({ type: 'info', message: 'Entry already exists. Please select another prompt' })
+    return
+  }
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
@@ -232,6 +237,6 @@ async function onSubmit() {
   } catch (e) {
     await errorStore.throwError(e, failureMessage)
   }
-  emit('hideDialog',entry.slug)
+  emit('hideDialog', entry.slug)
 }
 </script>
