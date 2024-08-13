@@ -273,7 +273,7 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'Active', value: 'active' })
+const selectedDataType = ref({ label: 'All', value: 'all' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
