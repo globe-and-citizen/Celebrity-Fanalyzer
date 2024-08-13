@@ -3,10 +3,7 @@
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
       <section v-if="commentStore.isInitialLoading">
-        <CommentsSkeleton />
-        <CommentsSkeleton />
-        <CommentsSkeleton />
-        <CommentsSkeleton />
+        <CommentsSkeleton v-for="(_, i) in commentStore.getCommentsCount" :key="i" />
       </section>
       <section v-else-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
@@ -201,10 +198,6 @@ async function analyzeComments() {
   })
 }
 
-watchEffect(async () => {
-  await commentStore.fetchComments(props.collectionName, props.post.id)
-})
-
 onUnmounted(() => {
   commentStore.setReplyTo('')
   if (commentStore._unSubscribe) {
@@ -240,6 +233,7 @@ async function addReply() {
 }
 
 onMounted(async () => {
+  await commentStore.getTotalComments(props.collectionName, props.post.id)
   if (commentStore.getCommentsCount) {
     await commentStore.fetchComments(props.collectionName, props.post?.id)
   }
