@@ -201,9 +201,19 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async hasPrompt(date) {
+    async hasPrompt(date, title, slug) {
       try {
-        const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('date', '==', date)))
+        const promptSnapshot = await getDocs(
+          query(collection(db, 'prompts'), or(where('date', '==', date), where('slug', '==', slug), where('title', '==', title)))
+        )
+        promptSnapshot.docs.forEach((doc) => {
+          const data = doc.data()
+          if (data.title.toLowerCase() === title.toLowerCase() || data.slug === slug) {
+            Notify.create({ message: 'Prompt with this title already exists. Please choose another title.', type: 'negative' })
+          } else if (data.date === date) {
+            Notify.create({ message: 'Choose another month for this prompt.', type: 'negative' })
+          }
+        })
         return !promptSnapshot.empty
       } catch (error) {
         console.log('Error occurred while checking', error)

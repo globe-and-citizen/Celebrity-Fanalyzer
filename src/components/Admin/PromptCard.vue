@@ -239,9 +239,9 @@ async function onSubmit() {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
-  const hasPrompt = await promptStore.hasPrompt(prompt.date)
+  const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug)
+
   if (hasPrompt) {
-    $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
 
