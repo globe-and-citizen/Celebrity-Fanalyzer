@@ -1,6 +1,5 @@
 <template>
   <TheHeader title="Admin Panel">
-    <q-btn v-if="userStore.isAuthenticated || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
     <q-btn-dropdown
       auto-close
       data-test="button-dropdown"
@@ -12,22 +11,6 @@
       transition-hide="jump-up"
     >
       <q-list style="min-width: 100px">
-        <q-item
-          v-if="userStore.isEditorOrAbove"
-          clickable
-          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'"
-          @click="openPromptDialog()"
-        >
-          <q-item-section>New Prompt</q-item-section>
-        </q-item>
-        <q-item
-          v-if="userStore.isAuthenticated"
-          clickable
-          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'"
-          @click="openEntryDialog()"
-        >
-          <q-item-section>New Entry</q-item-section>
-        </q-item>
         <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
           <q-item-section>Add new users</q-item-section>
         </q-item>
@@ -113,7 +96,7 @@ import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useEntryStore, usePromptStore, useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
+import { useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRoute, useRouter } from 'vue-router'
 
 const userStore = useUserStore()
@@ -121,8 +104,6 @@ const userStore = useUserStore()
 const entry = ref({})
 const prompt = ref({})
 const advertise = ref({})
-const entryStore = useEntryStore()
-const promptStore = usePromptStore()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const currentPath = ref('')
@@ -190,10 +171,6 @@ function openPromptDialog(props) {
   prompt.value.dialog = true
 }
 
-function openEntryDialog() {
-  entry.value = {}
-  entry.value.dialog = true
-}
 function openAdvertiseDialog(props) {
   advertise.value = props?.id ? props : {}
   advertise.value.dialog = true
