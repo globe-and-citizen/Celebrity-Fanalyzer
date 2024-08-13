@@ -13,7 +13,7 @@
         <div class="row justify-between" style="justify-content: space-between; gap: 10px">
           <div
             v-if="!!visitorStore?.getVisitors?.length"
-            v-bind:class="!!statStore.getStats?.length ? 'col-md-6' : 'col-md-12'"
+            v-bind:class="statStore.getStats && hasValidStats ? 'col-md-6' : 'col-md-12'"
             class="col-12 anthogram-border"
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
