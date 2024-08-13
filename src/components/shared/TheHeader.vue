@@ -28,6 +28,29 @@
         <q-tooltip>Feedback</q-tooltip>
       </q-btn>
       <slot />
+      <q-btn-dropdown
+        v-if="userStore.isAuthenticated"
+        auto-close
+        color="secondary"
+        dropdown-icon="apps"
+        flat
+        round
+        transition-show="jump-down"
+        transition-hide="jump-up"
+        size="1rem"
+      >
+        <q-list style="min-width: 100px">
+          <q-item v-if="userStore.isEditorOrAbove" clickable @click="openPromptDialog()">
+            <q-item-section>New Prompt</q-item-section>
+          </q-item>
+          <q-item clickable @click="openEntryDialog()">
+            <q-item-section>New Entry</q-item-section>
+          </q-item>
+          <q-item clickable @click="openAdvertiseDialog()">
+            <q-item-section>New Advertise</q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
     </q-toolbar>
     <q-toolbar v-if="searchInput">
       <q-toolbar-title>
@@ -47,13 +70,28 @@
         </q-input>
       </q-toolbar-title>
     </q-toolbar>
+    <q-dialog full-width position="bottom" v-model="prompt.dialog">
+      <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
+    </q-dialog>
+
+    <q-dialog full-width position="bottom" v-model="entry.dialog">
+      <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+    </q-dialog>
+
+    <q-dialog class="min-" position="bottom" v-model="advertise.dialog">
+      <AdvertiseCard v-bind="advertise" @hideDialog="advertise = {}" />
+    </q-dialog>
   </q-header>
 </template>
 
 <script setup>
 import { useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import NotificationBubble from './NotificationBubble.vue'
+import EntryCard from 'src/components/Admin/EntryCard.vue'
+import PromptCard from 'src/components/Admin/PromptCard.vue'
+import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 
 defineProps({
   backButton: { type: Boolean, required: false, default: true },
@@ -68,6 +106,9 @@ defineProps({
 
 const router = useRouter()
 
+const entry = ref({})
+const prompt = ref({})
+const advertise = ref({})
 const userStore = useUserStore()
 
 function goBack() {
@@ -76,5 +117,18 @@ function goBack() {
 
 function goToFeedback() {
   router.push('/profile/feedback')
+}
+function openPromptDialog(props) {
+  prompt.value = props?.id ? props : {}
+  prompt.value.dialog = true
+}
+
+function openEntryDialog() {
+  entry.value = {}
+  entry.value.dialog = true
+}
+function openAdvertiseDialog(props) {
+  advertise.value = props?.id ? props : {}
+  advertise.value.dialog = true
 }
 </script>

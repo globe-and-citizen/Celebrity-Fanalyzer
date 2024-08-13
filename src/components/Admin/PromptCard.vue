@@ -239,6 +239,11 @@ async function onSubmit() {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
+  const hasPrompt = await promptStore.hasPrompt(prompt.date)
+  if (hasPrompt) {
+    $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
+    return
+  }
 
   if (promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase()) || prompt.title.toLowerCase() === 'month') {
     $q.notify({ type: 'negative', message: 'Prompt with this title already exists. Please choose another title.' })

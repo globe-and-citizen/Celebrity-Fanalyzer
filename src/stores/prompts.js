@@ -201,6 +201,16 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
+    async hasPrompt(date) {
+      try {
+        const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('date', '==', date)))
+        return !promptSnapshot.empty
+      } catch (error) {
+        console.log('Error occurred while checking', error)
+        return false
+      }
+    },
+
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()
