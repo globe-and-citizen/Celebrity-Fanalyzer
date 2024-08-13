@@ -2,16 +2,16 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
+  limit,
   or,
+  orderBy,
   query,
   runTransaction,
   setDoc,
   Timestamp,
-  where,
-  getDoc,
-  orderBy,
-  limit
+  where
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -23,6 +23,7 @@ import {
   useLikeStore,
   useNotificationStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
@@ -223,6 +224,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async editPrompt(payload) {
       const prompt = { ...payload }
+      const userStore = useUserStore()
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
@@ -230,7 +232,15 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
-      }).finally(() => (this._isLoading = false))
+      })
+        .then(async () => {
+          prompt.entries = []
+          prompt.author = await userStore.fetchUser(prompt.author.id)
+
+          this._prompts = this._prompts.map((element) => (element.id === prompt.id ? prompt : element))
+          this._monthPrompt = this._monthPrompt.map((element) => (element.id === prompt.id ? prompt : element))
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {
@@ -240,6 +250,7 @@ export const usePromptStore = defineStore('prompts', {
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
       const visitorStore = useVisitorStore()
+      const statStore = useStatStore()
 
       const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
 
@@ -257,10 +268,10 @@ export const usePromptStore = defineStore('prompts', {
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
         const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
+        const deletePromptFromStats = statStore.removeTopic(id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors])
-        const updatedPrompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
-        this._prompts = updatedPrompts
+        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors, deletePromptFromStats])
+        this._prompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting prompt')
       }

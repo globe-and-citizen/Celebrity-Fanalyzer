@@ -3,16 +3,16 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
-  getDoc,
   doc,
+  getDoc,
   getDocs,
+  or,
   query,
   runTransaction,
   setDoc,
   Timestamp,
   updateDoc,
-  where,
-  or
+  where
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -24,6 +24,7 @@ import {
   useNotificationStore,
   usePromptStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
@@ -98,7 +99,7 @@ export const useEntryStore = defineStore('entries', {
         this._isLoading = true
 
         if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndWriters()
+          await userStore.fetchAdminsAndEditors()
         }
 
         const userDocRef = doc(db, 'users', userId)
@@ -202,7 +203,17 @@ export const useEntryStore = defineStore('entries', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
-      }).finally(() => (this._isLoading = false))
+      })
+      this._isLoading = false
+      const prompt = promptStore.getPromptRef(entry.prompt?.id)
+      const updatedEntryDoc = await getDoc(doc(db, 'entries', entry.id))
+      const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt.id))
+
+      return {
+        _entry: updatedEntryDoc.data(),
+        _prompt: updatedPromptDoc.data()
+      }
+      //}).finally(() => (this._isLoading = false))
     },
 
     //update not coming from form submission
@@ -234,6 +245,7 @@ export const useEntryStore = defineStore('entries', {
       const likeStore = useLikeStore()
       const shareStore = useShareStore()
       const visitorStore = useVisitorStore()
+      const statStore = useStatStore()
 
       const promptId = entryId.split('T')[0]
       const entryRef = doc(db, 'entries', entryId)
@@ -247,8 +259,19 @@ export const useEntryStore = defineStore('entries', {
         const deleteVisitors = visitorStore.deleteAllVisitors('entries', entryId)
         const deleteEntryRef = updateDoc(doc(db, 'prompts', promptId), { entries: arrayRemove(entryRef) })
         const deleteEntryDoc = deleteDoc(doc(db, 'entries', entryId))
+        const deleteEntryFromStats = statStore.removeArticle(entryId)
 
-        await Promise.all([deleteImage, deleteEntryDoc, deleteEntryRef, deleteComments, deleteLikes, deleteShares, deleteVisitors])
+        await Promise.all([
+          deleteImage,
+          deleteEntryDoc,
+          deleteEntryRef,
+          deleteComments,
+          deleteLikes,
+          deleteShares,
+          deleteVisitors,
+          deleteEntryFromStats
+        ])
+        this._entries = this._entries.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')
       }

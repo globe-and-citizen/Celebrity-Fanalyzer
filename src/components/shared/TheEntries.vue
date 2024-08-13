@@ -4,12 +4,12 @@
     :data-test="props.entries ? 'entries' : ''"
     style="padding-bottom: 7rem"
   >
-    <h2 class="q-my-auto text-bold text-h5 q-pa-md">
-      Entries
-      <q-icon v-if="!hasWinner" class="cursor-pointer" name="add" size="30px" @click="openEntryDialog()">
-        <q-tooltip>Add entries</q-tooltip>
-      </q-icon>
-    </h2>
+    <div class="flex items-center">
+      <h2 class="q-my-auto text-bold text-h5 q-pa-md">Entries</h2>
+      <q-btn v-if="!hasWinner" color="primary" dense icon="add" outline round @click="openEntryDialog">
+        <q-tooltip>Create entry</q-tooltip>
+      </q-btn>
+    </div>
     <div class="card-items-wrapper">
       <ItemCard v-for="entry in entries" :item="entry" :key="entry?.id" :link="entry.slug" data-test="entry" />
     </div>
@@ -24,17 +24,30 @@
 <script setup>
 import ItemCard from 'src/components/shared/ItemCard.vue'
 import EntryCard from 'src/components/Admin/EntryCard.vue'
-import { useEntryStore } from 'src/stores'
+import { useEntryStore, useUserStore } from 'src/stores'
 import { ref } from 'vue'
+import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 
 const props = defineProps(['entries', 'promptDate', 'hasWinner'])
 
 const entryStore = useEntryStore()
+const userStore = useUserStore()
+const router = useRouter()
 const entry = ref({})
+const $q = useQuasar()
 
-function openEntryDialog() {
-  entry.value = {}
-  entry.value.dialog = true
+async function openEntryDialog() {
+  if (userStore.isAuthenticated) {
+    entry.value = {}
+    entry.value.dialog = true
+  } else {
+    await router.push('/profile')
+    $q.notify({
+      type: 'info',
+      message: 'Please log in to create a new entry'
+    })
+  }
 }
 </script>
 

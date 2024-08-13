@@ -240,6 +240,11 @@ async function onSubmit() {
     return
   }
 
+  if (promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase()) || prompt.title.toLowerCase() === 'month') {
+    $q.notify({ type: 'negative', message: 'Prompt with this title already exists. Please choose another title.' })
+    return
+  }
+
   if (imageModel.value) {
     prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${prompt.date}`)
   }
@@ -256,7 +261,7 @@ async function onSubmit() {
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 
-  emit('hideDialog')
+  emit('hideDialog', prompt.slug)
 }
 
 function onRejected() {

@@ -1,6 +1,19 @@
 import { defineStore } from 'pinia'
 import { db, storage } from 'src/firebase'
-import { collection, deleteDoc, doc, onSnapshot, orderBy, query, runTransaction, setDoc, Timestamp, where } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  runTransaction,
+  setDoc,
+  Timestamp,
+  where,
+  getDoc,
+  getDocs
+} from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
   useClicksStore,
@@ -9,9 +22,11 @@ import {
   useImpressionsStore,
   useLikeStore,
   useShareStore,
+  useStatStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
+import { Notify } from 'quasar'
 
 export const useAdvertiseStore = defineStore('advertises', {
   state: () => ({
@@ -21,7 +36,8 @@ export const useAdvertiseStore = defineStore('advertises', {
     _tab: 'post',
     _activeAdvertises: [],
     _unSubscribeActive: undefined,
-    _singleAdvertise: undefined
+    _singleAdvertise: undefined,
+    _allActiveAdvertises: []
   }),
 
   persist: true,
@@ -31,10 +47,25 @@ export const useAdvertiseStore = defineStore('advertises', {
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab,
     getActiveAdvertises: (state) => state._activeAdvertises,
-    getMapAdvertises: (state) => Object.values(state._advertisesMap)
+    getALlActiveAdvertises: (state) => state._allActiveAdvertises
   },
 
   actions: {
+    async redirect() {
+      Notify.create({
+        type: 'info',
+        message: 'Not found'
+      })
+      setTimeout(async () => {
+        Notify.create({
+          type: 'info',
+          message: 'You will be redirected in 3 seconds'
+        })
+      }, 3000)
+      setTimeout(async () => {
+        window.location.href = '/404'
+      }, 6000)
+    },
     async fetchAdvertises(type) {
       const userStore = useUserStore()
       if (type) {
@@ -63,6 +94,38 @@ export const useAdvertiseStore = defineStore('advertises', {
         } catch (err) {
           console.error(err)
         }
+      }
+    },
+    async fetchAdvertiseById(campaignId) {
+      if (this.getALlActiveAdvertises.length || this.getAdvertises.length) {
+        const advertise =
+          this.getALlActiveAdvertises?.find((advertise) => advertise.id === campaignId) ||
+          this.getAdvertises?.find((advertise) => advertise.id === campaignId)
+        if (advertise) return advertise
+      }
+      const errorStore = useErrorStore()
+      try {
+        this.setLoaderTrue()
+        const userStore = useUserStore()
+        const docData = await getDocs(query(collection(db, 'advertises'), where('id', '==', campaignId)))
+        if (docData.empty) {
+          return await this.redirect()
+        }
+        const advertise = docData.docs[0].data()
+        if (advertise.author.id === userStore.getUserId) {
+          advertise.author = userStore.getUser
+        } else if (userStore.isAdmin) {
+          advertise.author = await userStore.getUserByUidOrUsername(advertise.author.id)
+        } else {
+          return await this.redirect()
+        }
+        return advertise
+      } catch (error) {
+        console.log(error)
+        errorStore.throwError(error)
+        return await this.redirect()
+      } finally {
+        this.setLoaderFalse()
       }
     },
     setLoaderTrue() {
@@ -126,6 +189,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
 
     async editAdvertise(payload) {
+      const userStore = useUserStore()
       const advertise = { ...payload }
       advertise.updated = Timestamp.fromDate(new Date())
 
@@ -134,7 +198,12 @@ export const useAdvertiseStore = defineStore('advertises', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'advertises', advertise.id), advertise)
-      }).finally(() => (this._isLoading = false))
+      })
+        .then(async () => {
+          advertise.author = await userStore.fetchUser(advertise.author.id)
+          this._advertises = this._advertises.map((element) => (element.id === advertise.id ? advertise : element))
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async getActiveAdvertise() {
@@ -158,9 +227,66 @@ export const useAdvertiseStore = defineStore('advertises', {
           })
           const activeAdvertises = await Promise.all(activeAdvertisePromises)
           this._activeAdvertises = []
-          this.$patch({ _activeAdvertises: activeAdvertises })
+          const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+          const activeAds = await this.fetchActiveAdvertises(activeAdvertises, visitorId)
+          const finalAds = this.selectAds(activeAds, activeAdvertises)
+          this.$patch({ _activeAdvertises: finalAds })
+          this.$patch({ _allActiveAdvertises: activeAdvertises })
         })
+      } else if (this.getALlActiveAdvertises.length > 0) {
+        this.recomputeActiveAdvertises()
       }
+    },
+    async recomputeActiveAdvertises() {
+      const userStore = useUserStore()
+      const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+      const ads = this.getALlActiveAdvertises
+      const activeAds = await this.fetchActiveAdvertises(ads, visitorId)
+      const finalAds = this.selectAds(activeAds, ads)
+      this.$patch({ _activeAdvertises: finalAds })
+    },
+    async fetchActiveAdvertises(advertises, visitorId) {
+      const promises = advertises.map((ad) => this.processAdvertise(ad, visitorId))
+      const results = await Promise.all(promises)
+      return results.filter((ad) => ad !== undefined)
+    },
+    async processAdvertise(advertise, visitorId) {
+      const data = { ...advertise, isAdd: true }
+      const lastViewsRef = doc(db, `advertises/${data.id}/lastViews/${visitorId}`)
+
+      try {
+        const lastViewsSnap = await getDoc(lastViewsRef)
+        if (this.isDurationGreaterThanHours(lastViewsSnap)) {
+          return data
+        }
+      } catch (error) {
+        console.error(`Error processing advertise ${data.id}:`, error)
+      }
+    },
+
+    selectAds(activeAds, allAds) {
+      const topAds = activeAds.slice(0, 5)
+      const shuffledAds = this.shuffle(allAds)
+      return [...topAds, ...shuffledAds].slice(0, 5)
+    },
+    shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[array[i], array[j]] = [array[j], array[i]]
+      }
+      return array
+    },
+    isDurationGreaterThanHours(lastViewsSnap, hours = 4) {
+      if (!lastViewsSnap.exists() || lastViewsSnap.data().views?.length < 3) return true
+      const views = lastViewsSnap.data().views
+
+      const currentTime = new Date()
+      const timeDifference = currentTime - views[views.length - 3].toDate()
+      const timeDifferenceInHours = timeDifference / (1000 * 60 * 60)
+      if (timeDifferenceInHours > hours) {
+        return true
+      }
+      return false
     },
 
     async deleteAdvertise(id, isBanner) {
@@ -171,8 +297,9 @@ export const useAdvertiseStore = defineStore('advertises', {
       const visitorStore = useVisitorStore()
       const clicksStore = useClicksStore()
       const impressionsStore = useImpressionsStore()
-      const imagePath = `advertise/content-${id}`
+      const statStore = useStatStore()
 
+      const imagePath = `advertise/content-${id}`
       const imageRef = ref(storage, imagePath)
 
       if (isBanner) {
@@ -186,8 +313,18 @@ export const useAdvertiseStore = defineStore('advertises', {
         const deleteVisitors = visitorStore.deleteAllVisitors('advertises', id)
         const deleteClicks = clicksStore.deleteAllClicks('advertises', id)
         const deleteImpressions = impressionsStore.deleteAllImpressions('advertises', id)
+        const deleteAdFromStats = statStore.removeAd(id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteAdvertiseDoc, deleteVisitors, deleteClicks, deleteImpressions])
+        await Promise.all([
+          deleteComments,
+          deleteLikes,
+          deleteShares,
+          deleteAdvertiseDoc,
+          deleteVisitors,
+          deleteClicks,
+          deleteImpressions,
+          deleteAdFromStats
+        ])
       } catch (error) {
         console.log(error)
         await errorStore.throwError(error)

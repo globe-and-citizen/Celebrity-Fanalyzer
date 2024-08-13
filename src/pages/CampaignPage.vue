@@ -4,9 +4,17 @@
     <q-tab content-class="q-py-sm" data-test="graph-tab" icon="fiber_manual_record" name="anthrogram" :ripple="false" />
     <q-tab content-class="q-mr-auto q-py-sm" data-test="comments-tab" icon="fiber_manual_record" name="comments" :ripple="false" />
   </q-tabs>
-  <q-tab-panels v-if="advertise" animated class="bg-transparent col-grow" swipeable v-model="tab">
+  <q-tab-panels v-if="!advertiseStore.isLoading" animated class="bg-transparent col-grow" swipeable v-model="tab">
     <q-tab-panel name="post" style="padding: 0">
-      <ThePost title="Campaign Page" @clickComments="tab = 'comments'" :post="advertise" :isAdd="true" collectionName="advertises" />
+      <ThePost
+        title="Campaign Page"
+        collectionName="advertises"
+        :post="advertise"
+        :isAdd="true"
+        :showEdit="userStore.getUserId === advertise.author?.uid && computedDuration(advertise.endDate)>=0"
+        @clickComments="tab = 'comments'"
+        @openAdvertiseDialog="openAdvertiseDialog"
+      />
     </q-tab-panel>
 
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -19,11 +27,15 @@
   </q-tab-panels>
 
   <q-spinner v-else class="absolute-center" color="primary" size="3em" />
+  <q-dialog full-width position="bottom" v-model="editAdvertise.dialog">
+    <AdvertiseCard v-bind="editAdvertise" @hideDialog="closeAdvertiseDialog" />
+  </q-dialog>
 </template>
 <script setup>
 import TheAnthrogram from 'src/components/Posts/TheAnthrogram.vue'
 import TheComments from 'src/components/Posts/TheComments.vue'
 import ThePost from '../components/Posts/ThePost.vue'
+import AdvertiseCard from '../components/Advertiser/AdvertiseCard.vue'
 import {
   useErrorStore,
   useLikeStore,
@@ -31,12 +43,14 @@ import {
   useShareStore,
   useClicksStore,
   useImpressionsStore,
-  useStatStore
+  useStatStore,
+  useUserStore
 } from 'src/stores'
-import { computed, onUnmounted, ref, watchEffect, onMounted } from 'vue'
+import { onUnmounted, ref, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
+import {  computedDuration } from 'src/utils/date'
 
 const router = useRouter()
 
@@ -48,41 +62,18 @@ const shareStore = useShareStore()
 const impressionStore = useImpressionsStore()
 const clickStore = useClicksStore()
 const statStore = useStatStore()
+const userStore = useUserStore()
 
 const tab = ref(advertiseStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
+const editAdvertise = ref({})
+const advertise = ref({})
 
-advertiseStore.fetchAdvertises().catch((error) => errorStore.throwError(error))
-advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
 const { params } = router.currentRoute.value
-const advertise = computed(() => {
-  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-  return (
-    advertiseStore.getActiveAdvertises.find((advertise) => advertise.id === params.campaignId) ||
-    advertiseStore.getAdvertises.find((advertise) => advertise.id === params.campaignId)
-  )
-})
-
-function redirect() {
-  if (advertiseStore.getAdvertises && advertiseStore.getActiveAdvertises && !advertise.value?.id) {
-    $q.notify({
-      type: 'info',
-      message: 'advertise Not found'
-    })
-    setTimeout(async () => {
-      $q.notify({
-        type: 'info',
-        message: 'You will be redirected in 3 seconds'
-      })
-    }, 1000)
-    setTimeout(async () => {
-      await router.push('/404')
-    }, 4000)
-  }
-}
 
 watchEffect(async () => {
+  advertise.value = await advertiseStore.fetchAdvertiseById(params.campaignId)
   if (advertise.value?.id) {
     const advertiseId = advertise.value?.id
     await likeStore.getAllLikesDislikes('advertises', advertiseId).catch((error) => errorStore.throwError(error))
@@ -98,33 +89,33 @@ watchEffect(async () => {
         shareIsLoaded.value = true
       })
   }
-
-  setTimeout(redirect, 5000)
 })
 
-onMounted(async () => {
-  if (advertise.value?.id) {
-    await statStore.addAdvertisement(
-      advertise?.value?.id,
-      advertise?.value?.author?.uid,
-      advertise?.value?.title,
-      advertise?.value?.content,
-      advertise?.value?.budget,
-      advertise?.value?.duration
-    )
-  }
+onMounted(() => {
   if (advertise.value?.status === 'Active') {
     startTracking()
   }
 })
 
+function closeAdvertiseDialog(slug) {
+  editAdvertise.value = {}
+}
+function openAdvertiseDialog() {
+  editAdvertise.value = advertise.value
+  editAdvertise.value.dialog = true
+}
+
 onUnmounted(async () => {
   if (advertise.value.status === 'Active') {
     const stats = stopTracking()
-    await statStore.addStats(advertise.value?.id, stats, 'advertisement')
+    try {
+      await statStore.addStats(advertise.value?.id, advertise?.value?.author?.uid, stats, 'advertisement')
+    } catch (error) {
+      console.error('Error adding stats:', error)
+    }
   }
   advertiseStore.setTab('post')
-  await statStore.resetPostImpressions()
+  statStore.resetPostImpressions()
 })
 </script>
 

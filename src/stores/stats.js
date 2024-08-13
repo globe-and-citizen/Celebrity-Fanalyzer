@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia'
-import { useClicksStore, useCommentStore, useImpressionsStore, useLikeStore, useShareStore, useUserStore } from 'src/stores'
+import { useClicksStore, useCommentStore, useImpressionsStore, useLikeStore, useShareStore } from 'src/stores'
 import layer8 from 'layer8_interceptor'
 
-export const baseURL = 'https://stats-api.up.railway.app/v1'
-
+export const baseURL = import.meta.env.VITE_STATS_API_URL
 export const useStatStore = defineStore('stats', {
   state: () => ({
     _isLoading: false,
@@ -73,7 +72,7 @@ export const useStatStore = defineStore('stats', {
     //  */
     async fetchStats(id) {
       try {
-        const statsResponse = await layer8.fetch(`${baseURL}/stats/article`, {
+        const statsResponse = await layer8.fetch(`${baseURL}/stats/post`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -92,32 +91,47 @@ export const useStatStore = defineStore('stats', {
      *
      * @async
      * @param {string} documentId - The ID of the document.
+     * @param {user_id} user_id - The ID of user.
      * @param {object} stats - The statistics to be added.
      * @param {string} type - Post type statistics are added to.
      * @returns {Promise<void>} - A promise that resolves when the statistics are successfully added.
      */
-    async addStats(documentId, stats, type) {
-      const userStore = useUserStore()
-      const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
-      const id = documentId
-
-      await layer8.fetch(`${baseURL}/stats`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ...stats, user_id, id, type })
-      })
+    async addStats(documentId, user_id, stats, type) {
+      try {
+        await layer8.fetch(`${baseURL}/stats`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ...stats, user_id, id: documentId, type })
+        })
+      } catch (error) {
+        console.error('Failed to add stats:', error)
+      }
     },
 
     async addTopic(topic_id, user_id, title, content, categories) {
-      await layer8.fetch(`${baseURL}/topic`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ user_id, topic_id, title, content, categories })
-      })
+      try {
+        await layer8.fetch(`${baseURL}/topic`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id, topic_id, title, content, categories })
+        })
+      } catch (e) {
+        console.error('Failed to add topic:', e)
+      }
+    },
+
+    async removeTopic(id) {
+      try {
+        await fetch(`${baseURL}/topic?topic_id=${id}`, {
+          method: 'DELETE'
+        })
+      } catch (e) {
+        console.error('Failed to remove topic:', e)
+      }
     },
 
     async addArticle(article_id, topic_id, user_id, title, content) {
@@ -130,6 +144,16 @@ export const useStatStore = defineStore('stats', {
       })
     },
 
+    async removeArticle(id) {
+      try {
+        await fetch(`${baseURL}/article?article_id=${id}`, {
+          method: 'DELETE'
+        })
+      } catch (e) {
+        console.error('Failed to remove article:', e)
+      }
+    },
+
     async addAdvertisement(ad_id, user_id, title, content, budget, duration) {
       await layer8.fetch(`${baseURL}/advertisement`, {
         method: 'POST',
@@ -138,6 +162,16 @@ export const useStatStore = defineStore('stats', {
         },
         body: JSON.stringify({ user_id, ad_id, title, content, budget, duration })
       })
+    },
+
+    async removeAd(id) {
+      try {
+        await fetch(`${baseURL}/advertisement?ad_id=${id}`, {
+          method: 'DELETE'
+        })
+      } catch (e) {
+        console.error('Failed to remove article:', e)
+      }
     },
 
     async addUser(user_id, location) {
@@ -188,8 +222,12 @@ export const useStatStore = defineStore('stats', {
           body: JSON.stringify({ id })
         })
         const data = await res.json()
-        this._articleRating = data
-        return data
+        if (data && data.postRating !== undefined) {
+          this._articleRating = data.postRating
+          return data.postRating
+        } else {
+          return null
+        }
       } catch (err) {
         console.log(err)
         return null
@@ -206,8 +244,12 @@ export const useStatStore = defineStore('stats', {
           body: JSON.stringify({ user_id })
         })
         const data = await res.json()
-        this._userRating = data
-        return data
+        if (data && data.userRating !== undefined) {
+          this._userRating = data.userRating
+          return data.userRating
+        } else {
+          return null
+        }
       } catch (err) {
         console.log(err)
         return null
@@ -235,7 +277,7 @@ export const useStatStore = defineStore('stats', {
     },
 
     // Reset comments, likes, shares, impressions, clicks for the posts
-    async resetPostImpressions() {
+    resetPostImpressions() {
       const commentsStore = useCommentStore()
       const likesStore = useLikeStore()
       const sharesStore = useShareStore()

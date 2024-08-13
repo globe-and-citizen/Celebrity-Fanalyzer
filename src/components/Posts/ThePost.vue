@@ -68,7 +68,7 @@
           </p>
         </section>
         <q-separator v-if="!isAdd" spaced />
-        <p v-if="isAdd" class="q-mt-sm text-body1">{{ post.content }}</p>
+        <p v-if="isAdd" v-html="post?.content" class="q-mt-sm text-body1"></p>
         <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
         <q-separator spaced="lg" />
         <div class="text-center">
@@ -128,6 +128,7 @@
           >
             <q-tooltip anchor="bottom middle" self="center middle">{{ getFormattedLink(post?.productLink) }}</q-tooltip>
           </q-btn>
+
           <q-btn
             v-if="userStore.isAuthenticated && !isAdd"
             color="blue"
@@ -139,6 +140,9 @@
             @click="subscribe"
           >
             <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
+          </q-btn>
+          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit">
+            <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
           </q-btn>
         </div>
       </section>
@@ -162,14 +166,14 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { dayMonthYear } from 'src/utils/date'
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
-const props = defineProps(['collectionName', 'post', 'title', 'isAdd'])
-defineEmits(['clickComments'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit'])
+const emit= defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog','openEntryDialog'])
 
 const router = useRouter()
 
@@ -182,23 +186,18 @@ const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
+
 const userRating = ref(0)
+const isPrompt = !!props.post?.entries
+const isEntry = props.post?.prompt
+const isAd = props.post?.isAdd
+const id = props.post.id
+const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+const userLocation = userStore.getUser?.location || userStore.getUserLocation
+const layer8Initialized = ref(undefined)
 
 onMounted(async () => {
-  // =========== STATS ===========
-  const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
-  const userLocation = userStore.getUser?.location || userStore.getUserLocation
   await statsStore.addUser(userId, userLocation)
-  if (typeof props.post?.entries !== 'undefined') {
-    await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
-  }
-  if (typeof props.post.prompt !== 'undefined') {
-    const promptId = props.post.prompt?.id
-      ? props.post.prompt?.id
-      : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0].id
-    await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
-  }
-  // =========== ------ ===========
 
   if (props.post?.id) {
     await commentStore.getTotalComments(props.collectionName, props.post?.id)
@@ -208,9 +207,31 @@ onMounted(async () => {
   }
 })
 
-const isPrompt = !!props.post.entries
-const isAd = props.post?.isAdd
-const id = props.post.id
+watch(layer8Initialized, async () => {
+  if (layer8Initialized.value) {
+    if (isPrompt) {
+      await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
+    }
+
+    if (isEntry) {
+      const promptId = props.post.prompt?.id
+        ? props.post.prompt?.id
+        : promptStore.getPrompts?.filter((prompt) => prompt.entries.includes(props.post.id))[0]?.id
+      await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
+    }
+
+    if (isAd) {
+      await statsStore.addAdvertisement(
+        props.post.id,
+        props.post.author?.uid,
+        props.post.title,
+        props.post.content,
+        props.post.budget,
+        props.post.duration
+      )
+    }
+  }
+})
 
 async function like() {
   if (isPrompt) {
@@ -243,8 +264,22 @@ async function share(socialNetwork) {
 async function subscribe() {
   await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
+function manageEdit() {
+  if (props.isAdd) {
+    emit('openAdvertiseDialog')
+  } else if (isPrompt) {
+    emit('openPromptDialog')
+  }
+  else if(isEntry){
+    emit('openEntryDialog')
+  }
+}
 
 watchEffect(async () => {
+  if (statsStore.getInitializedState) {
+    layer8Initialized.value = statsStore.getInitializedState
+  }
+
   if (statsStore.getUserRate?.userRating) {
     userRating.value = (statsStore.getUserRate?.userRating / 100) * 5
   }

@@ -65,7 +65,7 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : 'Max size is 2MB'"
+          :hint="!entry.prompt ? 'Select prompt first' : '*Image is required. Max size is 2MB.'"
           label="Image"
           :max-total-size="2097152"
           :required="!id"
@@ -89,7 +89,23 @@
           :loading="promptStore.isLoading || storageStore.isLoading"
           rounded
           type="submit"
-        />
+        >
+          <q-tooltip
+            v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
+            class="text-center"
+            style="white-space: pre-line"
+          >
+            {{
+              !entry.title || !entry.description
+                ? 'Please make sure you have a title and description'
+                : !entry.prompt
+                  ? 'Please select a prompt'
+                  : !entry.image
+                    ? 'Please select an image'
+                    : 'Please make sure all fields are filled'
+            }}
+          </q-tooltip>
+        </q-btn>
       </q-form>
     </q-card-section>
   </q-card>
@@ -98,11 +114,11 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 
-const emit = defineEmits(['hideDialog'])
+const emit = defineEmits(['hideDialog', 'forward-update-entry'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
 
 const $q = useQuasar()
@@ -123,11 +139,19 @@ const entry = reactive({
   title: ''
 })
 const imageModel = ref([])
-const promptOptions =
-  promptStore.getPrompts
-    ?.filter((prompt) => !prompt.hasWinner)
-    .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
-    .reverse() || []
+const promptOptions = computed(
+  () =>
+    promptStore.getPrompts
+      ?.filter((prompt) => !prompt.hasWinner)
+      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+      .reverse() || []
+)
+
+watchEffect(() => {
+  if (!promptStore.getPrompts) {
+    promptStore.fetchPrompts()
+  }
+})
 
 onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
@@ -139,7 +163,7 @@ onMounted(() => {
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else if (props.selectedPromptDate) {
-    entry.prompt = promptOptions.find((prompt) => prompt.value === props.selectedPromptDate)
+    entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
   }
 })
 
@@ -212,6 +236,6 @@ async function onSubmit() {
   } catch (e) {
     await errorStore.throwError(e, failureMessage)
   }
-  emit('hideDialog')
+  emit('hideDialog', entry.slug)
 }
 </script>

@@ -1,16 +1,9 @@
 <template>
-  <q-spinner
-    v-if="entryStore.isLoading && !props.loadedEntries.map((el) => el.promptId).includes(props?.currentPrompt?.id)"
-    color="primary"
-    size="2em"
-    class="block q-mx-auto q-my-md"
-  />
   <q-table
-    v-else
     flat
-    hide-bottom
+    :hide-bottom="!!rows.length"
     :class="{ 'entries-table': !userStore.isEditorOrAbove }"
-    :columns="columns"
+    :columns="!!rows.length ? columns : []"
     :dense="userStore.isEditorOrAbove"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
@@ -18,11 +11,13 @@
     :pagination="pagination"
     :rows="rows"
     :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+    no-data-label="No entries found."
+    :loading="entryStore.isLoading"
   >
     <template #body-cell-created="props">
       <td class="text-center relative-position">
         <img v-if="props.row.isWinner" src="/favicon-16x16.png" style="position: absolute; left: 3%" />
-        {{ shortMonthDayTime(props.row.created) }}
+        {{ dayMonthYear(props.row.created) }}
       </td>
     </template>
     <template v-slot:body-cell-actions="props">
@@ -114,7 +109,7 @@
   </q-table>
 
   <q-dialog full-width position="bottom" v-model="entry.dialog">
-    <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+    <EntryCard v-bind="entry" @hideDialog="entry = {}" @forward-update-entry="forwardHandleUpdateEntry" />
   </q-dialog>
 
   <q-dialog v-model="deleteDialog.show">
@@ -185,7 +180,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { shortMonthDayTime } from 'src/utils/date'
+import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
 import { ref, watchEffect } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
@@ -215,9 +210,9 @@ const userStore = useUserStore()
 const cryptoTransactions = useCryptoTransactionStore()
 
 const columns = [
-  { name: 'created', align: 'center', label: 'Created', field: (row) => shortMonthDayTime(row.created) },
+  { name: 'created', align: 'center', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName },
-  { name: 'title', align: 'left', label: 'Title', field: 'title' },
+  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'actions', field: 'actions' }
 ]
 
