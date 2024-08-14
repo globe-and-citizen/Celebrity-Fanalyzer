@@ -235,6 +235,9 @@ async function addReply() {
   await nextTick()
   inputField.value.blur()
 }
+onMounted(async()=>{
+  await commentStore.getTotalComments(props.collectionName, props.post.id)
+})
 </script>
 
 <style scoped>
