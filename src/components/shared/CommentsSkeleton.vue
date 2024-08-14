@@ -1,6 +1,6 @@
 <template>
-  <div class="q-pa-md">
-    <q-card flat style="max-width: 500px">
+  <div class="q-pa-sm">
+    <q-card flat >
       <q-item>
         <q-item-section avatar>
           <q-skeleton type="circle" />
@@ -19,9 +19,10 @@
       <q-item>
 
         <q-item-section class="q-pl-sm">
-          <q-skeleton height="60px" class="q-mb-sm" />
+          <q-skeleton type="text" height="20px"  />
+          <q-skeleton type="text" height="20px"  />
 
-          <div class="row  no-wrap">
+          <div class="row  no-wrap q-mt-sm">
             <div class="row ">
               <q-icon name="thumb_up" color="grey-4" class="q-mr-sm" size="18px" />
               <q-skeleton type="text" width="20px" />

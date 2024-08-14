@@ -2,7 +2,7 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.isInitialLoading">
+      <section v-if="commentStore.isInitialLoading" style="background:#F5F5F5">
         <CommentsSkeleton v-for="(_, i) in commentStore.getCommentsCount" :key="i" />
       </section>
       <section v-else-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
