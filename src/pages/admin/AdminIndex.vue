@@ -1,22 +1,5 @@
 <template>
-  <TheHeader title="Admin Panel">
-    <q-btn-dropdown
-      auto-close
-      data-test="button-dropdown"
-      color="primary"
-      dropdown-icon="control_point"
-      flat
-      rounded
-      transition-show="jump-down"
-      transition-hide="jump-up"
-    >
-      <q-list style="min-width: 100px">
-        <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
-          <q-item-section>Add new users</q-item-section>
-        </q-item>
-      </q-list>
-    </q-btn-dropdown>
-  </TheHeader>
+  <TheHeader title="Admin Panel" />
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs active-color="primary" align="justify">
@@ -95,7 +78,7 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -110,19 +93,6 @@ const currentPath = ref('')
 
 const router = useRouter()
 const route = useRoute()
-
-const addAllUsersToStatsDb = () => {
-  const allUsersMap = userStore?.getUsers.map((user) => {
-    return { user_id: user.uid }
-  })
-  userStore.addAllUsers(allUsersMap)
-}
-
-const uniqueUsers = computed(() => {
-  const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
-  const statsUsersIds = userStore.getAllUsers?.usersList.map((user) => user.user_id) || []
-  return firebaseUsers.filter((user) => !statsUsersIds.includes(user))
-})
 
 onMounted(async () => {
   await userStore.fetchUsers()
