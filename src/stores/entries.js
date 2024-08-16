@@ -1,6 +1,7 @@
 import {
   arrayRemove,
   arrayUnion,
+  and,
   collection,
   deleteDoc,
   doc,
@@ -167,6 +168,20 @@ export const useEntryStore = defineStore('entries', {
       } catch (e) {
         await promptStore.redirect()
         console.error('Unable to fetch entry', e)
+      }
+    },
+    async hasEntry(promptId) {
+      const userStore = useUserStore()
+      try {
+        const userDocRef = doc(db, 'users', userStore.getUserId)
+        const promptDocRef = doc(db, 'prompts', promptId)
+        const querySnapshot = await getDocs(
+          query(collection(db, 'entries'), and(where('author', '==', userDocRef), where('prompt', '==', promptDocRef)))
+        )
+        return !querySnapshot.empty
+      } catch (error) {
+        console.log('Unable to check has entry', error)
+        return false
       }
     },
 
