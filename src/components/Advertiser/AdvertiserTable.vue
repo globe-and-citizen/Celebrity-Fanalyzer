@@ -150,7 +150,7 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td  class="cursor-pointer " @click="goToUrl(props.row.id)" >
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             <div v-html="props.row.content" class="singleLine_ellipsis"></div>
           </q-td>
         </template>
@@ -273,13 +273,14 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'All', value: 'all' })
+const selectedDataType = ref({ label: 'Ongoing', value: 'ongoing' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
 const initialDataOptions = [
+  { label: 'Ongoing', value: 'ongoing' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
   { label: 'Budget Crossed', value: 'budget-crossed' },
@@ -294,7 +295,8 @@ const dataOptions = ref(
       option.value === 'complete' ||
       option.value === 'all' ||
       option.value === 'inactive' ||
-      option.value === 'active'
+      option.value === 'active' ||
+      option.value === 'ongoing'
   )
 )
 
@@ -600,7 +602,6 @@ function changeActiveStatus(advertise, status) {
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
-
 
 function calculateStatus(date) {
   const currentDate = new Date()

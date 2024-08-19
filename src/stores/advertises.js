@@ -12,7 +12,8 @@ import {
   Timestamp,
   where,
   getDoc,
-  getDocs
+  getDocs,
+  or
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
@@ -70,7 +71,15 @@ export const useAdvertiseStore = defineStore('advertises', {
       const userStore = useUserStore()
       if (type) {
         try {
-          const q = query(collection(db, 'advertises'), type !== 'All' ? where('status', '==', type) : '', orderBy('created', 'desc'))
+          const q = query(
+            collection(db, 'advertises'),
+            type !== 'All'
+              ? type === 'Ongoing'
+                ? or(where('status', '==', 'Active'), where('status', '==', 'Inactive'))
+                : where('status', '==', type)
+              : '',
+            orderBy('created', 'desc')
+          )
           this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
             this.setLoaderTrue()
             let advertises = querySnapshot.docs.map((doc) => {
