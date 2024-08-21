@@ -32,7 +32,6 @@
         label="Title"
         maxlength="80"
         required
-        autofocus
         v-model="entry.title"
         :hint="!entry.title ? '*Title is required':''"
          />
