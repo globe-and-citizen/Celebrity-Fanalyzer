@@ -138,9 +138,9 @@
             </q-icon>
           </q-td>
         </template>
-        <template #body-cell-durations="props">
+        <template #body-cell-expiry_status="props">
           <q-td class="text-right">
-            {{ computedDuration(props.row.endDate) }} day's
+            {{ formatExpiryStatus(computedDuration(props.row.endDate)) }}
             <q-tooltip>{{ props.row.publishDate }} to {{ props.row.endDate }}</q-tooltip>
           </q-td>
         </template>
@@ -574,10 +574,10 @@ const columns = ref([
     sortable: true
   },
   {
-    name: 'durations',
+    name: 'expiry_status',
     field: 'duration',
     align: 'right',
-    label: 'Durations'
+    label: 'Expiry Status'
   },
 
   {
@@ -650,7 +650,17 @@ async function onUpdate(e) {
     label: e.label
   }
 }
-
+function formatExpiryStatus(days) {
+  if (days === 1) {
+    return '1 day left'
+  } else if (days > 1) {
+    return `${days} day's left`
+  } else if (days === 0) {
+    return `Today`
+  } else {
+    return 'Expired'
+  }
+}
 </script>
 
 <style>
