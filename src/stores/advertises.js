@@ -135,43 +135,49 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
     async computeValues() {
       this.getAdvertises.map((advertise) => {
-        onSnapshot(collection(db, 'advertises', advertise.id, 'impressions'), (impressionsSnapshot) => {
-          let computedImpressions = 0
-          impressionsSnapshot.docs.map((doc) => {
-            computedImpressions += doc.data().impression
+        getDocs(collection(db, 'advertises', advertise.id, 'impressions'))
+          .then((impressionsSnapshot) => {
+            let computedImpressions = 0
+            impressionsSnapshot.docs.map((doc) => {
+              computedImpressions += doc.data().impression
+            })
+            this._advertises = this._advertises.map((element) => {
+              if (element.id === advertise.id) {
+                element.impressions = computedImpressions
+              }
+              return element
+            })
           })
-          this._advertises = this._advertises.map((element) => {
-            if (element.id === advertise.id) {
-              element.impressions = computedImpressions
-            }
-            return element
-          })
-        })
+          .catch((error) => console.log(error))
 
-        onSnapshot(collection(db, 'advertises', advertise.id, 'clicks'), (clicksSnapshot) => {
-          let computedClicks = 0
-          clicksSnapshot.docs.map((doc) => {
-            computedClicks += doc.data().clicked
+        getDocs(collection(db, 'advertises', advertise.id, 'clicks'))
+          .then((clicksSnapshot) => {
+            let computedClicks = 0
+            clicksSnapshot.docs.map((doc) => {
+              computedClicks += doc.data().clicked
+            })
+            this._advertises = this._advertises.map((element) => {
+              if (element.id === advertise.id) {
+                element.clicks = computedClicks
+              }
+              return element
+            })
           })
-          this._advertises = this._advertises.map((element) => {
-            if (element.id === advertise.id) {
-              element.clicks = computedClicks
-            }
-            return element
+          .catch((error) => console.log(error))
+        getDocs(collection(db, 'advertises', advertise.id, 'visitors'))
+          .then((visitsSnapshot) => {
+            let computedVisits = 0
+            visitsSnapshot.docs.map((doc) => {
+              computedVisits += doc.data().visits?.length || 0
+            })
+            this._advertises = this._advertises.map((element) => {
+              if (element.id === advertise.id) {
+                element.visits = computedVisits
+              }
+              return element
+            })
           })
-        })
-        onSnapshot(collection(db, 'advertises', advertise.id, 'visitors'), (visitsSnapshot) => {
-          let computedVisits = 0
-          visitsSnapshot.docs.map((doc) => {
-            computedVisits += doc.data().visits?.length || 0
-          })
-          this._advertises = this._advertises.map((element) => {
-            if (element.id === advertise.id) {
-              element.visits = computedVisits
-            }
-            return element
-          })
-        })
+          .catch((error) => console.log(error))
       })
     },
 
