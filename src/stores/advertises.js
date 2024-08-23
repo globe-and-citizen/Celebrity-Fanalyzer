@@ -71,26 +71,25 @@ export const useAdvertiseStore = defineStore('advertises', {
       if (type) {
         try {
           const q = query(collection(db, 'advertises'), type !== 'All' ? where('status', '==', type) : '', orderBy('created', 'desc'))
-          this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
-            this.setLoaderTrue()
-            let advertises = querySnapshot.docs.map((doc) => {
-              return { id: doc.id, ...doc.data() }
-            })
-
-            if (!userStore.isAdmin) {
-              advertises = advertises.filter((advertise) => {
-                return advertise.author.id === userStore.getUserId
-              })
-            }
-
-            for (const advertise of advertises) {
-              advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
-            }
-            this._advertises = []
-            this.$patch({ _advertises: advertises })
-            await this.computeValues()
-            this.setLoaderFalse()
+          this.setLoaderTrue()
+          const querySnapshot = await getDocs(q)
+          let advertises = querySnapshot.docs.map((doc) => {
+            return { id: doc.id, ...doc.data() }
           })
+
+          if (!userStore.isAdmin) {
+            advertises = advertises.filter((advertise) => {
+              return advertise.author.id === userStore.getUserId
+            })
+          }
+
+          for (const advertise of advertises) {
+            advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
+          }
+          this._advertises = []
+          this.$patch({ _advertises: advertises })
+          await this.computeValues()
+          this.setLoaderFalse()
         } catch (err) {
           console.error(err)
         }
@@ -177,33 +176,44 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
 
     async addAdvertise(payload) {
-      const advertise = { ...payload }
-      advertise.author = doc(db, 'users', advertise.author.uid)
-      advertise.created = Timestamp.fromDate(new Date())
-      advertise.isApproved = false
+      const userStore = useUserStore()
+      try {
+        const advertise = { ...payload }
+        advertise.author = doc(db, 'users', advertise.author.uid)
+        advertise.created = Timestamp.fromDate(new Date())
+        advertise.isApproved = false
 
-      this._isLoading = true
-      await setDoc(doc(db, 'advertises', advertise.id), advertise)
-        .catch((error) => console.log(error))
-        .finally(() => (this._isLoading = false))
+        this._isLoading = true
+        await setDoc(doc(db, 'advertises', advertise.id), advertise)
+        advertise.author = await userStore.fetchUser(advertise.author.id)
+        this._advertises = [advertise, ...this._advertises]
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async editAdvertise(payload) {
-      const userStore = useUserStore()
-      const advertise = { ...payload }
-      advertise.updated = Timestamp.fromDate(new Date())
+      try {
+        const userStore = useUserStore()
+        const advertise = { ...payload }
+        advertise.updated = Timestamp.fromDate(new Date())
 
-      advertise.author = doc(db, 'users', advertise.author.uid)
+        advertise.author = doc(db, 'users', advertise.author.uid)
 
-      this._isLoading = true
-      await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'advertises', advertise.id), advertise)
-      })
-        .then(async () => {
-          advertise.author = await userStore.fetchUser(advertise.author.id)
-          this._advertises = this._advertises.map((element) => (element.id === advertise.id ? advertise : element))
+        this._isLoading = true
+        await runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'advertises', advertise.id), advertise)
         })
-        .finally(() => (this._isLoading = false))
+
+        advertise.author = await userStore.fetchUser(advertise.author.id)
+        this._advertises = this._advertises.map((element) => (element.id === advertise.id ? advertise : element))
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async getActiveAdvertise() {
@@ -325,6 +335,7 @@ export const useAdvertiseStore = defineStore('advertises', {
           deleteImpressions,
           deleteAdFromStats
         ])
+        this._advertises = this._advertises.filter((advertise) => advertise.id !== id)
       } catch (error) {
         console.log(error)
         await errorStore.throwError(error)

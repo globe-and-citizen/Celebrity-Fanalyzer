@@ -6,14 +6,14 @@
         class="custom-table"
         bordered
         virtual-scroll
-        :hide-bottom="!!advertises.length && !filter.length"
+        :hide-bottom="!!computedAdvertise.length && !filter.length"
         title="Manage Advertisements"
         row-key="name"
         no-data-label="No advertisements found."
         no-results-label="No advertisements found for your search."
         :filter="filter"
-        :rows="advertises"
-        :columns="advertises.length > 0 ? columns : []"
+        :rows="computedAdvertise"
+        :columns="computedAdvertise.length > 0 ? columns : []"
         :loading="advertiseStore.isLoading"
         :rows-per-page-options="[0]"
       >
@@ -150,7 +150,7 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td  class="cursor-pointer " @click="goToUrl(props.row.id)" >
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             <div v-html="props.row.content" class="singleLine_ellipsis"></div>
           </q-td>
         </template>
@@ -247,7 +247,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
@@ -273,7 +273,7 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'Active', value: 'active' })
+const selectedDataType = ref({ label: 'All', value: 'all' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
@@ -297,6 +297,13 @@ const dataOptions = ref(
       option.value === 'active'
   )
 )
+
+const computedAdvertise = computed(() => {
+  if (selectedDataType.value.label === 'All') {
+    return props.advertises
+  }
+  return props.advertises.filter((advertise) => advertise.status === selectedDataType.value.label)
+})
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -601,7 +608,6 @@ function changeActiveStatus(advertise, status) {
     })
 }
 
-
 function calculateStatus(date) {
   const currentDate = new Date()
   const publishDate = new Date(date)
@@ -645,9 +651,6 @@ async function onUpdate(e) {
   }
 }
 
-watch(selectedDataType, (newType) => {
-  advertiseStore.fetchAdvertises(newType.label)
-})
 </script>
 
 <style>
