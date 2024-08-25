@@ -24,7 +24,8 @@ cleanupOutdatedCaches()
 // }
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('https://lh3.googleusercontent.com')) {
+  const url = new URL(event.request.url)
+  if (url.origin === 'https://lh3.googleusercontent.com') {
     return
   }
   if (event.request.destination === 'image') {
