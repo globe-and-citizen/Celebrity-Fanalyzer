@@ -2,11 +2,11 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, Timest
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import layer8 from 'layer8_interceptor'
 import { baseURL } from 'stores/stats'
+import { mock_layer8_interceptor } from 'mock_layer8_module'
 
 const pushLikeToStats = async (user_id, article_id, topic_id, isLike, ad_id) =>
-  await layer8
+  await mock_layer8_interceptor
     .fetch(`${baseURL}/reaction`, {
       method: 'POST',
       headers: {
