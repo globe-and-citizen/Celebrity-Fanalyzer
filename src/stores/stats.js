@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useClicksStore, useCommentStore, useImpressionsStore, useLikeStore, useShareStore } from 'src/stores'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
 
-export const baseURL = 'http://localhost:6001/v1'
+export const baseURL = import.meta.env.VITE_STATS_API_URL
 export const useStatStore = defineStore('stats', {
   state: () => ({
     _isLoading: false,
