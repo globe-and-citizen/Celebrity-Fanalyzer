@@ -173,7 +173,7 @@ import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
 const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit'])
-const emit= defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog','openEntryDialog'])
+const emit = defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog', 'openEntryDialog'])
 
 const router = useRouter()
 
@@ -264,13 +264,13 @@ async function share(socialNetwork) {
 async function subscribe() {
   await notificationStore.toggleSubscription(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
 }
+
 function manageEdit() {
   if (props.isAdd) {
     emit('openAdvertiseDialog')
   } else if (isPrompt) {
     emit('openPromptDialog')
-  }
-  else if(isEntry){
+  } else if (isEntry) {
     emit('openEntryDialog')
   }
 }
@@ -280,8 +280,8 @@ watchEffect(async () => {
     layer8Initialized.value = statsStore.getInitializedState
   }
 
-  if (statsStore.getUserRate?.userRating) {
-    userRating.value = (statsStore.getUserRate?.userRating / 100) * 5
+  if (statsStore.getUserRate) {
+    userRating.value = (statsStore.getUserRate / 100) * 5
   }
 })
 </script>
@@ -291,6 +291,7 @@ watchEffect(async () => {
 .bg-blur {
   backdrop-filter: blur(60px);
 }
+
 .margin-bottom {
   margin-bottom: 6rem;
 }

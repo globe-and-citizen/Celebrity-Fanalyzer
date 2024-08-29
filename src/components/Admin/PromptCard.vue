@@ -245,7 +245,10 @@ async function onSubmit() {
     return
   }
 
-  if (promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase()) || prompt.title.toLowerCase() === 'month') {
+  if (
+    promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase() && p.id !== prompt.id) ||
+    prompt.title.toLowerCase() === 'month'
+  ) {
     $q.notify({ type: 'negative', message: 'Prompt with this title already exists. Please choose another title.' })
     return
   }
