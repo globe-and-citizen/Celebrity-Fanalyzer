@@ -11,7 +11,8 @@ import {
   runTransaction,
   setDoc,
   Timestamp,
-  where
+  where,
+  and
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -204,7 +205,10 @@ export const usePromptStore = defineStore('prompts', {
     async hasPrompt(date, title, slug) {
       try {
         const promptSnapshot = await getDocs(
-          query(collection(db, 'prompts'), or(where('date', '==', date), where('slug', '==', slug), where('title', '==', title)))
+          query(
+            collection(db, 'prompts'),
+            and(where('id', '!=', date), or(where('date', '==', date), where('slug', '==', slug), where('title', '==', title)))
+          )
         )
         promptSnapshot.docs.forEach((doc) => {
           const data = doc.data()
