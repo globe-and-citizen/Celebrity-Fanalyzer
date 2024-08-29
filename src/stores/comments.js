@@ -119,6 +119,7 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async getTotalComments(collectionName, documentId) {
+      this._initialLoading = true
       const userStore = useUserStore()
       if (!userStore.getUsers) {
         await userStore.fetchUsers()
@@ -142,7 +143,9 @@ export const useCommentStore = defineStore('comments', {
         const totalChildComments = totalChildCommentCountFunc.data().count
 
         this.$patch({ _commentsCount: totalComments - totalChildComments })
+        this._initialLoading = false
       } catch (e) {
+        this._initialLoading = false
         console.error('Failed fetching comments count', e)
       }
     },

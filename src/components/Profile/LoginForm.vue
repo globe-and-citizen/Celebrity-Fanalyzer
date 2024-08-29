@@ -6,7 +6,7 @@
         <q-tab data-test="signup-tab" label="Sign Up" name="signup" />
       </q-tabs>
 
-      <q-form class="q-px-md q-pt-md text-center" :class="{'q-pb-md': tab === 'signup'}" greedy @submit="emailSign">
+      <q-form class="q-px-md q-pt-md text-center" :class="{ 'q-pb-md': tab === 'signup' }" greedy @submit="emailSign">
         <q-input
           v-if="tab === 'signup'"
           data-test="name-field"
@@ -114,6 +114,10 @@ async function emailSign() {
   }
 
   if (tab.value === 'signup') {
+    if (!validateEmail(user.value.email)) {
+      Notify.create({ message: 'Invalid email address', type: 'negative' })
+      return
+    }
     await userStore.emailSignUp(user.value).catch((error) => errorStore.throwError(error))
   }
 }
@@ -133,8 +137,8 @@ function handleResetPassword() {
       })
   }
 }
-function validateEmail(email){
-  const pattern=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+function validateEmail(email) {
+  const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return pattern.test(email)
 }
 
