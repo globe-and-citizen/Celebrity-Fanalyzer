@@ -128,9 +128,6 @@ watchEffect(async () => {
       commentValue.value.endsWith('@') &&
       (commentValue.value[commentValue.value.length - 2] === ' ' || commentValue.value[commentValue.value.length - 2] === undefined)
   )
-  if (commentStore.getCommentsCount) {
-    await commentStore.fetchComments(props.collectionName, props.post?.id)
-  }
 })
 
 function mentionUser(mentioned) {
@@ -237,6 +234,9 @@ async function addReply() {
 }
 onMounted(async()=>{
   await commentStore.getTotalComments(props.collectionName, props.post.id)
+  if (commentStore.getCommentsCount) {
+    await commentStore.fetchComments(props.collectionName, props.post?.id)
+  }
 })
 </script>
 
