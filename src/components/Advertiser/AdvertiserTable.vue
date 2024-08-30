@@ -547,21 +547,21 @@ const columns = ref([
   },
   {
     name: 'clicks',
-    field: 'clicks',
+    field: 'totalClicks',
     align: 'center',
     label: 'Number of Click',
     sortable: true
   },
   {
     name: 'impression',
-    field: 'impressions',
+    field: 'totalImpressions',
     align: 'center',
     label: 'Number of Impression',
     sortable: true
   },
   {
     name: 'visits',
-    field: 'visits',
+    field: 'totalVisits',
     align: 'center',
     label: 'Number of Visits',
     sortable: true
