@@ -120,11 +120,7 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="
-                props.row.status === 'Inactive' &&
-                computedDuration(props.row.endDate) > 0 &&
-                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
-              "
+              v-show="computedDuration(props.row.endDate) >= 0"
               name="edit"
               color="blue"
               size="18px"
@@ -150,7 +146,7 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td  class="cursor-pointer " @click="goToUrl(props.row.id)" >
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             <div v-html="props.row.content" class="singleLine_ellipsis"></div>
           </q-td>
         </template>
@@ -600,7 +596,6 @@ function changeActiveStatus(advertise, status) {
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
-
 
 function calculateStatus(date) {
   const currentDate = new Date()
