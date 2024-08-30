@@ -20,7 +20,7 @@ module.exports = configure(function (ctx) {
     },
 
     // App boot file (/src/boot)
-    boot: [],
+    boot: ['tanstack-query'],
 
     // CSS to include
     css: ['app.css'],
@@ -50,7 +50,7 @@ module.exports = configure(function (ctx) {
                 'vue',
                 'vue-echarts',
                 'vue-router',
-                'layer8_interceptor'
+                '@ternakkode/layer8-interceptor'
               ]
               if (id.includes('/node_modules/')) {
                 for (const chunkName of chunks) {

@@ -2,7 +2,7 @@ import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timest
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import layer8 from 'layer8_interceptor'
+import layer8 from '@ternakkode/layer8-interceptor'
 import { baseURL } from 'stores/stats'
 
 const pushShareToStats = async (user_id, id, social_media) =>

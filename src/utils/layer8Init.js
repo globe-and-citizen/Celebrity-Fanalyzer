@@ -1,4 +1,4 @@
-import layer8 from 'layer8_interceptor'
+import layer8 from '@ternakkode/layer8-interceptor'
 import { useStatStore } from 'src/stores'
 import { useQuasar } from 'quasar'
 export async function Layer8Init() {

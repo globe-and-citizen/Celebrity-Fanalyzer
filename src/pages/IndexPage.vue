@@ -7,24 +7,20 @@
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
           <q-img
-            loading="lazy"
+            loading="eager"
             decoding="async"
-            fetchpriority="low"
-            :src="monthPrompt?.image"
-            spinner-color="primary"
+            fetchpriority="high"
+            :src="data?.[0].image"
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
-            @load="loaded = true"
-            :class="{ 'prompt-img': loaded }"
-            :srcset="`${monthPrompt?.image} 2x`"
-            sizes="(max-width: 560) 50vw, 100vw"
+            no-spinner
           />
         </RouterLink>
         <p class="q-my-md text-body1">
           This Month's Prompt:
           <br />
           <RouterLink to="month">
-            {{ monthPrompt?.title }}
+            {{ data?.[0].title }}
           </RouterLink>
         </p>
       </section>
@@ -199,20 +195,12 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { fetchMonth } from 'src/api/prompts'
+import { useQuery } from '@tanstack/vue-query'
 
-const errorStore = useErrorStore()
-const promptStore = usePromptStore()
-
-const loaded = ref(false)
-
-const monthPrompt = computed(() => {
-  return promptStore.getMonthPrompt?.[0]
-})
-
-onMounted(async () => {
-  await promptStore.fetchMonthsPrompt().catch((error) => errorStore.throwError(error, error))
+const { data } = useQuery({
+  queryKey: ['monthPrompt'],
+  queryFn: fetchMonth
 })
 </script>
 

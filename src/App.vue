@@ -1,4 +1,5 @@
 <template>
+  <VueQueryDevtools />
   <div>
     <router-view />
   </div>
@@ -7,6 +8,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { Layer8Init } from 'src/utils/layer8Init'
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
 
 const asciiLogo = `
 @@@@@@@@@@@@@@@@@@@(((@@@@@@@@@@@@@@@@@@

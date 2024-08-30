@@ -154,52 +154,52 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchMonthsPrompt() {
-      try {
-        this._isLoading = true
-        const userStore = useUserStore()
-
-        if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndEditors()
-        }
-
-        const promptDocRef = doc(db, 'prompts', currentYearMonth())
-        const promptSnapshotRef = await getDoc(promptDocRef)
-
-        if (promptSnapshotRef.exists()) {
-          const promptSnapshot = { id: promptSnapshotRef.id, ...promptSnapshotRef.data() }
-
-          if (promptSnapshot.author && promptSnapshot.author.id) {
-            promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
-          }
-
-          this._isLoading = false
-          this._monthPrompt = [
-            {
-              ...promptSnapshot,
-              entries: promptSnapshot?.entries?.map((entry) => entry.id) || []
-            }
-          ]
-        } else {
-          const lastPromptAvailableRef = await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1)))
-          const lastPrompt = lastPromptAvailableRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-          if (lastPrompt.author && lastPrompt.author.id) {
-            lastPrompt.author = userStore.getUserById(lastPrompt.author.id) || (await userStore.fetchUser(lastPrompt.author.id))
-          }
-          this._isLoading = false
-          this._monthPrompt = [
-            {
-              ...lastPrompt,
-              entries: lastPrompt?.entries?.map((entry) => entry.id) || []
-            }
-          ]
-        }
-      } catch (e) {
-        await this.redirect()
-        console.error('Error fetching months prompts:', e)
-      }
-    },
+    // async fetchMonthsPrompt() {
+    //   try {
+    //     this._isLoading = true
+    //     const userStore = useUserStore()
+    //
+    //     if (!userStore.getUsers) {
+    //       await userStore.fetchAdminsAndEditors()
+    //     }
+    //
+    //     const promptDocRef = doc(db, 'prompts', currentYearMonth())
+    //     const promptSnapshotRef = await getDoc(promptDocRef)
+    //
+    //     if (promptSnapshotRef.exists()) {
+    //       const promptSnapshot = { id: promptSnapshotRef.id, ...promptSnapshotRef.data() }
+    //
+    //       if (promptSnapshot.author && promptSnapshot.author.id) {
+    //         promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
+    //       }
+    //
+    //       this._isLoading = false
+    //       this._monthPrompt = [
+    //         {
+    //           ...promptSnapshot,
+    //           entries: promptSnapshot?.entries?.map((entry) => entry.id) || []
+    //         }
+    //       ]
+    //     } else {
+    //       const lastPromptAvailableRef = await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1)))
+    //       const lastPrompt = lastPromptAvailableRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+    //
+    //       if (lastPrompt.author && lastPrompt.author.id) {
+    //         lastPrompt.author = userStore.getUserById(lastPrompt.author.id) || (await userStore.fetchUser(lastPrompt.author.id))
+    //       }
+    //       this._isLoading = false
+    //       this._monthPrompt = [
+    //         {
+    //           ...lastPrompt,
+    //           entries: lastPrompt?.entries?.map((entry) => entry.id) || []
+    //         }
+    //       ]
+    //     }
+    //   } catch (e) {
+    //     await this.redirect()
+    //     console.error('Error fetching months prompts:', e)
+    //   }
+    // },
 
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()

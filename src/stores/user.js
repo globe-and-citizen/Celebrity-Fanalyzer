@@ -11,7 +11,7 @@ import { defineStore } from 'pinia'
 import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
-import layer8 from 'layer8_interceptor'
+import layer8 from '@ternakkode/layer8-interceptor'
 import { baseURL } from 'stores/stats'
 
 export const useUserStore = defineStore('user', {

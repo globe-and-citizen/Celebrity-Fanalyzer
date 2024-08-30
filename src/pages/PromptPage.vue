@@ -43,6 +43,8 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore } from 'src/stores'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
+import { fetchMonth } from 'src/api/prompts'
 
 const router = useRouter()
 const entryStore = useEntryStore()
@@ -62,11 +64,14 @@ const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 const editPrompt = ref({})
-
-const params = computed(()=>router.currentRoute.value?.params)
+const { data } = useQuery({
+  queryKey: ['monthPrompt'],
+  queryFn: fetchMonth
+})
+const params = computed(() => router.currentRoute.value?.params)
 const prompt = computed(() => {
   if (route.name === 'month') {
-    return promptStore.getMonthPrompt?.[0]
+    return data?.value?.[0]
   }
 
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
@@ -126,7 +131,7 @@ watchEffect(async () => {
 
 onMounted(async () => {
   if (route.name === 'month') {
-    await promptStore.fetchMonthsPrompt()
+    // await promptStore.fetchMonthsPrompt()
   }
 
   entriesRef.value = document.querySelector('.entries-page-container')

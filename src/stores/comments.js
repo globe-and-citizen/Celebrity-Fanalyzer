@@ -19,7 +19,7 @@ import {
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import layer8 from 'layer8_interceptor'
+import layer8 from '@ternakkode/layer8-interceptor'
 import { baseURL } from 'stores/stats'
 
 const pushCommentToStats = async (user_id, id, content) =>
