@@ -202,12 +202,13 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async hasPrompt(date, title, slug) {
+    async hasPrompt(date, title, slug, isEdit = false) {
       try {
         const promptSnapshot = await getDocs(
           query(
             collection(db, 'prompts'),
-            and(where('id', '!=', date), or(where('date', '==', date), where('slug', '==', slug), where('title', '==', title)))
+            isEdit ? where('id', '!=', date) : '',
+            or(isEdit ? '' : where('date', '==', date), where('slug', '==', slug), where('title', '==', title))
           )
         )
         promptSnapshot.docs.forEach((doc) => {
@@ -240,7 +241,7 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = await userStore.fetchUser(prompt.author.id)
       prompt.entries = []
-      const prompts = [prompt, ...this.getPrompts]
+      const prompts = this.getPrompts ? [prompt, ...this.getPrompts] : [prompt]
       this._prompts = prompts
 
       await notificationStore.toggleSubscription('prompts', prompt.id)

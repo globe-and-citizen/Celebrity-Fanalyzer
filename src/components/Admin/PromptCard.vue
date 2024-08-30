@@ -239,13 +239,12 @@ async function onSubmit() {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
-  const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug)
-
-  if (hasPrompt) {
-    return
-  }
-
-  if (
+  if (!promptStore.getPrompts) {
+    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug,!!props.id)
+    if (hasPrompt) {
+      return
+    }
+  } else if (
     promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase() && p.id !== prompt.id) ||
     prompt.title.toLowerCase() === 'month'
   ) {
