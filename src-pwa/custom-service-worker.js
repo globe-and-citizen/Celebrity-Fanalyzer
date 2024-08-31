@@ -8,7 +8,6 @@
 
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
-import { registerRoute, NavigationRoute } from 'workbox-routing'
 
 self.skipWaiting()
 clientsClaim()
@@ -20,6 +19,46 @@ cleanupOutdatedCaches()
 
 // Non-SSR fallback to index.html
 // Production SSR fallback to offline.html (except for dev)
-if (process.env.MODE !== 'ssr' || process.env.PROD) {
-  registerRoute(new NavigationRoute(createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML), { denylist: [/sw\.js$/, /workbox-(.)*\.js$/] }))
-}
+// if (process.env.MODE !== 'ssr' || process.env.PROD) {
+//   registerRoute(new NavigationRoute(createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML), { denylist: [/sw\.js$/, /workbox-(.)*\.js$/] }))
+// }
+
+const CACHE_NAME = 'images-cache'
+const TTL = 10 * 24 * 60 * 60 * 1000
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url)
+  if (url.origin === 'https://lh3.googleusercontent.com') {
+    return
+  }
+  if (event.request.destination === 'image') {
+    event.respondWith(
+      caches.match(event.request).then(async (cachedResponse) => {
+        if (cachedResponse) {
+          const cachedTime = await caches.match(event.request.url + '-time')
+          const cachedDate = cachedTime ? await cachedTime.json() : 0
+          const isExpired = Date.now() - cachedDate > TTL
+
+          if (!isExpired) {
+            return cachedResponse
+          }
+          caches.delete(event.request)
+          caches.delete(event.request.url + '-time')
+        }
+
+        return fetch(event.request)
+          .then((networkResponse) => {
+            return caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, networkResponse.clone())
+              cache.put(event.request.url + '-time', new Response(JSON.stringify(Date.now())))
+              return networkResponse
+            })
+          })
+          .catch((error) => {
+            console.error(error)
+            return caches.match('/icons/icon-512x512.png')
+          })
+      })
+    )
+  }
+})

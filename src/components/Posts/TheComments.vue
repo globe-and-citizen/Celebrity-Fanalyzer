@@ -2,11 +2,8 @@
   <TheHeader :subtitle="post?.title" title="Comments" />
   <q-page-container>
     <q-page :data-test="commentStore.isLoaded ? 'comment-loaded' : 'comment-loading'">
-      <section v-if="commentStore.isInitialLoading">
-        <CommentsSkeleton />
-        <CommentsSkeleton />
-        <CommentsSkeleton />
-        <CommentsSkeleton />
+      <section v-if="commentStore.isInitialLoading" style="background: #f5f5f5">
+        <CommentsSkeleton v-for="(_, i) in commentStore.getCommentsCount" :key="i" />
       </section>
       <section v-else-if="commentStore.getComments?.length" class="q-pa-md" style="margin-bottom: 6rem">
         <DisplayComment
@@ -125,7 +122,7 @@ watch(comments, () => {
   commentsMessages.value = comments.value?.map((comment) => comment.text)
 })
 
-watchEffect(() => {
+watchEffect(async () => {
   isMention.value = Boolean(
     userStore.getUser &&
       commentValue.value.endsWith('@') &&
@@ -201,15 +198,12 @@ async function analyzeComments() {
   })
 }
 
-watchEffect(async () => {
-  await commentStore.fetchComments(props.collectionName, props.post.id)
-})
-
 onUnmounted(() => {
   commentStore.setReplyTo('')
   if (commentStore._unSubscribe) {
     commentStore._unSubscribe()
   }
+  commentStore._commentsCount = 0
 })
 
 commentStore.$subscribe(() => {
@@ -238,8 +232,8 @@ async function addReply() {
   await nextTick()
   inputField.value.blur()
 }
-
-onMounted(async () => {
+onMounted(async()=>{
+  await commentStore.getTotalComments(props.collectionName, props.post.id)
   if (commentStore.getCommentsCount) {
     await commentStore.fetchComments(props.collectionName, props.post?.id)
   }

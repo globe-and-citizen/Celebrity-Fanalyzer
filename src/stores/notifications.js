@@ -35,6 +35,12 @@ export const useNotificationStore = defineStore('notification', {
           userStore._user.subscriptions = removeFromArray(userStore.getUser.subscriptions, documentId)
 
           if (collectionName === 'prompts') {
+            promptStore._monthPrompt = promptStore.getMonthPrompt?.map((prompt) =>
+              prompt.id === documentId
+                ? { ...prompt, subscribers: removeFromArray(prompt.subscribers || [], userStore.getUser.uid) }
+                : prompt
+            )
+
             promptStore._prompts = promptStore.getPrompts?.map((prompt) =>
               prompt.id === documentId ? { ...prompt, subscribers: removeFromArray(prompt.subscribers, userStore.getUser.uid) } : prompt
             )
@@ -51,6 +57,10 @@ export const useNotificationStore = defineStore('notification', {
 
           if (collectionName === 'prompts') {
             promptStore._prompts = promptStore.getPrompts?.map((prompt) =>
+              prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers || [], userStore.getUser.uid) } : prompt
+            )
+
+            promptStore._monthPrompt = promptStore.getMonthPrompt?.map((prompt) =>
               prompt.id === documentId ? { ...prompt, subscribers: addToArray(prompt.subscribers || [], userStore.getUser.uid) } : prompt
             )
           }

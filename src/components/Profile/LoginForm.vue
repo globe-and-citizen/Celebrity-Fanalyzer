@@ -6,7 +6,7 @@
         <q-tab data-test="signup-tab" label="Sign Up" name="signup" />
       </q-tabs>
 
-      <q-form class="q-px-md q-pt-md text-center" :class="{'q-pb-md': tab === 'signup'}" greedy @submit="emailSign">
+      <q-form class="q-px-md q-pt-md text-center" :class="{ 'q-pb-md': tab === 'signup' }" greedy @submit="emailSign">
         <q-input
           v-if="tab === 'signup'"
           data-test="name-field"
@@ -49,10 +49,14 @@
 
         <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
-      <div v-if="tab !== 'signup'" class="column items-center q-py-sm">
-        <span class="cursor-pointer self-center" @click="openResetDialog = true">forgot password?</span>
-      </div>
-
+      <q-btn
+        color="secondary"
+        size="sm"
+        v-if="tab !== 'signup'"
+        class="forgot-pass"
+        label="forgot password?"
+        @click="openResetDialog = true"
+      />
       <q-separator inset />
 
       <div class="column items-center q-gutter-md q-py-md">
@@ -114,6 +118,10 @@ async function emailSign() {
   }
 
   if (tab.value === 'signup') {
+    if (!validateEmail(user.value.email)) {
+      Notify.create({ message: 'Invalid email address', type: 'negative' })
+      return
+    }
     await userStore.emailSignUp(user.value).catch((error) => errorStore.throwError(error))
   }
 }
@@ -133,8 +141,8 @@ function handleResetPassword() {
       })
   }
 }
-function validateEmail(email){
-  const pattern=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+function validateEmail(email) {
+  const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return pattern.test(email)
 }
 
@@ -148,3 +156,10 @@ watch(
   { immediate: true }
 )
 </script>
+
+<style scoped>
+.forgot-pass {
+  display: flex;
+  margin: 10px auto;
+}
+</style>

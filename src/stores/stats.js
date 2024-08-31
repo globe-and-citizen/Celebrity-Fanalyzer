@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useClicksStore, useCommentStore, useImpressionsStore, useLikeStore, useShareStore } from 'src/stores'
-import layer8 from 'layer8_interceptor'
+import { mock_layer8_interceptor } from 'mock_layer8_module'
 
 export const baseURL = import.meta.env.VITE_STATS_API_URL
 export const useStatStore = defineStore('stats', {
@@ -27,26 +27,6 @@ export const useStatStore = defineStore('stats', {
   },
 
   actions: {
-    /**
-     * Fetches summary data from an API for a given collection and document ID.
-     *
-     * @async
-     * @param {string} documentId - The ID of the document.
-     * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
-     */
-    async fetchSummary(documentId) {
-      this._isLoading = true
-      const response = await fetch(`${baseURL}/stats/article?article_id=${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      // Parsing the JSON data
-      this._summary = await response.json()
-      this._isLoading = false
-    },
-
     setInitialized(v) {
       this._isInitialized = v
     },
@@ -61,23 +41,13 @@ export const useStatStore = defineStore('stats', {
       this._userRating = undefined
     },
 
-    // /**
-    //  * Fetches statistics data from an API for a given collection and document ID.
-    //  * Paginates through the data by making multiple requests until all the data is retrieved.
-    //  * Stores the fetched data in the _stats array.
-    //  *
-    //  * @async
-    //  * @param {string} documentId - The ID of the document.
-    //  * @returns {Promise<void>} - A promise that resolves when all the data has been fetched and stored.
-    //  */
     async fetchStats(id) {
       try {
-        const statsResponse = await layer8.fetch(`${baseURL}/stats/post`, {
+        const statsResponse = await mock_layer8_interceptor.fetch(`${baseURL}/stats/post?id=${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ id })
+          }
         })
         const stats = await statsResponse.json()
         this._stats.push(...stats)
@@ -98,7 +68,7 @@ export const useStatStore = defineStore('stats', {
      */
     async addStats(documentId, user_id, stats, type) {
       try {
-        await layer8.fetch(`${baseURL}/stats`, {
+        await mock_layer8_interceptor.fetch(`${baseURL}/stats`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -112,7 +82,7 @@ export const useStatStore = defineStore('stats', {
 
     async addTopic(topic_id, user_id, title, content, categories) {
       try {
-        await layer8.fetch(`${baseURL}/topic`, {
+        await mock_layer8_interceptor.fetch(`${baseURL}/topic`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -135,7 +105,7 @@ export const useStatStore = defineStore('stats', {
     },
 
     async addArticle(article_id, topic_id, user_id, title, content) {
-      await layer8.fetch(`${baseURL}/article`, {
+      await mock_layer8_interceptor.fetch(`${baseURL}/article`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -155,7 +125,7 @@ export const useStatStore = defineStore('stats', {
     },
 
     async addAdvertisement(ad_id, user_id, title, content, budget, duration) {
-      await layer8.fetch(`${baseURL}/advertisement`, {
+      await mock_layer8_interceptor.fetch(`${baseURL}/advertisement`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -176,7 +146,7 @@ export const useStatStore = defineStore('stats', {
 
     async addUser(user_id, location) {
       try {
-        const response = await layer8.fetch(`${baseURL}/users`, {
+        const response = await mock_layer8_interceptor.fetch(`${baseURL}/users`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -196,12 +166,11 @@ export const useStatStore = defineStore('stats', {
 
     async getArticleMetrics(id) {
       try {
-        const res = await layer8.fetch(`${baseURL}/stats/metrics`, {
+        const res = await mock_layer8_interceptor.fetch(`${baseURL}/stats/metrics?id=${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ id })
+          }
         })
         const data = await res.json()
         this._allInteractionsByCountry = data
@@ -214,12 +183,11 @@ export const useStatStore = defineStore('stats', {
 
     async getArticleRating(id) {
       try {
-        const res = await layer8.fetch(`${baseURL}/post-rating`, {
+        const res = await mock_layer8_interceptor.fetch(`${baseURL}/post-rating?post_id=${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ id })
+          }
         })
         const data = await res.json()
         if (data && data.postRating !== undefined) {
@@ -236,12 +204,11 @@ export const useStatStore = defineStore('stats', {
 
     async getUserRating(user_id) {
       try {
-        const res = await layer8.fetch(`${baseURL}/user-rating`, {
+        const res = await mock_layer8_interceptor.fetch(`${baseURL}/user-rating?user_id=${user_id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ user_id })
+          }
         })
         const data = await res.json()
         if (data && data.userRating !== undefined) {
@@ -259,8 +226,8 @@ export const useStatStore = defineStore('stats', {
     async getCommentsAnalysis(id, comments) {
       this._isLoading = true
       try {
-        const res = await layer8.fetch(`${baseURL}/comments/analyze`, {
-          method: 'GET',
+        const res = await mock_layer8_interceptor.fetch(`${baseURL}/comments/analyze`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
