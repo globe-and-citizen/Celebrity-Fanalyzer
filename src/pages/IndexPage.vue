@@ -7,9 +7,8 @@
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
           <q-img
-            loading="lazy"
-            decoding="async"
-            fetchpriority="low"
+            loading="eager"
+            fetchpriority="high"
             :src="monthPrompt?.image"
             spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
