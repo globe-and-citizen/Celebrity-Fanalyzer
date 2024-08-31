@@ -19,7 +19,6 @@ import {
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import layer8 from '@ternakkode/layer8-interceptor'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
 
