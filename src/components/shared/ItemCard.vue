@@ -3,7 +3,7 @@
     <CampaignCard v-if="item.isAdd" :advertise="item" />
     <div v-if="!item.isAdd" class="col-8 flex column" data-test="prompt-card">
       <div v-if="item?.isWinner || item?.hasWinner" class="winner-badge">
-        <img height="40px" src="/favicon-128x128.png" />
+        <img alt="favicon" height="40px" src="/favicon-128x128.png" />
       </div>
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
@@ -28,7 +28,15 @@
       </router-link>
     </div>
     <router-link v-if="!item.isAdd" :to="link" class="col-4 text-primary">
-      <q-img :ratio="1" :src="item.image" style="border-radius: 24px" @click="goToUrl()" />
+      <q-img
+        rel="preload"
+        loading="eager"
+        fetchpriority="high"
+        :ratio="1"
+        :src="item.image"
+        style="border-radius: 24px"
+        @click="goToUrl()"
+      />
     </router-link>
     <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
   </article>

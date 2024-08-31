@@ -11,8 +11,8 @@ import { defineStore } from 'pinia'
 import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
-import layer8 from '@ternakkode/layer8-interceptor'
 import { baseURL } from 'stores/stats'
+import { mock_layer8_interceptor } from 'mock_layer8_module'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -221,7 +221,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async getStatsUsers() {
-      const allUsers = await layer8.fetch(`${baseURL}/users`, {
+      const allUsers = await mock_layer8_interceptor.fetch(`${baseURL}/users`, {
         method: 'GET'
       })
       this._statsUsers = await allUsers.json()

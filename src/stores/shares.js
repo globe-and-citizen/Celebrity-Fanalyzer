@@ -2,11 +2,11 @@ import { collection, deleteDoc, doc, getCountFromServer, getDocs, setDoc, Timest
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import layer8 from '@ternakkode/layer8-interceptor'
 import { baseURL } from 'stores/stats'
+import { mock_layer8_interceptor } from 'mock_layer8_module'
 
 const pushShareToStats = async (user_id, id, social_media) =>
-  await layer8
+  await mock_layer8_interceptor
     .fetch(`${baseURL}/share`, {
       method: 'POST',
       headers: {

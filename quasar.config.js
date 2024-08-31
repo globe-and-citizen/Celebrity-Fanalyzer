@@ -41,17 +41,7 @@ module.exports = configure(function (ctx) {
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {
-              const chunks = [
-                '@quasar/extras',
-                'echarts',
-                'firebase',
-                'pinia',
-                'quasar',
-                'vue',
-                'vue-echarts',
-                'vue-router',
-                '@ternakkode/layer8-interceptor'
-              ]
+              const chunks = ['@quasar/extras', 'echarts', 'firebase', 'pinia', 'quasar', 'vue', 'vue-echarts', 'vue-router']
               if (id.includes('/node_modules/')) {
                 for (const chunkName of chunks) {
                   if (id.includes(chunkName)) {
@@ -161,7 +151,7 @@ module.exports = configure(function (ctx) {
 
     // https://v2.quasar.dev/quasar-cli/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
+      workboxMode: 'injectManifest', // or 'generateSW'
       injectPwaMetaTags: true,
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
