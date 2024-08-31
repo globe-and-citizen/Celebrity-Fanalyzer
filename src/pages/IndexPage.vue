@@ -10,13 +10,9 @@
             loading="eager"
             fetchpriority="high"
             :src="monthPrompt?.image"
-            spinner-color="primary"
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
-            @load="loaded = true"
-            :class="{ 'prompt-img': loaded }"
-            :srcset="`${monthPrompt?.image} 2x`"
-            sizes="(max-width: 560) 50vw, 100vw"
+            no-spinner
           />
         </RouterLink>
         <p class="q-my-md text-body1">
@@ -203,8 +199,6 @@ import { computed, onMounted, ref } from 'vue'
 
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
-
-const loaded = ref(false)
 
 const monthPrompt = computed(() => {
   return promptStore.getMonthPrompt?.[0]
