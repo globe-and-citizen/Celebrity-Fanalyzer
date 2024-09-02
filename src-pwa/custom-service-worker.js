@@ -55,8 +55,7 @@ self.addEventListener('fetch', (event) => {
             })
           })
           .catch((error) => {
-            console.error(error)
-            return caches.match('/icons/icon-512x512.png')
+            console.error('Image not found', error)
           })
       })
     )
