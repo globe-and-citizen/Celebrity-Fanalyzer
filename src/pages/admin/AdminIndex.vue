@@ -1,39 +1,5 @@
 <template>
-  <TheHeader title="Admin Panel">
-    <q-btn v-if="userStore.isAuthenticated || userStore.isAdmin" color="primary" @click="openAdvertiseDialog">Add Advertise</q-btn>
-    <q-btn-dropdown
-      auto-close
-      data-test="button-dropdown"
-      color="primary"
-      dropdown-icon="control_point"
-      flat
-      rounded
-      transition-show="jump-down"
-      transition-hide="jump-up"
-    >
-      <q-list style="min-width: 100px">
-        <q-item
-          v-if="userStore.isEditorOrAbove"
-          clickable
-          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'prompt-dropdown'"
-          @click="openPromptDialog()"
-        >
-          <q-item-section>New Prompt</q-item-section>
-        </q-item>
-        <q-item
-          v-if="userStore.isAuthenticated"
-          clickable
-          :data-test="promptStore.isLoading || entryStore.isLoading ? '' : 'entry-dropdown'"
-          @click="openEntryDialog()"
-        >
-          <q-item-section>New Entry</q-item-section>
-        </q-item>
-        <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
-          <q-item-section>Add new users</q-item-section>
-        </q-item>
-      </q-list>
-    </q-btn-dropdown>
-  </TheHeader>
+  <TheHeader title="Admin Panel" />
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs active-color="primary" align="justify">
@@ -112,8 +78,8 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useEntryStore, usePromptStore, useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
+import { onMounted, ref, watch } from 'vue'
+import { useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRoute, useRouter } from 'vue-router'
 
 const userStore = useUserStore()
@@ -121,27 +87,12 @@ const userStore = useUserStore()
 const entry = ref({})
 const prompt = ref({})
 const advertise = ref({})
-const entryStore = useEntryStore()
-const promptStore = usePromptStore()
 const advertiseStore = useAdvertiseStore()
 const errorStore = useErrorStore()
 const currentPath = ref('')
 
 const router = useRouter()
 const route = useRoute()
-
-const addAllUsersToStatsDb = () => {
-  const allUsersMap = userStore?.getUsers.map((user) => {
-    return { user_id: user.uid }
-  })
-  userStore.addAllUsers(allUsersMap)
-}
-
-const uniqueUsers = computed(() => {
-  const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
-  const statsUsersIds = userStore.getAllUsers?.usersList.map((user) => user.user_id) || []
-  return firebaseUsers.filter((user) => !statsUsersIds.includes(user))
-})
 
 onMounted(async () => {
   await userStore.fetchUsers()
@@ -190,10 +141,6 @@ function openPromptDialog(props) {
   prompt.value.dialog = true
 }
 
-function openEntryDialog() {
-  entry.value = {}
-  entry.value.dialog = true
-}
 function openAdvertiseDialog(props) {
   advertise.value = props?.id ? props : {}
   advertise.value.dialog = true

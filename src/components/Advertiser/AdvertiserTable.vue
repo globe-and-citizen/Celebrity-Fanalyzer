@@ -269,13 +269,14 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'Active', value: 'active' })
+const selectedDataType = ref({ label: 'Ongoing', value: 'ongoing' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
 const initialDataOptions = [
+  { label: 'Ongoing', value: 'ongoing' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
   { label: 'Budget Crossed', value: 'budget-crossed' },
@@ -290,7 +291,8 @@ const dataOptions = ref(
       option.value === 'complete' ||
       option.value === 'all' ||
       option.value === 'inactive' ||
-      option.value === 'active'
+      option.value === 'active' ||
+      option.value === 'ongoing'
   )
 )
 
