@@ -53,7 +53,7 @@
       <q-input class="non-selectable" debounce="400" label="Current Connected wallet Address" v-model.trim="currentWalletAddress" readonly>
         <Web3ModalComponent page_name="profile" />
 
-        <q-btn
+        <!-- <q-btn
           v-if="currentWalletAddress && addressUpdated === false"
           color="black"
           flat
@@ -66,7 +66,9 @@
 
         <q-btn v-if="addressUpdated === true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
           <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
-        </q-btn>
+        </q-btn> -->
+        <q-btn v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress" color="blue-4" :label="user.walletAddress?'Update':'Save'" no-caps  size="sm" class=" self-center q-mr-md" @click="onSetWalletAddressDialog()" />
+        <q-btn  color="negative" label="Delete" no-caps size="sm" class=" self-center" @click="switchAddressUpdated(false)" />
       </q-input>
     </div>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
@@ -92,7 +94,7 @@
       <q-card-section>
         <span class="q-ml-sm">
           Are you sure you want to set:
-          <b>{{ address }}</b>
+          <b>{{  currentWalletAddress }}</b>
           as your wallet address ?
         </span>
       </q-card-section>
@@ -180,6 +182,7 @@ function onSetWalletAddressDialog() {
 function onSetWalletAddress() {
   switchAddressUpdated(true)
   setWalletAddressDialog.value.show = false
+  // save()
 }
 </script>
 

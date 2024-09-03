@@ -32,7 +32,7 @@ export const useWalletStore = defineStore('wallet', {
       }
     }
   }),
-
+  persist: true,
   getters: {
     getWalletInfo: (state) => state.wallet_info,
     getTempAddress: (state) => state.temp_address,
