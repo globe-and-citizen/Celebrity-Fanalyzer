@@ -68,7 +68,7 @@
           <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
         </q-btn> -->
         <q-btn v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress" color="blue-4" :label="user.walletAddress?'Update':'Save'" no-caps  size="sm" class=" self-center q-mr-md" @click="onSetWalletAddressDialog()" />
-        <q-btn  color="negative" label="Delete" no-caps size="sm" class=" self-center" @click="switchAddressUpdated(false)" />
+        <!-- <q-btn  color="negative" label="Delete" no-caps size="sm" class=" self-center" @click="switchAddressUpdated(false)" /> -->
       </q-input>
     </div>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
@@ -182,7 +182,7 @@ function onSetWalletAddressDialog() {
 function onSetWalletAddress() {
   switchAddressUpdated(true)
   setWalletAddressDialog.value.show = false
-  // save()
+  save()
 }
 </script>
 

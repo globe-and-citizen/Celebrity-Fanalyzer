@@ -41,8 +41,12 @@ const isConnected = computed(() => {
 
 async function updateWalletInfo() {
   customWeb3modal.open()
-  walletStore.setNetworkId(chainId.value)
-  walletStore.setWalletAddress(address.value)
+  if(chainId.value){
+    walletStore.setNetworkId(chainId.value)
+  }
+  if(address.value){
+    walletStore.setWalletAddress(address.value)
+  }
 }
 
 function handleChange({ provider, providerType, address, error, chainId, isConnected }) {
