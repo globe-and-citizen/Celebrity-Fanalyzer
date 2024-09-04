@@ -67,8 +67,26 @@
         <q-btn v-if="addressUpdated === true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
           <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
         </q-btn> -->
-        <q-btn v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress" color="blue-4" :label="user.walletAddress?'Update':'Save'" no-caps  size="sm" class=" self-center q-mr-md" @click="onSetWalletAddressDialog()" />
-        <!-- <q-btn  color="negative" label="Delete" no-caps size="sm" class=" self-center" @click="switchAddressUpdated(false)" /> -->
+        <q-btn
+        v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress"
+        color="blue-4"
+        :icon="user.walletAddress ? 'update' : 'save'"
+        size="sm"
+        class=" self-center q-mr-md"
+        flat
+        dense
+        @click="onSetWalletAddressDialog()"
+        />
+        <q-btn
+        v-if="currentWalletAddress"
+        color="negative"
+        :icon="'delete'"
+        size="sm"
+        class=" self-center"
+        flat
+        dense
+         @click="switchAddressUpdated(false)"
+         />
       </q-input>
     </div>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
@@ -89,18 +107,18 @@
   <q-dialog v-model="setWalletAddressDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
-        <h6 class="q-my-sm">set wallet address</h6>
+        <h6 class="q-my-sm">{{ isUpdate ?'Update':'Set' }} wallet address</h6>
       </q-card-section>
       <q-card-section>
         <span class="q-ml-sm">
-          Are you sure you want to set:
+          Are you sure you want to {{ isUpdate ?'Update':'Set' }}:
           <b>{{  currentWalletAddress }}</b>
           as your wallet address ?
         </span>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" label="Cancel" v-close-popup />
-        <q-btn color="info" data-test="confirm-set-wallet" label="set" @click="onSetWalletAddress()" />
+        <q-btn color="info" data-test="confirm-set-wallet" :label="isUpdate ?'update':'set'" @click="onSetWalletAddress()" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -109,7 +127,7 @@
 <script setup>
 import { useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
 import { Notify, useQuasar } from 'quasar'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Web3ModalComponent from './Web3ModalComponent.vue'
 import { useWalletStore } from 'app/src/stores'
 
@@ -130,6 +148,12 @@ const user = ref(userStore.getUser)
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
+
+const isUpdate = ref(false)
+
+watch([currentWalletAddress,user], ()=> {
+  isUpdate.value = !!user.value.walletAddress
+})
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user

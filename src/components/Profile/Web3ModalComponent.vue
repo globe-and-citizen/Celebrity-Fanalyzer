@@ -7,7 +7,10 @@
     </div>
     <div class="text-right" v-if="!isConnected">
       <div class="q-pa-md q-gutter-sm">
-        <q-btn icon="edit" @click.prevent.stop="updateWalletInfo()" color="primary" label="" data-test="Open Connect Modal" size="sm" />
+        <q-btn icon="edit" @click.prevent.stop="updateWalletInfo()" color="primary" label="" data-test="Open Connect Modal" size="sm"
+        flat
+        dense
+        />
       </div>
     </div>
   </div>
