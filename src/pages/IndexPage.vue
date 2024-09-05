@@ -14,6 +14,7 @@
             style="border: 3px solid #e54757; border-radius: 12px"
             data-test="month-link"
             no-spinner
+            sizes="(max-width: 560) 50vw, 100vw"
           />
         </RouterLink>
         <p class="q-my-md text-body1">
@@ -200,7 +201,8 @@ import { useQuery } from '@tanstack/vue-query'
 
 const { data } = useQuery({
   queryKey: ['monthPrompt'],
-  queryFn: fetchMonth
+  queryFn: fetchMonth,
+  retry: 1
 })
 </script>
 
