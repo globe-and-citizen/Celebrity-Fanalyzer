@@ -2,8 +2,9 @@
   <q-card>
     <q-card-section class="q-pt-none">
       <q-form @submit="onSubmit">
-        <q-input hide-hint label="Winner wallet address" maxlength="80" required v-model="_walletAddress" disable />
-        <!-- <q-input
+        <!-- <q-input hide-hint label="Winner wallet address" maxlength="80" required v-model="_walletAddress" disable /> -->
+        <q-input hide-hint label="Current connected wallet address" maxlength="80" required v-model="_walletAddress" disable />
+        <q-input
           v-model="usdAmount"
           label="Price in USD"
           min="0"
@@ -11,12 +12,12 @@
           fill-mask="0"
           reverse-fill-mask
           @update:model-value="convertToMatic()"
-        /> -->
+        />
         <!-- Displaying Corresponding Ether Amount-->
         <q-input data-text="ether-amount" v-model="maticAmount" label="Price in matic" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />
-          <q-btn label="proceed payment" :disable="!maticAmount" color="green" data-test="confirm-delete-entry" type="submit" />
+          <q-btn label="deposit fund" :disable="!usdAmount" color="green" data-test="confirm-deposit-fund" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -25,32 +26,35 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useErrorStore, useUserStore } from 'src/stores'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { initiateSendEther, fetchMaticRate } from 'app/src/web3/transfers.js'
-import { releaseFunds } from 'app/src/web3/escrow'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
+import { usePromptStore } from 'src/stores'
+import { depositFunds } from 'app/src/web3/escrow'
+
 const $q = useQuasar()
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 const cryptoTransactionStore = useCryptoTransactionStore()
 
+const promptStore = usePromptStore()
+
 const emit = defineEmits(['hideDialog', 'forward-update-entry'])
 
 const props = defineProps({
   walletAddress: { type: String, required: true },
-  entry: null,
-  prompt: null,
-  depositedAmount: null
+  prompt: { type: Object }
 })
 
 const _walletAddress = ref('')
+const _prompt = ref(null)
 const usdAmount = ref(0)
 const maticAmount = ref(0)
 const maticRate = ref(0)
 
 onMounted(async () => {
   _walletAddress.value = props.walletAddress
-  maticAmount.value = props.depositedAmount
+  _prompt.value = props.prompt
   const maticRateResult = await fetchMaticRate()
   if (maticRateResult?.success) {
     maticRate.value = maticRateResult.maticRate
@@ -70,40 +74,46 @@ async function onSubmit(event) {
 
   $q.loading.show()
   try {
-    const result = await releaseFunds({ escrowId: props.prompt.escrowId })
-    if (result?.status?.includes('success')) {
-      const payload = {
-        initiator: userStore.getUser,
-        entry: props.entry,
-        prompt: props.prompt,
-        tHash: result?.transactionHash,
-        status: true,
-        networkName: 'matic',
-        explorerUrl: 'https://polygonscan.com/tx/'
-      }
-      cryptoTransactionStore
-        .addCryptoTransaction(payload)
-        .then(async (response) => {
-          const { _entry, _prompt } = response
-          if (_entry && _prompt) {
-            emit('forward-update-entry', { _entry, _prompt })
-          }
-          $q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' })
-          emit('hideDialog')
-          $q.loading.hide()
-        })
-        .catch((error) => {
-          emit('hideDialog')
+    const result = await depositFunds({ amountInMatic: maticAmount.value })
+    // const result = {
+    //   status: 'success',
+    //   events: [
+    //     {
+    //       event_name: 'Deposited',
+    //       args: {
+    //         0: '0.000000000000000004',
+    //         1: '0xdb0f8aACC19a779b9020a693c35014DaF9cF3796',
+    //         2: '1.0',
+    //         escrowId: '0.000000000000000004',
+    //         depositor: '0xdb0f8aACC19a779b9020a693c35014DaF9cF3796',
+    //         amount: '1.0'
+    //       }
+    //     }
+    //   ]
+    // }
 
-          errorStore.throwError(error, 'Error when saving the transaction')
-          $q.loading.hide()
-        })
+    if (result?.status?.includes('success')) {
+      if (_prompt?.value) {
+        //save advertisement to database
+        _prompt.value.escrowId = result.events[0].args.escrowId
+        const payload = {
+          promptId: _prompt.value.id,
+          escrowId: result.events[0].args.escrowId
+        }
+        await promptStore
+          .updateEscrowId(payload)
+          .then(() => $q.notify({ type: 'info', message: 'fund deposited sucessfully' }))
+          .catch((error) => errorStore.throwError(error, 'fund deposit failed on prompt edition'))
+          .finally(() => $q.loading.hide())
+      } else {
+        $q.notify({ type: 'negative', message: 'prompt should not be null' })
+      }
     } else {
-      $q.notify({ type: 'negative', message: 'funds released failed please retry' })
+      $q.notify({ message: result?.error?.message, type: 'negative' })
       $q.loading.hide()
     }
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'oups transaction failed' })
+    $q.notify({ type: 'negative', message: 'oups fund deposit failed' })
     errorStore.throwError(errorMessage, error)
     emit('hideDialog')
     $q.loading.hide()

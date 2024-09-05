@@ -22,88 +22,79 @@
     </template>
     <template v-slot:body-cell-actions="props">
       <td class="text-right">
-        <q-btn
-          v-if="
-            userStore.isEditorOrAbove &&
-            props.row.isWinner !== true &&
-            _currentPrompt?.isTreated !== true &&
-            _currentPrompt?.hasWinner !== true
-          "
-          color="black"
-          :disable="userStore.getUser.role !== 'Admin'"
-          flat
-          size="sm"
-          icon="toggle_off"
-          @click="onSelectWinnerDialog(props.row)"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
-          color="dark"
-          :disable="userStore.getUser.role !== 'Admin'"
-          flat
-          icon="payment"
-          size="sm"
-          label=""
-          @click="onProceedPaymentDialog(props.row)"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">proceed payment!</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="props.row.isWinner === true && _currentPrompt?.isTreated === true"
-          color="dark"
-          :disable="userStore.getUser.role !== 'Admin'"
-          flat
-          icon="payment"
-          size="sm"
-          label=""
-          @click="onProceedPaymentDialog(props.row)"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
-          color="positive"
-          flat
-          icon="toggle_on"
-          size="sm"
-          label=""
-          :disable="userStore.getUser.role !== 'Admin'"
-          @click="onSelectWinnerDialog(props.row)"
-        >
-          <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
-        </q-btn>
+        <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
+          <q-btn
+            v-if="
+              userStore.isEditorOrAbove &&
+              props.row.isWinner !== true &&
+              _currentPrompt?.isTreated !== true &&
+              _currentPrompt?.hasWinner !== true
+            "
+            color="black"
+            :disable="userStore.getUser.role !== 'Admin'"
+            flat
+            size="sm"
+            icon="toggle_off"
+            @click="onSelectWinnerDialog(props.row)"
+          >
+            <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
+            color="dark"
+            :disable="props.row.author.id == userStore.getUserId"
+            flat
+            icon="payment"
+            size="sm"
+            label=""
+            @click="onProceedPaymentDialog(props.row)"
+          >
+            <q-tooltip class="positive" :offset="[10, 10]">claim payment!</q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="props.row.isWinner === true && _currentPrompt?.isTreated === true"
+            color="dark"
+            :disable="userStore.getUser.role !== 'Admin'"
+            flat
+            icon="payment"
+            size="sm"
+            label=""
+            @click="onProceedPaymentDialog(props.row)"
+          >
+            <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
+          </q-btn>
 
-        <span v-if="_currentPrompt?.hasWinner !== true">
-          <span v-if="props.row.isWinner !== true">
-            <q-btn
-              v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
-              color="warning"
-              flat
-              icon="edit"
-              round
-              size="sm"
-              @click="onEditDialog(props.row)"
-            >
-              <q-tooltip>Edit</q-tooltip>
-            </q-btn>
-          </span>
-          <span v-if="props.row.isWinner !== true">
-            <q-btn
-              v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
-              color="negative"
-              data-test="button-delete-entry"
-              flat
-              icon="delete"
-              round
-              size="sm"
-              @click="onDeleteDialog(props.row)"
-            >
-              <q-tooltip>Delete</q-tooltip>
-            </q-btn>
+          <span v-if="_currentPrompt?.hasWinner !== true">
+            <span v-if="props.row.isWinner !== true">
+              <q-btn
+                v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
+                color="warning"
+                flat
+                icon="edit"
+                round
+                size="sm"
+                @click="onEditDialog(props.row)"
+              >
+                <q-tooltip>Edit</q-tooltip>
+              </q-btn>
+            </span>
+            <span v-if="props.row.isWinner !== true">
+              <q-btn
+                v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
+                color="negative"
+                data-test="button-delete-entry"
+                flat
+                icon="delete"
+                round
+                size="sm"
+                @click="onDeleteDialog(props.row)"
+              >
+                <q-tooltip>Delete</q-tooltip>
+              </q-btn>
+            </span>
           </span>
         </span>
+        <span v-else>deposit funds first</span>
       </td>
     </template>
   </q-table>
@@ -155,12 +146,13 @@
   <q-dialog v-model="proceedPaymentDialog.show">
     <q-card style="width: 400px; max-width: 60vw">
       <q-card-section class="q-pb-none">
-        <h6 class="q-my-sm">Payment Confirmation</h6>
+        <h6 class="q-my-sm">Claim Payment Confirmation</h6>
       </q-card-section>
       <WalletPaymentCard
         :walletAddress="proceedPaymentDialog.walletAddress"
         :entry="proceedPaymentDialog.entry"
         :prompt="_currentPrompt"
+        :depositedAmount="proceedPaymentDialog.depositedAmount"
         @forward-update-entry="forwardHandleUpdateEntry"
         @hideDialog="proceedPaymentDialog.show = false"
       />
@@ -186,6 +178,8 @@ import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
+import { customWeb3modal } from 'app/src/web3/walletConnect'
+import { setRecipient, getEscrowDetails, getEventsForEscrow } from 'app/src/web3/escrow'
 
 const props = defineProps({
   filter: { type: String, required: false, default: '' },
@@ -237,24 +231,48 @@ function onDeleteDialog(entry) {
 }
 
 async function onProceedPaymentDialog(props) {
-  //let's check if the entry already have valid payment..
-  const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
-  if (cryptoTransactionExist.length > 0) {
-    displayCrytptoTransactionDialog.value.cryptoTransaction = cryptoTransactionExist[0]
-    displayCrytptoTransactionDialog.value.show = true
-  } else {
-    if (!props.author.walletAddress) {
-      $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })
+  if (!_currentPrompt.value && props?.prompt?.id) {
+    _currentPrompt.value = await promptStore.fetchPromptById(props.prompt.id)
+  }
+  if (_currentPrompt.value) {
+    $q.loading.show()
+    if (!customWeb3modal.getAddress()) {
+      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+      customWeb3modal.open()
+      $q.loading.hide()
+      // onProceedPaymentDialog.value.show = false
     } else {
-      proceedPaymentDialog.value.show = true
-      proceedPaymentDialog.value.walletAddress = props.author.walletAddress
-      proceedPaymentDialog.value.entry = props
+      //let's check if the entry already have valid payment..
+      const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
+      if (cryptoTransactionExist.length > 0) {
+        displayCrytptoTransactionDialog.value.cryptoTransaction = cryptoTransactionExist[0]
+        displayCrytptoTransactionDialog.value.show = true
+      } else {
+        if (!props.author.walletAddress) {
+          $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })
+        } else {
+          const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
+
+          if (escrowEvents?.status?.includes('success')) {
+            //proceedPaymentDialog.value.depositedAmount = 0
+
+            proceedPaymentDialog.value.depositedAmount = escrowEvents?.events?.depositEvents[0]?.args.amount
+            proceedPaymentDialog.value.show = true
+            proceedPaymentDialog.value.walletAddress = escrowEvents?.events?.recipientSetEvents[0]?.args.recipient
+            proceedPaymentDialog.value.entry = props
+          }
+          $q.loading.hide()
+        }
+      }
     }
+  } else {
+    $q.notify({ type: 'negative', message: " oups can't find the related entry prompt" })
   }
 }
 
 function onSelectWinnerDialog(props) {
   // Toggle the isWinner state
+
   const isWinner = props.isWinner !== true
   // Dynamically set the selectWinnerMessage and selectWinnerTitle based on isWinner
   selectWinnerMessage.value =
@@ -264,7 +282,7 @@ function onSelectWinnerDialog(props) {
   selectWinnerTitle.value = isWinner === true ? 'Select Winner' : 'Deselect winner'
   const promptHasWinner = _currentPrompt.value.hasWinner === true
   //let's check if the corresponding promt already have a winner selected
-  if (_currentPrompt.value.isTreated === true) {
+  if (_currentPrompt?.value.isTreated === true) {
     $q.notify({ type: 'negative', message: 'The corresponding prompt is already treated' })
   } else {
     if (isWinner === true && promptHasWinner === true) {
@@ -299,27 +317,45 @@ function onDeleteEntry(entryId, promptId) {
   deleteDialog.value.show = false
 }
 
-function onSelectWinner(entry) {
+async function onSelectWinner(entry) {
   $q.loading.show()
   const isWinner = entry.isWinner !== true
   const payload = { entry: entry, isWinner: isWinner }
   //let's first check if the prompt don't already have selected entry
-  entryStore
-    .dataUpdateEntry(payload)
-    .then(async (response) => {
-      const { _entry, _prompt } = response
-      if (_entry && _prompt) {
-        emit('update-entry', { _entry, _prompt })
-      }
-      $q.notify({ type: 'positive', message: 'Succeed' })
-      $q.loading.hide()
-    })
-    .catch((error) => {
-      errorStore.throwError(error, 'Error selecting winner')
-      $q.loading.hide()
-    })
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    customWeb3modal.open()
+    $q.loading.hide()
+    selectWinnerDialog.value.show = false
+  } else {
+    if (entry?.author?.walletAddress) {
+      const result = await setRecipient({ escrowId: _currentPrompt.value.escrowId, recipient: entry?.author?.walletAddress })
+      if (result?.status?.includes('success')) {
+        entryStore
+          .dataUpdateEntry(payload)
+          .then(async (response) => {
+            const { _entry, _prompt } = response
+            if (_entry && _prompt) {
+              emit('update-entry', { _entry, _prompt })
+            }
+            $q.notify({ type: 'positive', message: 'Succeed' })
+            $q.loading.hide()
+          })
+          .catch((error) => {
+            errorStore.throwError(error, 'Error selecting winner')
+            $q.loading.hide()
+          })
 
-  selectWinnerDialog.value.show = false
+        selectWinnerDialog.value.show = false
+      } else {
+        $q.notify({ type: 'negative', message: 'oups winner selection failed ' })
+        $q.loading.hide()
+      }
+    } else {
+      $q.notify({ type: 'negative', message: ' the entry author should set a wallet address ' })
+      $q.loading.hide()
+    }
+  }
 }
 </script>
 <style scoped>

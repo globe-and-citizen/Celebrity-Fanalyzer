@@ -243,6 +243,40 @@ export const usePromptStore = defineStore('prompts', {
         .finally(() => (this._isLoading = false))
     },
 
+    async updateEscrowId(payload) {
+      const { promptId, escrowId } = payload
+
+      if (!promptId || !escrowId) {
+        throw new Error('Both promptId and escrowId are required.')
+      }
+
+      this._isLoading = true
+      try {
+        await runTransaction(db, async (transaction) => {
+          const promptDocRef = doc(db, 'prompts', promptId)
+          const promptDoc = await transaction.get(promptDocRef)
+
+          if (!promptDoc.exists()) {
+            throw new Error('Prompt does not exist.')
+          }
+
+          const prompt = promptDoc.data()
+          prompt.escrowId = escrowId
+          prompt.updated = Timestamp.fromDate(new Date())
+
+          transaction.update(promptDocRef, prompt)
+        })
+
+        // Update local state or cache if needed
+        this._prompts = this._prompts.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
+        this._monthPrompt = this._monthPrompt.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
+      } catch (error) {
+        console.error('Error updating escrowId:', error)
+      } finally {
+        this._isLoading = false
+      }
+    },
+
     async deletePrompt(id) {
       const commentStore = useCommentStore()
       const entryStore = useEntryStore()

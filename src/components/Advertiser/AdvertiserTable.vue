@@ -150,7 +150,7 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td  class="cursor-pointer " @click="goToUrl(props.row.id)" >
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             <div v-html="props.row.content" class="singleLine_ellipsis"></div>
           </q-td>
         </template>
@@ -385,7 +385,7 @@ async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.show()
   const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
   if (result.status.includes('success')) {
-    console.log('the result claimPayment result ====', result)
+    //console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
     //let's change the advertise status.
     if (currentAmountSpent >= advertise.budget) {
@@ -600,7 +600,6 @@ function changeActiveStatus(advertise, status) {
       errorStore.throwError(error, 'Advertise edit failed')
     })
 }
-
 
 function calculateStatus(date) {
   const currentDate = new Date()
