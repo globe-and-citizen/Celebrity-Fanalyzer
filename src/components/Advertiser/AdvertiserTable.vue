@@ -120,11 +120,7 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="
-                props.row.status === 'Inactive' &&
-                computedDuration(props.row.endDate) > 0 &&
-                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
-              "
+              v-show="computedDuration(props.row.endDate) >= 0"
               name="edit"
               color="blue"
               size="18px"
@@ -273,13 +269,14 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'Active', value: 'active' })
+const selectedDataType = ref({ label: 'Ongoing', value: 'ongoing' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
 const initialDataOptions = [
+  { label: 'Ongoing', value: 'ongoing' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
   { label: 'Budget Crossed', value: 'budget-crossed' },
@@ -294,7 +291,8 @@ const dataOptions = ref(
       option.value === 'complete' ||
       option.value === 'all' ||
       option.value === 'inactive' ||
-      option.value === 'active'
+      option.value === 'active' ||
+      option.value === 'ongoing'
   )
 )
 

@@ -1,32 +1,70 @@
 {
-  "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#e54757",
+  "description": "Celebrities Over Analyzed.",
+  "display": "standalone",
   "icons": [
     {
-      "src": "/icon-128x128.png",
-      "sizes": "128x128",
+      "sizes": "36x36",
+      "src": "/android-chrome-36x36.png",
       "type": "image/png"
     },
     {
-      "src": "/icon-192x192.png",
+      "sizes": "48x48",
+      "src": "/android-chrome-48x48.png",
+      "type": "image/png"
+    },
+    {
+      "sizes": "72x72",
+      "src": "/android-chrome-72x72.png",
+      "type": "image/png"
+    },
+    {
+      "sizes": "96x96",
+      "src": "/android-chrome-96x96.png",
+      "type": "image/png"
+    },
+    {
+      "sizes": "144x144",
+      "src": "/android-chrome-144x144.png",
+      "type": "image/png"
+    },
+    {
       "sizes": "192x192",
+      "src": "/android-chrome-192x192.png",
       "type": "image/png"
     },
     {
-      "src": "/icon-256x256.png",
       "sizes": "256x256",
+      "src": "/android-chrome-256x256.png",
       "type": "image/png"
     },
     {
-      "src": "/icon-384x384.png",
       "sizes": "384x384",
+      "src": "/android-chrome-384x384.png",
       "type": "image/png"
     },
     {
-      "src": "/icon-512x512.png",
       "sizes": "512x512",
+      "src": "/android-chrome-512x512.png",
       "type": "image/png"
     }
+  ],
+  "name": "Celebrity Fanalyzer",
+  "orientation": "portrait",
+  "short_name": "Celebrity Fanalyzer",
+  "start_url": "https://celebrityfanalyzer.com",
+  "theme_color": "#e54757",
+  "categories": [
+    "books",
+    "business",
+    "education",
+    "entertainment",
+    "lifestyle",
+    "magazines",
+    "news",
+    "politics",
+    "social",
+    "sports",
+    "travel"
   ]
 }
