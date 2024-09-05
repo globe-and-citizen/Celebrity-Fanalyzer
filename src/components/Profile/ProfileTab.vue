@@ -76,17 +76,21 @@
         flat
         dense
         @click="onSetWalletAddressDialog()"
-        />
+        >
+        <q-tooltip>{{user.walletAddress ? 'Update' : 'Save' }}</q-tooltip>
+      </q-btn>
         <q-btn
-        v-if="currentWalletAddress"
+        v-if="(user.walletAddress || currentWalletAddress)"
         color="negative"
         :icon="'delete'"
         size="sm"
         class=" self-center"
         flat
         dense
-         @click="switchAddressUpdated(false)"
-         />
+         @click="onDeleteWalletAddressDialog()"
+         >
+         <q-tooltip>Delete</q-tooltip>
+        </q-btn>
       </q-input>
     </div>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
@@ -122,6 +126,29 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="removeWalletAddressDialog.show">
+  <q-card>
+    <q-card-section class="q-pb-none">
+      <h6 class="q-my-sm">Remove wallet address</h6>
+    </q-card-section>
+    <q-card-section>
+      <span class="q-ml-sm">
+        Are you sure you want to remove your wallet address?
+      </span>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn color="primary" label="Cancel" v-close-popup />
+      <q-btn
+       color="negative"
+       data-test="confirm-remove-wallet"
+       label="Remove"
+       @click="onRemoveWalletAddress()"
+       />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
 </template>
 
 <script setup>
@@ -148,6 +175,8 @@ const user = ref(userStore.getUser)
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
+const removeWalletAddressDialog = ref({ show: false });
+
 
 const isUpdate = ref(false)
 
@@ -183,7 +212,7 @@ function copyLink() {
 }
 
 function switchAddressUpdated(value) {
-  addressUpdated.value = value
+  addressUpdated.value = value;
 }
 function save() {
   if (currentWalletAddress.value && addressUpdated.value === true) {
@@ -208,6 +237,19 @@ function onSetWalletAddress() {
   setWalletAddressDialog.value.show = false
   save()
 }
+
+function onDeleteWalletAddressDialog() {
+  removeWalletAddressDialog.value.show = true;
+}
+
+function onRemoveWalletAddress() {
+  user.value.walletAddress = '';
+  walletStore.getWalletInfo.wallet_address = '';
+  removeWalletAddressDialog.value.show = false;
+  save()
+  $q.notify({ message: 'Wallet address removed', type: 'negative' });
+}
+
 </script>
 
 <style scoped lang="scss">

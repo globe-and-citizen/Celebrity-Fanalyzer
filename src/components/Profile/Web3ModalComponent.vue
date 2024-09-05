@@ -2,15 +2,34 @@
   <div v-if="page_name == 'profile'">
     <div class="text-right" v-if="isConnected">
       <div class="q-pa-md q-gutter-sm">
-        <q-btn icon="edit" @click.prevent.stop="updateWalletInfo()" color="primary" label="" data-test="Open Connect Modal" size="sm" />
+        <q-btn
+        icon="edit"
+        flat
+        dense
+        @click.prevent.stop="updateWalletInfo()"
+        color="primary"
+        label=""
+        data-test="Open Connect Modal"
+        size="sm"
+        >
+        <q-tooltip>Add new wallet</q-tooltip>
+      </q-btn>
       </div>
     </div>
     <div class="text-right" v-if="!isConnected">
       <div class="q-pa-md q-gutter-sm">
-        <q-btn icon="edit" @click.prevent.stop="updateWalletInfo()" color="primary" label="" data-test="Open Connect Modal" size="sm"
+        <q-btn
+        :icon="userStore.getUser?.['walletAddress']?'edit':'add_circle'"
+        @click.prevent.stop="updateWalletInfo()"
+        color="primary"
+        label=""
+        data-test="Open Connect Modal"
+        size="sm"
         flat
         dense
-        />
+        >
+        <q-tooltip>{{ userStore.getUser?.['walletAddress']?'Change wallet':'Add new wallet' }}</q-tooltip>
+        </q-btn>
       </div>
     </div>
   </div>
@@ -19,9 +38,10 @@
 <script setup lang="ts">
 import { customWeb3modal } from 'src/web3/walletConnect'
 import { computed } from 'vue'
-import { useWalletStore } from 'app/src/stores'
+import { useWalletStore,useUserStore } from 'app/src/stores'
 
 const walletStore = useWalletStore()
+const userStore=useUserStore()
 //let's define props
 defineProps({
   page_name: {
