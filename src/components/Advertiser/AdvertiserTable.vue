@@ -6,14 +6,14 @@
         class="custom-table"
         bordered
         virtual-scroll
-        :hide-bottom="!!computedAdvertise.length && !filter.length"
+        :hide-bottom="!!advertises.length && !filter.length"
         title="Manage Advertisements"
         row-key="name"
         no-data-label="No advertisements found."
         no-results-label="No advertisements found for your search."
         :filter="filter"
-        :rows="computedAdvertise"
-        :columns="computedAdvertise.length > 0 ? columns : []"
+        :rows="advertises"
+        :columns="advertises.length > 0 ? columns : []"
         :loading="advertiseStore.isLoading"
         :rows-per-page-options="[0]"
       >
@@ -120,11 +120,7 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="
-                props.row.status === 'Inactive' &&
-                computedDuration(props.row.endDate) > 0 &&
-                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
-              "
+              v-show="computedDuration(props.row.endDate) >= 0"
               name="edit"
               color="blue"
               size="18px"
@@ -273,13 +269,14 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'All', value: 'all' })
+const selectedDataType = ref({ label: 'Ongoing', value: 'ongoing' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
 const initialDataOptions = [
+  { label: 'Ongoing', value: 'ongoing' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
   { label: 'Budget Crossed', value: 'budget-crossed' },
@@ -294,16 +291,11 @@ const dataOptions = ref(
       option.value === 'complete' ||
       option.value === 'all' ||
       option.value === 'inactive' ||
-      option.value === 'active'
+      option.value === 'active' ||
+      option.value === 'ongoing'
   )
 )
 
-const computedAdvertise = computed(() => {
-  if (selectedDataType.value.label === 'All') {
-    return props.advertises
-  }
-  return props.advertises.filter((advertise) => advertise.status === selectedDataType.value.label)
-})
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -614,6 +606,11 @@ function calculateStatus(date) {
 
   return publishDate <= currentDate
 }
+
+watch(selectedDataType, (newType) => {
+  advertiseStore.fetchAdvertises(newType.label)
+})
+
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
   const impressionsMatic = impressions / 100
   const clicksMatic = clicks / 20

@@ -49,10 +49,14 @@
 
         <q-btn color="primary" data-test="sign-button" :label="tab === 'signin' ? 'Sign In' : 'Sign Up'" type="submit" />
       </q-form>
-      <div v-if="tab !== 'signup'" class="column items-center q-py-sm">
-        <span class="cursor-pointer self-center" @click="openResetDialog = true">forgot password?</span>
-      </div>
-
+      <q-btn
+        color="secondary"
+        size="sm"
+        v-if="tab !== 'signup'"
+        class="forgot-pass"
+        label="forgot password?"
+        @click="openResetDialog = true"
+      />
       <q-separator inset />
 
       <div class="column items-center q-gutter-md q-py-md">
@@ -152,3 +156,10 @@ watch(
   { immediate: true }
 )
 </script>
+
+<style scoped>
+.forgot-pass {
+  display: flex;
+  margin: 10px auto;
+}
+</style>

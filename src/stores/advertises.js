@@ -12,7 +12,8 @@ import {
   Timestamp,
   where,
   getDoc,
-  getDocs
+  getDocs,
+  or
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import {
@@ -70,22 +71,31 @@ export const useAdvertiseStore = defineStore('advertises', {
       const userStore = useUserStore()
       if (type) {
         try {
-          const q = query(collection(db, 'advertises'), type !== 'All' ? where('status', '==', type) : '', orderBy('created', 'desc'))
-          this.setLoaderTrue()
-          const querySnapshot = await getDocs(q)
-          let advertises = querySnapshot.docs.map((doc) => {
-            return { id: doc.id, ...doc.data() }
-          })
-
-          if (!userStore.isAdmin) {
-            advertises = advertises.filter((advertise) => {
-              return advertise.author.id === userStore.getUserId
+          const q = query(
+            collection(db, 'advertises'),
+            type !== 'All'
+              ? type === 'Ongoing'
+                ? or(where('status', '==', 'Active'), where('status', '==', 'Inactive'))
+                : where('status', '==', type)
+              : '',
+            orderBy('created', 'desc')
+          )
+          this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
+            this.setLoaderTrue()
+            let advertises = querySnapshot.docs.map((doc) => {
+              return { id: doc.id, ...doc.data() }
             })
-          }
 
-          this._advertises = []
-          this.$patch({ _advertises: advertises })
-          this.setLoaderFalse()
+            if (!userStore.isAdmin) {
+              advertises = advertises.filter((advertise) => {
+                return advertise.author.id === userStore.getUserId
+              })
+            }
+
+            this._advertises = []
+            this.$patch({ _advertises: advertises })
+            this.setLoaderFalse()
+          })
         } catch (err) {
           console.error(err)
         }
@@ -186,6 +196,7 @@ export const useAdvertiseStore = defineStore('advertises', {
           return data
         })
         const activeAdvertises = await Promise.all(activeAdvertisePromises)
+
         this._activeAdvertises = []
         const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
         const activeAds = await this.fetchActiveAdvertises(activeAdvertises, visitorId)
@@ -226,7 +237,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     selectAds(activeAds, allAds) {
       const topAds = activeAds.slice(0, 5)
       const shuffledAds = this.shuffle(allAds)
-      return [...topAds, ...shuffledAds].slice(0, 5)
+      return [...topAds, ...shuffledAds.filter((ad) => !topAds.find((topAdd) => topAdd.id === ad.id))].slice(0, 5)
     },
     shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -294,6 +305,10 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
     setTab(tab) {
       this.$patch({ _tab: tab })
+    },
+    reset() {
+      this._allActiveAdvertises = []
+      this._activeAdvertises = []
     }
   }
 })

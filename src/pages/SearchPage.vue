@@ -53,7 +53,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref } from 'vue'
+import { computed, ref ,onUnmounted} from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -67,6 +67,10 @@ const search = ref('')
 
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+
+onUnmounted(()=>{
+  advertiseStore.reset()
+})
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
