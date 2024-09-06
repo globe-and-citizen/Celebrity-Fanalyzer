@@ -18,9 +18,9 @@ export const useVisitorStore = defineStore('visitors', {
   },
 
   actions: {
-    async addVisitor(collectionName, documentId) {
+    async addVisitor(collectionName, documentId, v = undefined) {
       const userStore = useUserStore()
-      const visitorId = userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
+      const visitorId = v !== undefined ? v : userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp
 
       const visitorRef = doc(db, collectionName, documentId, 'visitors', visitorId)
       const visitorSnap = await getDoc(visitorRef)
@@ -30,7 +30,7 @@ export const useVisitorStore = defineStore('visitors', {
         await updateDoc(visitorRef, { visits: arrayUnion(monthDayYear()) })
       } else {
         const visitor = {
-          id: userStore.isAuthenticated ? userStore.getUserRef.id : userStore.getUserIp,
+          id: visitorId,
           visits: [monthDayYear()]
         }
         await setDoc(visitorRef, visitor)
