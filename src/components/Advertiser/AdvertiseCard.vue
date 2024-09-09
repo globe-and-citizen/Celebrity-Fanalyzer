@@ -26,7 +26,7 @@
               counter
               class="q-mb-lg"
               data-test="file-image"
-              :hint="!advertise.image ? '*Image is required. Max size is 5MB.':fileErrorMessage"
+              :hint="!advertise.image ? '*Image is required. Max size is 2MB.':fileErrorMessage"
               :label="advertise.type === 'Banner' ? 'Image' : 'Video'"
               :max-total-size="5242880"
               :required="!id"
