@@ -47,8 +47,22 @@
               :options="authorOptions"
               v-model="prompt.author"
             />
-            <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
-            <q-field counter label="Description" maxlength="400" v-model="prompt.description">
+            <q-input
+            counter
+            data-test="input-title"
+            label="Title"
+            maxlength="80"
+            required
+            v-model="prompt.title"
+            :hint="!prompt.title ? '*Title is required':''"
+            />
+            <q-field
+            counter
+            label="Description"
+            maxlength="400"
+            v-model="prompt.description"
+            :hint="!prompt.description ? '*Description is required':''"
+            >
               <template v-slot:control>
                 <q-editor
                   class="q-mt-md"
@@ -85,11 +99,11 @@
               accept=".jpg, image/*"
               counter
               data-test="file-image"
-              hide-hint
-              hint="Max size is 2MB"
+              :hint="!prompt.image ? '*Image is required. Max size is 2MB.':''"
               label="Image"
               :max-total-size="2097152"
               :required="!id"
+              use-chips
               v-model="imageModel"
               @rejected="onRejected()"
               @update:model-value="uploadPhoto()"
@@ -103,8 +117,7 @@
               counter
               data-test="select-categories"
               hide-dropdown-icon
-              hide-hint
-              hint="Click Enter ↵ to add a new category"
+              :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
               input-debounce="0"
               label="Categories"
               multiple

@@ -4,7 +4,15 @@
       <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Advertise' : 'New Advertise'">
           <q-card-section>
-            <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="advertise.title" />
+            <q-input
+            counter
+            data-test="input-title"
+            label="Title"
+            maxlength="80"
+            required
+            v-model="advertise.title"
+            :hint="!advertise.title ? '*Title is required':''"
+            />
             <div class="q-py-md">
               <div class="flex items-center justify-between">
                 <div>Select Add type :</div>
@@ -15,14 +23,14 @@
             <q-file
               v-if="advertise.type === 'Banner'"
               v-model="contentModel"
-              hide-hint
               counter
               class="q-mb-lg"
               data-test="file-image"
-              :hint="fileErrorMessage"
+              :hint="!advertise.image ? '*Image is required. Max size is 2MB.':fileErrorMessage"
               :label="advertise.type === 'Banner' ? 'Image' : 'Video'"
               :max-total-size="5242880"
               :required="!id"
+              use-chips
               :accept="advertise.type === 'Banner' ? '.jpg, image/*' : '.mp4, .mkv'"
               @rejected="onRejected()"
               @update:model-value="uploadPhoto()"
@@ -40,7 +48,13 @@
                 :src="advertise.contentURL"
               />
             </div>
-            <q-field counter label="Description" maxlength="400" v-model="advertise.content">
+            <q-field
+            counter
+            label="Description"
+            maxlength="400"
+            v-model="advertise.content"
+            :hint="!advertise.content ? '*Description is required':''"
+            >
               <template v-slot:control>
                 <q-editor
                   class="q-mt-md"
@@ -90,6 +104,7 @@
               label="Publish date"
               :rules="['date']"
               @click="openDatePicker"
+              :hint="!advertise.publishDate ? '*Publish Date is required':''"
             >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -106,6 +121,7 @@
             <q-input
               v-model.number="advertise.duration"
               label="Duration(day's)"
+              :hint="!advertise.duration ? '*Duration is required':''"
               class="q-mb-lg"
               type="number"
               :min="1"
@@ -115,6 +131,7 @@
               v-if="!isEditing"
               v-model="usdAmount"
               label="Price in USD"
+              :hint="!usdAmount ? '*Minimum Price is required':''"
               min="0"
               mask="#.####"
               fill-mask="0"
@@ -194,7 +211,7 @@ const storageStore = useStorageStore()
 const userStore = useUserStore()
 const contentModel = ref([])
 const datePickerVisible = ref(false)
-const fileErrorMessage = ref('Max size is 5MB')
+const fileErrorMessage = ref('')
 const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
