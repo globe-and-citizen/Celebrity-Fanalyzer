@@ -5,10 +5,13 @@
 
 <script setup>
 import { useUserStore } from 'app/src/stores'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
+const router = useRouter()
 
 function onLogout() {
   userStore.logout()
+  router.push({ path: '/profile' })
 }
 </script>
