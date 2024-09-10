@@ -263,7 +263,7 @@ export const usePromptStore = defineStore('prompts', {
           prompt.author = await userStore.fetchUser(prompt.author.id)
 
           this._prompts = this._prompts.map((element) => (element.id === prompt.id ? prompt : element))
-          this._monthPrompt = this._monthPrompt.map((element) => (element.id === prompt.id ? prompt : element))
+          this._monthPrompt = this._monthPrompt?.map((element) => (element.id === prompt.id ? prompt : element))
         })
         .finally(() => (this._isLoading = false))
     },
