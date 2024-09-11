@@ -134,9 +134,9 @@
             </q-icon>
           </q-td>
         </template>
-        <template #body-cell-durations="props">
+        <template #body-cell-expiry_status="props">
           <q-td class="text-right">
-            {{ computedDuration(props.row.endDate) }} day's
+            {{ formatExpiryStatus(computedDuration(props.row.endDate)) }}
             <q-tooltip>{{ props.row.publishDate }} to {{ props.row.endDate }}</q-tooltip>
           </q-td>
         </template>
@@ -295,6 +295,7 @@ const dataOptions = ref(
       option.value === 'ongoing'
   )
 )
+
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -538,21 +539,21 @@ const columns = ref([
   },
   {
     name: 'clicks',
-    field: 'clicks',
+    field: 'totalClicks',
     align: 'center',
     label: 'Number of Click',
     sortable: true
   },
   {
     name: 'impression',
-    field: 'impressions',
+    field: 'totalImpressions',
     align: 'center',
     label: 'Number of Impression',
     sortable: true
   },
   {
     name: 'visits',
-    field: 'visits',
+    field: 'totalVisits',
     align: 'center',
     label: 'Number of Visits',
     sortable: true
@@ -565,10 +566,10 @@ const columns = ref([
     sortable: true
   },
   {
-    name: 'durations',
+    name: 'expiry_status',
     field: 'duration',
     align: 'right',
-    label: 'Durations'
+    label: 'Expiry Status'
   },
 
   {
@@ -605,6 +606,11 @@ function calculateStatus(date) {
 
   return publishDate <= currentDate
 }
+
+watch(selectedDataType, (newType) => {
+  advertiseStore.fetchAdvertises(newType.label)
+})
+
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
   const impressionsMatic = impressions / 100
   const clicksMatic = clicks / 20
@@ -641,10 +647,17 @@ async function onUpdate(e) {
     label: e.label
   }
 }
-
-watch(selectedDataType, (newType) => {
-  advertiseStore.fetchAdvertises(newType.label)
-})
+function formatExpiryStatus(days) {
+  if (days === 1) {
+    return '1 day left'
+  } else if (days > 1) {
+    return `${days} day's left`
+  } else if (days === 0) {
+    return `Today`
+  } else {
+    return 'Expired'
+  }
+}
 </script>
 
 <style>
