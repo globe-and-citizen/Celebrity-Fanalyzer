@@ -24,7 +24,6 @@
       <q-tr class="new" :data-test="props.key" :props="props">
         <q-td auto-width>
           <q-btn
-            v-if="!filter"
             dense
             flat
             round
@@ -69,12 +68,11 @@
           </q-btn>
         </q-td>
       </q-tr>
-      <q-tr v-show="props.expand && !filter" :props="props">
+      <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
           <TableEntry
             v-else
-            :filter="filter"
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
             :loaded-entries="entryStore._loadedEntries"
