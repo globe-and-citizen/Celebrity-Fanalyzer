@@ -14,9 +14,7 @@
     <div class="article-details">
       <h4 class="post-category">Advertise</h4>
       <h3 class="post-title">{{ advertise.title?.length > 30 ? advertise.title.substring(0, 30) + '...' : advertise.title }}</h3>
-      <p v-html="advertise.content" class="multiline_ellipsis full-width">
-
-      </p>
+      <p v-html="advertise.content" class="multiline_ellipsis full-width"></p>
       <span class="cursor-pointer text-black link" @click="goToUrl">Learn more</span>
       <a
         v-if="advertise?.productLink"
@@ -62,7 +60,8 @@ onMounted(async () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const intersecting = entry.isIntersecting
-      if (intersecting && props.advertise?.status==='Active') {
+      if (intersecting && props.advertise?.status === 'Active') {
+        console.log('intersecting')
         impressionsStore.addImpression('advertises', props.advertise?.id).catch((error) => errorStore.throwError(error))
       }
     })
@@ -210,5 +209,4 @@ $shadow: rgba(0, 0, 0, 0.2);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 </style>

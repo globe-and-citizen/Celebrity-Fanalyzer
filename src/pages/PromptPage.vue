@@ -66,7 +66,10 @@ const shareIsLoaded = ref(false)
 const editPrompt = ref({})
 const { data } = useQuery({
   queryKey: ['monthPrompt'],
-  queryFn: fetchMonth
+  queryFn: fetchMonth,
+  // 5 days
+  refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  staleTime: 5 * 24 * 60 * 60 * 1000
 })
 const params = computed(() => router.currentRoute.value?.params)
 const prompt = computed(() => {

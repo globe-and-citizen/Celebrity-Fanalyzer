@@ -208,7 +208,9 @@ import { useQuery } from '@tanstack/vue-query'
 const { data } = useQuery({
   queryKey: ['monthPrompt'],
   queryFn: fetchMonth,
-  retry: 1
+  // 5 days
+  refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  staleTime: 5 * 24 * 60 * 60 * 1000
 })
 </script>
 
