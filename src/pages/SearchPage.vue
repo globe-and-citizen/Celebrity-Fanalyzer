@@ -21,15 +21,12 @@
           unelevated
         />
       </q-scroll-area>
-      <section v-if="!promptStore.getPrompts && promptStore.isLoading">
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-      </section>
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
+          <section class="card-items-wrapper" v-if="!promptStore.getPrompts && promptStore.isLoading">
+            <ArticleSkeleton v-for="n in skeletons" :key="n" />
+          </section>
+          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
             <ItemCard
               v-for="prompt in computedPromptsAndAdvertises"
               :key="prompt?.id"
@@ -53,7 +50,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref ,onUnmounted} from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -64,11 +61,12 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
+const skeletons = 10
 
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
 promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 
-onUnmounted(()=>{
+onUnmounted(() => {
   advertiseStore.reset()
 })
 
