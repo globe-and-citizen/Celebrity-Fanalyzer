@@ -37,6 +37,38 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "created",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "text",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isAnonymous",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "text",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "isAnonymous",
           "order": "ASCENDING"
         },
