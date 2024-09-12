@@ -73,7 +73,6 @@
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
           <TableEntry
             v-else
-            :filter="filter"
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
             :loaded-entries="entryStore._loadedEntries"
