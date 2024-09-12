@@ -60,7 +60,7 @@ function onLogout() {
 
 const onAdminTabClick = () => {
   if (userStore.isAuthenticated) {
-    router.push('/admin/advertises')
+    router.push('/admin/prompts')
   } else if (!isAdminPromptPath) {
     router.push('/admin/prompts')
   } else {
