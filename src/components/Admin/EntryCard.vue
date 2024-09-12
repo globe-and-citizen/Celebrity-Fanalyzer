@@ -26,8 +26,22 @@
             </q-item>
           </template>
         </q-select>
-        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="entry.title" />
-        <q-field counter label="Description" maxlength="400" v-model="entry.description">
+        <q-input
+        counter
+        data-test="input-title"
+        label="Title"
+        maxlength="80"
+        required
+        v-model="entry.title"
+        :hint="!entry.title ? '*Title is required':''"
+         />
+        <q-field
+        counter
+        label="Description"
+        maxlength="400"
+        v-model="entry.description"
+        :hint="!entry.description ? '*Description is required':''"
+        >
           <template v-slot:control>
             <q-editor
               class="q-mt-md"
@@ -65,10 +79,11 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : '*Image is required. Max size is 2MB.'"
+          :hint="!entry.prompt ? 'Select prompt first' :!entry.image ? '*Image is required. Max size is 2MB.':''"
           label="Image"
           :max-total-size="2097152"
           :required="!id"
+          use-chips
           v-model="imageModel"
           @rejected="onRejected()"
           @update:model-value="uploadPhoto()"

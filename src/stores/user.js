@@ -198,11 +198,6 @@ export const useUserStore = defineStore('user', {
       signOut(auth).then(() => {
         this.$reset()
         LocalStorage.remove('user')
-        try {
-          this.router.go(0)
-        } catch (e) {
-          console.log('Error', e)
-        }
       })
     },
 

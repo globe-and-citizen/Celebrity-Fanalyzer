@@ -92,12 +92,8 @@ export const useAdvertiseStore = defineStore('advertises', {
               })
             }
 
-            for (const advertise of advertises) {
-              advertise.author = userStore.getUserById(advertise.author.id) || (await userStore.fetchUser(advertise.author.id))
-            }
             this._advertises = []
             this.$patch({ _advertises: advertises })
-            await this.computeValues()
             this.setLoaderFalse()
           })
         } catch (err) {
@@ -123,7 +119,7 @@ export const useAdvertiseStore = defineStore('advertises', {
         const advertise = docData.docs[0].data()
         if (advertise.author.id === userStore.getUserId) {
           advertise.author = userStore.getUser
-        } else if (userStore.isAdmin) {
+        } else if (userStore.isAdmin || advertise.status === 'Active') {
           advertise.author = await userStore.getUserByUidOrUsername(advertise.author.id)
         } else {
           return await this.redirect()
@@ -143,76 +139,41 @@ export const useAdvertiseStore = defineStore('advertises', {
     setLoaderFalse() {
       this._isLoading = false
     },
-    async computeValues() {
-      this.getAdvertises.map((advertise) => {
-        onSnapshot(collection(db, 'advertises', advertise.id, 'impressions'), (impressionsSnapshot) => {
-          let computedImpressions = 0
-          impressionsSnapshot.docs.map((doc) => {
-            computedImpressions += doc.data().impression
-          })
-          this._advertises = this._advertises.map((element) => {
-            if (element.id === advertise.id) {
-              element.impressions = computedImpressions
-            }
-            return element
-          })
-        })
-
-        onSnapshot(collection(db, 'advertises', advertise.id, 'clicks'), (clicksSnapshot) => {
-          let computedClicks = 0
-          clicksSnapshot.docs.map((doc) => {
-            computedClicks += doc.data().clicked
-          })
-          this._advertises = this._advertises.map((element) => {
-            if (element.id === advertise.id) {
-              element.clicks = computedClicks
-            }
-            return element
-          })
-        })
-        onSnapshot(collection(db, 'advertises', advertise.id, 'visitors'), (visitsSnapshot) => {
-          let computedVisits = 0
-          visitsSnapshot.docs.map((doc) => {
-            computedVisits += doc.data().visits?.length || 0
-          })
-          this._advertises = this._advertises.map((element) => {
-            if (element.id === advertise.id) {
-              element.visits = computedVisits
-            }
-            return element
-          })
-        })
-      })
-    },
-
     async addAdvertise(payload) {
-      const advertise = { ...payload }
-      advertise.author = doc(db, 'users', advertise.author.uid)
-      advertise.created = Timestamp.fromDate(new Date())
-      advertise.isApproved = false
+      try {
+        const advertise = { ...payload }
+        advertise.author = doc(db, 'users', advertise.author.uid)
+        advertise.created = Timestamp.fromDate(new Date())
+        advertise.isApproved = false
 
-      this._isLoading = true
-      await setDoc(doc(db, 'advertises', advertise.id), advertise)
-        .catch((error) => console.log(error))
-        .finally(() => (this._isLoading = false))
+        this._isLoading = true
+        await setDoc(doc(db, 'advertises', advertise.id), advertise)
+        this._advertises = [advertise, ...this._advertises]
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async editAdvertise(payload) {
-      const userStore = useUserStore()
-      const advertise = { ...payload }
-      advertise.updated = Timestamp.fromDate(new Date())
+      try {
+        const advertise = { ...payload }
+        advertise.updated = Timestamp.fromDate(new Date())
 
-      advertise.author = doc(db, 'users', advertise.author.uid)
+        advertise.author = doc(db, 'users', advertise.author.id)
 
-      this._isLoading = true
-      await runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'advertises', advertise.id), advertise)
-      })
-        .then(async () => {
-          advertise.author = await userStore.fetchUser(advertise.author.id)
-          this._advertises = this._advertises.map((element) => (element.id === advertise.id ? advertise : element))
+        this._isLoading = true
+        await runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'advertises', advertise.id), advertise)
         })
-        .finally(() => (this._isLoading = false))
+
+        this._advertises = this._advertises.map((element) => (element.id === advertise.id ? advertise : element))
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async getActiveAdvertise() {
@@ -223,25 +184,25 @@ export const useAdvertiseStore = defineStore('advertises', {
         orderBy('created', 'desc')
       )
       const userStore = useUserStore()
-      if (!this._unSubscribeActive) {
-        this._unSubscribeActive = onSnapshot(q, async (querySnapshot) => {
-          const activeAdvertisePromises = querySnapshot.docs.map(async (doc) => {
-            const data = { id: doc.id, ...doc.data(), isAdd: true }
-            let user = userStore.getUserById(data.author.id)
-            if (!user) {
-              user = await userStore.fetchUser(data.author.id)
-            }
-            data.author = user
-            return data
-          })
-          const activeAdvertises = await Promise.all(activeAdvertisePromises)
-          this._activeAdvertises = []
-          const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
-          const activeAds = await this.fetchActiveAdvertises(activeAdvertises, visitorId)
-          const finalAds = this.selectAds(activeAds, activeAdvertises)
-          this.$patch({ _activeAdvertises: finalAds })
-          this.$patch({ _allActiveAdvertises: activeAdvertises })
+      if (this.getALlActiveAdvertises.length === 0) {
+        const querySnapshot = await getDocs(q)
+        const activeAdvertisePromises = querySnapshot.docs.map(async (doc) => {
+          const data = { id: doc.id, ...doc.data(), isAdd: true }
+          let user = userStore.getUserById(data.author.id)
+          if (!user) {
+            user = await userStore.fetchUser(data.author.id)
+          }
+          data.author = user
+          return data
         })
+        const activeAdvertises = await Promise.all(activeAdvertisePromises)
+
+        this._activeAdvertises = []
+        const visitorId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+        const activeAds = await this.fetchActiveAdvertises(activeAdvertises, visitorId)
+        const finalAds = this.selectAds(activeAds, activeAdvertises)
+        this.$patch({ _activeAdvertises: finalAds })
+        this.$patch({ _allActiveAdvertises: activeAdvertises })
       } else if (this.getALlActiveAdvertises.length > 0) {
         this.recomputeActiveAdvertises()
       }
@@ -276,7 +237,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     selectAds(activeAds, allAds) {
       const topAds = activeAds.slice(0, 5)
       const shuffledAds = this.shuffle(allAds)
-      return [...topAds, ...shuffledAds].slice(0, 5)
+      return [...topAds, ...shuffledAds.filter((ad) => !topAds.find((topAdd) => topAdd.id === ad.id))].slice(0, 5)
     },
     shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -334,6 +295,7 @@ export const useAdvertiseStore = defineStore('advertises', {
           deleteImpressions,
           deleteAdFromStats
         ])
+        this._advertises = this._advertises.filter((advertise) => advertise.id !== id)
       } catch (error) {
         console.log(error)
         await errorStore.throwError(error)
@@ -343,6 +305,10 @@ export const useAdvertiseStore = defineStore('advertises', {
     },
     setTab(tab) {
       this.$patch({ _tab: tab })
+    },
+    reset() {
+      this._allActiveAdvertises = []
+      this._activeAdvertises = []
     }
   }
 })

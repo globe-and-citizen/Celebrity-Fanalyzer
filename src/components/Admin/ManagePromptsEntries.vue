@@ -91,8 +91,7 @@
 
           <TableEntry
             v-else
-            :filter="filter"
-            :rows="getEntriesForPrompt(props.row.id)?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
+            :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
             :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"

@@ -12,11 +12,26 @@ export async function uploadAndSetImage(imageFile, filePathAndName) {
       const img = new Image()
 
       img.onload = async () => {
+        const MAX_WIDTH = 2560
+        const MAX_HEIGHT = 1440
+        let width = img.width
+        let height = img.height
+
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          const widthRatio = MAX_WIDTH / width
+          const heightRatio = MAX_HEIGHT / height
+          const ratio = Math.min(widthRatio, heightRatio)
+
+          width = width * ratio
+          height = height * ratio
+        }
+
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
-        canvas.width = img.width > 2560 ? img.width / 2 : img.width
-        canvas.height = img.height > 1440 ? img.height / 2 : img.height
-        ctx.drawImage(img, 0, 0, img.width > 2560 ? img.width / 2 : img.width, img.height > 1440 ? img.height / 2 : img.height)
+        canvas.width = width
+        canvas.height = height
+
+        ctx.drawImage(img, 0, 0, width, height)
 
         canvas.toBlob(async (blob) => {
           try {

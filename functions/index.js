@@ -73,7 +73,10 @@ async function updateAdvertiseStatus(docId) {
   }
 
   await advertiseDocRef.update({
-    status: newStatus
+    status: newStatus,
+    totalClicks: totalClicks,
+    totalImpressions: totalImpressions,
+    totalVisits: totalVisits
   })
 
   console.log(`Document ${docId} updated with status: ${newStatus}`)
