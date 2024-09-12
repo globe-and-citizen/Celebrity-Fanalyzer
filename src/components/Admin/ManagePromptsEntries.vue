@@ -213,7 +213,6 @@ function toggleExpand(props) {
 
 async function fetchEntriesForPrompt(entriesIds, promptId) {
   try {
-    // console.log('entriesIds',entriesIds)
     const res = await entryStore.fetchPromptsEntries(entriesIds)
     entryStore._loadedEntries.push({ promptId, entries: res })
   } catch (error) {
@@ -222,7 +221,6 @@ async function fetchEntriesForPrompt(entriesIds, promptId) {
 }
 
 function getEntriesForPrompt(promptId) {
-  // console.log('getEntriesForPrompt',promptId)
   const loadedPrompt = entryStore._loadedEntries.find((el) => el?.promptId === promptId)
   return loadedPrompt ? loadedPrompt?.entries : []
 }
