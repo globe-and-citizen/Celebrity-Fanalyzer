@@ -176,7 +176,7 @@ function computeFetchPromptCount(height, width) {
   const widthFactor = width / 700
 
   const computedCount = Math.round(basePromptCount + heightFactor * widthFactor)
-
+console.log('computeFetchPromptCount',computedCount)
   return computedCount
 }
 

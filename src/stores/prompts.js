@@ -93,7 +93,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchPrompts(loadMore = false, count) {
       const userStore = useUserStore()
-
+      console.log('fetchPrompts called', loadMore, count)
       if (!userStore.getUsers) {
         await userStore.fetchAdminsAndEditors()
       }
@@ -126,6 +126,7 @@ export const usePromptStore = defineStore('prompts', {
         } else {
           this._prompts = newPrompts
         }
+        console.log('total prompts', this._prompts.length)
         return newPrompts
       } catch (e) {
         console.error('Error fetching prompts:', e)
