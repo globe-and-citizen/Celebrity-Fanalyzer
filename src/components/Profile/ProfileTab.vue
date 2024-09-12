@@ -53,20 +53,6 @@
       <q-input class="non-selectable" debounce="400" label="Current Connected wallet Address" v-model.trim="currentWalletAddress" readonly>
         <Web3ModalComponent page_name="profile" />
 
-        <!-- <q-btn
-          v-if="currentWalletAddress && addressUpdated === false"
-          color="black"
-          flat
-          size="sm"
-          icon="toggle_off"
-          @click="onSetWalletAddressDialog()"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">set as your wallet address!</q-tooltip>
-        </q-btn>
-
-        <q-btn v-if="addressUpdated === true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
-          <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
-        </q-btn> -->
         <q-btn
         v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress"
         color="blue-4"
@@ -115,7 +101,7 @@
       </q-card-section>
       <q-card-section>
         <span class="q-ml-sm">
-          Are you sure you want to {{ isUpdate ?'Update':'Set' }}:
+          Are you sure you want to {{ isUpdate ?'update':'set' }}:
           <b>{{  currentWalletAddress }}</b>
           as your wallet address ?
         </span>
@@ -157,6 +143,7 @@ import { Notify, useQuasar } from 'quasar'
 import { computed, ref, watch } from 'vue'
 import Web3ModalComponent from './Web3ModalComponent.vue'
 import { useWalletStore } from 'app/src/stores'
+import { customWeb3modal } from 'src/web3/walletConnect'
 
 const walletStore = useWalletStore()
 
@@ -246,6 +233,7 @@ function onRemoveWalletAddress() {
   user.value.walletAddress = '';
   walletStore.getWalletInfo.wallet_address = '';
   removeWalletAddressDialog.value.show = false;
+  customWeb3modal.disconnect()
   save()
   $q.notify({ message: 'Wallet address removed', type: 'negative' });
 }
