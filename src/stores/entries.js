@@ -108,8 +108,15 @@ export const useEntryStore = defineStore('entries', {
         const entries = snapshotDocs(querySnapshot.docs)
 
         for (const entry of entries) {
+          const promptId = entry.prompt.id
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+
+          if (promptId && !entry.escrowId) {
+            const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', promptId)))
+            const snap = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+            entry.escrowId = snap.escrowId
           }
         }
         this._userRelatedEntries = entries
