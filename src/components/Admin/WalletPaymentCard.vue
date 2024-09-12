@@ -101,6 +101,7 @@ async function onSubmit(event) {
     } else {
       $q.notify({ type: 'negative', message: 'funds released failed please retry' })
       $q.loading.hide()
+      emit('hideDialog')
     }
   } catch (error) {
     $q.notify({ type: 'negative', message: 'oups transaction failed' })

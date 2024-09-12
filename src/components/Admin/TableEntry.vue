@@ -164,7 +164,10 @@
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Transaction Detail</h6>
       </q-card-section>
-      <CryptoTransactionDetailCard :cryptoTransaction="displayCrytptoTransactionDialog.cryptoTransaction" />
+      <CryptoTransactionDetailCard
+        :cryptoTransaction="displayCrytptoTransactionDialog.cryptoTransaction"
+        :detail="displayCrytptoTransactionDialog.detail"
+      />
     </q-card>
   </q-dialog>
 </template>
@@ -232,7 +235,8 @@ function onDeleteDialog(entry) {
 
 async function onProceedPaymentDialog(props) {
   if (!_currentPrompt.value && props?.prompt?.id) {
-    _currentPrompt.value = await promptStore.fetchPromptById(props.prompt.id)
+    const fetchedPrompt = await promptStore.fetchPromptById(props.prompt.id)
+    _currentPrompt.value = Array.isArray(fetchedPrompt) && fetchedPrompt.length > 0 ? fetchedPrompt[0] : null
   }
   if (_currentPrompt.value) {
     $q.loading.show()
@@ -240,11 +244,25 @@ async function onProceedPaymentDialog(props) {
       $q.notify({ type: 'negative', message: ' please connect your wallet ' })
       customWeb3modal.open()
       $q.loading.hide()
+
       // onProceedPaymentDialog.value.show = false
     } else {
       //let's check if the entry already have valid payment..
       const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
       if (cryptoTransactionExist.length > 0) {
+        const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
+
+        if (escrowEvents?.status?.includes('success')) {
+          displayCrytptoTransactionDialog.value.detail = {
+            amount: escrowEvents?.events?.releaseEvents[0]?.args.amount,
+            recipient: escrowEvents?.events?.releaseEvents[0]?.args.recipient
+          }
+        } else {
+          displayCrytptoTransactionDialog.value.detail = {
+            amount: '0',
+            recipient: ''
+          }
+        }
         displayCrytptoTransactionDialog.value.cryptoTransaction = cryptoTransactionExist[0]
         displayCrytptoTransactionDialog.value.show = true
       } else {
@@ -338,22 +356,27 @@ async function onSelectWinner(entry) {
             if (_entry && _prompt) {
               emit('update-entry', { _entry, _prompt })
             }
-            $q.notify({ type: 'positive', message: 'Succeed' })
+            $q.notify({ type: 'positive', message: 'winner selected' })
             $q.loading.hide()
           })
           .catch((error) => {
             errorStore.throwError(error, 'Error selecting winner')
             $q.loading.hide()
           })
+          .finally(() => {
+            selectWinnerDialog.value.show = false
+          })
 
         selectWinnerDialog.value.show = false
       } else {
         $q.notify({ type: 'negative', message: 'oups winner selection failed ' })
         $q.loading.hide()
+        selectWinnerDialog.value.show = false
       }
     } else {
       $q.notify({ type: 'negative', message: ' the entry author should set a wallet address ' })
       $q.loading.hide()
+      selectWinnerDialog.value.show = false
     }
   }
 }

@@ -75,23 +75,6 @@ async function onSubmit(event) {
   $q.loading.show()
   try {
     const result = await depositFunds({ amountInMatic: maticAmount.value })
-    // const result = {
-    //   status: 'success',
-    //   events: [
-    //     {
-    //       event_name: 'Deposited',
-    //       args: {
-    //         0: '0.000000000000000004',
-    //         1: '0xdb0f8aACC19a779b9020a693c35014DaF9cF3796',
-    //         2: '1.0',
-    //         escrowId: '0.000000000000000004',
-    //         depositor: '0xdb0f8aACC19a779b9020a693c35014DaF9cF3796',
-    //         amount: '1.0'
-    //       }
-    //     }
-    //   ]
-    // }
-
     if (result?.status?.includes('success')) {
       if (_prompt?.value) {
         //save advertisement to database
@@ -102,15 +85,24 @@ async function onSubmit(event) {
         }
         await promptStore
           .updateEscrowId(payload)
-          .then(() => $q.notify({ type: 'info', message: 'fund deposited sucessfully' }))
-          .catch((error) => errorStore.throwError(error, 'fund deposit failed on prompt edition'))
-          .finally(() => $q.loading.hide())
+          .then(() => {
+            $q.notify({ type: 'info', message: 'fund deposited sucessfully' })
+          })
+          .catch((error) => {
+            errorStore.throwError(error, 'fund deposit failed on prompt edition')
+          })
+          .finally(() => {
+            $q.loading.hide()
+            emit('hideDialog')
+          })
       } else {
         $q.notify({ type: 'negative', message: 'prompt should not be null' })
+        emit('hideDialog')
       }
     } else {
       $q.notify({ message: result?.error?.message, type: 'negative' })
       $q.loading.hide()
+      emit('hideDialog')
     }
   } catch (error) {
     $q.notify({ type: 'negative', message: 'oups fund deposit failed' })
