@@ -19,11 +19,11 @@ import {
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
 import { useUserStore } from 'src/stores'
-import layer8 from 'layer8_interceptor'
 import { baseURL } from 'stores/stats'
+import { mock_layer8_interceptor } from 'mock_layer8_module'
 
 const pushCommentToStats = async (user_id, id, content) =>
-  await layer8
+  await mock_layer8_interceptor
     .fetch(`${baseURL}/comment`, {
       method: 'POST',
       headers: {
@@ -77,7 +77,8 @@ export const useCommentStore = defineStore('comments', {
       }
       const q = query(
         collection(db, collectionName, documentId, 'comments'),
-        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false)),
+        orderBy('created')
       )
       this._initialLoading = true
       this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
@@ -119,6 +120,7 @@ export const useCommentStore = defineStore('comments', {
     },
 
     async getTotalComments(collectionName, documentId) {
+      this._initialLoading = true
       const userStore = useUserStore()
       if (!userStore.getUsers) {
         await userStore.fetchUsers()
@@ -142,7 +144,9 @@ export const useCommentStore = defineStore('comments', {
         const totalChildComments = totalChildCommentCountFunc.data().count
 
         this.$patch({ _commentsCount: totalComments - totalChildComments })
+        this._initialLoading = false
       } catch (e) {
+        this._initialLoading = false
         console.error('Failed fetching comments count', e)
       }
     },

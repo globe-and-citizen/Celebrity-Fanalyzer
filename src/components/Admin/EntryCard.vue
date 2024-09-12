@@ -12,7 +12,7 @@
           behavior="menu"
           counter
           data-test="select-prompt"
-          :disable="Boolean(entry.image)"
+          :disable="Boolean(entry.id)"
           :hint="entry.image ? 'Image is attached to this prompt' : ''"
           label="Prompt"
           :options="promptOptions"
@@ -26,8 +26,22 @@
             </q-item>
           </template>
         </q-select>
-        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="entry.title" />
-        <q-field counter label="Description" maxlength="400" v-model="entry.description">
+        <q-input
+        counter
+        data-test="input-title"
+        label="Title"
+        maxlength="80"
+        required
+        v-model="entry.title"
+        :hint="!entry.title ? '*Title is required':''"
+         />
+        <q-field
+        counter
+        label="Description"
+        maxlength="400"
+        v-model="entry.description"
+        :hint="!entry.description ? '*Description is required':''"
+        >
           <template v-slot:control>
             <q-editor
               class="q-mt-md"
@@ -65,10 +79,11 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : '*Image is required. Max size is 2MB.'"
+          :hint="!entry.prompt ? 'Select prompt first' :!entry.image ? '*Image is required. Max size is 2MB.':''"
           label="Image"
           :max-total-size="2097152"
           :required="!id"
+          use-chips
           v-model="imageModel"
           @rejected="onRejected()"
           @update:model-value="uploadPhoto()"
@@ -114,7 +129,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 
@@ -139,15 +154,19 @@ const entry = reactive({
   title: ''
 })
 const imageModel = ref([])
-const promptOptions =
-  (href === '/month'
-    ? promptStore.getMonthPrompt
-        ?.filter((prompt) => !prompt.hasWinner)
-        .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
-    : promptStore.getPrompts
-        ?.filter((prompt) => !prompt.hasWinner)
-        .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
-        .reverse()) || []
+const promptOptions = computed(
+  () =>
+    promptStore.getPrompts
+      ?.filter((prompt) => !prompt.hasWinner)
+      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+      .reverse() || []
+)
+
+watchEffect(() => {
+  if (!promptStore.getPrompts) {
+    promptStore.fetchPrompts()
+  }
+})
 
 onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
@@ -159,7 +178,7 @@ onMounted(() => {
     entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
     entry.title = props.title
   } else if (props.selectedPromptDate) {
-    entry.prompt = promptOptions.find((prompt) => prompt.value === props.selectedPromptDate)
+    entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
   }
 })
 
@@ -196,6 +215,11 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
+  const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
+  if (hasEntry) {
+    $q.notify({ type: 'info', message: 'Entry already exists. Please select another prompt' })
+    return
+  }
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
@@ -232,6 +256,6 @@ async function onSubmit() {
   } catch (e) {
     await errorStore.throwError(e, failureMessage)
   }
-  emit('hideDialog',entry.slug)
+  emit('hideDialog', entry.slug)
 }
 </script>

@@ -257,6 +257,30 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
+    async hasPrompt(date, title, slug, isEdit = false) {
+      try {
+        const promptSnapshot = await getDocs(
+          query(
+            collection(db, 'prompts'),
+            isEdit ? where('id', '!=', date) : '',
+            or(isEdit ? '' : where('date', '==', date), where('slug', '==', slug), where('title', '==', title))
+          )
+        )
+        promptSnapshot.docs.forEach((doc) => {
+          const data = doc.data()
+          if (data.title.toLowerCase() === title.toLowerCase() || data.slug === slug) {
+            Notify.create({ message: 'Prompt with this title already exists. Please choose another title.', type: 'negative' })
+          } else if (data.date === date) {
+            Notify.create({ message: 'Choose another month for this prompt.', type: 'negative' })
+          }
+        })
+        return !promptSnapshot.empty
+      } catch (error) {
+        console.log('Error occurred while checking', error)
+        return false
+      }
+    },
+
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()
@@ -272,7 +296,7 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = await userStore.fetchUser(prompt.author.id)
       prompt.entries = []
-      const prompts = [prompt, ...this.getPrompts]
+      const prompts = this.getPrompts ? [prompt, ...this.getPrompts] : [prompt]
       this._prompts = prompts
 
       await notificationStore.toggleSubscription('prompts', prompt.id)
@@ -280,6 +304,7 @@ export const usePromptStore = defineStore('prompts', {
 
     async editPrompt(payload) {
       const prompt = { ...payload }
+      const userStore = useUserStore()
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
@@ -287,7 +312,15 @@ export const usePromptStore = defineStore('prompts', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
-      }).finally(() => (this._isLoading = false))
+      })
+        .then(async () => {
+          prompt.entries = []
+          prompt.author = await userStore.fetchUser(prompt.author.id)
+
+          this._prompts = this._prompts.map((element) => (element.id === prompt.id ? prompt : element))
+          this._monthPrompt = this._monthPrompt?.map((element) => (element.id === prompt.id ? prompt : element))
+        })
+        .finally(() => (this._isLoading = false))
     },
 
     async deletePrompt(id) {

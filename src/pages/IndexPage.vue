@@ -6,19 +6,22 @@
       <section class="text-center">
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
-          <q-img
-            loading="lazy"
-            decoding="async"
-            fetchpriority="low"
-            :src="monthPrompt?.image"
-            spinner-color="primary"
-            style="border: 3px solid #e54757; border-radius: 12px"
-            data-test="month-link"
-            @load="loaded = true"
-            :class="{ 'prompt-img': loaded }"
-            :srcset="`${monthPrompt?.image} 2x`"
-            sizes="(max-width: 560) 50vw, 100vw"
-          />
+          <q-responsive :ratio="1" :style="{ backgroundImage: `url(${monthPrompt?.image})`, borderRadius: '300px' }">
+            <div class="bg-blur flex">
+              <q-img
+                fit="contain"
+                ratio="1"
+                spinner-color="primary"
+                :src="monthPrompt?.image"
+                :srcset="`${monthPrompt?.image} 2x`"
+                sizes="(max-width: 560) 50vw, 100vw"
+                data-test="month-link"
+                style="border: 3px solid #e54757; border-radius: 12px"
+                loading="eager"
+                fetchpriority="high"
+              />
+            </div>
+          </q-responsive>
         </RouterLink>
         <p class="q-my-md text-body1">
           This Month's Prompt:
@@ -205,8 +208,6 @@ import { computed, onMounted, ref } from 'vue'
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 
-const loaded = ref(false)
-
 const monthPrompt = computed(() => {
   return promptStore.getMonthPrompt?.[0]
 })
@@ -226,7 +227,7 @@ a {
   }
 }
 
-.prompt-img {
-  background-color: #e54757;
+.bg-blur {
+  backdrop-filter: blur(60px);
 }
 </style>

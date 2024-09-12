@@ -6,7 +6,7 @@
   >
     <div class="flex items-center">
       <h2 class="q-my-auto text-bold text-h5 q-pa-md">Entries</h2>
-      <q-btn v-if="!hasWinner" color="primary" dense icon="add" outline round @click="openEntryDialog">
+      <q-btn v-if="showAddEntry" color="primary" dense icon="add" outline round @click="openEntryDialog">
         <q-tooltip>Create entry</q-tooltip>
       </q-btn>
     </div>
@@ -25,7 +25,7 @@
 import ItemCard from 'src/components/shared/ItemCard.vue'
 import EntryCard from 'src/components/Admin/EntryCard.vue'
 import { useEntryStore, useUserStore } from 'src/stores'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
@@ -36,6 +36,11 @@ const userStore = useUserStore()
 const router = useRouter()
 const entry = ref({})
 const $q = useQuasar()
+
+const showAddEntry = computed(() => {
+  const entry = props.entries?.find((e) => e.author.uid === userStore.getUserId)
+  return !entry && !props.hasWinner
+})
 
 async function openEntryDialog() {
   if (userStore.isAuthenticated) {

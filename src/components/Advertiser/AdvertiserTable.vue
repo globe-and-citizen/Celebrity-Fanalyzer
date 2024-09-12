@@ -120,11 +120,7 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="
-                props.row.status === 'Inactive' &&
-                computedDuration(props.row.endDate) > 0 &&
-                computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) < props.row.budget
-              "
+              v-show="computedDuration(props.row.endDate) >= 0"
               name="edit"
               color="blue"
               size="18px"
@@ -138,9 +134,9 @@
             </q-icon>
           </q-td>
         </template>
-        <template #body-cell-durations="props">
+        <template #body-cell-expiry_status="props">
           <q-td class="text-right">
-            {{ computedDuration(props.row.endDate) }} day's
+            {{ formatExpiryStatus(computedDuration(props.row.endDate)) }}
             <q-tooltip>{{ props.row.publishDate }} to {{ props.row.endDate }}</q-tooltip>
           </q-td>
         </template>
@@ -150,7 +146,7 @@
           </q-td>
         </template>
         <template #body-cell-content="props">
-          <q-td  class="cursor-pointer " @click="goToUrl(props.row.id)" >
+          <q-td class="cursor-pointer" @click="goToUrl(props.row.id)">
             <div v-html="props.row.content" class="singleLine_ellipsis"></div>
           </q-td>
         </template>
@@ -251,7 +247,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { getCurrentDate, calculateEndDate } from 'src/utils/date'
+import { getCurrentDate, calculateEndDate, computedDuration } from 'src/utils/date'
 import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
@@ -273,13 +269,14 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 const selectedAdvertise = ref({})
 const filter = ref('')
-const selectedDataType = ref({ label: 'Active', value: 'active' })
+const selectedDataType = ref({ label: 'Ongoing', value: 'ongoing' })
 const eventRows = ref([])
 const eventColumns = ref([
   { name: 'eventType', align: 'left', label: 'Event Type', field: 'eventType' },
   { name: 'amount', align: 'right', label: 'Amount', field: 'amount', format: (val) => `${val} MATIC` }
 ])
 const initialDataOptions = [
+  { label: 'Ongoing', value: 'ongoing' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
   { label: 'Budget Crossed', value: 'budget-crossed' },
@@ -294,9 +291,11 @@ const dataOptions = ref(
       option.value === 'complete' ||
       option.value === 'all' ||
       option.value === 'inactive' ||
-      option.value === 'active'
+      option.value === 'active' ||
+      option.value === 'ongoing'
   )
 )
+
 
 async function calculateAmountSpent(advertise) {
   return (
@@ -540,21 +539,21 @@ const columns = ref([
   },
   {
     name: 'clicks',
-    field: 'clicks',
+    field: 'totalClicks',
     align: 'center',
     label: 'Number of Click',
     sortable: true
   },
   {
     name: 'impression',
-    field: 'impressions',
+    field: 'totalImpressions',
     align: 'center',
     label: 'Number of Impression',
     sortable: true
   },
   {
     name: 'visits',
-    field: 'visits',
+    field: 'totalVisits',
     align: 'center',
     label: 'Number of Visits',
     sortable: true
@@ -567,10 +566,10 @@ const columns = ref([
     sortable: true
   },
   {
-    name: 'durations',
+    name: 'expiry_status',
     field: 'duration',
     align: 'right',
-    label: 'Durations'
+    label: 'Expiry Status'
   },
 
   {
@@ -601,21 +600,17 @@ function changeActiveStatus(advertise, status) {
     })
 }
 
-function computedDuration(endDate) {
-  const date1 = new Date()
-  const date2 = new Date(endDate)
-  date1.setHours(0, 0, 0, 0)
-  date2.setHours(0, 0, 0, 0)
-  const Difference_In_Time = date2.getTime() - date1.getTime()
-  return Math.round(Difference_In_Time / (1000 * 3600 * 24))
-}
-
 function calculateStatus(date) {
   const currentDate = new Date()
   const publishDate = new Date(date)
 
   return publishDate <= currentDate
 }
+
+watch(selectedDataType, (newType) => {
+  advertiseStore.fetchAdvertises(newType.label)
+})
+
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
   const impressionsMatic = impressions / 100
   const clicksMatic = clicks / 20
@@ -652,10 +647,17 @@ async function onUpdate(e) {
     label: e.label
   }
 }
-
-watch(selectedDataType, (newType) => {
-  advertiseStore.fetchAdvertises(newType.label)
-})
+function formatExpiryStatus(days) {
+  if (days === 1) {
+    return '1 day left'
+  } else if (days > 1) {
+    return `${days} day's left`
+  } else if (days === 0) {
+    return `Today`
+  } else {
+    return 'Expired'
+  }
+}
 </script>
 
 <style>

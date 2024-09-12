@@ -61,7 +61,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref ,onMounted,onUnmounted} from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -76,6 +76,10 @@ const observer = ref(null)
 const scrollTopObserver = ref(null)
 const pageRef = ref(null)
 const loader = ref(false)
+
+onUnmounted(()=>{
+  advertiseStore.reset()
+})
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
