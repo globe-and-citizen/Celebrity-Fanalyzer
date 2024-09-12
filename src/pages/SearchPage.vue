@@ -21,12 +21,12 @@
           unelevated
         />
       </q-scroll-area>
-      <section v-if="!promptStore.getPrompts && promptStore.isLoading">
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-      </section>
+      <!--      <section v-if="!promptStore.getPrompts && promptStore.isLoading">-->
+      <!--        <ArticleSkeleton />-->
+      <!--        <ArticleSkeleton />-->
+      <!--        <ArticleSkeleton />-->
+      <!--        <ArticleSkeleton />-->
+      <!--      </section>-->
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">

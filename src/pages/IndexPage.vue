@@ -6,14 +6,14 @@
       <section class="text-center">
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
-          <q-responsive :ratio="1" :style="{ backgroundImage: `url(${monthPrompt?.image})`, borderRadius: '300px' }">
+          <q-responsive :ratio="1" :style="{ backgroundImage: `url(${data?.[0].image})`, borderRadius: '300px' }">
             <div class="bg-blur flex">
               <q-img
                 fit="contain"
                 ratio="1"
                 spinner-color="primary"
-                :src="monthPrompt?.image"
-                :srcset="`${monthPrompt?.image} 2x`"
+                :src="data?.[0].image"
+                :srcset="`${data?.[0].image} 2x`"
                 sizes="(max-width: 560) 50vw, 100vw"
                 data-test="month-link"
                 style="border: 3px solid #e54757; border-radius: 12px"
@@ -27,7 +27,7 @@
           This Month's Prompt:
           <br />
           <RouterLink to="month">
-            {{ monthPrompt?.title }}
+            {{ data?.[0].title }}
           </RouterLink>
         </p>
       </section>
@@ -202,18 +202,15 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { fetchMonth } from 'src/api/prompts'
+import { useQuery } from '@tanstack/vue-query'
 
-const errorStore = useErrorStore()
-const promptStore = usePromptStore()
-
-const monthPrompt = computed(() => {
-  return promptStore.getMonthPrompt?.[0]
-})
-
-onMounted(async () => {
-  await promptStore.fetchMonthsPrompt().catch((error) => errorStore.throwError(error, error))
+const { data } = useQuery({
+  queryKey: ['monthPrompt'],
+  queryFn: fetchMonth,
+  // 5 days
+  refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  staleTime: 5 * 24 * 60 * 60 * 1000
 })
 </script>
 

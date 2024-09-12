@@ -66,6 +66,18 @@
           >
             <q-tooltip>Delete</q-tooltip>
           </q-btn>
+          <q-toggle
+            :model-value="isMonthPrompt(props?.row.id)"
+            color="primary"
+            size="xs"
+            @update:model-value="
+              (v) => {
+                isMonthPrompt(props?.row.id) ? cantUnselect() : openConfirmDialog(v, props.row.id)
+              }
+            "
+          >
+            <q-tooltip>{{ isMonthPrompt(props?.row.id) ? 'Current month prompt' : 'Mark as month prompt' }}</q-tooltip>
+          </q-toggle>
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
@@ -89,7 +101,6 @@
     :filter="filter"
     :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
   />
-
   <q-dialog v-model="deleteDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
@@ -104,7 +115,35 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn
+          color="negative"
+          data-test="confirm-delete-prompt"
+          flat
+          label="Delete"
+          :disabled="isMonthPrompt(deleteDialog.prompt.id)"
+          @click="onDeletePrompt(deleteDialog.prompt.id)"
+        >
+          <q-tooltip v-if="isMonthPrompt(deleteDialog.prompt.id)">Please choose another month prompt first</q-tooltip>
+        </q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="changeMonthPromptDialog.show">
+    <q-card>
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Change current month prompt?</h6>
+      </q-card-section>
+      <q-card-section>
+        <span class="q-ml-sm">
+          Are you sure you want to replace the current month prompt with:
+          <b>{{ changeMonthPromptDialog.prompt.title }}</b>
+          ?
+        </span>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn color="negative" flat label="Confirm" @click="confirmChangeMonthPrompt" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -115,6 +154,8 @@ import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, watchEffect, ref } from 'vue'
+import { updateMonthPrompt } from 'src/api/prompts'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
 defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
 
@@ -123,6 +164,7 @@ const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
+const queryClient = useQueryClient()
 
 const columns = [
   {},
@@ -136,6 +178,17 @@ const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 const prompts = ref([])
+const oldMonthPromptId = ref(null)
+const monthPromptId = ref(null)
+const changeMonthPromptDialog = ref({})
+const isMonthPrompt = (promptId) => monthPromptId?.value === promptId
+
+const updatePrompt = useMutation({
+  mutationFn: ({ oldMonthPromptId, newMonthPromptId }) => updateMonthPrompt(oldMonthPromptId, newMonthPromptId),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['monthPrompt'] })
+  }
+})
 
 onMounted(async () => {
   if (userStore.isEditorOrAbove) {
@@ -151,11 +204,18 @@ const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading 
 
 watchEffect(async () => {
   prompts.value = promptStore.getPrompts
+  monthPromptId.value = oldMonthPromptId.value = prompts?.value?.find((prompt) => prompt?.monthPrompt)?.id
 })
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true
   deleteDialog.value.prompt = prompt
+}
+
+function openConfirmDialog(value, promptId) {
+  changeMonthPromptDialog.value.show = true
+  changeMonthPromptDialog.value.prompt = prompts.value.find((prompt) => prompt.id === promptId)
+  changeMonthPromptDialog.value.confirm = value
 }
 
 function onDeletePrompt(id) {
@@ -248,5 +308,28 @@ function handleDeleteEntry(entryId, promptId) {
   })
 
   promptStore.fetchPrompts()
+}
+
+function cantUnselect() {
+  $q.notify({ type: 'negative', message: "You can't unselect month prompt. Please choose another one first" })
+}
+
+const confirmChangeMonthPrompt = () => {
+  updatePrompt.mutate(
+    {
+      oldMonthPromptId: oldMonthPromptId.value,
+      newMonthPromptId: changeMonthPromptDialog.value.prompt.id
+    },
+    {
+      onSuccess: () => {
+        monthPromptId.value = changeMonthPromptDialog.value.prompt.id
+        changeMonthPromptDialog.value.show = false
+        $q.notify({ type: 'positive', message: 'Month prompt updated successfully' })
+      },
+      onError: (error) => {
+        errorStore.throwError(error, 'Failed to update month prompt')
+      }
+    }
+  )
 }
 </script>

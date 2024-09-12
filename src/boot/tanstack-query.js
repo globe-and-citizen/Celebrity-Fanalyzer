@@ -26,7 +26,8 @@ export default ({ app }) => {
         refetchOnWindowFocus: false,
         refetchInterval: 60000,
         retry: 2,
-        staleTime: 60000
+        // 12 hours
+        staleTime: 12 * 60 * 60 * 1000
       }
     }
   })
