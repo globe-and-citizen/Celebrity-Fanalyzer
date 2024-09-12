@@ -93,7 +93,6 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchPrompts(loadMore = false, count) {
       const userStore = useUserStore()
-      console.log('fetchPrompts called', loadMore, count)
       if (!userStore.getUsers) {
         await userStore.fetchAdminsAndEditors()
       }
@@ -106,7 +105,7 @@ export const usePromptStore = defineStore('prompts', {
         if (loadMore && this._lastVisible) {
           queryRef = query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(count ?? this.loadCount))
         } else if (loadMore) {
-          queryRef = query(queryRef, orderBy('id', 'desc'), limit(this.loadCount))
+          queryRef = query(queryRef, orderBy('id', 'desc'), limit(count ?? this.loadCount))
         }
 
         const querySnapshot = await getDocs(queryRef)
@@ -126,7 +125,6 @@ export const usePromptStore = defineStore('prompts', {
         } else {
           this._prompts = newPrompts
         }
-        console.log('total prompts', this._prompts.length)
         return newPrompts
       } catch (e) {
         console.error('Error fetching prompts:', e)

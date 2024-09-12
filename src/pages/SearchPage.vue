@@ -61,7 +61,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref ,onMounted,onUnmounted} from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -77,7 +77,8 @@ const scrollTopObserver = ref(null)
 const pageRef = ref(null)
 const loader = ref(false)
 
-onUnmounted(()=>{
+
+onUnmounted(() => {
   advertiseStore.reset()
 })
 
@@ -176,20 +177,20 @@ function computeFetchPromptCount(height, width) {
   const widthFactor = width / 700
 
   const computedCount = Math.round(basePromptCount + heightFactor * widthFactor)
-console.log('computeFetchPromptCount',computedCount)
   return computedCount
 }
 
-onMounted(() => {
-  observer.value.focus()
-  initIntersectionObserver()
-
-  const height = pageRef.value.$el.clientHeight
-  const width = pageRef.value.$el.clientWidth
-  const promptFetchCount = computeFetchPromptCount(height, width)
-
-  advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
-  promptStore.fetchPrompts(true, promptFetchCount).catch((error) => errorStore.throwError(error))
+onMounted(async() => {
+  try {
+    const height = pageRef.value.$el.clientHeight
+    const width = pageRef.value.$el.clientWidth
+    const promptFetchCount = computeFetchPromptCount(height, width)
+    await promptStore.fetchPrompts(true, promptFetchCount)
+    await advertiseStore.getActiveAdvertise()
+    initIntersectionObserver()
+  } catch (error) {
+    errorStore.throwError(error)
+  }
 })
 </script>
 
