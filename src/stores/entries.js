@@ -113,10 +113,10 @@ export const useEntryStore = defineStore('entries', {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }
 
-          if (promptId && !entry.escrowId) {
+          if (!entry.escrowId) {
             const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', promptId)))
-            const snap = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-            entry.escrowId = snap.escrowId
+            const prompt = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+            entry.escrowId = prompt.escrowId
           }
         }
         this._userRelatedEntries = entries
@@ -199,11 +199,13 @@ export const useEntryStore = defineStore('entries', {
       const entry = { ...payload }
 
       const promptId = entry.prompt.value
+      const escrowId = entry.prompt.escrowId
       const entryRef = doc(db, 'entries', entry.id)
 
       entry.author = doc(db, 'users', entry.author.value)
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+      entry.escrowId = escrowId || null
 
       this._isLoading = true
       await setDoc(entryRef, entry).finally(() => (this._isLoading = false))
