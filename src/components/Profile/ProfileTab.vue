@@ -36,7 +36,6 @@
       class="non-selectable"
       debounce="400"
       label="Username"
-      :prefix="origin + 'fan/'"
       :rules="[(val) => usernameValidator(val)]"
       v-model.trim="user.username"
     >
@@ -54,29 +53,39 @@
         <Web3ModalComponent page_name="profile" />
 
         <q-btn
-          v-if="currentWalletAddress && addressUpdated === false"
-          color="black"
-          flat
-          size="sm"
-          icon="toggle_off"
-          @click="onSetWalletAddressDialog()"
+        v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress"
+        color="blue-4"
+        :icon="user.walletAddress ? 'update' : 'save'"
+        size="sm"
+        class=" self-center q-mr-md"
+        flat
+        dense
+        @click="onSetWalletAddressDialog()"
         >
-          <q-tooltip class="positive" :offset="[10, 10]">set as your wallet address!</q-tooltip>
-        </q-btn>
-
-        <q-btn v-if="addressUpdated === true" color="green" flat size="sm" icon="toggle_on" @click="switchAddressUpdated(false)">
-          <q-tooltip class="positive" :offset="[10, 10]">unset as your wallet address!</q-tooltip>
+        <q-tooltip>{{user.walletAddress ? 'Update' : 'Save' }}</q-tooltip>
+      </q-btn>
+        <q-btn
+        v-if="(user.walletAddress || currentWalletAddress)"
+        color="negative"
+        :icon="'delete'"
+        size="sm"
+        class=" self-center"
+        flat
+        dense
+         @click="onDeleteWalletAddressDialog()"
+         >
+         <q-tooltip>Delete</q-tooltip>
         </q-btn>
       </q-input>
     </div>
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input label="Facebook" prefix="https://facebook.com/" v-model.trim="user.facebook" />
-    <q-input label="Instagram" prefix="https://instagram.com/" v-model.trim="user.instagram" />
-    <q-input label="Linkedin" prefix="https://linkedin.com/in/" v-model.trim="user.linkedin" />
-    <q-input label="Telegram" prefix="https://web.telegram.org/a/#" v-model.trim="user.telegram" />
-    <q-input label="Twitter" prefix="https://twitter.com/" v-model.trim="user.twitter" />
+    <q-input label="Facebook" placeholder="https://www.facebook.com/" v-model.trim="user.facebook" />
+    <q-input label="Instagram" placeholder="https://www.instagram.com/" v-model.trim="user.instagram" />
+    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" v-model.trim="user.linkedin" />
+    <q-input label="Telegram" placeholder="https://www.telegram.com/" v-model.trim="user.telegram" />
+    <q-input label="Twitter" placeholder="https://www.twitter.com/" v-model.trim="user.twitter" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
     <q-input label="Data 1" v-model="user.data1" />
@@ -87,29 +96,53 @@
   <q-dialog v-model="setWalletAddressDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
-        <h6 class="q-my-sm">set wallet address</h6>
+        <h6 class="q-my-sm">{{ isUpdate ?'Update':'Set' }} wallet address</h6>
       </q-card-section>
       <q-card-section>
         <span class="q-ml-sm">
-          Are you sure you want to set:
-          <b>{{ address }}</b>
+          Are you sure you want to {{ isUpdate ?'update':'set' }}:
+          <b>{{  currentWalletAddress }}</b>
           as your wallet address ?
         </span>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" label="Cancel" v-close-popup />
-        <q-btn color="info" data-test="confirm-set-wallet" label="set" @click="onSetWalletAddress()" />
+        <q-btn color="info" data-test="confirm-set-wallet" :label="isUpdate ?'update':'set'" @click="onSetWalletAddress()" />
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="removeWalletAddressDialog.show">
+  <q-card>
+    <q-card-section class="q-pb-none">
+      <h6 class="q-my-sm">Remove wallet address</h6>
+    </q-card-section>
+    <q-card-section>
+      <span class="q-ml-sm">
+        Are you sure you want to remove your wallet address?
+      </span>
+    </q-card-section>
+    <q-card-actions align="right">
+      <q-btn color="primary" label="Cancel" v-close-popup />
+      <q-btn
+       color="negative"
+       data-test="confirm-remove-wallet"
+       label="Remove"
+       @click="onRemoveWalletAddress()"
+       />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
 </template>
 
 <script setup>
 import { useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
 import { Notify, useQuasar } from 'quasar'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Web3ModalComponent from './Web3ModalComponent.vue'
 import { useWalletStore } from 'app/src/stores'
+import { customWeb3modal } from 'src/web3/walletConnect'
 
 const walletStore = useWalletStore()
 
@@ -128,6 +161,14 @@ const user = ref(userStore.getUser)
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
+const removeWalletAddressDialog = ref({ show: false });
+
+
+const isUpdate = ref(false)
+
+watch([currentWalletAddress,user], ()=> {
+  isUpdate.value = !!user.value.walletAddress
+})
 
 userStore.$subscribe((_mutation, state) => {
   user.value = state._user
@@ -157,7 +198,7 @@ function copyLink() {
 }
 
 function switchAddressUpdated(value) {
-  addressUpdated.value = value
+  addressUpdated.value = value;
 }
 function save() {
   if (currentWalletAddress.value && addressUpdated.value === true) {
@@ -180,7 +221,22 @@ function onSetWalletAddressDialog() {
 function onSetWalletAddress() {
   switchAddressUpdated(true)
   setWalletAddressDialog.value.show = false
+  save()
 }
+
+function onDeleteWalletAddressDialog() {
+  removeWalletAddressDialog.value.show = true;
+}
+
+function onRemoveWalletAddress() {
+  user.value.walletAddress = '';
+  walletStore.getWalletInfo.wallet_address = '';
+  removeWalletAddressDialog.value.show = false;
+  customWeb3modal.disconnect()
+  save()
+  $q.notify({ message: 'Wallet address removed', type: 'negative' });
+}
+
 </script>
 
 <style scoped lang="scss">
