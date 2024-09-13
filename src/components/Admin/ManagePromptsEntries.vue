@@ -38,7 +38,21 @@
             </q-tooltip>
           </q-btn>
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
+        <q-td>
+          <span>
+            {{ props.row.date }}
+          </span>
+        </q-td>
+        <q-td>
+          <a :href="getAuthorLink(props.row?.author?.uid)" class="q-mr-sm" @click.prevent="navigateToAuthor(props.row?.author?.uid)">
+            {{ props.row.author?.displayName }}
+          </a>
+        </q-td>
+        <q-td>
+          <a :href="getTitleLink(props.row?.slug)" class="q-mr-sm" @click.prevent="navigateToTitle(props.row?.slug)">
+            {{ props.row.title }}
+          </a>
+        </q-td>
         <q-td class="text-right">
           <q-btn
             v-if="userStore.isEditorOrAbove"
@@ -113,15 +127,15 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, watchEffect, ref } from 'vue'
-
-defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
+import { computed, onMounted, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
+const router = useRouter()
 
 const columns = [
   {},
@@ -147,6 +161,22 @@ onMounted(async () => {
 
 const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
+
+function getAuthorLink(author) {
+  return `/fan/${author}`
+}
+
+function getTitleLink(prompt) {
+  return `${prompt}`
+}
+
+function navigateToAuthor(author) {
+  router.push(getAuthorLink(author))
+}
+
+function navigateToTitle(prompt) {
+  router.push(getTitleLink(prompt))
+}
 
 watchEffect(async () => {
   prompts.value = promptStore.getPrompts
