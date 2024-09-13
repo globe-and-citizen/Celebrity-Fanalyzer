@@ -74,7 +74,7 @@
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
     <q-input label="Facebook" placeholder="https://www.facebook.com/" v-model.trim="user.facebook" />
     <q-input label="Instagram" placeholder="https://www.instagram.com/" v-model.trim="user.instagram" />
-    <q-input label="Linkedin" placeholder="https://www.linkedin.com/login" v-model.trim="user.linkedin" />
+    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" v-model.trim="user.linkedin" />
     <q-input label="Telegram" placeholder="https://www.telegram.com/" v-model.trim="user.telegram" />
     <q-input label="Twitter" placeholder="https://www.twitter.com/" v-model.trim="user.twitter" />
 
