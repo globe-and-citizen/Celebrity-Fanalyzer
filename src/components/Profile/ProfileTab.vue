@@ -36,7 +36,6 @@
       class="non-selectable"
       debounce="400"
       label="Username"
-      :prefix="origin + 'fan/'"
       :rules="[(val) => usernameValidator(val)]"
       v-model.trim="user.username"
     >
