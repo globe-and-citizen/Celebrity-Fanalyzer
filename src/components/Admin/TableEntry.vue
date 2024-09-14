@@ -15,26 +15,27 @@
   >
     <template v-slot:body="props">
       <q-tr class="new" :data-test="props.key" :props="props">
-        <q-td>
+        <q-td style="width: 34px">
           <span style="display: flex; width: 34px; place-content: center">
             <img alt="winner-logo" v-if="props.row.isWinner" src="/favicon-16x16.png" />
           </span>
         </q-td>
-        <q-td class="q-table--col-auto-width">
-          <span>{{ dayMonthYear(props.row.created) }}</span>
+        <q-td auto-width style="width: 101px">
+          <div>{{ dayMonthYear(props.row.created) }}</div>
         </q-td>
-        <q-td>
-          <a :href="getAuthorLink(props.row?.author?.uid)" @click.prevent="navigateToAuthor(props.row?.author?.uid)">
+        <q-td :style="widthStyle" style="text-align: center">
+          <a :href="`/fan/${props.row?.author?.uid}`" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
             {{ props.row.author?.displayName }}
           </a>
         </q-td>
         <q-td>
-          <a :href="getTitleLink(props.row?.slug)" @click.prevent="navigateToTitle(props.row?.slug)">
+          <a :href="props.row?.slug" @click.prevent="router.push(props.row?.slug)">
             {{ props.row.title }}
           </a>
         </q-td>
         <q-td class="text-right">
           <q-btn
+            class="payment-buttons"
             v-if="
               userStore.isEditorOrAbove &&
               props.row.isWinner !== true &&
@@ -51,6 +52,7 @@
             <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
           </q-btn>
           <q-btn
+            class="payment-buttons"
             v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
             color="dark"
             :disable="userStore.getUser.role !== 'Admin'"
@@ -63,6 +65,7 @@
             <q-tooltip class="positive" :offset="[10, 10]">proceed payment!</q-tooltip>
           </q-btn>
           <q-btn
+            class="payment-buttons"
             v-if="props.row.isWinner === true && _currentPrompt?.isTreated === true"
             color="dark"
             :disable="userStore.getUser.role !== 'Admin'"
@@ -75,6 +78,7 @@
             <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
           </q-btn>
           <q-btn
+            class="payment-buttons"
             v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
             color="positive"
             flat
@@ -194,7 +198,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
-import { ref, watchEffect } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
@@ -205,14 +209,26 @@ const props = defineProps({
   filter: { type: String, required: false, default: '' },
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
-  loadedEntries: { type: Array, default: () => [] }
+  loadedEntries: { type: Array, default: () => [] },
+  maxWidth: { type: Number, required: false }
+})
+
+const widthStyle = ref({ width: `${props.maxWidth}px` })
+
+watch(
+  () => props.maxWidth,
+  (newWidth) => {
+    widthStyle.value = { width: `${newWidth}px` }
+  }
+)
+
+onMounted(() => {
+  nextTick(() => {
+    widthStyle.value = { width: `${props.maxWidth}px` }
+  })
 })
 
 const _currentPrompt = ref({})
-
-watchEffect(() => {
-  _currentPrompt.value = props.currentPrompt
-})
 
 // Emit event to parent
 const emit = defineEmits(['update-entry', 'delete-entry'])
@@ -227,26 +243,10 @@ const router = useRouter()
 const columns = [
   {},
   { name: 'created', align: 'left', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
-  { name: 'author', align: 'left', label: 'Author', field: (row) => row.author?.displayName },
+  { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   {}
 ]
-
-function getAuthorLink(author) {
-  return `/fan/${author}`
-}
-
-function getTitleLink(slug) {
-  return `${slug}`
-}
-
-function navigateToAuthor(author) {
-  router.push(getAuthorLink(author))
-}
-
-function navigateToTitle(slug) {
-  router.push(getTitleLink(slug))
-}
 
 const deleteDialog = ref({})
 const entry = ref({})
@@ -361,5 +361,11 @@ function onSelectWinner(entry) {
 
 td {
   font-size: 12px !important;
+  background-color: rgba(229, 71, 87, 0.12);
+}
+
+.payment-buttons {
+  width: 30px !important;
+  height: 30px !important;
 }
 </style>
