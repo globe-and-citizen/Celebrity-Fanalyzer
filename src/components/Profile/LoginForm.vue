@@ -27,6 +27,14 @@
           v-model="user.email"
         />
         <q-input
+          v-if="tab === 'signup'"
+          data-test="username-field"
+          label="Username"
+          lazy-rules
+          :rules="[(val) => usernameValidator(val)]"
+          v-model="user.username"
+        />
+        <q-input
           data-test="password-field"
           label="Password"
           hide-hint
@@ -99,7 +107,12 @@ import { passwordResetEmail } from '../../firebase'
 const errorStore = useErrorStore()
 const userStore = useUserStore()
 
-const user = ref({ email: '', name: '', password: '' })
+const user = ref({
+    email: '',
+    name: '',
+    username:'',
+    password: ''
+  })
 const tab = ref('signin')
 const openResetDialog = ref(false)
 const route = useRoute()
@@ -144,6 +157,12 @@ function handleResetPassword() {
 function validateEmail(email) {
   const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return pattern.test(email)
+}
+
+async function usernameValidator(username) {
+  if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
+  const isAvailable = !(await userStore.checkUsernameAvailability(username))
+  if (!isAvailable) return 'Username already taken'
 }
 
 watch(

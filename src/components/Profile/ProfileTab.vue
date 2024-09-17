@@ -40,14 +40,22 @@
       v-model.trim="user.username"
     >
       <template v-slot:append>
-        <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
+        <q-btn
+         v-if="user.username"
+         flat
+         icon="content_copy"
+         round
+         size="sm"
+         @click="copyLink"
+        >
           <q-tooltip>Copy</q-tooltip>
         </q-btn>
       </template>
     </q-input>
     <div>
       <span class="text-h8 text-bold text-secondary">Wallet address</span>
-      <q-input class="non-selectable" debounce="400" label="Your wallet address" v-model.trim="user.walletAddress" readonly></q-input>
+      <q-input class="non-selectable" debounce="400" label="Your wallet address" v-model.trim="user.walletAddress" readonly>
+      </q-input>
 
       <q-input class="non-selectable" debounce="400" label="Current Connected wallet Address" v-model.trim="currentWalletAddress" readonly>
         <Web3ModalComponent page_name="profile" />
