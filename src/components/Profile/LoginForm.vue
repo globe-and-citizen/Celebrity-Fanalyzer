@@ -33,7 +33,15 @@
           lazy-rules
           :rules="[(val) => usernameValidator(val)]"
           v-model="user.username"
-        />
+        >
+          <template  #append>
+            <q-icon
+             v-if="isUserNameAvailable"
+             name="check_circle"
+             color="green"
+            />
+          </template>
+      </q-input>
         <q-input
           data-test="password-field"
           label="Password"
@@ -117,6 +125,7 @@ const tab = ref('signin')
 const openResetDialog = ref(false)
 const route = useRoute()
 const isVisibleOn = ref(false)
+const isUserNameAvailable = ref(false)
 
 function toggleVisibility() {
   isVisibleOn.value = !isVisibleOn.value
@@ -162,6 +171,7 @@ function validateEmail(email) {
 async function usernameValidator(username) {
   if (!/\w{3,20}$/.test(username)) return 'Username must be between 3 and 20 characters long'
   const isAvailable = !(await userStore.checkUsernameAvailability(username))
+  isUserNameAvailable.value = isAvailable
   if (!isAvailable) return 'Username already taken'
 }
 
