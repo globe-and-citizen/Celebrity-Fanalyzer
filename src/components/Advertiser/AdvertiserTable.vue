@@ -296,7 +296,6 @@ const dataOptions = ref(
   )
 )
 
-
 async function calculateAmountSpent(advertise) {
   return (
     import.meta.env.VITE_ADVERTISE_CLICK_RATE * advertise.clicks + import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * advertise.impressions
@@ -384,7 +383,6 @@ async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.show()
   const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
   if (result.status.includes('success')) {
-    //console.log('the result claimPayment result ====', result)
     $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
     //let's change the advertise status.
     if (currentAmountSpent >= advertise.budget) {

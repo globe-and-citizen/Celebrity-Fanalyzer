@@ -182,7 +182,7 @@ import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
-import { setRecipient, getEscrowDetails, getEventsForEscrow } from 'app/src/web3/escrow'
+import { setRecipient, getEventsForEscrow } from 'app/src/web3/escrow'
 
 const props = defineProps({
   filter: { type: String, required: false, default: '' },
@@ -244,8 +244,6 @@ async function onProceedPaymentDialog(props) {
       $q.notify({ type: 'negative', message: ' please connect your wallet ' })
       customWeb3modal.open()
       $q.loading.hide()
-
-      // onProceedPaymentDialog.value.show = false
     } else {
       //let's check if the entry already have valid payment..
       const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
@@ -272,8 +270,6 @@ async function onProceedPaymentDialog(props) {
           const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
 
           if (escrowEvents?.status?.includes('success')) {
-            //proceedPaymentDialog.value.depositedAmount = 0
-
             proceedPaymentDialog.value.depositedAmount = escrowEvents?.events?.depositEvents[0]?.args.amount
             proceedPaymentDialog.value.show = true
             proceedPaymentDialog.value.walletAddress = escrowEvents?.events?.recipientSetEvents[0]?.args.recipient

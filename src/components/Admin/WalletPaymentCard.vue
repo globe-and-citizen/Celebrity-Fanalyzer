@@ -3,16 +3,6 @@
     <q-card-section class="q-pt-none">
       <q-form @submit="onSubmit">
         <q-input hide-hint label="Winner wallet address" maxlength="80" required v-model="_walletAddress" disable />
-        <!-- <q-input
-          v-model="usdAmount"
-          label="Price in USD"
-          min="0"
-          mask="#.##"
-          fill-mask="0"
-          reverse-fill-mask
-          @update:model-value="convertToMatic()"
-        /> -->
-        <!-- Displaying Corresponding Ether Amount-->
         <q-input data-text="ether-amount" v-model="maticAmount" label="Price in matic" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />

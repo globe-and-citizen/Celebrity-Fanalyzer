@@ -286,7 +286,7 @@ function handleDeleteEntry(entryId, promptId) {
 //proceed deposit funds.
 async function onProceedDepositFundDialog(props) {
   //let's check if the entry already have valid payment..
-  //console.log('the current wallet address ', currentWalletAddress)
+
   if (!customWeb3modal.getAddress()) {
     $q.notify({ type: 'negative', message: ' please connect your wallet ' })
     customWeb3modal.open()
@@ -296,7 +296,4 @@ async function onProceedDepositFundDialog(props) {
     proceedDepositFundDialog.value.prompt = props
   }
 }
-
-//deposit funds function
-//const _depositFunds= async(payload={amountInMatic})
 </script>
