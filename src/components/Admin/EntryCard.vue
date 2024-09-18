@@ -27,20 +27,20 @@
           </template>
         </q-select>
         <q-input
-        counter
-        data-test="input-title"
-        label="Title"
-        maxlength="80"
-        required
-        v-model="entry.title"
-        :hint="!entry.title ? '*Title is required':''"
-         />
+          counter
+          data-test="input-title"
+          label="Title"
+          maxlength="80"
+          required
+          v-model="entry.title"
+          :hint="!entry.title ? '*Title is required' : ''"
+        />
         <q-field
-        counter
-        label="Description"
-        maxlength="400"
-        v-model="entry.description"
-        :hint="!entry.description ? '*Description is required':''"
+          counter
+          label="Description"
+          maxlength="400"
+          v-model="entry.description"
+          :hint="!entry.description ? '*Description is required' : ''"
         >
           <template v-slot:control>
             <q-editor
@@ -79,7 +79,7 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' :!entry.image ? '*Image is required. Max size is 2MB.':''"
+          :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : ''"
           label="Image"
           :max-total-size="2097152"
           :required="!id"
@@ -216,8 +216,8 @@ function onPaste(evt) {
 
 async function onSubmit() {
   const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
-  if (hasEntry) {
-    $q.notify({ type: 'info', message: 'Entry already exists. Please select another prompt' })
+  if (!props.id && hasEntry) {
+    $q.notify({ type: 'info', message: 'You have already submitted an entry for this prompt. Please select another prompt' })
     return
   }
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`

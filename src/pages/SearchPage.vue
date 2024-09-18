@@ -25,15 +25,12 @@
           unelevated
         />
       </q-scroll-area>
-      <section v-if="!promptStore.getPrompts && promptStore.isLoading">
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-        <ArticleSkeleton />
-      </section>
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
+          <section class="card-items-wrapper" v-if="!promptStore.getPrompts && promptStore.isLoading">
+            <ArticleSkeleton v-for="n in skeletons" :key="n" />
+          </section>
+          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
             <ItemCard
               v-for="prompt in computedPromptsAndAdvertises"
               :key="prompt?.id"
@@ -76,6 +73,7 @@ const observer = ref(null)
 const scrollTopObserver = ref(null)
 const pageRef = ref(null)
 const loader = ref(false)
+const skeletons = 10
 
 
 onUnmounted(() => {
