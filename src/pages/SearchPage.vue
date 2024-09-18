@@ -6,10 +6,6 @@
     :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
   />
-  <div class="relative-position">
-    <q-spinner v-if="loader" color="primary" size="70px" :thickness="5" class="absolute-center" style="z-index: 2000; margin-top: 14rem" />
-    <div ref="scrollTopObserver" class="absolute-center" style="height: 1px"></div>
-  </div>
   <q-page-container class="search-page-container">
     <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
@@ -70,9 +66,7 @@ const category = ref('All')
 const router = useRouter()
 const search = ref('')
 const observer = ref(null)
-const scrollTopObserver = ref(null)
 const pageRef = ref(null)
-const loader = ref(false)
 const skeletons = 10
 
 
@@ -149,8 +143,6 @@ const initIntersectionObserver = () => {
   }
   const observerInstance = new IntersectionObserver(onIntersect, options)
   observerInstance.observe(observer.value)
-  const scrollTopIntersectionObserver = new IntersectionObserver(onScrollTopIntersect, options)
-  scrollTopIntersectionObserver.observe(scrollTopObserver.value)
 }
 
 function onIntersect(entries) {
@@ -161,13 +153,7 @@ function onIntersect(entries) {
     }
   }
 }
-async function onScrollTopIntersect(entries) {
-  const [entry] = entries
-  if (entry.isIntersecting) {
-    loader.value = true
-    promptStore.fetchLatestPrompt().finally(() => (loader.value = false))
-  }
-}
+
 function computeFetchPromptCount(height, width) {
   const basePromptCount = 3
 
@@ -209,7 +195,6 @@ onMounted(async() => {
 .prompt-enter-from,
 .prompt-leave-to {
   opacity: 0;
-  height: 0;
   transform: translateY(-90px);
 }
 
