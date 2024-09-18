@@ -68,6 +68,31 @@
           @update:model-value="$emit('update:modelValue', $event)"
         >
           <template v-slot:append>
+            <q-icon name="event" class="cursor-pointer q-px-sm">
+              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-date
+                  default-view="Months"
+                  emit-immediately
+                  :key="dateKey"
+                  mask="YYYY-MM"
+                  minimal
+                  :options="(date) => date >= '2023/11/01'"
+                  :model-value="date"
+                  years-in-month-view
+                  @update:model-value="
+                    ($event) => {
+                      dateKey = Date.now()
+                      date = $event
+                      $emit('update:modelValue', $event)
+                    }
+                  "
+                >
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                  </div>
+                </q-date>
+              </q-popup-proxy>
+            </q-icon>
             <q-icon name="search" />
           </template>
         </q-input>
@@ -113,6 +138,8 @@ const entry = ref({})
 const prompt = ref({})
 const advertise = ref({})
 const userStore = useUserStore()
+const dateKey = ref('')
+const date = ref('')
 
 const uniqueUsers = computed(() => {
   const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []

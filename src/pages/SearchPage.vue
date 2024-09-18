@@ -81,7 +81,7 @@ const computedAdvertises = computed(() => {
 })
 const computedPrompts = computed(() => {
   return promptStore.getPrompts?.filter((item) => {
-    const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
+    const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
     return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
   })
 })
