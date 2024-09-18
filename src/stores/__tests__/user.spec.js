@@ -56,7 +56,7 @@ describe('Users Store', () => {
 
     // Part 1: Login The user
     // Login the test@test.com user
-    let userObj = {
+    const userObj = {
       email: import.meta.env.VITE_TEST_USER,
       password: import.meta.env.VITE_TEST_PASSWORD
     }
@@ -135,7 +135,8 @@ describe('Users Store', () => {
 
     // 2) Check if the user exists, redirect to the corresponding page; otherwise, redirect to the Index Page.
     if (user.value) {
-      await router.push('/fan/arnonrdp') // TODO: remove 'arnonrdp' and replace by a generic username
+      // TODO: remove 'arnonrdp' and replace by a generic username
+      await router.push('/fan/arnonrdp')
     } else {
       await router.push('/')
     }
@@ -183,7 +184,7 @@ describe('Users Store', () => {
 
   it('Should emailSignUp user then update user role then remove user', async () => {
     const userStore = useUserStore()
-    let userObj = {
+    const userObj = {
       email: Math.random().toString(36).substring(5, 10) + '@cypress.com',
       name: 'Unit Tester',
       password: import.meta.env.VITE_TEST_PASSWORD
@@ -223,7 +224,7 @@ describe('Users Store', () => {
     })
 
     // Login Admin
-    let adminObj = {
+    const adminObj = {
       email: import.meta.env.VITE_TEST_USER,
       password: import.meta.env.VITE_TEST_PASSWORD
     }
@@ -276,7 +277,7 @@ describe('Users Store', () => {
 
       // Part 1: Login The user
       // Login the test@test.com user
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }

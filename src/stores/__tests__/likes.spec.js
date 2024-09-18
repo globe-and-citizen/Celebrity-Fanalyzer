@@ -29,7 +29,7 @@ describe('Likes Store', async () => {
     expect(likeStore.getLikes).toBe(undefined)
     expect(likeStore.getDislikes).toBe(undefined)
     await likeStore.getAllLikesDislikes('entries', entryStore.getEntries[1].id)
-    let entyId = entryStore.getEntries[0].id
+    const entyId = entryStore.getEntries[0].id
     await likeStore.getAllLikesDislikes('entries', entyId)
 
     await waitUntil(() => {
@@ -139,7 +139,7 @@ describe('Likes Store', async () => {
 
     // Part 1: Authenticate user
     // Login the test@test.com user
-    let userObj = {
+    const userObj = {
       email: import.meta.env.VITE_TEST_USER,
       password: import.meta.env.VITE_TEST_PASSWORD
     }

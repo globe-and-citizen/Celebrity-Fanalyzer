@@ -21,7 +21,8 @@ vi.mock('firebase/storage', async () => {
 })
 
 describe('Prompt Store', async () => {
-  const fakeDate = `2022-01` // Random number between 1000 and 9999 + '-01'
+  // Random number between 1000 and 9999 + '-01'
+  const fakeDate = `2022-01`
 
   beforeEach(async () => {
     // By declaring the various stores within the "describe" block,
@@ -42,7 +43,7 @@ describe('Prompt Store', async () => {
      * each "it" block.
      */
     try {
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }
@@ -60,7 +61,7 @@ describe('Prompt Store', async () => {
     await waitUntil(() => {
       return promptStore.getPrompts
     })
-    let prompts = promptStore.getPrompts
+    const prompts = promptStore.getPrompts
     if (prompts.some((prompt) => prompt.id === fakeDate)) {
       const startingNumberOfPrompts = promptStore.getPrompts.length
       await promptStore.deletePrompt(fakeDate).catch((e) => {
@@ -97,7 +98,8 @@ describe('Prompt Store', async () => {
     const startingNumberOfPrompts = promptStore.getPrompts.length
 
     // 3) Add a fake prompt & test it was added successfully added
-    const bitmap = fs.readFileSync('src/assets/cypress.jpg') //Load an image to use
+    //Load an image to use
+    const bitmap = fs.readFileSync('src/assets/cypress.jpg')
     const imgAddress = await storageStore.uploadFile(bitmap, `images/prompt-${fakeDate}`)
 
     const user = userStore.getUser
