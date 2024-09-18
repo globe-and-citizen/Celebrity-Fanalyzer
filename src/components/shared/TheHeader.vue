@@ -58,7 +58,7 @@
     <q-toolbar v-if="searchInput">
       <q-toolbar-title>
         <q-input
-          class="q-pb-lg text-black"
+          class="q-pb-lg text-black full-width"
           data-test="search-input"
           dense
           label="Search"
@@ -68,36 +68,25 @@
           @update:model-value="$emit('update:modelValue', $event)"
         >
           <template v-slot:append>
-            <q-icon name="event" class="cursor-pointer q-px-sm">
-              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                <q-date
-                  default-view="Months"
-                  emit-immediately
-                  :key="dateKey"
-                  mask="YYYY-MM"
-                  minimal
-                  :options="(date) => date >= '2023/11/01'"
-                  :model-value="date"
-                  years-in-month-view
-                  @update:model-value="
-                    ($event) => {
-                      dateKey = Date.now()
-                      date = $event
-                      $emit('update:modelValue', $event)
-                    }
-                  "
-                >
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
-                  </div>
-                </q-date>
-              </q-popup-proxy>
-            </q-icon>
             <q-icon name="search" />
           </template>
         </q-input>
       </q-toolbar-title>
+      <q-btn
+        color="secondary"
+        class="q-mb-lg"
+        data-test="filter-button"
+        flat
+        icon="tune"
+        round
+        size="1rem"
+        style="height: 100%"
+        @click="openFilter = true"
+      >
+        <q-tooltip>Filter</q-tooltip>
+      </q-btn>
     </q-toolbar>
+
     <q-dialog full-width position="bottom" v-model="prompt.dialog">
       <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
     </q-dialog>
@@ -108,6 +97,29 @@
 
     <q-dialog class="min-" position="bottom" v-model="advertise.dialog">
       <AdvertiseCard v-bind="advertise" @hideDialog="advertise = {}" />
+    </q-dialog>
+
+    <q-dialog v-model="openFilter" persistent>
+      <q-card style="width: 400px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 16px">
+        <q-card-section class="row justify-center" style="padding: 10px 0">
+          <p style="font-weight: bold; color: #333">Filter by:</p>
+          <q-input
+            standard
+            type="date"
+            label="Date"
+            style="width: 100%; margin-top: 10px"
+            v-model="selectedDate"
+          />
+        </q-card-section>
+
+        <q-card-actions class="row justify-between">
+          <q-btn flat label="Clear" color="primary" v-close-popup style="margin-right: 10px;" @click="clearFilters" />
+          <div>
+            <q-btn flat label="Cancel" color="primary" v-close-popup style="margin-right: 10px;" />
+            <q-btn flat label="Apply" color="primary" v-close-popup @click="applyFilters" />
+          </div>
+        </q-card-actions>
+      </q-card>
     </q-dialog>
   </q-header>
 </template>
@@ -140,6 +152,8 @@ const advertise = ref({})
 const userStore = useUserStore()
 const dateKey = ref('')
 const date = ref('')
+const openFilter = ref(false)
+const selectedDate = ref('')
 
 const uniqueUsers = computed(() => {
   const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
@@ -158,6 +172,7 @@ const addAllUsersToStatsDb = () => {
   })
   userStore.addAllUsers(allUsersMap)
 }
+
 function goBack() {
   router.go(-1)
 }
@@ -165,6 +180,7 @@ function goBack() {
 function goToFeedback() {
   router.push('/profile/feedback')
 }
+
 function openPromptDialog(props) {
   prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
@@ -174,8 +190,17 @@ function openEntryDialog() {
   entry.value = {}
   entry.value.dialog = true
 }
+
 function openAdvertiseDialog(props) {
   advertise.value = props?.id ? props : {}
   advertise.value.dialog = true
+}
+
+function clearFilters() {
+  selectedDate.value = '';
+}
+
+function applyFilters() {
+  console.log('Filtering by date:', selectedDate.value);
 }
 </script>
