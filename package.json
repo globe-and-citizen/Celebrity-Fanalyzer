@@ -10,14 +10,15 @@
     "dev:e2e": "cross-env VITE_MODE=E2E quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
-    "lint:fix": "eslint --ext .js,.vue ./ --fix",
+    "lint:fix": "eslint --ext .js,.vue ./src --fix --color",
     "test": "vitest",
     "vitest": "vitest -u",
     "vitest:coverage": "vitest run --coverage",
     "coverage": "cd coverage/src/stores && open index.html",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
-    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run"
+    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
+    "prepare": "husky"
   },
   "husky": {
     "hooks": {
@@ -25,7 +26,9 @@
     }
   },
   "lint-staged": {
-    "*.(js|vue)": ["npm run lint", "git add ."]
+    "*.(vue|js)": [
+      "npm run lint:fix", "gid add"
+    ]
   },
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
