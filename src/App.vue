@@ -29,6 +29,7 @@ const asciiLogo = `
 Don't hack us, contribute with us:
 https://github.com/globe-and-citizen/Celebrity-Fanalyzer`
 
+let testvariable = 0
 console.log(asciiLogo)
 onMounted(async () => {
   await Layer8Init()
