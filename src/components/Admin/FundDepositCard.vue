@@ -2,7 +2,6 @@
   <q-card>
     <q-card-section class="q-pt-none">
       <q-form @submit="onSubmit">
-        <!-- <q-input hide-hint label="Winner wallet address" maxlength="80" required v-model="_walletAddress" disable /> -->
         <q-input hide-hint label="Current connected wallet address" maxlength="80" required v-model="_walletAddress" disable />
         <q-input
           v-model="usdAmount"
