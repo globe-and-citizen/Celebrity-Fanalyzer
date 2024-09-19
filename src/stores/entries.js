@@ -116,7 +116,7 @@ export const useEntryStore = defineStore('entries', {
           if (!entry.escrowId) {
             const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', promptId)))
             const prompt = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-            entry.escrowId = prompt.escrowId
+            entry.escrowId = prompt?.escrowId
           }
         }
         this._userRelatedEntries = entries
