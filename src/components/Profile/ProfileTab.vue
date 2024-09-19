@@ -32,57 +32,46 @@
         v-model="user.displayName"
       />
     </div>
-    <q-input
-      class="non-selectable"
-      debounce="400"
-      label="Username"
-      :rules="[(val) => usernameValidator(val)]"
-      v-model.trim="user.username"
-    >
+    <q-input class="non-selectable" debounce="400" label="Username" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username">
       <template v-slot:append>
-        <q-btn
-         v-if="user.username"
-         flat
-         icon="content_copy"
-         round
-         size="sm"
-         @click="copyLink"
-        >
+        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="content_copy" round size="sm" @click="copyLink">
           <q-tooltip>Copy</q-tooltip>
+        </q-btn>
+        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="open_in_new" round size="sm" @click="openUserProfile">
+          <q-tooltip>View Profile</q-tooltip>
         </q-btn>
       </template>
     </q-input>
     <div>
       <span class="text-h8 text-bold text-secondary">Wallet address</span>
-      <q-input class="non-selectable" debounce="400" label="Your wallet address" v-model.trim="user.walletAddress" readonly>
-      </q-input>
+      <q-input class="non-selectable" debounce="400" label="Your wallet address" v-model.trim="user.walletAddress" readonly></q-input>
 
       <q-input class="non-selectable" debounce="400" label="Current Connected wallet Address" v-model.trim="currentWalletAddress" readonly>
         <Web3ModalComponent page_name="profile" />
 
         <q-btn
-        v-if="currentWalletAddress!==user.walletAddress && currentWalletAddress"
-        color="blue-4"
-        :icon="user.walletAddress ? 'update' : 'save'"
-        size="sm"
-        class=" self-center q-mr-md"
-        flat
-        dense
-        @click="onSetWalletAddressDialog()"
+          v-if="currentWalletAddress !== user.walletAddress && currentWalletAddress"
+          color="blue-4"
+          :icon="user.walletAddress ? 'update' : 'save'"
+          size="sm"
+          class="self-center q-mr-md"
+          flat
+          dense
+          @click="onSetWalletAddressDialog()"
         >
-        <q-tooltip>{{user.walletAddress ? 'Update' : 'Save' }}</q-tooltip>
-      </q-btn>
+          <q-tooltip>{{ user.walletAddress ? 'Update' : 'Save' }}</q-tooltip>
+        </q-btn>
         <q-btn
-        v-if="(user.walletAddress || currentWalletAddress)"
-        color="negative"
-        :icon="'delete'"
-        size="sm"
-        class=" self-center"
-        flat
-        dense
-         @click="onDeleteWalletAddressDialog()"
-         >
-         <q-tooltip>Delete</q-tooltip>
+          v-if="user.walletAddress || currentWalletAddress"
+          color="negative"
+          :icon="'delete'"
+          size="sm"
+          class="self-center"
+          flat
+          dense
+          @click="onDeleteWalletAddressDialog()"
+        >
+          <q-tooltip>Delete</q-tooltip>
         </q-btn>
       </q-input>
     </div>
@@ -104,44 +93,36 @@
   <q-dialog v-model="setWalletAddressDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
-        <h6 class="q-my-sm">{{ isUpdate ?'Update':'Set' }} wallet address</h6>
+        <h6 class="q-my-sm">{{ isUpdate ? 'Update' : 'Set' }} wallet address</h6>
       </q-card-section>
       <q-card-section>
         <span class="q-ml-sm">
-          Are you sure you want to {{ isUpdate ?'update':'set' }}:
-          <b>{{  currentWalletAddress }}</b>
+          Are you sure you want to {{ isUpdate ? 'update' : 'set' }}:
+          <b>{{ currentWalletAddress }}</b>
           as your wallet address ?
         </span>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" label="Cancel" v-close-popup />
-        <q-btn color="info" data-test="confirm-set-wallet" :label="isUpdate ?'update':'set'" @click="onSetWalletAddress()" />
+        <q-btn color="info" data-test="confirm-set-wallet" :label="isUpdate ? 'update' : 'set'" @click="onSetWalletAddress()" />
       </q-card-actions>
     </q-card>
   </q-dialog>
 
   <q-dialog v-model="removeWalletAddressDialog.show">
-  <q-card>
-    <q-card-section class="q-pb-none">
-      <h6 class="q-my-sm">Remove wallet address</h6>
-    </q-card-section>
-    <q-card-section>
-      <span class="q-ml-sm">
-        Are you sure you want to remove your wallet address?
-      </span>
-    </q-card-section>
-    <q-card-actions align="right">
-      <q-btn color="primary" label="Cancel" v-close-popup />
-      <q-btn
-       color="negative"
-       data-test="confirm-remove-wallet"
-       label="Remove"
-       @click="onRemoveWalletAddress()"
-       />
-    </q-card-actions>
-  </q-card>
-</q-dialog>
-
+    <q-card>
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Remove wallet address</h6>
+      </q-card-section>
+      <q-card-section>
+        <span class="q-ml-sm">Are you sure you want to remove your wallet address?</span>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn color="primary" label="Cancel" v-close-popup />
+        <q-btn color="negative" data-test="confirm-remove-wallet" label="Remove" @click="onRemoveWalletAddress()" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -164,22 +145,17 @@ const userStore = useUserStore()
 
 const newPhoto = ref(null)
 const origin = window.location.origin + '/'
-const user = ref(userStore.getUser)
+const user = ref(JSON.parse(JSON.stringify(userStore.getUser)))
 
 const addressUpdated = ref(false)
 
 const setWalletAddressDialog = ref({ show: false })
-const removeWalletAddressDialog = ref({ show: false });
-
+const removeWalletAddressDialog = ref({ show: false })
 
 const isUpdate = ref(false)
 
-watch([currentWalletAddress,user], ()=> {
+watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
-})
-
-userStore.$subscribe((_mutation, state) => {
-  user.value = state._user
 })
 
 function onRejected() {
@@ -206,7 +182,7 @@ function copyLink() {
 }
 
 function switchAddressUpdated(value) {
-  addressUpdated.value = value;
+  addressUpdated.value = value
 }
 function save() {
   if (currentWalletAddress.value && addressUpdated.value === true) {
@@ -233,18 +209,24 @@ function onSetWalletAddress() {
 }
 
 function onDeleteWalletAddressDialog() {
-  removeWalletAddressDialog.value.show = true;
+  removeWalletAddressDialog.value.show = true
 }
 
 function onRemoveWalletAddress() {
-  user.value.walletAddress = '';
-  walletStore.getWalletInfo.wallet_address = '';
-  removeWalletAddressDialog.value.show = false;
+  user.value.walletAddress = ''
+  walletStore.getWalletInfo.wallet_address = ''
+  removeWalletAddressDialog.value.show = false
   customWeb3modal.disconnect()
   save()
-  $q.notify({ message: 'Wallet address removed', type: 'negative' });
+  $q.notify({ message: 'Wallet address removed', type: 'negative' })
+}
+function openUserProfile() {
+  window.open(`${origin}fan/${user.value.username}`, '_blank', 'noopener, noreferrer')
 }
 
+const isUsernameSame = computed(() => {
+  return userStore.getUser?.username === user.value.username
+})
 </script>
 
 <style scoped lang="scss">
