@@ -27,8 +27,7 @@
   },
   "lint-staged": {
     "*.(vue|js)": [
-      "npm run lint:fix",
-      "gid add"
+      "npm run lint:fix"
     ],
     "*.{json,js,ts,jsx,tsx,html}": [
       "npm run format"

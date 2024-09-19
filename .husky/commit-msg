@@ -1,0 +1,11 @@
+message="$(cat $1)"
+requiredPattern="/^(revert: )?(feat|fix|docs|dx|style|refactor|perf|test|workflow|build|ci|chore|types|wip)(\(.+\))?: .{1,50}/"
+# Check if the commit message matches the pattern
+if ! echo "$commit_message" | grep -E "$pattern"; then
+  echo "Error: Commit message does not match the required pattern!"
+  echo "The correct format is:"
+  echo "  <type>:#<ticketNumber> - <description>"
+  echo "Where <type> is one of: feat, fix, docs, style, refactor, test, chore."
+  echo "Example: fix:#123 - fixed issue 123"
+  exit 1
+fi
