@@ -5,11 +5,11 @@
     bordered
     hide-bottom
     class="q-ma-md custom-table"
-    virtual-scroll
     title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
     :loading="isLoading"
+    no-data-label="No prompts found."
     :pagination="pagination"
     :rows="prompts"
   >
@@ -38,7 +38,21 @@
             </q-tooltip>
           </q-btn>
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
+        <q-td class="text-center" auto-width style="width: 101px">
+          <div style="width: 69px">
+            {{ props.row.date }}
+          </div>
+        </q-td>
+        <q-td class="authorRef text-center">
+          <a :href="`/fan/${props.row?.author?.uid}`" class="q-mr-sm" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
+            {{ props.row.author?.displayName }}
+          </a>
+        </q-td>
+        <q-td>
+          <a :href="props.row?.slug" class="q-mr-sm" @click.prevent="router.push(props.row?.slug)">
+            {{ props.row.title }}
+          </a>
+        </q-td>
         <q-td class="text-right">
           <q-btn
             v-if="userStore.isEditorOrAbove"
@@ -78,6 +92,7 @@
             :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"
             @delete-entry="handleDeleteEntry"
+            :maxWidth="maxWidth"
           />
         </q-td>
       </q-tr>
@@ -113,7 +128,8 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, watchEffect, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 
 defineEmits(['openPromptDialog'])
 
@@ -122,7 +138,7 @@ const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
-
+const router = useRouter()
 const columns = [
   {},
   { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
@@ -133,6 +149,7 @@ const columns = [
 const deleteDialog = ref({})
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+const maxWidth = ref(0)
 
 const prompts = ref([])
 
@@ -143,6 +160,12 @@ onMounted(async () => {
   } else {
     await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }
+  window.addEventListener('resize', updateMaxWidth)
+  updateMaxWidth()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateMaxWidth)
 })
 
 const isLoaded = computed(() => promptStore.getPrompts)
@@ -151,6 +174,15 @@ const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading 
 watchEffect(async () => {
   prompts.value = promptStore.getPrompts
 })
+
+function updateMaxWidth() {
+  const documents = document.getElementsByClassName('authorRef')
+  const docs = [...documents]
+  if (docs?.length) {
+    const width = docs.map((el) => el.clientWidth)
+    maxWidth.value = Math.max(...width)
+  }
+}
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true

@@ -44,3 +44,8 @@ html {
   top: 0;
   z-index: 1 !important;
 }
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
