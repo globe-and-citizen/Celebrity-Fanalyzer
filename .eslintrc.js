@@ -5,7 +5,8 @@ module.exports = {
   root: true,
 
   parserOptions: {
-    ecmaVersion: '2021' // Allows for the parsing of modern ECMAScript features
+    // Allows for the parsing of modern ECMAScript features
+    ecmaVersion: '2021'
   },
 
   env: {
@@ -31,7 +32,8 @@ module.exports = {
     // Uncomment any of the lines below to choose desired strictness,
     // but leave only one uncommented!
     // See https://eslint.vuejs.org/rules/#available-rules
-    'plugin:vue/vue3-essential', // Priority A: Essential (Error Prevention)
+    // Priority A: Essential (Error Prevention)
+    'plugin:vue/vue3-essential',
     // 'plugin:vue/vue3-strongly-recommended', // Priority B: Strongly Recommended (Improving Readability)
     // 'plugin:vue/vue3-recommended', // Priority C: Recommended (Minimizing Arbitrary Choices and Cognitive Overhead)
 
@@ -51,7 +53,8 @@ module.exports = {
   ],
 
   globals: {
-    ga: 'readonly', // Google Analytics
+    // Google Analytics
+    ga: 'readonly',
     cordova: 'readonly',
     __statics: 'readonly',
     __QUASAR_SSR__: 'readonly',
@@ -72,6 +75,18 @@ module.exports = {
     'no-empty': 'error',
     'no-inline-comments': 'error',
     'no-var': 'error',
+    'vue/no-unused-refs': 'error',
+    'vue/no-restricted-syntax': 'error',
+    'vue/no-console': 'error',
+    'vue/no-empty-component-block': 'error',
+    'vue/no-multi-spaces': 'error',
+    'vue/no-unused-emit-declarations': 'error',
+    'vue/no-unused-vars': [
+      'error',
+      {
+        ignorePattern: '^_'
+      }
+    ],
     'prefer-const': 'error'
   }
 }

@@ -232,7 +232,7 @@ async function addReply() {
   await nextTick()
   inputField.value.blur()
 }
-onMounted(async()=>{
+onMounted(async () => {
   await commentStore.getTotalComments(props.collectionName, props.post.id)
   if (commentStore.getCommentsCount) {
     await commentStore.fetchComments(props.collectionName, props.post?.id)

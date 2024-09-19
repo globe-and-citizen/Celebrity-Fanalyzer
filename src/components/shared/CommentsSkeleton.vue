@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-sm">
-    <q-card flat >
+    <q-card flat>
       <q-item>
         <q-item-section avatar>
           <q-skeleton type="circle" />
@@ -17,23 +17,22 @@
       </q-item>
 
       <q-item>
-
         <q-item-section class="q-pl-sm">
-          <q-skeleton type="text" height="20px"  />
-          <q-skeleton type="text" height="20px"  />
+          <q-skeleton type="text" height="20px" />
+          <q-skeleton type="text" height="20px" />
 
-          <div class="row  no-wrap q-mt-sm">
-            <div class="row ">
+          <div class="row no-wrap q-mt-sm">
+            <div class="row">
               <q-icon name="thumb_up" color="grey-4" class="q-mr-sm" size="18px" />
               <q-skeleton type="text" width="20px" />
             </div>
 
-            <div class="row q-px-lg ">
+            <div class="row q-px-lg">
               <q-icon name="thumb_down" color="grey-4" class="q-mr-sm" size="18px" />
               <q-skeleton type="text" width="20px" />
             </div>
 
-            <div class="row ">
+            <div class="row">
               <q-icon name="reply" color="grey-4" class="q-mr-sm" size="18px" />
               <q-skeleton type="text" width="20px" />
             </div>

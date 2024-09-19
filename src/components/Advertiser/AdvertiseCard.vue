@@ -1,17 +1,17 @@
 <template>
   <q-card class="q-mt-none full-width" :class="{ loading: advertiseStore.isLoading, 'not-loading': !advertiseStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-      <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
+      <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Advertise' : 'New Advertise'">
           <q-card-section>
             <q-input
-            counter
-            data-test="input-title"
-            label="Title"
-            maxlength="80"
-            required
-            v-model="advertise.title"
-            :hint="!advertise.title ? '*Title is required':''"
+              counter
+              data-test="input-title"
+              label="Title"
+              maxlength="80"
+              required
+              v-model="advertise.title"
+              :hint="!advertise.title ? '*Title is required' : ''"
             />
             <div class="q-py-md">
               <div class="flex items-center justify-between">
@@ -26,7 +26,7 @@
               counter
               class="q-mb-lg"
               data-test="file-image"
-              :hint="!advertise.image ? '*Image is required. Max size is 2MB.':fileErrorMessage"
+              :hint="!advertise.image ? '*Image is required. Max size is 2MB.' : fileErrorMessage"
               :label="advertise.type === 'Banner' ? 'Image' : 'Video'"
               :max-total-size="5242880"
               :required="!id"
@@ -49,11 +49,11 @@
               />
             </div>
             <q-field
-            counter
-            label="Description"
-            maxlength="400"
-            v-model="advertise.content"
-            :hint="!advertise.content ? '*Description is required':''"
+              counter
+              label="Description"
+              maxlength="400"
+              v-model="advertise.content"
+              :hint="!advertise.content ? '*Description is required' : ''"
             >
               <template v-slot:control>
                 <q-editor
@@ -104,7 +104,7 @@
               label="Publish date"
               :rules="['date']"
               @click="openDatePicker"
-              :hint="!advertise.publishDate ? '*Publish Date is required':''"
+              :hint="!advertise.publishDate ? '*Publish Date is required' : ''"
             >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -121,7 +121,7 @@
             <q-input
               v-model.number="advertise.duration"
               label="Duration(day's)"
-              :hint="!advertise.duration ? '*Duration is required':''"
+              :hint="!advertise.duration ? '*Duration is required' : ''"
               class="q-mb-lg"
               type="number"
               :min="1"
@@ -131,7 +131,7 @@
               v-if="!isEditing"
               v-model="usdAmount"
               label="Price in USD"
-              :hint="!usdAmount ? '*Minimum Price is required':''"
+              :hint="!usdAmount ? '*Minimum Price is required' : ''"
               min="0"
               mask="#.####"
               fill-mask="0"
@@ -178,7 +178,7 @@
 import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
-import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore, useWalletStore } from 'src/stores'
+import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'

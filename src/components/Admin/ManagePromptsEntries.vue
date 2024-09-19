@@ -115,7 +115,7 @@ import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, watchEffect, ref } from 'vue'
 
-defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
+defineEmits(['openPromptDialog'])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()

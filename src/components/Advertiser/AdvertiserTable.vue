@@ -69,7 +69,7 @@
         <template #body-cell-action="props">
           <q-td :props="props">
             <q-icon
-              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status === 'Active'"
               flat
               color="green"
               name="payment"
@@ -295,7 +295,6 @@ const dataOptions = ref(
       option.value === 'ongoing'
   )
 )
-
 
 async function calculateAmountSpent(advertise) {
   return (

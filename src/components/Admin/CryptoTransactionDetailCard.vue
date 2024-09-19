@@ -38,7 +38,6 @@ const $q = useQuasar()
 const errorStore = useErrorStore()
 
 const userStore = useUserStore()
-const emit = defineEmits(['hideDialog'])
 const props = defineProps({
   cryptoTransaction: { required: true }
 })

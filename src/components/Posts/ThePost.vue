@@ -218,23 +218,25 @@ watchEffect(async () => {
     await statsStore.addArticle(props.post?.id, promptId, props.post.author?.uid, props.post?.title, props.post.description)
   }
 
-    if (props.isAdd) {
-      await statsStore.addAdvertisement(
-        props.post.id,
-        props.post.author?.uid,
-        props.post.title,
-        props.post.content,
-        props.post.budget,
-        props.post.duration
-      )
-    }
+  if (props.isAdd) {
+    await statsStore.addAdvertisement(
+      props.post.id,
+      props.post.author?.uid,
+      props.post.title,
+      props.post.content,
+      props.post.budget,
+      props.post.duration
+    )
+  }
 })
 
 async function like() {
   if (isPrompt) {
     await likeStore.addLike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
   } else if (props.isAdd) {
-    await likeStore.addLike(props.collectionName, props.post.id, null, null, id).catch((error) => errorStore.throwError('Error adding like', error))
+    await likeStore
+      .addLike(props.collectionName, props.post.id, null, null, id)
+      .catch((error) => errorStore.throwError('Error adding like', error))
   } else {
     await likeStore
       .addLike(props.collectionName, id, id, props.post?.prompt?.id, null)
@@ -246,7 +248,9 @@ async function dislike() {
   if (isPrompt) {
     await likeStore.addDislike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
   } else if (props.isAdd) {
-    await likeStore.addDislike(props.collectionName, props.post.id, null, null, id).catch((error) => errorStore.throwError('Error adding like', error))
+    await likeStore
+      .addDislike(props.collectionName, props.post.id, null, null, id)
+      .catch((error) => errorStore.throwError('Error adding like', error))
   } else {
     await likeStore
       .addDislike(props.collectionName, id, id, props.post?.prompt?.id, null)

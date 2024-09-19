@@ -1,7 +1,7 @@
 <template>
   <q-card class="q-mt-none" :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-      <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
+      <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'">
           <q-card-section>
             <div class="row items-baseline no-wrap">
@@ -48,20 +48,20 @@
               v-model="prompt.author"
             />
             <q-input
-            counter
-            data-test="input-title"
-            label="Title"
-            maxlength="80"
-            required
-            v-model="prompt.title"
-            :hint="!prompt.title ? '*Title is required':''"
+              counter
+              data-test="input-title"
+              label="Title"
+              maxlength="80"
+              required
+              v-model="prompt.title"
+              :hint="!prompt.title ? '*Title is required' : ''"
             />
             <q-field
-            counter
-            label="Description"
-            maxlength="400"
-            v-model="prompt.description"
-            :hint="!prompt.description ? '*Description is required':''"
+              counter
+              label="Description"
+              maxlength="400"
+              v-model="prompt.description"
+              :hint="!prompt.description ? '*Description is required' : ''"
             >
               <template v-slot:control>
                 <q-editor
@@ -99,7 +99,7 @@
               accept=".jpg, image/*"
               counter
               data-test="file-image"
-              :hint="!prompt.image ? '*Image is required. Max size is 2MB.':''"
+              :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
               label="Image"
               :max-total-size="2097152"
               :required="!id"
@@ -253,7 +253,7 @@ async function onSubmit() {
     return
   }
   if (!promptStore.getPrompts) {
-    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug,!!props.id)
+    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
     if (hasPrompt) {
       return
     }
