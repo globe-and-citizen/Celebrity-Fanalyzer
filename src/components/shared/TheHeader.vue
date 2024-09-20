@@ -73,7 +73,7 @@
         </q-input>
       </q-toolbar-title>
       <q-btn
-        color="secondary"
+        :color="selectedDate ? 'primary' : 'secondary'"
         class="q-mb-lg"
         data-test="filter-button"
         flat
@@ -137,7 +137,7 @@ defineProps({
   subtitle: { type: String, required: false },
   title: { type: String, required: false }
 })
-const emit = defineEmits(['updateSearchDate'])
+const emit = defineEmits(['updateSearchDate', 'update:modelValue'])
 
 const router = useRouter()
 
