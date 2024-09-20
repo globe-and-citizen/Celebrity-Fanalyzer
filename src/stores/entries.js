@@ -295,6 +295,23 @@ export const useEntryStore = defineStore('entries', {
 
     setTab(tab) {
       this.$patch({ _tab: tab })
+    },
+
+    async entryNameValidator(entryId, promptId, title, isEdit = false) {
+      try {
+        const promptDocRef = doc(db, 'prompts', promptId)
+        const conditions = [where('prompt', '==', promptDocRef), where('title', '==', title.trim())]
+
+        if (isEdit) {
+          conditions.push(where('id', '!=', entryId))
+        }
+
+        const entrySnapshot = await getDocs(query(collection(db, 'entries'), and(...conditions)))
+        return !entrySnapshot.empty
+      } catch (error) {
+        console.log('Error occurred while checking', error)
+        return false
+      }
     }
   }
 })

@@ -33,7 +33,8 @@
           maxlength="80"
           required
           v-model="entry.title"
-          :hint="!entry.title ? '*Title is required' : ''"
+          :disable="!entry.prompt"
+          :hint="!entry.prompt ? 'Select prompt first' : !entry.title ? '*Title is required' : ''"
         />
         <q-field
           counter
@@ -218,6 +219,12 @@ async function onSubmit() {
   const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
   if (!props.id && hasEntry) {
     $q.notify({ type: 'info', message: 'You have already submitted an entry for this prompt. Please select another prompt' })
+    return
+  }
+
+  const entryNameValidator = await entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+  if (entryNameValidator) {
+    $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
