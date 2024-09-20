@@ -15,7 +15,7 @@ Fixes # (issue)
 
 Why did you choose to make these changes? Were there any trade-offs you had to consider?
 
-### 🧪 How Has This Been Tested?
+### 🧪 All Test Suites Passed?
 
 - [ ] Manual tested
 - [ ] Vitest
