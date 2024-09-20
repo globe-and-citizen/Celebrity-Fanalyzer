@@ -5,6 +5,7 @@
     searchInput
     :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
+    @updateSearchDate="updateSearchDate"
   />
   <q-page-container class="search-page-container">
     <q-page class="q-pa-md">
@@ -61,6 +62,7 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
+const searchDate = ref('')
 const skeletons = 10
 
 advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
@@ -82,9 +84,14 @@ const computedAdvertises = computed(() => {
 const computedPrompts = computed(() => {
   return promptStore.getPrompts?.filter((item) => {
     const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
-    return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
+
+    const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
+    const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
+
+    return matchesDate && matchesSearch
   })
 })
+
 const computedPromptsAndAdvertises = computed(() => {
   let i = 0,
     j = 0
@@ -108,12 +115,14 @@ const computedPromptsAndAdvertises = computed(() => {
   }
   return arr
 })
-
 const computedEntries = computed(() => {
-  return entryStore.getEntries?.filter((item) =>
+  return entryStore.getFilteredEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })
+function updateSearchDate(date) {
+  searchDate.value = date
+}
 </script>
 
 <style lang="scss" scoped>

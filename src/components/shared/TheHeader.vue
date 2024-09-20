@@ -103,20 +103,14 @@
       <q-card style="width: 400px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 16px">
         <q-card-section class="row justify-center" style="padding: 10px 0">
           <p style="font-weight: bold; color: #333">Filter by:</p>
-          <q-input
-            standard
-            type="date"
-            label="Date"
-            style="width: 100%; margin-top: 10px"
-            v-model="selectedDate"
-          />
+          <q-input standard type="date" label="Date" style="width: 100%; margin-top: 10px" v-model="selectedDate" />
         </q-card-section>
 
         <q-card-actions class="row justify-between">
-          <q-btn flat label="Clear" color="primary" v-close-popup style="margin-right: 10px;" @click="clearFilters" />
+          <q-btn flat label="Clear" color="primary" style="margin-right: 10px" @click="clearFilters" />
           <div>
-            <q-btn flat label="Cancel" color="primary" v-close-popup style="margin-right: 10px;" />
-            <q-btn flat label="Apply" color="primary" v-close-popup @click="applyFilters" />
+            <q-btn flat label="Cancel" color="primary" v-close-popup style="margin-right: 10px" />
+            <q-btn flat label="Apply" color="primary" v-close-popup @click="$emit('updateSearchDate', selectedDate)" />
           </div>
         </q-card-actions>
       </q-card>
@@ -143,6 +137,7 @@ defineProps({
   subtitle: { type: String, required: false },
   title: { type: String, required: false }
 })
+const emit = defineEmits(['updateSearchDate'])
 
 const router = useRouter()
 
@@ -150,8 +145,6 @@ const entry = ref({})
 const prompt = ref({})
 const advertise = ref({})
 const userStore = useUserStore()
-const dateKey = ref('')
-const date = ref('')
 const openFilter = ref(false)
 const selectedDate = ref('')
 
@@ -197,10 +190,7 @@ function openAdvertiseDialog(props) {
 }
 
 function clearFilters() {
-  selectedDate.value = '';
-}
-
-function applyFilters() {
-  console.log('Filtering by date:', selectedDate.value);
+  selectedDate.value = ''
+  emit('updateSearchDate', selectedDate.value)
 }
 </script>
