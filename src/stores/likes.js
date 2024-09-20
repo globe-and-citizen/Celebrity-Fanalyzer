@@ -84,8 +84,6 @@ export const useLikeStore = defineStore('likes', {
           }
         }
 
-        await this.getAllLikesDislikes(collectionName, documentId)
-
         this._isLoading = false
       } catch (error) {
         console.error('Error adding like:', error)
@@ -123,8 +121,6 @@ export const useLikeStore = defineStore('likes', {
             await pushLikeToStats(user_id, article_id, topic_id, false, ad_id)
           }
         }
-
-        await this.getAllLikesDislikes(collectionName, documentId)
 
         this._isLoading = false
       } catch (error) {

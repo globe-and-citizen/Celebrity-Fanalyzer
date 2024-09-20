@@ -1,9 +1,36 @@
 <template>
   <q-form class="q-gutter-y-md" greedy @submit="save">
     <div class="flex items-center no-wrap">
-      <q-avatar size="5rem" text-color="white">
-        <q-spinner v-if="storageStore.isLoading" color="primary" size="3rem" />
-        <q-img v-else :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
+      <q-avatar size="5rem" text-color="white" class="q-mt-lg">
+        <template v-if="storageStore.isLoading">
+          <q-spinner color="primary" size="3rem" />
+        </template>
+        <template v-else-if="user.photoURL">
+          <q-img :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
+            <div class="photo">
+              <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
+              <q-file
+                accept="image/*"
+                borderless
+                class="absolute-full cursor-pointer"
+                dense
+                max-file-size="5242880"
+                style="height: 5rem"
+                v-model="newPhoto"
+                @rejected="onRejected"
+                @update:model-value="uploadPhoto"
+              >
+                <template v-slot:file>
+                  <q-chip class="hidden" />
+                </template>
+              </q-file>
+            </div>
+          </q-img>
+        </template>
+        <template v-else>
+          <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+            {{ user.displayName.charAt(0).toUpperCase() }}
+          </div>
           <div class="photo">
             <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
             <q-file
@@ -22,10 +49,10 @@
               </template>
             </q-file>
           </div>
-        </q-img>
+        </template>
       </q-avatar>
       <q-input
-        class="col-grow q-pl-sm"
+        class="col-grow q-pl-sm q-mt-lg"
         label="Name"
         required
         :rules="[(val) => val.length || 'Name is required']"
