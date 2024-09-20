@@ -300,7 +300,7 @@ export const useEntryStore = defineStore('entries', {
     async entryNameValidator(entryId, promptId, title, isEdit = false) {
       try {
         const promptDocRef = doc(db, 'prompts', promptId)
-        const conditions = [where('prompt', '==', promptDocRef), where('title', '==', title.trim())]
+        const conditions = [where('prompt', '==', promptDocRef), where('title', '==', title)]
 
         if (isEdit) {
           conditions.push(where('id', '!=', entryId))

@@ -216,6 +216,7 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
+  entry.title = entry.title.trim()
   const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
   if (!props.id && hasEntry) {
     $q.notify({ type: 'info', message: 'You have already submitted an entry for this prompt. Please select another prompt' })
