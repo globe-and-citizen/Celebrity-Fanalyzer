@@ -1,7 +1,7 @@
 <template>
   <q-form class="q-gutter-y-md" greedy @submit="save">
     <div class="flex items-center no-wrap">
-      <q-avatar size="5rem" text-color="white">
+      <q-avatar size="5rem" text-color="white" class="q-mt-lg">
         <template v-if="storageStore.isLoading">
           <q-spinner color="primary" size="3rem" />
         </template>
@@ -52,7 +52,7 @@
         </template>
       </q-avatar>
       <q-input
-        class="col-grow q-pl-sm"
+        class="col-grow q-pl-sm q-mt-lg"
         label="Name"
         required
         :rules="[(val) => val.length || 'Name is required']"
