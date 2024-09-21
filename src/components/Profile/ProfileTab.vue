@@ -61,8 +61,11 @@
     </div>
     <q-input class="non-selectable" debounce="400" label="Username" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username">
       <template v-slot:append>
-        <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
+        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="content_copy" round size="sm" @click="copyLink">
           <q-tooltip>Copy</q-tooltip>
+        </q-btn>
+        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="open_in_new" round size="sm" @click="openUserProfile">
+          <q-tooltip>View Profile</q-tooltip>
         </q-btn>
       </template>
     </q-input>
@@ -169,7 +172,7 @@ const userStore = useUserStore()
 
 const newPhoto = ref(null)
 const origin = window.location.origin + '/'
-const user = ref(userStore.getUser)
+const user = ref(JSON.parse(JSON.stringify(userStore.getUser)))
 
 const addressUpdated = ref(false)
 
@@ -180,10 +183,6 @@ const isUpdate = ref(false)
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
-})
-
-userStore.$subscribe((_mutation, state) => {
-  user.value = state._user
 })
 
 function onRejected() {
@@ -248,6 +247,13 @@ function onRemoveWalletAddress() {
   save()
   $q.notify({ message: 'Wallet address removed', type: 'negative' })
 }
+function openUserProfile() {
+  window.open(`${origin}fan/${user.value.username}`, '_blank', 'noopener, noreferrer')
+}
+
+const isUsernameSame = computed(() => {
+  return userStore.getUser?.username === user.value.username
+})
 </script>
 
 <style scoped lang="scss">
