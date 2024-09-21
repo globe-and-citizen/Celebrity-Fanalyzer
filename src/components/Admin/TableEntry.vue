@@ -120,6 +120,7 @@
               </q-btn>
             </span>
           </span>
+          <ShareComponent dense :label="''" :link="getOrigin(props.row.slug)" @share="share($event, 'entries', props.row.id)" />
         </q-td>
       </q-tr>
     </template>
@@ -196,7 +197,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import EntryCard from './EntryCard.vue'
@@ -204,6 +205,7 @@ import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 import { useRouter } from 'vue-router'
+import ShareComponent from 'src/components/Posts/ShareComponent.vue'
 
 const props = defineProps({
   filter: { type: String, required: false, default: '' },
@@ -239,6 +241,7 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const cryptoTransactions = useCryptoTransactionStore()
 const router = useRouter()
+const shareStore = useShareStore()
 
 const columns = [
   {},
@@ -266,6 +269,10 @@ function onEditDialog(props) {
 function onDeleteDialog(entry) {
   deleteDialog.value.show = true
   deleteDialog.value.entry = entry
+}
+
+async function share(socialNetwork, collectionName, id) {
+  await shareStore.addShare(collectionName, id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 
 async function onProceedPaymentDialog(props) {
@@ -352,6 +359,10 @@ function onSelectWinner(entry) {
     })
 
   selectWinnerDialog.value.show = false
+}
+
+function getOrigin(slug) {
+  return window.origin + slug
 }
 </script>
 <style scoped>
