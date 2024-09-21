@@ -48,20 +48,20 @@
               v-model="prompt.author"
             />
             <q-input
-            counter
-            data-test="input-title"
-            label="Title"
-            maxlength="80"
-            required
-            v-model="prompt.title"
-            :hint="!prompt.title ? '*Title is required':''"
+              counter
+              data-test="input-title"
+              label="Title"
+              maxlength="80"
+              required
+              v-model="prompt.title"
+              :hint="!prompt.title ? '*Title is required' : ''"
             />
             <q-field
-            counter
-            label="Description"
-            maxlength="400"
-            v-model="prompt.description"
-            :hint="!prompt.description ? '*Description is required':''"
+              counter
+              label="Description"
+              maxlength="400"
+              v-model="prompt.description"
+              :hint="!prompt.description ? '*Description is required' : ''"
             >
               <template v-slot:control>
                 <q-editor
@@ -99,8 +99,8 @@
               accept=".jpg, image/*"
               counter
               data-test="file-image"
-              :hint="!prompt.image ? '*Image is required. Max size is 2MB.':''"
-              label="Image"
+              :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
+              label="Chose File"
               :max-total-size="2097152"
               :required="!id"
               use-chips
@@ -112,6 +112,11 @@
                 <q-icon name="image" />
               </template>
             </q-file>
+
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+              <p>or</p>
+              <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+            </div>
             <q-select
               behavior="menu"
               counter
@@ -157,6 +162,19 @@
       </q-stepper>
     </q-form>
   </q-card>
+  <q-dialog v-model="openCamera" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <CaptureCamera @onCapture="captureCamera" />
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="primary" v-close-popup />
+        <q-btn flat label="Done" color="primary" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog></q-dialog>
 </template>
 
 <script setup>
@@ -166,6 +184,7 @@ import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'sr
 import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
+import CaptureCamera from '../shared/CameraCapture.vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -188,6 +207,7 @@ const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
+const openCamera = ref(false)
 
 watchEffect(() => {
   if (props.id) {
@@ -219,6 +239,9 @@ function onUpdateMonth() {
 
 function uploadPhoto() {
   prompt.image = ''
+  if (!imageModel.value) {
+    return
+  }
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (prompt.image = reader.result)
@@ -253,7 +276,7 @@ async function onSubmit() {
     return
   }
   if (!promptStore.getPrompts) {
-    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug,!!props.id)
+    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
     if (hasPrompt) {
       return
     }
@@ -286,5 +309,10 @@ async function onSubmit() {
 
 function onRejected() {
   $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 2MB.' })
+}
+
+function captureCamera(imageBlob) {
+  imageModel.value = imageBlob
+  uploadPhoto()
 }
 </script>
