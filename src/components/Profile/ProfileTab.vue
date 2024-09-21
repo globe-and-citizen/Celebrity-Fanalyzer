@@ -1,9 +1,36 @@
 <template>
   <q-form class="q-gutter-y-md" greedy @submit="save">
     <div class="flex items-center no-wrap">
-      <q-avatar size="5rem" text-color="white">
-        <q-spinner v-if="storageStore.isLoading" color="primary" size="3rem" />
-        <q-img v-else :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
+      <q-avatar size="5rem" text-color="white" class="q-mt-lg">
+        <template v-if="storageStore.isLoading">
+          <q-spinner color="primary" size="3rem" />
+        </template>
+        <template v-else-if="user.photoURL">
+          <q-img :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
+            <div class="photo">
+              <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
+              <q-file
+                accept="image/*"
+                borderless
+                class="absolute-full cursor-pointer"
+                dense
+                max-file-size="5242880"
+                style="height: 5rem"
+                v-model="newPhoto"
+                @rejected="onRejected"
+                @update:model-value="uploadPhoto"
+              >
+                <template v-slot:file>
+                  <q-chip class="hidden" />
+                </template>
+              </q-file>
+            </div>
+          </q-img>
+        </template>
+        <template v-else>
+          <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+            {{ user.displayName.charAt(0).toUpperCase() }}
+          </div>
           <div class="photo">
             <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
             <q-file
@@ -22,10 +49,10 @@
               </template>
             </q-file>
           </div>
-        </q-img>
+        </template>
       </q-avatar>
       <q-input
-        class="col-grow q-pl-sm"
+        class="col-grow q-pl-sm q-mt-lg"
         label="Name"
         required
         :rules="[(val) => val.length || 'Name is required']"
@@ -34,8 +61,11 @@
     </div>
     <q-input class="non-selectable" debounce="400" label="Username" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username">
       <template v-slot:append>
-        <q-btn flat icon="content_copy" round size="sm" @click="copyLink">
+        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="content_copy" round size="sm" @click="copyLink">
           <q-tooltip>Copy</q-tooltip>
+        </q-btn>
+        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="open_in_new" round size="sm" @click="openUserProfile">
+          <q-tooltip>View Profile</q-tooltip>
         </q-btn>
       </template>
     </q-input>
@@ -142,7 +172,7 @@ const userStore = useUserStore()
 
 const newPhoto = ref(null)
 const origin = window.location.origin + '/'
-const user = ref(userStore.getUser)
+const user = ref(JSON.parse(JSON.stringify(userStore.getUser)))
 
 const addressUpdated = ref(false)
 
@@ -153,10 +183,6 @@ const isUpdate = ref(false)
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
-})
-
-userStore.$subscribe((_mutation, state) => {
-  user.value = state._user
 })
 
 function onRejected() {
@@ -221,6 +247,13 @@ function onRemoveWalletAddress() {
   save()
   $q.notify({ message: 'Wallet address removed', type: 'negative' })
 }
+function openUserProfile() {
+  window.open(`${origin}fan/${user.value.username}`, '_blank', 'noopener, noreferrer')
+}
+
+const isUsernameSame = computed(() => {
+  return userStore.getUser?.username === user.value.username
+})
 </script>
 
 <style scoped lang="scss">

@@ -132,10 +132,10 @@
               v-model="usdAmount"
               label="Price in USD"
               :hint="!usdAmount ? '*Minimum Price is required' : ''"
-              min="0"
-              mask="#.####"
+              mask="#.##"
               fill-mask="0"
               reverse-fill-mask
+              :rules="[() => (usdAmount < 3 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
             <q-input
@@ -144,8 +144,6 @@
               readonly
               label="Budget In Matic"
               class="q-mb-lg"
-              mask="#.######"
-              fill-mask="0"
               :rules="[(budget) => (budget ? budget >= 0 : true || 'Enter a positive number')]"
             />
           </q-card-section>

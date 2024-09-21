@@ -231,6 +231,17 @@ watchEffect(async () => {
 })
 
 async function like() {
+  if (likeStore._isLoading) return
+
+  const userLikeIndex = likeStore._likes?.findIndex((like) => like.id === userId)
+
+  if (userLikeIndex !== -1) {
+    likeStore._likes?.splice(userLikeIndex, 1)
+  } else {
+    likeStore._dislikes = likeStore._dislikes?.filter((dislike) => dislike.id !== userId)
+    likeStore._likes.push({ id: userId })
+  }
+
   if (isPrompt) {
     await likeStore.addLike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
   } else if (props.isAdd) {
@@ -245,6 +256,15 @@ async function like() {
 }
 
 async function dislike() {
+  if (likeStore._isLoading) return
+  const userDislikeIndex = likeStore._dislikes?.findIndex((dislike) => dislike.id === userId)
+  if (userDislikeIndex !== -1) {
+    likeStore._dislikes?.splice(userDislikeIndex, 1)
+  } else {
+    likeStore._likes = likeStore._likes?.filter((like) => like.id !== userId)
+    likeStore._dislikes?.push({ id: userId })
+  }
+
   if (isPrompt) {
     await likeStore.addDislike(props.collectionName, id, null, id, null).catch((error) => errorStore.throwError('Error adding like', error))
   } else if (props.isAdd) {
