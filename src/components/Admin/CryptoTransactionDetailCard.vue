@@ -6,7 +6,6 @@
         <q-input hide-hint label="Intiator" v-model="cryptoTransactionDetail.initiatorEmail" disable />
 
         <q-input v-model="cryptoTransactionDetail.amount" label="Amount" icon="account_balance_wallet" reverse-fill-mask readonly />
-        <q-input hide-hint label="sender" v-model="cryptoTransactionDetail.sender" readonly />
         <q-input hide-hint label="receiver" v-model="cryptoTransactionDetail.receiver" readonly />
         <q-input hide-hint label="status" v-model="cryptoTransactionDetail.status" readonly />
         <q-input hide-hint label="Hash" v-model="cryptoTransactionDetail.transactionHash" readonly />
@@ -59,11 +58,12 @@ function openLink(url) {
 
 async function loadCrytptoTransactionDetail() {
   try {
+    console.log('the detail received ====================== ', props)
     cryptoTransactionDetail.value.transactionHash = props.cryptoTransaction?.tHash
     const initiator = userStore.getUserById(props.cryptoTransaction.initiator.id)
 
     const retreivedTransactionDetail = await getTransactionDetails(props.cryptoTransaction?.tHash, props.cryptoTransaction?.networkName)
-    cryptoTransactionDetail.value.initiatorEmail = initiator?.email
+    cryptoTransactionDetail.value.initiatorEmail = props.detail?.depositor
     cryptoTransactionDetail.value.sender = retreivedTransactionDetail?.sender
     cryptoTransactionDetail.value.receiver = props.detail?.recipient
     cryptoTransactionDetail.value.amount = props.detail?.amount
