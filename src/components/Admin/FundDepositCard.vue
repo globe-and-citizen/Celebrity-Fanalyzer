@@ -24,17 +24,14 @@
 </template>
 <script setup>
 import { useQuasar } from 'quasar'
-import { useErrorStore, useUserStore } from 'src/stores'
-import { ref, onMounted, computed } from 'vue'
-import { initiateSendEther, fetchMaticRate } from 'app/src/web3/transfers.js'
-import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
+import { useErrorStore } from 'src/stores'
+import { ref, onMounted } from 'vue'
+import { fetchMaticRate } from 'app/src/web3/transfers.js'
 import { usePromptStore } from 'src/stores'
 import { depositFunds } from 'app/src/web3/escrow'
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
-const userStore = useUserStore()
-const cryptoTransactionStore = useCryptoTransactionStore()
 
 const promptStore = usePromptStore()
 
