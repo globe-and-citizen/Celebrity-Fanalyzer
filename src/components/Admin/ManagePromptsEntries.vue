@@ -96,6 +96,7 @@
           >
             <q-tooltip>Delete</q-tooltip>
           </q-btn>
+          <ShareComponent dense :label="''" :link="getOrigin(props.row.slug)" @share="share($event, 'prompts', props.row.id)" />
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
@@ -157,7 +158,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
 import { computed, onBeforeUnmount, onMounted, watchEffect, ref } from 'vue'
 import FundDepositCard from './FundDepositCard.vue'
 defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
@@ -165,6 +166,7 @@ defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
+import ShareComponent from 'src/components/Posts/ShareComponent.vue'
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -172,6 +174,8 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 const router = useRouter()
+const shareStore = useShareStore()
+
 const columns = [
   {},
   { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
@@ -270,6 +274,10 @@ async function handleUpdateEntry({ _entry, _prompt }) {
   await promptStore.fetchPrompts()
 }
 
+async function share(socialNetwork, collectionName, id) {
+  await shareStore.addShare(collectionName, id, socialNetwork).catch((error) => errorStore.throwError(error))
+}
+
 function toggleExpand(props) {
   props.expand = !props?.expand
   if (props.expand && !entryStore._loadedEntries.some((el) => el?.promptId === props?.row?.id)) {
@@ -326,5 +334,8 @@ async function onProceedDepositFundDialog(props) {
     proceedDepositFundDialog.value.walletAddress = customWeb3modal.getAddress()
     proceedDepositFundDialog.value.prompt = props
   }
+}
+function getOrigin(slug) {
+  return window.origin + slug
 }
 </script>
