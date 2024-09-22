@@ -114,7 +114,6 @@ const showBannerOnLoad = () => {
   deferredPrompt = null
   if (!dismissed) {
     window.addEventListener('beforeinstallprompt', (e) => {
-      console.log('Install prompt triggered')
       e.preventDefault()
       deferredPrompt = e
       setTimeout(() => {
