@@ -84,7 +84,6 @@ async function onSubmit(event) {
         })
         .catch((error) => {
           emit('hideDialog')
-          console.log(' Error when saving the transaction', error)
           errorStore.throwError(error, 'Error when saving the transaction')
           $q.loading.hide()
         })

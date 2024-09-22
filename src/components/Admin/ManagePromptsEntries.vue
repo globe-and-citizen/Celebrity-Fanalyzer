@@ -38,7 +38,6 @@
             </q-tooltip>
           </q-btn>
         </q-td>
-        <!-- <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td> -->
 
         <q-td class="text-center" auto-width style="width: 101px">
           <div style="width: 69px">
@@ -101,7 +100,6 @@
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
-          <!-- <span v-if="props.row?.escrowId"> -->
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
 
           <TableEntry
@@ -113,7 +111,6 @@
             @delete-entry="handleDeleteEntry"
             :maxWidth="maxWidth"
           />
-          <!-- </span> -->
         </q-td>
       </q-tr>
     </template>
@@ -164,7 +161,7 @@ import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/
 import { computed, onBeforeUnmount, onMounted, watchEffect, ref } from 'vue'
 import FundDepositCard from './FundDepositCard.vue'
 defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
-import { useWalletStore } from 'src/stores'
+
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
@@ -321,7 +318,6 @@ function handleDeleteEntry(entryId, promptId) {
 //proceed deposit funds.
 async function onProceedDepositFundDialog(props) {
   //let's check if the entry already have valid payment..
-
   if (!customWeb3modal.getAddress()) {
     $q.notify({ type: 'negative', message: ' please connect your wallet ' })
     customWeb3modal.open()

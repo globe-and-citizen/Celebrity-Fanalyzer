@@ -58,9 +58,7 @@ function openLink(url) {
 
 async function loadCrytptoTransactionDetail() {
   try {
-    console.log('the detail received ====================== ', props)
     cryptoTransactionDetail.value.transactionHash = props.cryptoTransaction?.tHash
-    const initiator = userStore.getUserById(props.cryptoTransaction.initiator.id)
 
     const retreivedTransactionDetail = await getTransactionDetails(props.cryptoTransaction?.tHash, props.cryptoTransaction?.networkName)
     cryptoTransactionDetail.value.initiatorEmail = props.detail?.depositor

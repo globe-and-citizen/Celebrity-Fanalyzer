@@ -269,8 +269,6 @@ function onDeleteDialog(entry) {
 }
 
 async function onProceedPaymentDialog(props) {
-  console.log('the current entry ============ ', props)
-  console.log(' the user Id =================== ', userStore.getUserId)
   if (props.escrowId && props?.prompt?.id) {
     _currentPrompt.value.escrowId = props.escrowId
     _currentPrompt.value.id = props.prompt.id
@@ -280,7 +278,6 @@ async function onProceedPaymentDialog(props) {
     _currentPrompt.value = Array.isArray(fetchedPrompt) && fetchedPrompt.length > 0 ? fetchedPrompt[0] : null
   }
   if (_currentPrompt.value) {
-    console.log('the current prompt ===================== ', _currentPrompt)
     $q.loading.show()
     if (!customWeb3modal.getAddress()) {
       $q.notify({ type: 'negative', message: ' please connect your wallet ' })
@@ -291,7 +288,6 @@ async function onProceedPaymentDialog(props) {
       const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
       if (cryptoTransactionExist.length > 0) {
         const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
-        console.log('the escrow events ============ ', escrowEvents)
         if (escrowEvents?.status?.includes('success')) {
           displayCrytptoTransactionDialog.value.detail = {
             amount: escrowEvents?.events?.releaseEvents[0]?.args.amount,
