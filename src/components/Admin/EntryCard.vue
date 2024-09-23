@@ -144,6 +144,7 @@ const storageStore = useStorageStore()
 const userStore = useUserStore()
 const router = useRouter()
 const { href } = router.currentRoute.value
+const something = 0
 
 const authorOptions = reactive([])
 const editorRef = ref(null)
@@ -213,7 +214,7 @@ function onPaste(evt) {
     onPasteStripFormattingIEPaste = false
   }
 }
-let something
+
 async function onSubmit() {
   const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
   if (!props.id && hasEntry) {
