@@ -177,19 +177,48 @@ export const useEntryStore = defineStore('entries', {
         console.error('Unable to fetch entry', e)
       }
     },
-    async hasEntry(promptId) {
+    async fetchEntryByPrompts(promptId) {
       const userStore = useUserStore()
+      const promptDocRef = doc(db, 'prompts', promptId)
+
       try {
-        const userDocRef = doc(db, 'users', userStore.getUserId)
-        const promptDocRef = doc(db, 'prompts', promptId)
-        const querySnapshot = await getDocs(
-          query(collection(db, 'entries'), and(where('author', '==', userDocRef), where('prompt', '==', promptDocRef)))
-        )
-        return !querySnapshot.empty
-      } catch (error) {
-        console.log('Unable to check has entry', error)
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('prompt', '==', promptDocRef)))
+        const entries = snapshotDocs(querySnapshot.docs)
+
+        const userPromises = entries.map(async (entry) => {
+          if (entry.author.id) {
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+          return entry
+        })
+
+        this._entries = await Promise.all(userPromises)
+      } catch (e) {
+        console.error('Unable to fetch entries', e)
+      }
+    },
+
+    hasEntry(promptId) {
+      const userStore = useUserStore()
+
+      const filteredEntry = this.getEntries?.filter((entry) => entry.author.uid === userStore.getUserId && entry.prompt.id === promptId)
+      return !!filteredEntry.length
+    },
+
+    entryNameValidator(entryId, promptId, title, isEdit = false) {
+      const filteredEntry = this.getEntries?.filter((entry) =>
+        isEdit
+          ? entryId !== entry?.id && entry.title === title && promptId === entry.prompt.id
+          : entry.title === title && promptId === entry.prompt.id
+      )
+      return !!filteredEntry.length
+    },
+
+    checkPromptRelatedEntry(promptId) {
+      if (!this.getEntries) {
         return false
       }
+      return !!this.getEntries?.find((entry) => entry.prompt.id === promptId)
     },
 
     async addEntry(payload) {
