@@ -159,7 +159,7 @@ const promptOptions = computed(
   () =>
     promptStore.getPrompts
       ?.filter((prompt) => !prompt.hasWinner)
-      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
       .reverse() || []
 )
 
