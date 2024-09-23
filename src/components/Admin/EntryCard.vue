@@ -217,13 +217,21 @@ function onPaste(evt) {
 
 async function onSubmit() {
   entry.title = entry.title.trim()
-  const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.prompt?.value)
+
+  if (!hasLoadedEntry) {
+    await entryStore.fetchEntryByPrompts(entry.prompt?.value)
+  }
+
+  const hasEntry = entryStore.hasEntry(entry.prompt?.value)
+
   if (!props.id && hasEntry) {
     $q.notify({ type: 'info', message: 'You have already submitted an entry for this prompt. Please select another prompt' })
     return
   }
 
-  const entryNameValidator = await entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+  const entryNameValidator = entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+
   if (entryNameValidator) {
     $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
