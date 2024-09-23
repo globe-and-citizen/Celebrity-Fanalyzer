@@ -102,8 +102,34 @@
     <q-dialog v-model="openFilter" persistent>
       <q-card style="width: 400px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 16px">
         <q-card-section class="row justify-center" style="padding: 10px 0">
-          <p style="font-weight: bold; color: #333">Filter by:</p>
-          <q-input standard type="date" label="Date" style="width: 100%; margin-top: 10px" v-model="selectedDate" />
+          <p style="font-weight: bold; color: #333; margin: none" class="text-h6">Filter By</p>
+
+          <div style="display: flex; align-items: center; width: 100%; margin: 10px 30px 0px 30px; gap: 20px">
+            <span>Date :</span>
+            <q-input borderless v-model="selectedDate" data-test="date" placeholder="YYYY-MM" @keyup="handleKeyUpDate($event)">
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer" data-test="date-picker">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-date
+                      default-view="Months"
+                      emit-immediately
+                      :key="dataKey"
+                      mask="YYYY-MM"
+                      minimal
+                      :options="(date) => date >= '2023/11/01'"
+                      v-model="selectedDate"
+                      years-in-month-view
+                      @update:model-value="onUpdateMonth"
+                    >
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+          </div>
         </q-card-section>
 
         <q-card-actions class="row justify-between">
@@ -147,6 +173,7 @@ const advertise = ref({})
 const userStore = useUserStore()
 const openFilter = ref(false)
 const selectedDate = ref('')
+const dataKey = ref(Date.now())
 
 const uniqueUsers = computed(() => {
   const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
@@ -192,5 +219,23 @@ function openAdvertiseDialog(props) {
 function clearFilters() {
   selectedDate.value = ''
   emit('updateSearchDate', selectedDate.value)
+}
+
+function onUpdateMonth() {
+  dataKey.value = Date.now()
+}
+
+function handleKeyUpDate(event) {
+  const { value } = event.target
+
+  const numericValue = value.replace(/\D/g, '')
+
+  if (numericValue.length <= 4) {
+    selectedDate.value = numericValue
+  } else if (numericValue.length > 4) {
+    const year = numericValue.slice(0, 4)
+    const month = numericValue.slice(4, 6)
+    selectedDate.value = month ? `${year}-${month}` : year
+  }
 }
 </script>
