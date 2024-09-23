@@ -120,7 +120,12 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email, role: 'User' })
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            displayName: user.name,
+            email: user.email,
+            username: user.username,
+            role: 'User'
+          })
             .then(() => this.emailSignIn(user))
             .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
             .catch((error) => console.error(error))
@@ -172,7 +177,7 @@ export const useUserStore = defineStore('user', {
 
     async checkUsernameAvailability(username) {
       this._isLoading = true
-      return await getDocs(query(collection(db, 'users'), where('uid', '!=', this.getUser.uid)))
+      return await getDocs(query(collection(db, 'users'), this.isAuthenticated ? where('uid', '!=', this.getUser.uid) : ''))
         .then((querySnapshot) => {
           const usernames = querySnapshot.docs.map((document) => document.data().username)
           return usernames.some((name) => name?.toLowerCase() === username?.toLowerCase())
@@ -184,7 +189,10 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
-      }).finally(() => (this._isLoading = false))
+      }).finally(() => {
+        this._user = user
+        this._isLoading = false
+      })
     },
 
     async updateRole(user) {

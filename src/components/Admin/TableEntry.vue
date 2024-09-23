@@ -2,9 +2,8 @@
   <q-table
     flat
     :hide-bottom="!!rows.length"
-    :class="{ 'entries-table': !userStore.isEditorOrAbove }"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
     :columns="!!rows.length ? columns : []"
-    :dense="userStore.isEditorOrAbove"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
     :hide-header="userStore.isEditorOrAbove"
@@ -14,97 +13,116 @@
     no-data-label="No entries found."
     :loading="entryStore.isLoading"
   >
-    <template #body-cell-created="props">
-      <td class="text-center relative-position">
-        <img v-if="props.row.isWinner" src="/favicon-16x16.png" style="position: absolute; left: 3%" />
-        {{ dayMonthYear(props.row.created) }}
-      </td>
-    </template>
-    <template v-slot:body-cell-actions="props">
-      <td class="text-right">
-        <q-btn
-          v-if="
-            userStore.isEditorOrAbove &&
-            props.row.isWinner !== true &&
-            _currentPrompt?.isTreated !== true &&
-            _currentPrompt?.hasWinner !== true
-          "
-          color="black"
-          :disable="userStore.getUser.role !== 'Admin'"
-          flat
-          size="sm"
-          icon="toggle_off"
-          @click="onSelectWinnerDialog(props.row)"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
-          color="dark"
-          :disable="userStore.getUser.role !== 'Admin'"
-          flat
-          icon="payment"
-          size="sm"
-          label=""
-          @click="onProceedPaymentDialog(props.row)"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">proceed payment!</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="props.row.isWinner === true && _currentPrompt?.isTreated === true"
-          color="dark"
-          :disable="userStore.getUser.role !== 'Admin'"
-          flat
-          icon="payment"
-          size="sm"
-          label=""
-          @click="onProceedPaymentDialog(props.row)"
-        >
-          <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
-        </q-btn>
-        <q-btn
-          v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
-          color="positive"
-          flat
-          icon="toggle_on"
-          size="sm"
-          label=""
-          :disable="userStore.getUser.role !== 'Admin'"
-          @click="onSelectWinnerDialog(props.row)"
-        >
-          <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
-        </q-btn>
+    <template v-slot:body="props">
+      <q-tr class="new" :data-test="props.key" :props="props">
+        <q-td style="width: 34px">
+          <span style="display: flex; width: 34px; place-content: center">
+            <img alt="winner-logo" v-if="props.row.isWinner" src="/favicon-16x16.png" />
+          </span>
+        </q-td>
+        <q-td auto-width style="width: 101px">
+          <div>{{ dayMonthYear(props.row.created) }}</div>
+        </q-td>
+        <q-td :style="widthStyle" style="text-align: center">
+          <a :href="`/fan/${props.row?.author?.uid}`" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
+            {{ props.row.author?.displayName }}
+          </a>
+        </q-td>
+        <q-td>
+          <a :href="props.row?.slug" @click.prevent="router.push(props.row?.slug)">
+            {{ props.row.title }}
+          </a>
+        </q-td>
+        <q-td class="text-right">
+          <q-btn
+            class="payment-buttons"
+            v-if="
+              userStore.isEditorOrAbove &&
+              props.row.isWinner !== true &&
+              _currentPrompt?.isTreated !== true &&
+              _currentPrompt?.hasWinner !== true
+            "
+            color="black"
+            :disable="userStore.getUser.role !== 'Admin'"
+            flat
+            size="sm"
+            icon="toggle_off"
+            @click="onSelectWinnerDialog(props.row)"
+          >
+            <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
+          </q-btn>
+          <q-btn
+            class="payment-buttons"
+            v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
+            color="dark"
+            :disable="userStore.getUser.role !== 'Admin'"
+            flat
+            icon="payment"
+            size="sm"
+            label=""
+            @click="onProceedPaymentDialog(props.row)"
+          >
+            <q-tooltip class="positive" :offset="[10, 10]">proceed payment!</q-tooltip>
+          </q-btn>
+          <q-btn
+            class="payment-buttons"
+            v-if="props.row.isWinner === true && _currentPrompt?.isTreated === true"
+            color="dark"
+            :disable="userStore.getUser.role !== 'Admin'"
+            flat
+            icon="payment"
+            size="sm"
+            label=""
+            @click="onProceedPaymentDialog(props.row)"
+          >
+            <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
+          </q-btn>
+          <q-btn
+            class="payment-buttons"
+            v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
+            color="positive"
+            flat
+            icon="toggle_on"
+            size="sm"
+            label=""
+            :disable="userStore.getUser.role !== 'Admin'"
+            @click="onSelectWinnerDialog(props.row)"
+          >
+            <q-tooltip class="negative" :offset="[10, 10]">unselect winner!</q-tooltip>
+          </q-btn>
 
-        <span v-if="_currentPrompt?.hasWinner !== true">
-          <span v-if="props.row.isWinner !== true">
-            <q-btn
-              v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
-              color="warning"
-              flat
-              icon="edit"
-              round
-              size="sm"
-              @click="onEditDialog(props.row)"
-            >
-              <q-tooltip>Edit</q-tooltip>
-            </q-btn>
+          <span v-if="_currentPrompt?.hasWinner !== true">
+            <span v-if="props.row.isWinner !== true">
+              <q-btn
+                v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
+                color="warning"
+                flat
+                icon="edit"
+                round
+                size="sm"
+                @click="onEditDialog(props.row)"
+              >
+                <q-tooltip>Edit</q-tooltip>
+              </q-btn>
+            </span>
+            <span v-if="props.row.isWinner !== true">
+              <q-btn
+                v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
+                color="negative"
+                data-test="button-delete-entry"
+                flat
+                icon="delete"
+                round
+                size="sm"
+                @click="onDeleteDialog(props.row)"
+              >
+                <q-tooltip>Delete</q-tooltip>
+              </q-btn>
+            </span>
           </span>
-          <span v-if="props.row.isWinner !== true">
-            <q-btn
-              v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
-              color="negative"
-              data-test="button-delete-entry"
-              flat
-              icon="delete"
-              round
-              size="sm"
-              @click="onDeleteDialog(props.row)"
-            >
-              <q-tooltip>Delete</q-tooltip>
-            </q-btn>
-          </span>
-        </span>
-      </td>
+          <ShareComponent dense :label="''" :link="getOrigin(props.row.slug)" @share="share($event, 'entries', props.row.id)" />
+        </q-td>
+      </q-tr>
     </template>
   </q-table>
 
@@ -179,26 +197,40 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
-import { ref, watchEffect } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
+import { useRouter } from 'vue-router'
+import ShareComponent from 'src/components/Posts/ShareComponent.vue'
 
 const props = defineProps({
   filter: { type: String, required: false, default: '' },
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
-  loadedEntries: { type: Array, default: () => [] }
+  loadedEntries: { type: Array, default: () => [] },
+  maxWidth: { type: Number, required: false }
+})
+
+const widthStyle = ref({ width: `${props.maxWidth}px` })
+
+watch(
+  () => props.maxWidth,
+  (newWidth) => {
+    widthStyle.value = { width: `${newWidth}px` }
+  }
+)
+
+onMounted(() => {
+  nextTick(() => {
+    widthStyle.value = { width: `${props.maxWidth}px` }
+  })
 })
 
 const _currentPrompt = ref({})
-
-watchEffect(() => {
-  _currentPrompt.value = props.currentPrompt
-})
 
 // Emit event to parent
 const emit = defineEmits(['update-entry', 'delete-entry'])
@@ -208,12 +240,15 @@ const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 const cryptoTransactions = useCryptoTransactionStore()
+const router = useRouter()
+const shareStore = useShareStore()
 
 const columns = [
-  { name: 'created', align: 'center', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
+  {},
+  { name: 'created', align: 'left', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
-  { name: 'actions', field: 'actions' }
+  {}
 ]
 
 const deleteDialog = ref({})
@@ -234,6 +269,10 @@ function onEditDialog(props) {
 function onDeleteDialog(entry) {
   deleteDialog.value.show = true
   deleteDialog.value.entry = entry
+}
+
+async function share(socialNetwork, collectionName, id) {
+  await shareStore.addShare(collectionName, id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 
 async function onProceedPaymentDialog(props) {
@@ -321,9 +360,23 @@ function onSelectWinner(entry) {
 
   selectWinnerDialog.value.show = false
 }
+
+function getOrigin(slug) {
+  return window.origin + slug
+}
 </script>
 <style scoped>
 .entries-table {
   margin: 1rem 1rem 0 1rem;
+}
+
+td {
+  font-size: 12px !important;
+  background-color: rgba(229, 71, 87, 0.12);
+}
+
+.payment-buttons {
+  width: 30px !important;
+  height: 30px !important;
 }
 </style>
