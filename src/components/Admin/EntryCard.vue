@@ -144,7 +144,6 @@ const storageStore = useStorageStore()
 const userStore = useUserStore()
 const router = useRouter()
 const { href } = router.currentRoute.value
-const something = 0
 
 const authorOptions = reactive([])
 const editorRef = ref(null)
