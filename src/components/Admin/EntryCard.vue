@@ -213,7 +213,7 @@ function onPaste(evt) {
     onPasteStripFormattingIEPaste = false
   }
 }
-
+let something
 async function onSubmit() {
   const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
   if (!props.id && hasEntry) {
