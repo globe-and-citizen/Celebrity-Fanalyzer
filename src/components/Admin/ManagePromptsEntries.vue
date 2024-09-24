@@ -38,6 +38,7 @@
             </q-tooltip>
           </q-btn>
         </q-td>
+
         <q-td class="text-center" auto-width style="width: 101px">
           <div style="width: 69px">
             {{ props.row.date }}
@@ -54,6 +55,21 @@
           </a>
         </q-td>
         <q-td class="text-right">
+          <span v-if="!props.row?.escrowId">
+            <q-btn
+              v-if="userStore.isEditorOrAbove"
+              flat
+              round
+              color="green"
+              data-test="button-deposit"
+              icon="payment"
+              size="sm"
+              :disable="promptStore.isLoading"
+              @click="onProceedDepositFundDialog(props.row)"
+            >
+              <q-tooltip>deposit escrow fund</q-tooltip>
+            </q-btn>
+          </span>
           <q-btn
             v-if="userStore.isEditorOrAbove"
             flat
@@ -86,6 +102,7 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
+
           <TableEntry
             v-else
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
@@ -123,13 +140,31 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="proceedDepositFundDialog.show">
+    <q-card style="width: 400px; max-width: 60vw">
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Escrow fund deposit</h6>
+      </q-card-section>
+      <FundDepositCard
+        :walletAddress="proceedDepositFundDialog.walletAddress"
+        :prompt="proceedDepositFundDialog.prompt"
+        @hideDialog="proceedDepositFundDialog.show = false"
+      />
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
-import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watchEffect, ref } from 'vue'
+import FundDepositCard from './FundDepositCard.vue'
+defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
+
+import { customWeb3modal } from 'app/src/web3/walletConnect'
+
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
 
@@ -154,6 +189,7 @@ const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 const maxWidth = ref(0)
 
 const prompts = ref([])
+const proceedDepositFundDialog = ref({})
 
 onMounted(async () => {
   if (userStore.isEditorOrAbove) {
@@ -287,6 +323,18 @@ function handleDeleteEntry(entryId, promptId) {
   promptStore.fetchPrompts()
 }
 
+//proceed deposit funds.
+async function onProceedDepositFundDialog(props) {
+  //let's check if the entry already have valid payment..
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    customWeb3modal.open()
+  } else {
+    proceedDepositFundDialog.value.show = true
+    proceedDepositFundDialog.value.walletAddress = customWeb3modal.getAddress()
+    proceedDepositFundDialog.value.prompt = props
+  }
+}
 function getOrigin(slug) {
   return window.origin + slug
 }
