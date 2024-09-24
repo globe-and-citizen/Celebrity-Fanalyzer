@@ -69,7 +69,6 @@ const observer = ref(null)
 const pageRef = ref(null)
 const skeletons = 10
 
-
 onUnmounted(() => {
   advertiseStore.reset()
 })
@@ -164,12 +163,14 @@ function computeFetchPromptCount(height, width) {
   return computedCount
 }
 
-onMounted(async() => {
+onMounted(async () => {
   try {
-    const height = pageRef.value.$el.clientHeight
-    const width = pageRef.value.$el.clientWidth
-    const promptFetchCount = computeFetchPromptCount(height, width)
-    await promptStore.fetchPrompts(true, promptFetchCount)
+    if (!promptStore.getPrompts?.length) {
+      const height = pageRef.value.$el.clientHeight
+      const width = pageRef.value.$el.clientWidth
+      const promptFetchCount = computeFetchPromptCount(height, width)
+      await promptStore.fetchPrompts(true, promptFetchCount)
+    }
     await advertiseStore.getActiveAdvertise()
     initIntersectionObserver()
   } catch (error) {
