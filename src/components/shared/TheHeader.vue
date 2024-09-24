@@ -136,7 +136,7 @@
           <q-btn flat label="Clear" color="primary" style="margin-right: 10px" @click="clearFilters" />
           <div>
             <q-btn flat label="Cancel" color="primary" v-close-popup style="margin-right: 10px" />
-            <q-btn flat label="Apply" color="primary" v-close-popup @click="$emit('updateSearchDate', selectedDate)" />
+            <q-btn flat label="Apply" color="primary" v-close-popup @click="applyFilters" />
           </div>
         </q-card-actions>
       </q-card>
@@ -145,7 +145,7 @@
 </template>
 
 <script setup>
-import { useUserStore } from 'src/stores'
+import { useUserStore, useEntryStore, useErrorStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
 import NotificationBubble from './NotificationBubble.vue'
@@ -171,6 +171,9 @@ const entry = ref({})
 const prompt = ref({})
 const advertise = ref({})
 const userStore = useUserStore()
+const entryStore = useEntryStore()
+const errorStore = useErrorStore()
+
 const openFilter = ref(false)
 const selectedDate = ref('')
 const dataKey = ref(Date.now())
@@ -216,6 +219,15 @@ function openAdvertiseDialog(props) {
   advertise.value.dialog = true
 }
 
+function applyFilters() {
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(selectedDate.value)
+  if (!hasLoadedEntry) {
+    entryStore.fetchEntryByPrompts(selectedDate.value)
+  }
+  entryStore.fetchEntryByPrompts(selectedDate.value).catch((error) => errorStore.throwError(error))
+  emit('updateSearchDate', selectedDate.value)
+}
+
 function clearFilters() {
   selectedDate.value = ''
   emit('updateSearchDate', selectedDate.value)
@@ -237,5 +249,6 @@ function handleKeyUpDate(event) {
     const month = numericValue.slice(4, 6)
     selectedDate.value = month ? `${year}-${month}` : year
   }
+  emit('updateSearchDate', selectedDate.value)
 }
 </script>

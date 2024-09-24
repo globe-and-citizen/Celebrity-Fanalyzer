@@ -39,7 +39,9 @@
         </q-tab-panel>
       </q-tab-panels>
       <TransitionGroup tag="div">
-        <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
+        <div v-if="(searchDate || search) && computedEntries?.length > 0">
+          <TheEntries :entries="computedEntries" />
+        </div>
       </TransitionGroup>
     </q-page>
   </q-page-container>
@@ -115,11 +117,13 @@ const computedPromptsAndAdvertises = computed(() => {
   }
   return arr
 })
+
 const computedEntries = computed(() => {
-  return entryStore.getFilteredEntries?.filter((item) =>
+  return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })
+
 function updateSearchDate(date) {
   searchDate.value = date
 }
