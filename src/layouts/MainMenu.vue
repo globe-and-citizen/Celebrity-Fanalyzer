@@ -29,7 +29,7 @@
 
 <script setup>
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref, watchEffect, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from 'src/firebase'
@@ -111,6 +111,9 @@ onMounted(async () => {
   if (params.slug) {
     promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
   }
+})
+onBeforeUnmount(()=>{
+  promptStore.reset()
 })
 </script>
 
