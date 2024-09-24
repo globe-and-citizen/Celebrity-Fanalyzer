@@ -100,11 +100,11 @@
     </q-dialog>
 
     <q-dialog v-model="openFilter" persistent>
-      <q-card style="width: 400px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 16px">
+      <q-card class="filter-card">
         <q-card-section class="row justify-center" style="padding: 10px 0">
-          <p style="font-weight: bold; color: #333; margin: none" class="text-h6">Filter By</p>
+          <p class="filter-title text-h6">Filter By</p>
 
-          <div style="display: flex; align-items: center; width: 100%; margin: 10px 30px 0px 30px; gap: 20px">
+          <div class="filter-section">
             <span>Date :</span>
             <q-input borderless v-model="selectedDate" data-test="date" placeholder="YYYY-MM" @keyup="handleKeyUpDate($event)">
               <template v-slot:append>
@@ -132,10 +132,10 @@
           </div>
         </q-card-section>
 
-        <q-card-actions class="row justify-between">
-          <q-btn flat label="Clear" color="primary" style="margin-right: 10px" @click="clearFilters" />
+        <q-card-actions class="row filter-actions flex-space-between">
+          <q-btn flat label="Clear" color="primary" @click="clearFilters" />
           <div>
-            <q-btn flat label="Cancel" color="primary" v-close-popup style="margin-right: 10px" />
+            <q-btn flat label="Cancel" color="primary" v-close-popup />
             <q-btn flat label="Apply" color="primary" v-close-popup @click="applyFilters" />
           </div>
         </q-card-actions>
@@ -252,3 +252,34 @@ function handleKeyUpDate(event) {
   emit('updateSearchDate', selectedDate.value)
 }
 </script>
+<style scoped>
+.filter-card {
+  width: 400px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+.filter-title {
+  font-weight: bold;
+  color: #333;
+  margin: none;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 10px 30px 0px 30px;
+  gap: 20px;
+}
+
+.filter-actions {
+  margin-right: 10px;
+}
+
+.flex-space-between {
+  justify-content: space-between;
+}
+</style>
