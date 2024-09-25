@@ -96,28 +96,31 @@
                 />
               </template>
             </q-field>
-            <q-file
-              accept=".jpg, image/*"
-              counter
-              data-test="file-image"
-              :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
-              label="Chose File"
-              :max-total-size="2097152"
-              :required="!id"
-              use-chips
-              v-model="imageModel"
-              @rejected="onRejected()"
-              @update:model-value="uploadPhoto()"
-            >
-              <template v-slot:append>
-                <q-icon name="image" />
-              </template>
-            </q-file>
 
-            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center">
-              <p>or</p>
+            <div class="row">
+              <diV class="col-8">
+                <q-file
+                  accept=".jpg, image/*"
+                  counter
+                  data-test="file-image"
+                  :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
+                  label="Chose File"
+                  :max-total-size="2097152"
+                  :required="!id"
+                  use-chips
+                  v-model="imageModel"
+                  @rejected="onRejected()"
+                  @update:model-value="uploadPhoto()"
+                >
+                  <template v-slot:append>
+                    <q-icon name="image" />
+                  </template>
+                </q-file>
+              </diV>
+              <div class="col-1 flex justify-center items-center"><p>or</p></div>
               <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
             </div>
+
             <q-select
               behavior="menu"
               counter
@@ -164,16 +167,7 @@
     </q-form>
   </q-card>
   <q-dialog v-model="openCamera" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <CaptureCamera @onCapture="captureCamera" />
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Done" color="primary" v-close-popup />
-      </q-card-actions>
-    </q-card>
+    <CaptureCamera @onCapture="captureCamera" />
   </q-dialog>
   <q-dialog></q-dialog>
 </template>

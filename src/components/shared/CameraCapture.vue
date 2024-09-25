@@ -1,19 +1,28 @@
 <template>
-  <div class="full-width column items-center justify-center">
-    <div class="web-cam-taker relative-position">
-      <video v-if="!is_taken" ref="camera" :width="width" :height="height" :style="{ borderRadius: '6px' }" autoplay />
+  <q-card>
+    <q-card-section class="row items-center">
+      <div class="full-width column items-center justify-center">
+        <div class="web-cam-taker relative-position">
+          <video v-if="!is_taken" ref="camera" :width="width" :height="height" :style="{ borderRadius: '6px' }" autoplay />
 
-      <canvas v-show="is_taken" id="photoTaken" ref="taken_image" :width="width" :height="height"></canvas>
+          <canvas v-show="is_taken" id="photoTaken" ref="taken_image" :width="width" :height="height"></canvas>
 
-      <div class="absolute-top" :class="{ 'bg-white': is_shooting }" />
+          <div class="absolute-top" :class="{ 'bg-white': is_shooting }" />
 
-      <q-spinner v-if="is_loading" color="grey-lighten-4" />
-    </div>
+          <q-spinner v-if="is_loading" color="grey-lighten-4" />
+        </div>
 
-    <q-btn v-if="is_granted" variant="outlined" rounded class="q-px-lg mt-5" :style="{ fontWeight: 400 }" @click="takePhoto">
-      {{ is_taken ? 'RETAKE' : 'CAPTURE' }}
-    </q-btn>
-  </div>
+        <q-btn v-if="is_granted" variant="outlined" rounded class="q-px-lg mt-5" color="primary" @click="takePhoto">
+          {{ is_taken ? 'RETAKE' : 'CAPTURE' }}
+        </q-btn>
+      </div>
+    </q-card-section>
+
+    <q-card-actions align="right">
+      <q-btn flat label="Cancel" color="primary" v-close-popup />
+      <q-btn :disable="!is_taken" flat label="Done" color="primary" v-close-popup />
+    </q-card-actions>
+  </q-card>
 </template>
 
 <script setup>
