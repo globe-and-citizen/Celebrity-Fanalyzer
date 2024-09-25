@@ -5,6 +5,7 @@
     searchInput
     :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
+    @updateSearchDate="updateSearchDate"
   />
   <q-page-container class="search-page-container">
     <q-page ref="pageRef" class="q-pa-md">
@@ -38,7 +39,9 @@
         </q-tab-panel>
       </q-tab-panels>
       <TransitionGroup tag="div">
-        <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
+        <div v-if="(searchDate || search) && computedEntries?.length > 0">
+          <TheEntries :entries="computedEntries" />
+        </div>
       </TransitionGroup>
     </q-page>
     <div class="row justify-center">
@@ -65,6 +68,7 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
+const searchDate = ref('')
 const observer = ref(null)
 const pageRef = ref(null)
 const skeletons = 10
@@ -85,11 +89,16 @@ const computedAdvertises = computed(() => {
 const computedPrompts = computed(() => {
   return promptStore.getPrompts
     ?.filter((item) => {
-      const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
-      return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
+      const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
+
+      const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
+      const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
+
+      return matchesDate && matchesSearch
     })
     .sort((a, b) => new Date(b?.id) - new Date(a?.id))
 })
+
 const computedPromptsAndAdvertises = computed(() => {
   const map = new Map()
   const promptsLength = computedPrompts.value?.length ?? 0
@@ -134,6 +143,10 @@ const computedEntries = computed(() => {
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
 })
+
+function updateSearchDate(date) {
+  searchDate.value = date
+}
 const initIntersectionObserver = () => {
   const options = {
     root: null,
