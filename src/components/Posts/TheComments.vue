@@ -150,6 +150,7 @@ function getReplyAuthor() {
 async function addComment() {
   reply.parentId = commentStore.getReplyTo
   const comment = { text: commentValue.value }
+  commentValue.value = ''
 
   commentStore
     .addComment(props.collectionName, comment, props.post)
@@ -232,7 +233,7 @@ async function addReply() {
   await nextTick()
   inputField.value.blur()
 }
-onMounted(async()=>{
+onMounted(async () => {
   await commentStore.getTotalComments(props.collectionName, props.post.id)
   if (commentStore.getCommentsCount) {
     await commentStore.fetchComments(props.collectionName, props.post?.id)
