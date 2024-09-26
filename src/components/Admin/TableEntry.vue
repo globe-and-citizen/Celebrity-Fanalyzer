@@ -286,8 +286,9 @@ async function onProceedPaymentDialog(props) {
   }
   if (_currentPrompt.value) {
     $q.loading.show()
-    if (!customWeb3modal.getAddress()) {
-      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+
+    if (!customWeb3modal.getAddress() || customWeb3modal.getChainId() !== 137) {
+      $q.notify({ type: 'negative', message: ' please connect your wallet to polygon mainet network ' })
       customWeb3modal.open()
       $q.loading.hide()
     } else {

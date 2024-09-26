@@ -326,8 +326,8 @@ function handleDeleteEntry(entryId, promptId) {
 //proceed deposit funds.
 async function onProceedDepositFundDialog(props) {
   //let's check if the entry already have valid payment..
-  if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+  if (!customWeb3modal.getAddress() && customWeb3modal.getChainId() !== 137) {
+    $q.notify({ type: 'negative', message: ' please connect your wallet to polygon mainet network ' })
     customWeb3modal.open()
   } else {
     proceedDepositFundDialog.value.show = true
