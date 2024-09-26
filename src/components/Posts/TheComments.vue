@@ -35,7 +35,7 @@
             rounded
             standout="bg-secondary text-white"
             style="margin-bottom: 7rem"
-            v-model="commentValue"
+            v-model.trim="commentValue"
             @blur="isMention = false"
             @keydown.escape="inputField.blur()"
           >
