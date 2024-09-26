@@ -157,8 +157,8 @@
         </template>
         <template #body-cell-total_cost="props">
           <q-td class="text-right">
-            {{ viewMatic(computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits)) }}
-            <q-tooltip>{{ computeAdvertisementMatic(props.row.impressions, props.row.clicks, props.row.visits) }}</q-tooltip>
+            {{ viewMatic(computeAdvertisementMatic(props.row.totalImpressions, props.row.totalClicks, props.row.totalVisits)) }}
+            <q-tooltip>{{ computeAdvertisementMatic(props.row.totalImpressions, props.row.totalClicks, props.row.totalVisits) }}</q-tooltip>
           </q-td>
         </template>
       </q-table>
