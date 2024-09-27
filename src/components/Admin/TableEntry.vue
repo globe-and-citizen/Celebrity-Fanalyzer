@@ -29,7 +29,20 @@
           </a>
         </q-td>
         <q-td>
-          <a :href="props.row?.slug" @click.prevent="router.push(props.row?.slug)">
+          <a
+            style="cursor: pointer"
+            :href="props.row?.slug"
+            @click.prevent="
+              () => {
+                props.row?.slug
+                  ? router.push(props.row?.slug)
+                  : $q.notify({
+                      type: 'error',
+                      message: 'Sorry. There is no link for this entry at this time. Please contact support.'
+                    })
+              }
+            "
+          >
             {{ props.row.title }}
           </a>
         </q-td>
