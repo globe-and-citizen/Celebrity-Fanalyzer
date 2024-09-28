@@ -17,7 +17,17 @@ import { mock_layer8_interceptor } from 'mock_layer8_module'
 export const useUserStore = defineStore('user', {
   state: () => ({
     _profileTab: 'profile',
-    _user: {},
+    _user: {
+      displayName: undefined,
+      email: undefined,
+      location: undefined,
+      role: undefined,
+      subscriptions: undefined,
+      uid: undefined,
+      username: undefined,
+      walletAddress: undefined,
+      x: undefined
+    },
     _userIp: '',
     _users: undefined,
     _isLoading: false,
