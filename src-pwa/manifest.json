@@ -49,10 +49,27 @@
       "type": "image/png"
     }
   ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "1650x962",
+      "type": "/",
+      "form_factor": "wide",
+      "label": "Celebrity Fanalyzer"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "563x748",
+      "type": "/",
+      "form_factor": "narrow",
+      "label": "Celebrity Fanalyzer mobile"
+    }
+  ],
   "name": "Celebrity Fanalyzer",
   "orientation": "portrait",
   "short_name": "Celebrity Fanalyzer",
-  "start_url": "https://celebrityfanalyzer.com",
+  "start_url": "/",
+  "id": "/",
   "theme_color": "#e54757",
   "categories": [
     "books",
