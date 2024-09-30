@@ -1,3 +1,8 @@
+/**
+ *
+ * @param {Object} permissions
+ * @returns {Promise<{ success: boolean, error: boolean | Object | string, stream: MediaStream }>}
+ */
 export async function requestAndGetUserMedia(
   permissions = {
     video: true
