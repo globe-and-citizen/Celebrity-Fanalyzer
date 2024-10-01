@@ -59,8 +59,8 @@ const canvasRef = ref(null)
 let capturedFile = null
 
 onMounted(async () => {
-  await getDevices()
   await intiateCameraWithPermissions()
+  await getDevices()
 })
 
 onBeforeUnmount(() => {
@@ -81,9 +81,11 @@ async function intiateCameraWithPermissions() {
     is_granted.value = true
   } else {
     const { success, stream } = await requestAndGetUserMedia({
-      video: {
-        deviceId: selectedDevice.value.deviceId
-      }
+      video: selectedDevice.value
+        ? {
+            deviceId: selectedDevice.value.deviceId
+          }
+        : true
     })
     if (success) {
       setCameraStream(stream)
