@@ -117,7 +117,7 @@
           </q-btn>
           <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
-            v-if="post?.productLink && post?.isAdd"
+            v-if="isAdd && post?.productLink"
             flat
             icon="open_in_new"
             rounded
@@ -147,7 +147,7 @@
         </div>
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
-      <q-separator inset />
+      <q-separator v-if="!isAdd" inset />
     </q-page>
   </q-page-container>
 </template>
@@ -166,7 +166,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { dayMonthYear, formatMonthYear } from 'src/utils/date'
-import { onMounted, ref, watch, watchEffect } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -190,7 +190,6 @@ const promptStore = usePromptStore()
 const userRating = ref(0)
 const isPrompt = !!props.post?.entries
 const isEntry = props.post?.prompt
-const isAd = props.post?.isAdd
 const id = props.post.id
 const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 const userLocation = userStore.getUser?.location || userStore.getUserLocation
