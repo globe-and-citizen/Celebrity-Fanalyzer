@@ -48,20 +48,20 @@
               v-model="prompt.author"
             />
             <q-input
-            counter
-            data-test="input-title"
-            label="Title"
-            maxlength="80"
-            required
-            v-model="prompt.title"
-            :hint="!prompt.title ? '*Title is required':''"
+              counter
+              data-test="input-title"
+              label="Title"
+              maxlength="80"
+              required
+              v-model="prompt.title"
+              :hint="!prompt.title ? '*Title is required' : ''"
             />
             <q-field
-            counter
-            label="Description"
-            maxlength="400"
-            v-model="prompt.description"
-            :hint="!prompt.description ? '*Description is required':''"
+              counter
+              label="Description"
+              maxlength="400"
+              v-model="prompt.description"
+              :hint="!prompt.description ? '*Description is required' : ''"
             >
               <template v-slot:control>
                 <q-editor
@@ -99,7 +99,7 @@
               accept=".jpg, image/*"
               counter
               data-test="file-image"
-              :hint="!prompt.image ? '*Image is required. Max size is 2MB.':''"
+              :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
               label="Image"
               :max-total-size="2097152"
               :required="!id"
@@ -253,7 +253,7 @@ async function onSubmit() {
     return
   }
   if (!promptStore.getPrompts) {
-    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug,!!props.id)
+    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
     if (hasPrompt) {
       return
     }
@@ -277,7 +277,7 @@ async function onSubmit() {
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' }))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 

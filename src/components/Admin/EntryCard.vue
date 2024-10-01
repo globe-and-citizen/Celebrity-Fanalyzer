@@ -158,7 +158,7 @@ const imageModel = ref([])
 const promptOptions = computed(
   () =>
     promptStore.getPrompts
-      ?.filter((prompt) => !prompt.hasWinner)
+      ?.filter((prompt) => !prompt.hasWinner && prompt.escrowId)
       .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
       .reverse() || []
 )
