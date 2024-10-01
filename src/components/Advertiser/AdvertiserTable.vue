@@ -75,7 +75,7 @@
               name="payment"
               size="18px"
               label=""
-              class="q-mr-sm"
+              class="q-mr-sm cursor-pointer"
               :disable="userStore.getUser.role !== 'Admin'"
               @click="onwithdrawAmountSpentDialog(props.row)"
             >
@@ -90,7 +90,7 @@
               name="free_cancellation"
               size="18px"
               label=""
-              class="q-mr-sm"
+              class="q-mr-sm cursor-pointer"
               :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email !== props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
@@ -103,7 +103,7 @@
               name="receipt_long"
               size="18px"
               label=""
-              class="q-mr-sm"
+              class="q-mr-sm cursor-pointer"
               @click="_getEventsForCampaign(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
@@ -228,7 +228,7 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="advertismentPaymentEventsDialog.show" persistent>
+    <q-dialog v-model="advertismentPaymentEventsDialog.show">
       <q-card>
         <q-card-section class="row items-center">
           <div class="col">Campaign Events</div>
@@ -308,7 +308,6 @@ async function _getEventsForCampaign(advertise) {
     const result = await getEventsForCampaign(advertise.campaignCode)
 
     if (result.status.includes('success')) {
-      $q.notify({ message: 'events retreived successfully ', type: 'positive' })
       // Combine events into a single array with eventType field
 
       const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
