@@ -163,15 +163,9 @@ const promptOptions = computed(
       .reverse() || []
 )
 
-watchEffect(() => {
-  if (!promptStore.getPrompts) {
-    promptStore.fetchPrompts()
-  }
-})
-
 onMounted(() => {
+  promptStore.fetchPrompts()
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
