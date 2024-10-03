@@ -161,15 +161,11 @@ import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
 import { computed, onBeforeUnmount, onMounted, watchEffect, ref } from 'vue'
 import FundDepositCard from './FundDepositCard.vue'
-defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
 
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
-
-defineEmits(['openPromptDialog'])
-
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -177,6 +173,7 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const router = useRouter()
 const shareStore = useShareStore()
+defineEmits(['openPromptDialog'])
 
 const columns = [
   {},
