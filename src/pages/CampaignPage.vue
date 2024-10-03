@@ -48,13 +48,11 @@ import {
 } from 'src/stores'
 import { onUnmounted, ref, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computedDuration } from 'src/utils/date'
 
 const router = useRouter()
 
-const $q = useQuasar()
 const errorStore = useErrorStore()
 const likeStore = useLikeStore()
 const advertiseStore = useAdvertiseStore()

@@ -142,7 +142,7 @@
               v-if="!isEditing"
               v-model="advertise.budget"
               readonly
-              label="Budget In Matic"
+              label="Budget In POL"
               class="q-mb-lg"
               :rules="[(budget) => (budget ? budget >= 0 : true || 'Enter a positive number')]"
             />

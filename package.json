@@ -46,7 +46,7 @@
     "echarts": "^5.4.3",
     "eslint-plugin-prettier": "^5.2.1",
     "ethers": "^5.7.2",
-    "firebase": "^10.13.0",
+    "firebase": "^10.13.1",
     "idb": "^8.0.0",
     "idb-keyval": "^6.2.1",
     "leaflet": "^1.9.4",

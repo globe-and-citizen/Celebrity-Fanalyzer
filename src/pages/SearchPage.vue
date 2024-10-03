@@ -5,9 +5,10 @@
     searchInput
     :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
+    @updateSearchDate="updateSearchDate"
   />
   <q-page-container class="search-page-container">
-    <q-page class="q-pa-md">
+    <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
           v-model="category"
@@ -38,9 +39,15 @@
         </q-tab-panel>
       </q-tab-panels>
       <TransitionGroup tag="div">
-        <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
+        <div v-if="(searchDate || search) && computedEntries?.length > 0">
+          <TheEntries :entries="computedEntries" />
+        </div>
       </TransitionGroup>
     </q-page>
+    <div class="row justify-center">
+      <q-spinner v-if="promptStore.isLoading" color="primary" size="70px" :thickness="5" />
+      <div ref="observer" style="height: 1px"></div>
+    </div>
   </q-page-container>
 </template>
 
@@ -50,7 +57,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -61,10 +68,10 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
+const searchDate = ref('')
+const observer = ref(null)
+const pageRef = ref(null)
 const skeletons = 10
-
-advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
-promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
 
 onUnmounted(() => {
   advertiseStore.reset()
@@ -80,39 +87,108 @@ const computedAdvertises = computed(() => {
   return advertiseStore.getActiveAdvertises
 })
 const computedPrompts = computed(() => {
-  return promptStore.getPrompts?.filter((item) => {
-    const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
-    return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
-  })
+  return promptStore.getPrompts
+    ?.filter((item) => {
+      const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
+
+      const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
+      const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
+
+      return matchesDate && matchesSearch
+    })
+    .sort((a, b) => new Date(b?.id) - new Date(a?.id))
 })
+
 const computedPromptsAndAdvertises = computed(() => {
-  let i = 0,
-    j = 0
-  let arr = []
+  const map = new Map()
   const promptsLength = computedPrompts.value?.length ?? 0
   const advertisesLength = computedAdvertises.value?.length ?? 0
+
+  let i = 0,
+    j = 0
+
   while (i < promptsLength && j < advertisesLength) {
     if (Math.random() > 0.5) {
-      arr.push(computedPrompts.value[i])
+      if (!map.has(computedPrompts.value[i].id)) {
+        map.set(computedPrompts.value[i].id, computedPrompts.value[i])
+      }
       i++
     } else {
-      arr.push(computedAdvertises.value[j])
+      if (!map.has(computedAdvertises.value[j].id)) {
+        map.set(computedAdvertises.value[j].id, computedAdvertises.value[j])
+      }
       j++
     }
   }
-  if (i < promptsLength) {
-    arr = [...arr, ...computedPrompts.value.slice(i)]
+
+  while (i < promptsLength) {
+    if (!map.has(computedPrompts.value[i].id)) {
+      map.set(computedPrompts.value[i].id, computedPrompts.value[i])
+    }
+    i++
   }
-  if (j < advertisesLength) {
-    arr = [...arr, ...computedAdvertises.value.slice(j)]
+
+  while (j < advertisesLength) {
+    if (!map.has(computedAdvertises.value[j].id)) {
+      map.set(computedAdvertises.value[j].id, computedAdvertises.value[j])
+    }
+    j++
   }
-  return arr
+
+  return Array.from(map.values())
 })
 
 const computedEntries = computed(() => {
   return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
+})
+
+function updateSearchDate(date) {
+  searchDate.value = date
+}
+const initIntersectionObserver = () => {
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1.0
+  }
+  const observerInstance = new IntersectionObserver(onIntersect, options)
+  observerInstance.observe(observer.value)
+}
+
+function onIntersect(entries) {
+  const [entry] = entries
+  if (entry.isIntersecting) {
+    if (promptStore.hasMore) {
+      promptStore.fetchPrompts(true)
+    }
+  }
+}
+
+function computeFetchPromptCount(height, width) {
+  const basePromptCount = 3
+
+  const heightFactor = height / 400
+  const widthFactor = width / 700
+
+  const computedCount = Math.round(basePromptCount + heightFactor * widthFactor)
+  return computedCount
+}
+
+onMounted(async () => {
+  try {
+    if (!promptStore.getPrompts?.length) {
+      const height = pageRef.value.$el.clientHeight
+      const width = pageRef.value.$el.clientWidth
+      const promptFetchCount = computeFetchPromptCount(height, width)
+      await promptStore.fetchPrompts(true, promptFetchCount)
+    }
+    await advertiseStore.getActiveAdvertise()
+    initIntersectionObserver()
+  } catch (error) {
+    errorStore.throwError(error)
+  }
 })
 </script>
 
@@ -133,7 +209,6 @@ const computedEntries = computed(() => {
 .prompt-enter-from,
 .prompt-leave-to {
   opacity: 0;
-  height: 0;
   transform: translateY(-90px);
 }
 

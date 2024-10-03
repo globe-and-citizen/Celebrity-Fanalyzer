@@ -35,7 +35,7 @@
             rounded
             standout="bg-secondary text-white"
             style="margin-bottom: 7rem"
-            v-model="commentValue"
+            v-model.trim="commentValue"
             @blur="isMention = false"
             @keydown.escape="inputField.blur()"
           >
@@ -150,6 +150,7 @@ function getReplyAuthor() {
 async function addComment() {
   reply.parentId = commentStore.getReplyTo
   const comment = { text: commentValue.value }
+  commentValue.value = ''
 
   commentStore
     .addComment(props.collectionName, comment, props.post)

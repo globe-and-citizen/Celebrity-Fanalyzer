@@ -144,7 +144,8 @@ export const useAdvertiseStore = defineStore('advertises', {
         const advertise = { ...payload }
         advertise.author = doc(db, 'users', advertise.author.uid)
         advertise.created = Timestamp.fromDate(new Date())
-        advertise.isApproved = false
+        advertise.isApproved = true
+        advertise.status = 'Active'
 
         this._isLoading = true
         await setDoc(doc(db, 'advertises', advertise.id), advertise)

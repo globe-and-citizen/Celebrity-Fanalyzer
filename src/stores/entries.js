@@ -108,8 +108,15 @@ export const useEntryStore = defineStore('entries', {
         const entries = snapshotDocs(querySnapshot.docs)
 
         for (const entry of entries) {
+          const promptId = entry.prompt.id
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+
+          if (!entry.escrowId) {
+            const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', promptId)))
+            const prompt = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+            entry.escrowId = prompt?.escrowId
           }
         }
         this._userRelatedEntries = entries
@@ -170,19 +177,48 @@ export const useEntryStore = defineStore('entries', {
         console.error('Unable to fetch entry', e)
       }
     },
-    async hasEntry(promptId) {
+    async fetchEntryByPrompts(promptId) {
       const userStore = useUserStore()
+      const promptDocRef = doc(db, 'prompts', promptId)
+
       try {
-        const userDocRef = doc(db, 'users', userStore.getUserId)
-        const promptDocRef = doc(db, 'prompts', promptId)
-        const querySnapshot = await getDocs(
-          query(collection(db, 'entries'), and(where('author', '==', userDocRef), where('prompt', '==', promptDocRef)))
-        )
-        return !querySnapshot.empty
-      } catch (error) {
-        console.log('Unable to check has entry', error)
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('prompt', '==', promptDocRef)))
+        const entries = snapshotDocs(querySnapshot.docs)
+
+        const userPromises = entries.map(async (entry) => {
+          if (entry.author.id) {
+            entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
+          }
+          return entry
+        })
+
+        this._entries = await Promise.all(userPromises)
+      } catch (e) {
+        console.error('Unable to fetch entries', e)
+      }
+    },
+
+    hasEntry(promptId) {
+      const userStore = useUserStore()
+
+      const filteredEntry = this.getEntries?.filter((entry) => entry.author.uid === userStore.getUserId && entry.prompt.id === promptId)
+      return !!filteredEntry.length
+    },
+
+    entryNameValidator(entryId, promptId, title, isEdit = false) {
+      const filteredEntry = this.getEntries?.filter((entry) =>
+        isEdit
+          ? entryId !== entry?.id && entry.title === title && promptId === entry.prompt.id
+          : entry.title === title && promptId === entry.prompt.id
+      )
+      return !!filteredEntry.length
+    },
+
+    checkPromptRelatedEntry(promptId) {
+      if (!this.getEntries) {
         return false
       }
+      return !!this.getEntries?.find((entry) => entry.prompt.id === promptId)
     },
 
     async addEntry(payload) {
@@ -192,11 +228,13 @@ export const useEntryStore = defineStore('entries', {
       const entry = { ...payload }
 
       const promptId = entry.prompt.value
+      const escrowId = entry.prompt.escrowId
       const entryRef = doc(db, 'entries', entry.id)
 
       entry.author = doc(db, 'users', entry.author.value)
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
+      entry.escrowId = escrowId || null
 
       this._isLoading = true
       await setDoc(entryRef, entry).finally(() => (this._isLoading = false))
