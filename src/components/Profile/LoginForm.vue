@@ -34,7 +34,7 @@
           :rules="[(val) => usernameValidator(val)]"
           v-model="user.username"
         >
-          <template  #append>
+          <template #append>
             <q-icon
              v-if="isUserNameAvailable"
              name="check_circle"

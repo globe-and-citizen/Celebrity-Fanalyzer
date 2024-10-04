@@ -35,7 +35,7 @@ const errorStore = useErrorStore()
 
 const promptStore = usePromptStore()
 
-const emit = defineEmits(['hideDialog', 'forward-update-entry'])
+const emit = defineEmits(['hideDialog'])
 
 const props = defineProps({
   walletAddress: { type: String, required: true },

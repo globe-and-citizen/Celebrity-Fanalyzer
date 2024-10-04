@@ -61,6 +61,7 @@ describe('Commenting', async () => {
     const oldReply = reply
     reply = 'Reply EDITED' + rand
 
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.getByData(oldReply + '-comment-edit')
       .clear()
       .type(reply)
@@ -91,6 +92,7 @@ describe('Commenting', async () => {
     const oldComment = comment
     comment = 'Comment EDITED' + rand
 
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.getByData(oldComment + '-comment-edit')
       .clear()
       .type(comment)
