@@ -630,6 +630,8 @@ function showStatus(data) {
     return 'Budget Crossed'
   } else if (ended || data.status === 'Complete') {
     return 'Complete'
+  } else if (data.status === 'Active') {
+    return 'Published'
   } else if (create && !ended && data.status !== 'Budget Crossed') {
     return 'Ready to Publish'
   }
