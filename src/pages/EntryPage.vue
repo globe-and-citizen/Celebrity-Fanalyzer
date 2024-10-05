@@ -14,7 +14,7 @@
         title="Entry Page"
         style="padding-bottom: 7rem"
         :isEntry="true"
-        :showEdit="!prompt.hasWinner&& userStore.getUserId === entry.author.uid"
+        :showEdit="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
       />

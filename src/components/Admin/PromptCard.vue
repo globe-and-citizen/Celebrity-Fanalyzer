@@ -1,7 +1,7 @@
 <template>
   <q-card class="q-mt-none" :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-      <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
+      <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'">
           <q-card-section>
             <div class="row items-baseline no-wrap">
@@ -95,7 +95,6 @@
                 />
               </template>
             </q-field>
-
             <div class="row">
               <diV class="col-8">
                 <q-file
@@ -119,7 +118,6 @@
               <div class="col-1 flex justify-center items-center"><p>or</p></div>
               <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
             </div>
-
             <q-select
               behavior="menu"
               counter

@@ -1,41 +1,124 @@
-# Contributing
+# Setup Instructions
 
-## Tips on Submiting Pull Requests
+### Requirements:
 
-1. When you write your Commit messages, please adhere to [CommitConventions](https://www.conventionalcommits.org/en/v1.0.0/)
-2. Before you submit a pull request, make sure that your code conforms to all of the auto stylers that we use by running the command `npm run format`:
-   - .prettierrc
-   - .eslintrc.js
-   - .editorconfig
-3. If you would like to request a code style change, you must justify your reason, provide the relevant rule for the config file and, get team approval.
-4. Be ready to do code walkthroughs for a reviewer before getting your changes merged.
-5. Other...
+- **Node.js**: v16 or higher (v20 is recommended)
+- **NPM**: v6.13.4 or higher
+- **Yarn** v1.21.1 or higher
 
-## How to run the project
+### Installation:
 
-### Fork the project to your Github account
+1. Clone the repository:
 
-1. As a contributor, you will not have immediate access to the canonical repo. Therefore, you should fork the Celebrity-Falyzer repo to your own Github account first to give you full push/pull privileges with your local copy. To get the "Develop" branch (and not just the main), be sure to uncheck the option "Fork only the 'main' branch."
-2. Globe&Citizen follows a `Main | Staging | Develop | Feature` branching structure. You will want to work off of the "Develop" branch. When you submit a Pull Request, it will be from your forked Github Repo to the branch "globe-and-citizen/develop."
+As a contributor, you will not have immediate access to the canonical repo. Therefore, you should fork the Celebrity-Falyzer repo to your own Github account first to give you full push/pull privileges with your local copy. To get the "Develop" branch (and not just the main), be sure to uncheck the option "Fork only the 'main' branch."
 
-### Install the dependencies
+```bash
+git clone https://github.com/globe-and-citizen/Celebrity-Fanalyzer.git
+cd celebrity-fanalyzer
+```
+
+2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### The .env file
+3. The .env file
 
 Celebrity Fanalyzer is a serverless build using Firebase for a backend.
-
 Public development environment variables are available.
 It is not necessary to configure anything related to this.
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+4.  To start development with PWA support
 
 ```bash
 npm run dev
 ```
+
+5. To build the project for production
+
+```bash
+npm run build
+```
+
+# Contributing to Celebrity Fanalyzer
+
+#### _We appreciate your interest in contributing to Celebrity Fanalyzer! Please follow these guidelines to help maintain a high-quality codebase and ensure smooth collaboration._
+
+## Code standards
+
+We enforce coding standards to ensure readability, maintainability and consistency across the project. Please adhere to the following rules:
+
+<details><summary>Some common basic rules to be kept in mind to write clean code:</summary>
+
+- Use the DRY principle (Don’t repeat yourself).
+- Create multiple files instead of writing a big file. (Componentization of code: fix to small functionality for each file)
+- Place all your CSS files in one common folder.
+- Avoid Inline CSS as and when possible (a CSS class should be created when there are more than 2 CSS attributes).
+- Use a linter to make your code easier to review. Follow strict linting rules. This in turn helps you write clean, consistent code.
+- Review your code before creating a pull request.
+- Split your code into multiple smaller functions. Each with a single responsibility.
+- Create many utility files that can help you remove duplicate code from multiple files.
+- Separate all your service calls into a separate file. If it’s a big project try to split the services into multiple files. (name convention module_name.service.js).
+- Name your files logically according to the job that they perform.
+- Clean code is self-commenting(using the right variable names and function names). Use comments only to explain complex functions.
+- Always write test cases for your code. Keep tests files in sync with the files they are testing.
+- Destructuring your props is a good way to help make your coder cleaner and more maintainable.
+  For example (async function authenticate({ user_id, token }) {})
+- Putting imports in an order
+
+  - Vue imports
+  - Library imports (Alphabetical order)
+  - Absolute imports from the project (Alphabetical order)
+  - Relative imports (Alphabetical order)
+  - Import \* as
+  - Import ‘./<some file>.<some extension>
+
+  Each kind should be separated by an empty line. This makes your imports clean and easy to understand for all the components, 3rd-party libraries, and etc.
+
+</details>
+
+#### ESLint:
+
+- The project uses **ESLint** to ensure code consistency.
+- **All code must pass ESLint** before it can be commited.
+- If you need to disable any ESLint rule, justify it using comments.
+
+ESLint will run automatically on each commit.
+
+To run ESLint manually:
+
+```bash
+npm run lint
+```
+
+To let ESLint try automatically fix ESLint issues:
+
+```bash
+npm run lint:fix
+```
+
+#### Prettier:
+
+We use Prettier to format code automatically. The formatting will be checked on each commit.
+
+To format your code:
+
+```bash
+npm run format
+```
+
+## Pull Request Guidelines
+
+### What kind of Pull Requests are accepted?
+
+1. Single Responsibility Principle of a Pull Request
+2. Title and Description of a Pull Request & Pull Request Templates. You can find and use Pull Request Template in `pull_request_template.md`
+3. Comment your code, mostly in hard-to-understand areas
+4. It is the author’s duty to test the code before PR
+5. If you would like to request a code style change, you must justify your reason, provide the relevant rule for the config file and get team approval.
+6. Be ready to do code walkthroughs for a reviewer before getting your changes merged.
+7. Other...
 
 ### Good commit practices
 
@@ -75,21 +158,7 @@ Once you're done developing your updates, `git push` your changes back to your p
 Then, open a Pull Request to merge your branch into the 'develop' branch of the 'globe-and-citizen/Celebrity-Fanalyzer' repo.
 Respond and engage with feedback from the team as appropriate.
 
-## How to prettify the code
-
-### Lint the files
-
-```bash
-npm run lint
-```
-
-### Format the files
-
-```bash
-npm run format
-```
-
-## How to build and deploy your changes
+## Deployment
 
 Currently there is no need to build and deploy the application.
 After your commit and push, the build will be done automatically through a GitHub Action.

@@ -20,7 +20,8 @@
         </h2>
 
         <p v-if="item.description" class="q-my-none text-body2 text-secondary">
-          {{ dayMonthYear(item.created) }} &nbsp;•&nbsp; {{ giveReadingTime(item.description) }} min read
+          {{ item?.date ? formatMonthYear(item?.date) : dayMonthYear(item.created) }} &nbsp;•&nbsp;
+          {{ giveReadingTime(item.description) }} min read
         </p>
         <div v-if="item.categories">
           <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
@@ -44,7 +45,7 @@
 
 <script setup>
 import CampaignCard from '../Advertiser/CampaignCard.vue'
-import { dayMonthYear } from 'src/utils/date'
+import { dayMonthYear, formatMonthYear } from 'src/utils/date'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

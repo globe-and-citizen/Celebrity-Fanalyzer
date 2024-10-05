@@ -63,7 +63,7 @@ const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 const editPrompt = ref({})
 
-const params = computed(()=>router.currentRoute.value?.params)
+const params = computed(() => router.currentRoute.value?.params)
 const prompt = computed(() => {
   if (route.name === 'month') {
     return promptStore.getMonthPrompt?.[0]

@@ -27,7 +27,7 @@ const platforms = [
   { name: 'Pinterest', color: '#E60023' },
   { name: 'Reddit', color: '#FF8700' },
   { name: 'Telegram', color: '#0088CC' },
-  { name: 'Twitter', color: '#1DA1F2' },
+  { name: 'X', color: '#000000' },
   { name: 'WhatsApp', color: '#25D366' }
 ]
 const shares = ref([])

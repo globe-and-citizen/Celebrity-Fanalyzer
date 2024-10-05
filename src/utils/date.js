@@ -3,10 +3,11 @@ import { Timestamp } from 'firebase/firestore'
 const ONE_DAY_IN_SECONDS = 86400
 const ONE_WEEK_IN_SECONDS = 604800
 
-export function monthYear(date) {
+export function formatMonthYear(date) {
   const [year, month] = date.split('-')
-  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })
-  // Dec 2022
+  // Change 'short' to 'long'
+  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long' })
+  // August 2030
   return `${monthName} ${year}`
 }
 

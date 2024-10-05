@@ -36,7 +36,7 @@ describe('Entry Store', async () => {
      * each "it" block.
      */
     try {
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }
@@ -77,7 +77,8 @@ describe('Entry Store', async () => {
     // 3) Create a mock entry & test it was successfully added
     const prompts = promptStore.getPrompts
     const aPrompt = prompts[1]
-    const bitmap = fs.readFileSync('src/assets/cypress.jpg') // Load and image to use
+    // Load and image to use
+    const bitmap = fs.readFileSync('src/assets/cypress.jpg')
     const imgAddress = await storageStore.uploadFile(bitmap, `images/entry-${aPrompt.date}`)
     const id = `${aPrompt.date}T${Date.now()}`
     const fakeEntry = {

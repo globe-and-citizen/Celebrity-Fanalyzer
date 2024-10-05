@@ -32,7 +32,7 @@ describe('Async watcher ', () => {
     })
     // Login the test@test.com user
     try {
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }
@@ -90,7 +90,7 @@ describe('Async watcher ', () => {
     expect(!!commentStore.getComments).toBe(true)
 
     // 3- Check Add comment
-    let myComment = { text: 'Test comment' }
+    const myComment = { text: 'Test comment' }
     commentStore.addComment('entries', myComment, getFirstEntry(), true)
 
     // Check Loading state variation false =>true => false
@@ -116,7 +116,7 @@ describe('Async watcher ', () => {
 
     // 3.3. Add reply
 
-    let reply = { text: 'Test repy', parentId: commentStore.getReplyTo }
+    const reply = { text: 'Test repy', parentId: commentStore.getReplyTo }
     await commentStore.addReply('entries', getFirstEntry().id, reply)
     expect(commentStore.getCommentChildren(firstLevelComment.id).length).toBe(1)
 

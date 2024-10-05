@@ -35,47 +35,16 @@
             />
           </div>
         </template>
-        <template #body-cell-published="props">
-          <q-td :props="props">
-            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue"><q-tooltip>Pending</q-tooltip></q-icon>
-            <q-icon v-else-if="props.row.status === 'Budget Crossed'" name="close" size="18px" color="primary">
-              <q-tooltip>Budget crossed</q-tooltip>
-            </q-icon>
-            <q-icon v-else-if="props.row.status === 'Complete'" name="task_alt" size="18px" color="green">
-              <q-tooltip>Complete</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.value === 'Inactive'"
-              name="play_circle"
-              size="18px"
-              color="green-6"
-              class="cursor-pointer"
-              @click="changeActiveStatus(props.row, 'Active')"
-            >
-              <q-tooltip>Publish</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.status === 'Active'"
-              name="pause_circle"
-              size="18px"
-              color="red-8"
-              class="cursor-pointer"
-              @click="changeActiveStatus(props.row, 'Inactive')"
-            >
-              <q-tooltip>Unpublish</q-tooltip>
-            </q-icon>
-          </q-td>
-        </template>
         <template #body-cell-action="props">
           <q-td :props="props">
             <q-icon
-              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status == 'Active'"
+              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status === 'Active'"
               flat
               color="green"
               name="payment"
               size="18px"
               label=""
-              class="q-mr-sm"
+              class="q-mr-sm cursor-pointer"
               :disable="userStore.getUser.role !== 'Admin'"
               @click="onwithdrawAmountSpentDialog(props.row)"
             >
@@ -90,7 +59,7 @@
               name="free_cancellation"
               size="18px"
               label=""
-              class="q-mr-sm"
+              class="q-mr-sm cursor-pointer"
               :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email !== props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
             >
@@ -103,7 +72,7 @@
               name="receipt_long"
               size="18px"
               label=""
-              class="q-mr-sm"
+              class="q-mr-sm cursor-pointer"
               @click="_getEventsForCampaign(props.row)"
             >
               <q-tooltip class="positive" :offset="[10, 10]">view events!</q-tooltip>
@@ -120,7 +89,7 @@
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-show="computedDuration(props.row.endDate) >= 0"
+              v-if="computedDuration(props.row.endDate) >= 0"
               name="edit"
               color="blue"
               size="18px"
@@ -141,7 +110,32 @@
           </q-td>
         </template>
         <template #body-cell-status="props">
-          <q-td class="text-right">
+          <q-td class="text-right items-center" style="display: flex; gap: 10px">
+            <q-icon v-if="!props.row.isApproved" name="schedule" size="18px" color="blue">
+              <q-tooltip>Waiting for the approval</q-tooltip>
+            </q-icon>
+            <q-icon v-else-if="props.row.status === 'Budget Crossed'" name="close" size="18px" color="primary" />
+            <q-icon v-else-if="props.row.status === 'Complete'" name="task_alt" size="18px" color="green" />
+            <q-icon
+              v-else-if="props.row.status === 'Inactive'"
+              name="play_circle"
+              size="18px"
+              color="green-6"
+              class="cursor-pointer"
+              @click="changeActiveStatus(props.row, 'Active')"
+            >
+              <q-tooltip>Publish</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.status === 'Active'"
+              name="pause_circle"
+              size="18px"
+              color="red-8"
+              class="cursor-pointer"
+              @click="changeActiveStatus(props.row, 'Inactive')"
+            >
+              <q-tooltip>Unpublish</q-tooltip>
+            </q-icon>
             {{ showStatus(props.row) }}
           </q-td>
         </template>
@@ -228,7 +222,7 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="advertismentPaymentEventsDialog.show" persistent>
+    <q-dialog v-model="advertismentPaymentEventsDialog.show">
       <q-card>
         <q-card-section class="row items-center">
           <div class="col">Campaign Events</div>
@@ -247,7 +241,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { getCurrentDate, calculateEndDate, computedDuration } from 'src/utils/date'
+import { getCurrentDate, calculateEndDate, computedDuration, dayMonthYear } from 'src/utils/date'
 import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
@@ -308,7 +302,6 @@ async function _getEventsForCampaign(advertise) {
     const result = await getEventsForCampaign(advertise.campaignCode)
 
     if (result.status.includes('success')) {
-      $q.notify({ message: 'events retreived successfully ', type: 'positive' })
       // Combine events into a single array with eventType field
 
       const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
@@ -379,6 +372,7 @@ async function onwithdrawAmountSpentDialog(advertise) {
   }
   $q.loading.hide()
 }
+
 async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.show()
   const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
@@ -494,12 +488,10 @@ function onApproveAdvertise() {
 }
 const columns = ref([
   {
-    name: 'published',
-    required: true,
-    label: 'Published',
+    name: 'status',
+    field: 'publishDate',
     align: 'center',
-    field: 'status',
-    style: 'width:100px'
+    label: 'Status'
   },
   {
     name: 'name',
@@ -523,51 +515,45 @@ const columns = ref([
     label: 'Advertise Type'
   },
   {
-    name: 'status',
-    field: 'publishDate',
-    align: 'center',
-    label: 'Status'
-  },
-  {
     name: 'budget',
     field: 'budget',
     align: 'center',
-    label: 'Budget',
+    label: 'Advertise Budget',
     sortable: true
   },
   {
     name: 'clicks',
     field: 'totalClicks',
     align: 'center',
-    label: 'Number of Click',
+    label: 'Clicks',
     sortable: true
   },
   {
     name: 'impression',
     field: 'totalImpressions',
     align: 'center',
-    label: 'Number of Impression',
+    label: 'Impression',
     sortable: true
   },
   {
     name: 'visits',
     field: 'totalVisits',
     align: 'center',
-    label: 'Number of Visits',
+    label: 'Visits',
     sortable: true
   },
   {
     name: 'total_cost',
     field: 'total_cost',
     align: 'right',
-    label: 'Total Cost',
+    label: 'Total Spent',
     sortable: true
   },
   {
     name: 'expiry_status',
     field: 'duration',
     align: 'right',
-    label: 'Expiry Status'
+    label: 'Expires in'
   },
 
   {
@@ -609,31 +595,42 @@ watch(selectedDataType, (newType) => {
   advertiseStore.fetchAdvertises(newType.label)
 })
 
+const maticCache = new Map()
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
+  const key = `${impressions}-${clicks}-${views}`
   const impressionsMatic = impressions / 100
   const clicksMatic = clicks / 20
   const viewsMatic = views / 20
-  return impressionsMatic + clicksMatic + viewsMatic
+
+  if (maticCache.has(key)) {
+    return maticCache.get(key)
+  }
+  const result = impressionsMatic + clicksMatic + viewsMatic
+  maticCache.set(key, result)
+  return result
 }
+
 function viewMatic(matic) {
   if (Number.isInteger(matic)) return matic
   const maticSplit = String(matic).split('.')
   let floatNumbers = maticSplit[1]
-  if (floatNumbers.length > 3) {
+  if (floatNumbers?.length > 3) {
     floatNumbers = floatNumbers.slice(0, 3) + '...'
   }
   return maticSplit[0] + '.' + floatNumbers
 }
+
 function showStatus(data) {
   const create = calculateStatus(data.publishDate)
   const ended = calculateStatus(data.endDate)
+  const budgetCrossed = computeAdvertisementMatic(data.impressions, data.clicks, data.visits) > Number(data.budget)
   if (!create) {
     return 'Publish date pending'
-  } else if (computeAdvertisementMatic(data.impressions, data.clicks, data.visits) > Number(data.budget)) {
+  } else if (budgetCrossed || data.status === 'Budget Crossed') {
     return 'Budget Crossed'
-  } else if (ended) {
+  } else if (ended || data.status === 'Complete') {
     return 'Complete'
-  } else if (create && !ended) {
+  } else if (create && !ended && data.status !== 'Budget Crossed') {
     return 'Ready to Publish'
   }
   return 'Pending: Publish date not yet reached'
