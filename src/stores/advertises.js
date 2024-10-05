@@ -106,7 +106,10 @@ export const useAdvertiseStore = defineStore('advertises', {
         const advertise =
           this.getALlActiveAdvertises?.find((advertise) => advertise.id === campaignId) ||
           this.getAdvertises?.find((advertise) => advertise.id === campaignId)
-        if (advertise) return advertise
+        if (advertise) {
+          this.setLoaderFalse()
+          return advertise
+        }
       }
       const errorStore = useErrorStore()
       try {
