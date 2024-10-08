@@ -150,7 +150,6 @@ export const useUserStore = defineStore('user', {
             this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
         })
-        .catch((error) => console.error(error))
         .finally(() => (this._isLoading = false))
     },
 
