@@ -149,7 +149,7 @@ onMounted(async () => {
     promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
   }
 })
-onBeforeUnmount(()=>{
+onBeforeUnmount(() => {
   promptStore.reset()
 })
 </script>
