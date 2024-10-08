@@ -71,9 +71,7 @@
     </q-input>
     <div>
       <span class="text-h8 text-bold text-secondary">Wallet address</span>
-      <q-input class="non-selectable" debounce="400" label="Your wallet address" v-model.trim="user.walletAddress" readonly></q-input>
-
-      <q-input class="non-selectable" debounce="400" label="Current Connected wallet Address" v-model.trim="currentWalletAddress" readonly>
+      <q-input class="non-selectable" debounce="400" label="Current Connected wallet Address" v-model.trim="walletAddress" readonly>
         <Web3ModalComponent page_name="profile" />
         <q-btn
           v-if="user.walletAddress || currentWalletAddress"
@@ -140,6 +138,10 @@ const isUpdate = ref(false)
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
+})
+
+const walletAddress = computed(() => {
+  return user.value.walletAddress || currentWalletAddress.value
 })
 
 function onRejected() {
