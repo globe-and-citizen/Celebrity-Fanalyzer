@@ -96,13 +96,9 @@
     <q-input label="Instagram" placeholder="https://www.instagram.com/" v-model.trim="user.instagram" />
     <q-input label="Linkedin" placeholder="https://www.linkedin.com/" v-model.trim="user.linkedin" />
     <q-input label="Telegram" placeholder="https://www.telegram.com/" v-model.trim="user.telegram" />
-    <q-input label="Twitter" placeholder="https://www.twitter.com/" v-model.trim="user.twitter" />
+    <q-input label="X" placeholder="https://www.x.com/" v-model.trim="user.x" />
 
-    <h3 class="q-mt-xl text-bold text-h5 text-secondary">MetaData</h3>
-    <q-input label="Data 1" v-model="user.data1" />
-    <q-input label="Data 2" v-model="user.data2" />
-
-    <q-btn class="full-width q-mt-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
+    <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
   <q-dialog v-model="removeWalletAddressDialog.show">
     <q-card>

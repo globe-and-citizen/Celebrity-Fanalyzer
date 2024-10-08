@@ -22,7 +22,7 @@
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
-          <p class="text-body2">{{ dayMonthYear(post.created) }}</p>
+          <p class="text-body2">{{ isPrompt ? `Prompt of ${formatMonthYear(post?.date)}` : `Posted on ${dayMonthYear(post.created)}` }}</p>
           <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
@@ -117,7 +117,7 @@
           </q-btn>
           <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
           <q-btn
-            v-if="post?.productLink && post?.isAdd"
+            v-if="isAdd && post?.productLink"
             flat
             icon="open_in_new"
             rounded
@@ -147,7 +147,7 @@
         </div>
       </section>
       <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
-      <q-separator inset />
+      <q-separator v-if="!isAdd" inset />
     </q-page>
   </q-page-container>
 </template>
@@ -165,8 +165,8 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
-import { dayMonthYear } from 'src/utils/date'
-import { onMounted, ref, watch, watchEffect } from 'vue'
+import { dayMonthYear, formatMonthYear } from 'src/utils/date'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -190,7 +190,6 @@ const promptStore = usePromptStore()
 const userRating = ref(0)
 const isPrompt = !!props.post?.entries
 const isEntry = props.post?.prompt
-const isAd = props.post?.isAdd
 const id = props.post.id
 const userId = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
 const userLocation = userStore.getUser?.location || userStore.getUserLocation

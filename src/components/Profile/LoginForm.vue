@@ -34,14 +34,10 @@
           :rules="[(val) => usernameValidator(val)]"
           v-model="user.username"
         >
-          <template  #append>
-            <q-icon
-             v-if="isUserNameAvailable"
-             name="check_circle"
-             color="green"
-            />
+          <template #append>
+            <q-icon v-if="isUserNameAvailable" name="check_circle" color="green" />
           </template>
-      </q-input>
+        </q-input>
         <q-input
           data-test="password-field"
           label="Password"
@@ -116,11 +112,11 @@ const errorStore = useErrorStore()
 const userStore = useUserStore()
 
 const user = ref({
-    email: '',
-    name: '',
-    username:'',
-    password: ''
-  })
+  email: '',
+  name: '',
+  username: '',
+  password: ''
+})
 const tab = ref('signin')
 const openResetDialog = ref(false)
 const route = useRoute()
