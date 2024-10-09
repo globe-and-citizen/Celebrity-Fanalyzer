@@ -277,7 +277,7 @@ async function onSubmit() {
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' }))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 
