@@ -52,6 +52,7 @@ import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from 'src/firebase'
 import InstallAppBanner from 'components/shared/InstallAppBanner.vue'
 import { LocalStorage } from 'quasar'
+import { customWeb3modal } from 'src/web3/walletConnect'
 
 const updated = ref(false)
 const userStore = useUserStore()
@@ -75,6 +76,9 @@ const routes = computed(() => [
 ])
 
 function onLogout() {
+  if (customWeb3modal.getAddress()) {
+    customWeb3modal.disconnect()
+  }
   userStore.logout()
   updated.value = false
   router.push({ path: '/profile' })
@@ -149,7 +153,7 @@ onMounted(async () => {
     promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
   }
 })
-onBeforeUnmount(()=>{
+onBeforeUnmount(() => {
   promptStore.reset()
 })
 </script>

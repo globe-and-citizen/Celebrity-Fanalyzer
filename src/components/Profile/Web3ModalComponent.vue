@@ -49,14 +49,15 @@
   </q-dialog>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { customWeb3modal } from 'src/web3/walletConnect'
 import { computed, ref } from 'vue'
-import { useWalletStore, useUserStore } from 'app/src/stores'
+import { useWalletStore, useUserStore, useErrorStore } from 'app/src/stores'
 import { Notify } from 'quasar'
 
 const walletStore = useWalletStore()
 const userStore = useUserStore()
+const errorStore = useErrorStore()
 const changeWalletAddressDialog = ref({ show: false })
 
 function onChangeWalletAddressDialog() {
@@ -111,7 +112,8 @@ async function saveWalletAddress() {
       await userStore.updateProfile(userStore.getUser)
       Notify.create({ message: 'Wallet address saved successfully. You will receive payments on this address.', type: 'positive' })
     } catch (error) {
-      Notify.create({ message: 'Error saving wallet address', type: 'negative' })
+      console.error(error)
+      await Notify.create({ message: 'Error saving wallet address', type: 'negative' })
     }
   }
 }

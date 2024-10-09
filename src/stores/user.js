@@ -13,21 +13,12 @@ import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
+import { useWalletStore } from 'stores/wallet'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     _profileTab: 'profile',
-    _user: {
-      displayName: undefined,
-      email: undefined,
-      location: undefined,
-      role: undefined,
-      subscriptions: undefined,
-      uid: undefined,
-      username: undefined,
-      walletAddress: undefined,
-      x: undefined
-    },
+    _user: {},
     _userIp: '',
     _users: undefined,
     _isLoading: false,
@@ -214,7 +205,9 @@ export const useUserStore = defineStore('user', {
     },
 
     logout() {
+      const walletStore = useWalletStore()
       signOut(auth).then(() => {
+        walletStore.$reset()
         this.$reset()
         LocalStorage.remove('user')
       })
