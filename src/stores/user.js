@@ -134,7 +134,8 @@ export const useUserStore = defineStore('user', {
             displayName: user.name,
             email: user.email,
             username: user.username,
-            role: 'User'
+            role: 'User',
+            walletAddress: ''
           })
             .then(() => this.emailSignIn(user))
             .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
