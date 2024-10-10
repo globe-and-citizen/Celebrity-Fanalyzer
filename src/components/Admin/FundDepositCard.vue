@@ -13,7 +13,7 @@
           @update:model-value="convertToMatic()"
         />
         <!-- Displaying Corresponding Ether Amount-->
-        <q-input data-text="ether-amount" v-model="maticAmount" label="Price in matic" readonly></q-input>
+        <q-input data-text="ether-amount" v-model="maticAmount" label="Price in pol" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />
           <q-btn label="deposit fund" :disable="!usdAmount" color="green" data-test="confirm-deposit-fund" type="submit" />
@@ -55,7 +55,7 @@ onMounted(async () => {
   if (maticRateResult?.success) {
     maticRate.value = maticRateResult.maticRate
   } else {
-    $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
+    $q.notify({ type: 'negative', message: 'Failed to fetch POL rate' })
   }
 })
 
