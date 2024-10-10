@@ -91,7 +91,7 @@ export const fetchMaticRate = async () => {
       maticRate: data['matic-network'].usd
     }
   } catch (error) {
-    console.error('error when getting matic Rate ')
+    console.error('error when getting pol Rate ')
     return {
       success: false,
       error: error

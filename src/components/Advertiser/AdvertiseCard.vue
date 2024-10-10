@@ -228,7 +228,7 @@ onMounted(async () => {
   if (maticRateResult?.success) {
     maticRate.value = maticRateResult.maticRate
   } else {
-    $q.notify({ type: 'negative', message: 'Failed to fetch Matic rate' })
+    $q.notify({ type: 'negative', message: 'Failed to fetch Pol rate' })
   }
 })
 
