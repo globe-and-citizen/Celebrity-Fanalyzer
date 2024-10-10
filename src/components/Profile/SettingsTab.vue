@@ -6,11 +6,15 @@
 <script setup>
 import { useUserStore } from 'app/src/stores'
 import { useRouter } from 'vue-router'
+import { customWeb3modal } from 'src/web3/walletConnect'
 
 const userStore = useUserStore()
 const router = useRouter()
 
 function onLogout() {
+  if (customWeb3modal.getAddress()) {
+    customWeb3modal.disconnect()
+  }
   userStore.logout()
   router.push({ path: '/profile' })
 }

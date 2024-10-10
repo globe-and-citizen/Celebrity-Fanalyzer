@@ -13,6 +13,7 @@ import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
+import { useWalletStore } from 'stores/wallet'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -124,7 +125,8 @@ export const useUserStore = defineStore('user', {
             displayName: user.name,
             email: user.email,
             username: user.username,
-            role: 'User'
+            role: 'User',
+            walletAddress: ''
           })
             .then(() => this.emailSignIn(user))
             .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
@@ -202,7 +204,9 @@ export const useUserStore = defineStore('user', {
     },
 
     logout() {
+      const walletStore = useWalletStore()
       signOut(auth).then(() => {
+        walletStore.$reset()
         this.$reset()
         LocalStorage.remove('user')
       })
