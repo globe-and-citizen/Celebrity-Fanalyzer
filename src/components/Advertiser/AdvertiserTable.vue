@@ -292,7 +292,9 @@ const dataOptions = ref(
 
 async function calculateAmountSpent(advertise) {
   return (
-    import.meta.env.VITE_ADVERTISE_CLICK_RATE * advertise.clicks + import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * advertise.impressions
+    import.meta.env.VITE_ADVERTISE_CLICK_RATE * advertise.totalClicks +
+    import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * advertise.totalImpressions +
+    import.meta.env.VITE_ADVERTISE_VIEWS_RATE * advertise.totalVisits
   )
 }
 
@@ -598,9 +600,9 @@ watch(selectedDataType, (newType) => {
 const maticCache = new Map()
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
   const key = `${impressions}-${clicks}-${views}`
-  const impressionsMatic = impressions / 100
-  const clicksMatic = clicks / 20
-  const viewsMatic = views / 20
+  const impressionsMatic = impressions * import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE
+  const clicksMatic = clicks * import.meta.env.VITE_ADVERTISE_CLICK_RATE
+  const viewsMatic = views * import.meta.env.VITE_ADVERTISE_VIEWS_RATE
 
   if (maticCache.has(key)) {
     return maticCache.get(key)
