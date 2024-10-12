@@ -28,7 +28,6 @@ const $q = useQuasar()
 
 const errorStore = useErrorStore()
 
-const userStore = useUserStore()
 const props = defineProps({
   cryptoTransaction: { required: true },
   detail: { required: true }

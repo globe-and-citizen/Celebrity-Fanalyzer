@@ -67,7 +67,7 @@
               :disable="promptStore.isLoading"
               @click="onProceedDepositFundDialog(props.row)"
             >
-              <q-tooltip>deposit escrow fund</q-tooltip>
+              <q-tooltip>Deposit escrow fund</q-tooltip>
             </q-btn>
           </span>
           <q-btn
@@ -229,7 +229,7 @@ function openDeleteDialog(prompt) {
 function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
-    .then(() => $q.notify({ type: 'negative', message: 'Prompt successfully deleted' }))
+    .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
 
   deleteDialog.value.show = false
@@ -326,7 +326,7 @@ function handleDeleteEntry(entryId, promptId) {
 async function onProceedDepositFundDialog(props) {
   //let's check if the entry already have valid payment..
   if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: 'Please connect your wallet' })
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
     customWeb3modal.open()
   } else {
     proceedDepositFundDialog.value.show = true

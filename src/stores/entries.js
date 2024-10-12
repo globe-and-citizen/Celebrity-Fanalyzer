@@ -324,7 +324,7 @@ export const useEntryStore = defineStore('entries', {
           deleteVisitors,
           deleteEntryFromStats
         ])
-        this._entries = this._entries.filter((entry) => entry.id !== entryId)
+        this._entries = this._entries?.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')
       }
