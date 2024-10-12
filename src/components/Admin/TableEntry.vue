@@ -300,7 +300,7 @@ async function onProceedPaymentDialog(props) {
   if (_currentPrompt.value) {
     $q.loading.show()
     if (!customWeb3modal.getAddress()) {
-      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+      $q.notify({ type: 'negative', message: 'Please connect your wallet ' })
       customWeb3modal.open()
       $q.loading.hide()
     } else {
@@ -325,7 +325,7 @@ async function onProceedPaymentDialog(props) {
         displayCrytptoTransactionDialog.value.show = true
       } else {
         if (!props.author.walletAddress) {
-          $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })
+          $q.notify({ type: 'negative', message: 'The entry author should set wallet address' })
         } else {
           const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
 
@@ -340,7 +340,7 @@ async function onProceedPaymentDialog(props) {
       }
     }
   } else {
-    $q.notify({ type: 'negative', message: " oups can't find the related entry prompt" })
+    $q.notify({ type: 'negative', message: "Can't find the related entry prompt" })
   }
 }
 
@@ -397,7 +397,7 @@ async function onSelectWinner(entry) {
   const payload = { entry: entry, isWinner: isWinner }
   //let's first check if the prompt don't already have selected entry
   if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    $q.notify({ type: 'negative', message: 'Please connect your wallet' })
     customWeb3modal.open()
     $q.loading.hide()
     selectWinnerDialog.value.show = false
@@ -412,7 +412,7 @@ async function onSelectWinner(entry) {
             if (_entry && _prompt) {
               emit('update-entry', { _entry, _prompt })
             }
-            $q.notify({ type: 'positive', message: 'winner selected' })
+            $q.notify({ type: 'positive', message: 'Winner selected' })
             $q.loading.hide()
           })
           .catch((error) => {
@@ -425,12 +425,12 @@ async function onSelectWinner(entry) {
 
         selectWinnerDialog.value.show = false
       } else {
-        $q.notify({ type: 'negative', message: 'oups winner selection failed ' })
+        $q.notify({ type: 'negative', message: 'Winner selection failed' })
         $q.loading.hide()
         selectWinnerDialog.value.show = false
       }
     } else {
-      $q.notify({ type: 'negative', message: ' the entry author should set a wallet address ' })
+      $q.notify({ type: 'negative', message: 'The entry author should set a wallet address' })
       $q.loading.hide()
       selectWinnerDialog.value.show = false
     }

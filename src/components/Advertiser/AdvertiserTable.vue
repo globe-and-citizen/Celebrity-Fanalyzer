@@ -377,7 +377,7 @@ async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.show()
   const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
   if (result.status.includes('success')) {
-    $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
+    $q.notify({ message: 'Campaign payment claimed successfully', type: 'positive' })
     //let's change the advertise status.
     if (currentAmountSpent >= advertise.budget) {
       await _completeAdvertise(advertise)
@@ -401,7 +401,7 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
   const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
   if (result.status.includes('success')) {
-    $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
+    $q.notify({ message: 'Remaining budget withdrawn successfully ', type: 'positive' })
     //let's change the advertise status
     await _completeAdvertise(advertise)
   } else {
@@ -477,10 +477,10 @@ function onDeselect() {
 function onApproveAdvertise() {
   advertiseStore
     .editAdvertise(selectedAdvertise.value)
-    .then(() => $q.notify({ type: 'info', message: 'Advertise Approved successfully' }))
+    .then(() => $q.notify({ type: 'info', message: 'Advertise approved successfully' }))
     .catch((error) => {
       console.log(error)
-      errorStore.throwError(error, 'Advertise Approval failed')
+      errorStore.throwError(error, 'Advertise approval failed')
     })
     .finally(() => {
       selectedAdvertise.value = {}
