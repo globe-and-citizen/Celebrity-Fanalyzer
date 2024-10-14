@@ -63,32 +63,34 @@
               icon="toggle_off"
               @click="onSelectWinnerDialog(props.row)"
             >
-              <q-tooltip class="positive" :offset="[10, 10]">select winner!</q-tooltip>
+              <q-tooltip class="positive" :offset="[10, 10]">Select winner</q-tooltip>
             </q-btn>
             <q-btn
-              v-if="props.row.isWinner === true && _currentPrompt?.isTreated !== true"
-              color="dark"
+              v-if="
+                _currentPrompt?.isTreated ? props.row.isWinner && !_currentPrompt?.isTreated : props.row.isWinner && !props.row.isTreated
+              "
+              color="green"
               :disable="props.row.author.uid !== userStore.getUserId"
-              flat
               icon="payment"
+              unelevated
               size="sm"
+              round
               label=""
               @click="onProceedPaymentDialog(props.row)"
             >
-              <q-tooltip class="positive" :offset="[10, 10]">claim payment!</q-tooltip>
+              <q-tooltip class="positive" :offset="[10, 10]">Claim payment</q-tooltip>
             </q-btn>
             <q-btn
               class="payment-buttons"
-              v-if="props.row.isWinner === true && _currentPrompt?.isTreated === true"
-              color="dark"
-              :disable="userStore.getUser.role !== 'Admin'"
+              v-if="_currentPrompt?.isTreated ? props.row.isWinner && _currentPrompt?.isTreated : props.row.isWinner && props.row.isTreated"
+              color="blue"
               flat
               icon="payment"
               size="sm"
               label=""
               @click="onProceedPaymentDialog(props.row)"
             >
-              <q-tooltip class="positive" :offset="[10, 10]">view transaction detail!</q-tooltip>
+              <q-tooltip class="positive" :offset="[10, 10]">View transaction detail</q-tooltip>
             </q-btn>
 
             <span v-if="_currentPrompt?.hasWinner !== true">
@@ -300,7 +302,7 @@ async function onProceedPaymentDialog(props) {
   if (_currentPrompt.value) {
     $q.loading.show()
     if (!customWeb3modal.getAddress()) {
-      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+      $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
       customWeb3modal.open()
       $q.loading.hide()
     } else {
@@ -325,7 +327,7 @@ async function onProceedPaymentDialog(props) {
         displayCrytptoTransactionDialog.value.show = true
       } else {
         if (!props.author.walletAddress) {
-          $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })
+          $q.notify({ type: 'negative', message: 'The entry author should set wallet address' })
         } else {
           const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
 
@@ -340,26 +342,21 @@ async function onProceedPaymentDialog(props) {
       }
     }
   } else {
-    $q.notify({ type: 'negative', message: " oups can't find the related entry prompt" })
+    $q.notify({ type: 'negative', message: "Can't find the related entry prompt" })
   }
 }
 
 function onSelectWinnerDialog(props) {
-  // Toggle the isWinner state
-
-  const isWinner = props.isWinner !== true
   // Dynamically set the selectWinnerMessage and selectWinnerTitle based on isWinner
-  selectWinnerMessage.value =
-    isWinner === true
-      ? `Are sure you want to select the entry <b>${props.title}</b> as competition winner ?`
-      : `Are sure you want to deselect the entry ${props.title} </b> ?`
-  selectWinnerTitle.value = isWinner === true ? 'Select Winner' : 'Deselect winner'
-  const promptHasWinner = _currentPrompt.value.hasWinner === true
-  //let's check if the corresponding promt already have a winner selected
-  if (_currentPrompt?.value.isTreated === true) {
+  selectWinnerMessage.value = !props?.isWinner
+    ? `Are sure you want to select the entry <b>${props.title}</b> as competition winner ?`
+    : `Are sure you want to deselect the entry ${props.title} </b> ?`
+  selectWinnerTitle.value = !props?.isWinner ? 'Select Winner' : 'Deselect winner'
+  // let's check if the corresponding prompt already have a winner selected
+  if (_currentPrompt?.value?.isTreated === true) {
     $q.notify({ type: 'negative', message: 'The corresponding prompt is already treated' })
   } else {
-    if (isWinner === true && promptHasWinner === true) {
+    if (!props.isWinner && _currentPrompt?.value?.hasWinner) {
       $q.notify({ type: 'negative', message: 'The corresponding prompt already has a winner ' })
     } else {
       const payload = { ...props }
@@ -397,7 +394,7 @@ async function onSelectWinner(entry) {
   const payload = { entry: entry, isWinner: isWinner }
   //let's first check if the prompt don't already have selected entry
   if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
     customWeb3modal.open()
     $q.loading.hide()
     selectWinnerDialog.value.show = false
@@ -412,7 +409,7 @@ async function onSelectWinner(entry) {
             if (_entry && _prompt) {
               emit('update-entry', { _entry, _prompt })
             }
-            $q.notify({ type: 'positive', message: 'winner selected' })
+            $q.notify({ type: 'positive', message: 'Winner selected' })
             $q.loading.hide()
           })
           .catch((error) => {
@@ -425,12 +422,12 @@ async function onSelectWinner(entry) {
 
         selectWinnerDialog.value.show = false
       } else {
-        $q.notify({ type: 'negative', message: 'oups winner selection failed ' })
+        $q.notify({ type: 'negative', message: 'Winner selection failed' })
         $q.loading.hide()
         selectWinnerDialog.value.show = false
       }
     } else {
-      $q.notify({ type: 'negative', message: ' the entry author should set a wallet address ' })
+      $q.notify({ type: 'negative', message: 'The entry author should set a wallet address' })
       $q.loading.hide()
       selectWinnerDialog.value.show = false
     }

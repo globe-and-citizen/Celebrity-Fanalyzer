@@ -51,6 +51,7 @@
               flat
               min-height="5rem"
               ref="editorRef"
+              style="width: 100%"
               :toolbar="[
                 [
                   {

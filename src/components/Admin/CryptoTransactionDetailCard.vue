@@ -28,7 +28,6 @@ const $q = useQuasar()
 
 const errorStore = useErrorStore()
 
-const userStore = useUserStore()
 const props = defineProps({
   cryptoTransaction: { required: true },
   detail: { required: true }
@@ -69,7 +68,7 @@ async function loadCrytptoTransactionDetail() {
     cryptoTransactionDetail.value.networkName = props.cryptoTransaction?.networkName
   } catch (error) {
     errorStore.throwError(error, 'Error updating profile')
-    $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })
+    $q.notify({ type: 'negative', message: 'The entry author should set wallet address ' })
   }
 }
 </script>
