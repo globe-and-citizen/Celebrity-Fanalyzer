@@ -251,6 +251,10 @@ function handleKeyUpDate(event) {
   }
   emit('updateSearchDate', selectedDate.value)
 }
+
+defineExpose({
+  openEntryDialog
+})
 </script>
 <style scoped>
 .filter-card {
