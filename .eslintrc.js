@@ -5,7 +5,8 @@ module.exports = {
   root: true,
 
   parserOptions: {
-    ecmaVersion: '2021' // Allows for the parsing of modern ECMAScript features
+    // Allows for the parsing of modern ECMAScript features
+    ecmaVersion: '2021'
   },
 
   env: {
@@ -31,7 +32,8 @@ module.exports = {
     // Uncomment any of the lines below to choose desired strictness,
     // but leave only one uncommented!
     // See https://eslint.vuejs.org/rules/#available-rules
-    'plugin:vue/vue3-essential', // Priority A: Essential (Error Prevention)
+    // Priority A: Essential (Error Prevention)
+    'plugin:vue/vue3-essential',
     // 'plugin:vue/vue3-strongly-recommended', // Priority B: Strongly Recommended (Improving Readability)
     // 'plugin:vue/vue3-recommended', // Priority C: Recommended (Minimizing Arbitrary Choices and Cognitive Overhead)
 
@@ -43,14 +45,16 @@ module.exports = {
   plugins: [
     // https://eslint.vuejs.org/user-guide/#why-doesn-t-it-work-on-vue-files
     // required to lint *.vue files
-    'vue'
+    'vue',
+    'prettier'
     // https://github.com/typescript-eslint/typescript-eslint/issues/389#issuecomment-509292674
     // Prettier has not been included as plugin to avoid performance impact
     // add it as an extension for your IDE
   ],
 
   globals: {
-    ga: 'readonly', // Google Analytics
+    // Google Analytics
+    ga: 'readonly',
     cordova: 'readonly',
     __statics: 'readonly',
     __QUASAR_SSR__: 'readonly',
@@ -71,6 +75,18 @@ module.exports = {
     'no-empty': 'error',
     'no-inline-comments': 'error',
     'no-var': 'error',
+    'vue/no-unused-refs': 'error',
+    'vue/no-restricted-syntax': 'error',
+    'vue/no-console': 'error',
+    'vue/no-empty-component-block': 'error',
+    'vue/no-multi-spaces': 'error',
+    'vue/no-unused-emit-declarations': 'error',
+    'vue/no-unused-vars': [
+      'error',
+      {
+        ignorePattern: '^_'
+      }
+    ],
     'prefer-const': 'error'
   }
 }

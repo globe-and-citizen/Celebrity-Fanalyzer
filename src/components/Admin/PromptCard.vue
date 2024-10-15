@@ -1,7 +1,7 @@
 <template>
   <q-card class="q-mt-none" :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-      <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
+      <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'">
           <q-card-section>
             <div class="row items-baseline no-wrap">
@@ -47,8 +47,22 @@
               :options="authorOptions"
               v-model="prompt.author"
             />
-            <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="prompt.title" />
-            <q-field counter label="Description" maxlength="400" v-model="prompt.description">
+            <q-input
+              counter
+              data-test="input-title"
+              label="Title"
+              maxlength="80"
+              required
+              v-model="prompt.title"
+              :hint="!prompt.title ? '*Title is required' : ''"
+            />
+            <q-field
+              counter
+              label="Description"
+              maxlength="400"
+              v-model="prompt.description"
+              :hint="!prompt.description ? '*Description is required' : ''"
+            >
               <template v-slot:control>
                 <q-editor
                   class="q-mt-md"
@@ -57,6 +71,7 @@
                   flat
                   min-height="5rem"
                   ref="editorRef"
+                  style="width: 100%"
                   :toolbar="[
                     [
                       {
@@ -85,11 +100,11 @@
               accept=".jpg, image/*"
               counter
               data-test="file-image"
-              hide-hint
-              hint="Max size is 2MB"
+              :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
               label="Image"
               :max-total-size="2097152"
               :required="!id"
+              use-chips
               v-model="imageModel"
               @rejected="onRejected()"
               @update:model-value="uploadPhoto()"
@@ -103,8 +118,7 @@
               counter
               data-test="select-categories"
               hide-dropdown-icon
-              hide-hint
-              hint="Click Enter ↵ to add a new category"
+              :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
               input-debounce="0"
               label="Categories"
               multiple
@@ -239,8 +253,12 @@ async function onSubmit() {
     $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
     return
   }
-
-  if (
+  if (!promptStore.getPrompts) {
+    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
+    if (hasPrompt) {
+      return
+    }
+  } else if (
     promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase() && p.id !== prompt.id) ||
     prompt.title.toLowerCase() === 'month'
   ) {
@@ -260,7 +278,7 @@ async function onSubmit() {
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' }))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 

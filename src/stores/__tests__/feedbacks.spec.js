@@ -18,7 +18,7 @@ describe('Test FeedBacks Store', async () => {
      * each "it" block.
      */
     try {
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }

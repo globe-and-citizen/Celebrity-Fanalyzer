@@ -30,12 +30,16 @@ module.exports = configure(function (ctx) {
 
     // Build configuration
     build: {
-      sourceMap: false, // Disable source maps for production
+      // Disable source maps for production
+      sourceMap: false,
       target: {
-        browser: 'es2020', // Use modern ECMAScript for browser support
-        node: 'node18' // Ensure compatibility with Node.js 18
+        // Use modern ECMAScript for browser support
+        browser: 'es2020',
+        // Ensure compatibility with Node.js 18
+        node: 'node18'
       },
-      vueRouterMode: 'history', // Use 'history' mode for Vue Router
+      // Use 'history' mode for Vue Router
+      vueRouterMode: 'history',
 
       extendViteConf(viteConf) {
         viteConf.build.rollupOptions = {
@@ -55,7 +59,8 @@ module.exports = configure(function (ctx) {
         viteConf.optimizeDeps = {
           include: ['@web3modal/ethers5'],
           esbuildOptions: {
-            target: 'es2020', // Ensure the target environment supports all features
+            // Ensure the target environment supports all features
+            target: 'es2020',
             define: {
               global: 'globalThis'
             },
@@ -69,7 +74,8 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
-      open: false // Disable automatic browser opening
+      // Disable automatic browser opening
+      open: false
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
@@ -112,7 +118,7 @@ module.exports = configure(function (ctx) {
 
     // animations: 'all', // --- includes all animations
     // https://v2.quasar.dev/options/animations
-    animations: ['slideInDown'],
+    animations: ['slideInDown', 'fadeIn', 'fadeOut'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#property-sourcefiles
     sourceFiles: {
@@ -140,18 +146,20 @@ module.exports = configure(function (ctx) {
 
       // manualStoreHydration: true,
       // manualPostHydrationTrigger: true,
-
-      prodPort: 3000, // The default port that the production server should use
+      // The default port that the production server should use
+      prodPort: 3000,
       // (gets superseded if process.env.PORT is specified at runtime)
 
       middlewares: [
-        'render' // keep this as last one
+        // keep 'render' as last one
+        'render'
       ]
     },
 
     // https://v2.quasar.dev/quasar-cli/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'injectManifest', // or 'generateSW'
+      // or 'generateSW'
+      workboxMode: 'injectManifest',
       injectPwaMetaTags: true,
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
@@ -169,8 +177,8 @@ module.exports = configure(function (ctx) {
       // extendElectronPreloadConf (esbuildConf)
 
       inspectPort: 5858,
-
-      bundler: 'packager', // 'packager' or 'builder'
+      // 'packager' or 'builder'
+      bundler: 'packager',
 
       packager: {
         appId: 'celebrity-fanalyzer'

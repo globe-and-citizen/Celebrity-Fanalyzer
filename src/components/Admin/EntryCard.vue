@@ -26,8 +26,23 @@
             </q-item>
           </template>
         </q-select>
-        <q-input counter data-test="input-title" hide-hint label="Title" maxlength="80" required v-model="entry.title" />
-        <q-field counter label="Description" maxlength="400" v-model="entry.description">
+        <q-input
+          counter
+          data-test="input-title"
+          label="Title"
+          maxlength="80"
+          required
+          v-model="entry.title"
+          :disable="!entry.prompt"
+          :hint="!entry.prompt ? 'Select prompt first' : !entry.title ? '*Title is required' : ''"
+        />
+        <q-field
+          counter
+          label="Description"
+          maxlength="400"
+          v-model="entry.description"
+          :hint="!entry.description ? '*Description is required' : ''"
+        >
           <template v-slot:control>
             <q-editor
               class="q-mt-md"
@@ -36,6 +51,7 @@
               flat
               min-height="5rem"
               ref="editorRef"
+              style="width: 100%"
               :toolbar="[
                 [
                   {
@@ -65,10 +81,11 @@
           counter
           data-test="file-image"
           :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' : '*Image is required. Max size is 2MB.'"
+          :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : ''"
           label="Image"
           :max-total-size="2097152"
           :required="!id"
+          use-chips
           v-model="imageModel"
           @rejected="onRejected()"
           @update:model-value="uploadPhoto()"
@@ -118,7 +135,7 @@ import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 
-const emit = defineEmits(['hideDialog', 'forward-update-entry'])
+const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
 
 const $q = useQuasar()
@@ -142,20 +159,14 @@ const imageModel = ref([])
 const promptOptions = computed(
   () =>
     promptStore.getPrompts
-      ?.filter((prompt) => !prompt.hasWinner)
-      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+      ?.filter((prompt) => !prompt.hasWinner && prompt.escrowId)
+      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
       .reverse() || []
 )
 
-watchEffect(() => {
-  if (!promptStore.getPrompts) {
-    promptStore.fetchPrompts()
-  }
-})
-
 onMounted(() => {
+  promptStore.fetchPrompts()
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
@@ -200,9 +211,24 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
-  const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
-  if (hasEntry) {
-    $q.notify({ type: 'info', message: 'Entry already exists. Please select another prompt' })
+  entry.title = entry.title.trim()
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.prompt?.value)
+
+  if (!hasLoadedEntry) {
+    await entryStore.fetchEntryByPrompts(entry.prompt?.value)
+  }
+
+  const hasEntry = entryStore.hasEntry(entry.prompt?.value)
+
+  if (!props.id && hasEntry) {
+    $q.notify({ type: 'info', message: 'You have already submitted an entry for this prompt. Please select another prompt' })
+    return
+  }
+
+  const entryNameValidator = entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+
+  if (entryNameValidator) {
+    $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`

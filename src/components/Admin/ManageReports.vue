@@ -124,5 +124,3 @@ function onDeleteReport() {
   deleteDialog.value.show = false
 }
 </script>
-
-<style scoped></style>

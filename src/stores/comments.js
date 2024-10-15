@@ -77,7 +77,8 @@ export const useCommentStore = defineStore('comments', {
       }
       const q = query(
         collection(db, collectionName, documentId, 'comments'),
-        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false))
+        or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false)),
+        orderBy('created')
       )
       this._initialLoading = true
       this._unSubscribe = onSnapshot(q, async (querySnapshot) => {

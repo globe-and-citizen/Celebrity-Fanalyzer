@@ -1,30 +1,19 @@
-//Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 // Necessary Components
-import { usePromptStore, useVisitorStore, useUserStore } from 'src/stores'
+import { usePromptStore, useVisitorStore } from 'src/stores'
 import { waitUntil } from 'src/utils/waitUntil'
 
 describe('Users Store', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
-
-    global.fetch = vi.fn(async () => {
-      return {
-        text: () => {
-          return `ip=Vitest-${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}` // Vitest-245.256
-        }
-      }
-    })
   })
 
   it('Should read visitors and add a new one', async () => {
+    const randomIp = `ip=Vitest-${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`
     const promptStore = usePromptStore()
     const visitorStore = useVisitorStore()
-    const userStore = useUserStore()
-
-    await userStore.fetchUserIp()
     await promptStore.fetchPrompts()
     await waitUntil(() => promptStore.getPrompts)
     const firstPrompt = promptStore.getPrompts[0]
@@ -33,7 +22,7 @@ describe('Users Store', () => {
     await waitUntil(() => visitorStore.getVisitors)
     const visitorsBefore = visitorStore.getVisitors.length
 
-    await visitorStore.addVisitor('prompts', firstPrompt.id)
+    await visitorStore.addVisitor('prompts', firstPrompt.id, randomIp)
     await waitUntil(() => visitorStore.getVisitors.length > visitorsBefore)
     const visitorsAfter = visitorStore.getVisitors.length
 

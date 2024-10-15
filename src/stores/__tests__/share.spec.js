@@ -32,7 +32,7 @@ describe('Unit Test Share Store', () => {
     })
     // Login the test@test.com user
     try {
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }

@@ -18,19 +18,24 @@ export const useFeedbackStore = defineStore('feedbacks', {
 
   actions: {
     async fetchFeedbacks() {
-      this._isLoading = true
-
       // TO avoid a subscription every time we call fetch FeedBacks
       if (!this._unSubscribe)
         this._unSubscribe = onSnapshot(collection(db, 'feedbacks'), async (querySnapshot) => {
-          const feedbacks = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          try {
+            this._isLoading = true
 
-          for (const feedback of feedbacks) {
-            feedback.author = await getDoc(feedback.author).then((doc) => doc.data())
+            const feedbacks = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+            for (const feedback of feedbacks) {
+              feedback.author = await getDoc(feedback.author).then((doc) => doc.data())
+            }
+            this.$patch({ _feedbacks: feedbacks })
+          } catch (error) {
+            console.error('Error fetching feedbacks:', error)
+          } finally {
+            this._isLoading = false
           }
-          this.$patch({ _feedbacks: feedbacks })
         })
-      this._isLoading = false
     },
 
     async addFeedback(feedback) {

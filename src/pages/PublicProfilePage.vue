@@ -28,7 +28,21 @@
         </q-card-section>
         <q-separator spaced inset />
         <q-card-section class="justify-center row">
-          <div v-for="post in computedPosts" class="col-sm-4 col-xs-6" :key="post.id" @click="goToUrl(post.slug)">
+          <div
+            v-for="post in computedPosts"
+            class="col-sm-4 col-xs-6"
+            :key="post.id"
+            @click="
+              () => {
+                post.slug
+                  ? goToUrl(post.slug)
+                  : $q.notify({
+                      type: 'error',
+                      message: 'Sorry. There is no link available for this entry at this time. Please contact support.'
+                    })
+              }
+            "
+          >
             <div class="cursor-pointer q-mx-xs">
               <q-img class="rounded-borders" height="12rem" :ratio="1" :src="post.image" />
               <p class="q-mb-none text-caption">{{ dayMonthYear(post.created) }} &bullet; {{ post.title }}</p>
@@ -66,7 +80,7 @@ const socialNetworks = [
   { name: 'instagram', link: 'https://instagram.com/' },
   { name: 'linkedin', link: 'https://linkedin.com/in/' },
   { name: 'telegram', link: 'https://web.telegram.org/a/#' },
-  { name: 'twitter', link: 'https://twitter.com/' }
+  { name: 'x', link: 'https://x.com/' }
 ]
 
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
