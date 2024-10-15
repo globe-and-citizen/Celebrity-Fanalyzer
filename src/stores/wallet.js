@@ -37,17 +37,6 @@ export const useWalletStore = defineStore('wallet', {
           decimals: 18
         }
       }
-      // const chainConfig = {
-      //   chainId: 137,
-      //   "name": "Polygon Matic",
-      //   rpcUrls: ['https://rpc-mainnet.maticvigil.com/'],
-      //   nativeCurrency: {
-      //     name: 'Polygon',
-      //     symbol: 'MATIC',
-      //     decimals: 18
-      //   },
-      //   blockExplorerUrls: ['https://polygonscan.com/']
-      // }
     }
   }),
 
