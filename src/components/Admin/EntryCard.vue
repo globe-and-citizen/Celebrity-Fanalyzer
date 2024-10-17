@@ -7,7 +7,7 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
-        <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="entry.author" />
+        <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="entry.author" />
         <q-select
           behavior="menu"
           counter

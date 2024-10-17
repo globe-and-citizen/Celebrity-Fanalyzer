@@ -40,13 +40,7 @@
                 </template>
               </q-input>
             </div>
-            <q-select
-              data-test="select-author"
-              :disable="!userStore.isAdmin"
-              label="Author"
-              :options="authorOptions"
-              v-model="prompt.author"
-            />
+            <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
             <q-input
               counter
               data-test="input-title"
