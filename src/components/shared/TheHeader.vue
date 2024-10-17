@@ -31,6 +31,7 @@
       <q-btn-dropdown
         v-if="userStore.isAuthenticated"
         auto-close
+        data-test="dropdown-menu"
         color="secondary"
         dropdown-icon="apps"
         flat
@@ -40,13 +41,13 @@
         size="1rem"
       >
         <q-list style="min-width: 100px">
-          <q-item v-if="userStore.isEditorOrAbove" clickable @click="openPromptDialog()">
+          <q-item data-test="create-prompt" v-if="userStore.isEditorOrAbove" clickable @click="openPromptDialog()">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
-          <q-item clickable @click="openEntryDialog()">
+          <q-item data-test="create-entry" clickable @click="openEntryDialog()">
             <q-item-section>New Entry</q-item-section>
           </q-item>
-          <q-item clickable @click="openAdvertiseDialog()">
+          <q-item data-test="create-advertise" clickable @click="openAdvertiseDialog()">
             <q-item-section>New Advertise</q-item-section>
           </q-item>
           <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
