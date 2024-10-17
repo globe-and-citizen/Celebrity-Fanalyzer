@@ -66,23 +66,20 @@
               <q-tooltip class="positive" :offset="[10, 10]">Select winner</q-tooltip>
             </q-btn>
             <q-btn
-              v-if="
-                _currentPrompt?.isTreated ? props.row.isWinner && !_currentPrompt?.isTreated : props.row.isWinner && !props.row.isTreated
-              "
+              v-if="props.row.isWinner == true && props.row.author.uid == userStore.getUserId"
               color="green"
-              :disable="props.row.author.uid !== userStore.getUserId"
               icon="payment"
               unelevated
               size="sm"
-              round
+              flat
               label=""
               @click="onProceedPaymentDialog(props.row)"
             >
-              <q-tooltip class="positive" :offset="[10, 10]">Claim payment</q-tooltip>
+              <q-tooltip class="positive" :offset="[10, 10]">claim or view payment</q-tooltip>
             </q-btn>
             <q-btn
               class="payment-buttons"
-              v-if="_currentPrompt?.isTreated ? props.row.isWinner && _currentPrompt?.isTreated : props.row.isWinner && props.row.isTreated"
+              v-if="_currentPrompt ? props.row.isWinner && _currentPrompt?.isTreated : false"
               color="blue"
               flat
               icon="payment"
@@ -301,13 +298,14 @@ async function onProceedPaymentDialog(props) {
   }
   if (_currentPrompt.value) {
     $q.loading.show()
-    if (!customWeb3modal.getAddress()) {
-      $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
+    if (!customWeb3modal.getAddress() || customWeb3modal.getChainId() !== 137) {
+      $q.notify({ type: 'negative', message: ' please connect your wallet to polygon mainet network ' })
       customWeb3modal.open()
       $q.loading.hide()
     } else {
       //let's check if the entry already have valid payment..
       const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
+
       if (cryptoTransactionExist.length > 0) {
         const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
         if (escrowEvents?.status?.includes('success')) {
