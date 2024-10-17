@@ -19,7 +19,6 @@ export const useReportStore = defineStore('reports', {
 
   actions: {
     async fetchReports() {
-      this._isLoading = true
       const userStore = useUserStore()
       if (!userStore.getUsers) {
         await userStore.fetchUsers()
@@ -27,18 +26,24 @@ export const useReportStore = defineStore('reports', {
 
       if (!this._unSubscribe)
         this._unSubscribe = onSnapshot(collection(db, 'reports'), async (querySnapshot) => {
-          const reports = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          try {
+            this._isLoading = true
+            const reports = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
-          for (const report of reports) {
-            if (!report.isAnonymous) {
-              report.author = await getDoc(report.author).then((doc) => doc.data())
-            } else {
-              report.author = userStore.getUserById(report.author.id) || report.author.id
+            for (const report of reports) {
+              if (!report.isAnonymous) {
+                report.author = await getDoc(report.author).then((doc) => doc.data())
+              } else {
+                report.author = userStore.getUserById(report.author.id) || report.author.id
+              }
             }
+            this.$patch({ _reports: reports })
+          } catch (error) {
+            console.error('Error fetching reports:', error)
+          } finally {
+            this._isLoading = false
           }
-          this.$patch({ _reports: reports })
         })
-      this._isLoading = false
     },
 
     async addReports(payload) {
