@@ -1,5 +1,5 @@
 <template>
-  <TheHeader v-if="user?.uid" feedbackButton :title="user.role + ' Profile'" />
+  <TheHeader v-if="user?.uid" ref="header" feedbackButton :title="user.role + ' Profile'" />
   <q-page-container>
     <q-page v-if="user?.uid">
       <q-card flat>
@@ -28,7 +28,19 @@
         </q-card-section>
         <q-separator spaced inset />
         <q-card-section class="justify-center row">
+          <div v-if="computedPosts.length === 0 && user?.uid === userStore.getUser?.uid" class="text-center q-mt-md">
+            <p class="text-h6">It looks like you haven't created any entries yet.</p>
+            <p>
+              Start sharing your thoughts and experiences with the
+              <b><i>Celebrity Fanalyzer!</i></b>
+            </p>
+            <q-btn label="Create Your First Entry" @click="header?.openEntryDialog()" color="primary" class="q-mt-md" rounded unelevated />
+          </div>
+          <div v-else-if="computedPosts.length === 0" class="text-center q-mt-md">
+            <p class="text-h6">This user has not created any entries yet.</p>
+          </div>
           <div
+            v-else
             v-for="post in computedPosts"
             class="col-sm-4 col-xs-6"
             :key="post.id"
@@ -74,6 +86,7 @@ const userStore = useUserStore()
 const $q = useQuasar()
 
 const user = ref()
+const header = ref(null)
 
 const socialNetworks = [
   { name: 'facebook', link: 'https://facebook.com/' },
