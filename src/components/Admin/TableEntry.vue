@@ -66,20 +66,23 @@
               <q-tooltip class="positive" :offset="[10, 10]">Select winner</q-tooltip>
             </q-btn>
             <q-btn
-              v-if="props.row.isWinner == true && props.row.author.uid == userStore.getUserId"
+              v-if="
+                _currentPrompt?.isTreated ? props.row.isWinner && !_currentPrompt?.isTreated : props.row.isWinner && !props.row.isTreated
+              "
               color="green"
+              :disable="props.row.author.uid !== userStore.getUserId"
               icon="payment"
               unelevated
               size="sm"
-              flat
+              round
               label=""
               @click="onProceedPaymentDialog(props.row)"
             >
-              <q-tooltip class="positive" :offset="[10, 10]">claim or view payment</q-tooltip>
+              <q-tooltip class="positive" :offset="[10, 10]">Claim payment</q-tooltip>
             </q-btn>
             <q-btn
               class="payment-buttons"
-              v-if="_currentPrompt ? props.row.isWinner && _currentPrompt?.isTreated : false"
+              v-if="_currentPrompt?.isTreated ? props.row.isWinner && _currentPrompt?.isTreated : props.row.isWinner && props.row.isTreated"
               color="blue"
               flat
               icon="payment"
