@@ -69,8 +69,8 @@
               v-if="
                 _currentPrompt?.isTreated ? props.row.isWinner && !_currentPrompt?.isTreated : props.row.isWinner && !props.row.isTreated
               "
-              color="green"
               :disable="props.row.author.uid !== userStore.getUserId"
+              color="green"
               icon="payment"
               unelevated
               size="sm"
