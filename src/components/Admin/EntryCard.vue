@@ -94,6 +94,10 @@
             <q-icon name="image" />
           </template>
         </q-file>
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+          <p>or</p>
+          <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+        </div>
         <div class="text-center">
           <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
         </div>
@@ -126,6 +130,19 @@
       </q-form>
     </q-card-section>
   </q-card>
+  <q-dialog v-model="openCamera" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <CaptureCamera @onCapture="captureCamera" />
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="primary" v-close-popup />
+        <q-btn flat label="Done" color="primary" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog></q-dialog>
 </template>
 
 <script setup>
@@ -134,6 +151,7 @@ import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserS
 import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
+import CaptureCamera from '../shared/CameraCapture.vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
@@ -156,6 +174,8 @@ const entry = reactive({
   title: ''
 })
 const imageModel = ref([])
+const openCamera = ref(false)
+
 const promptOptions = computed(
   () =>
     promptStore.getPrompts
@@ -180,6 +200,9 @@ onMounted(() => {
 
 function uploadPhoto() {
   entry.image = ''
+  if (!imageModel.value) {
+    return
+  }
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (entry.image = reader.result)
@@ -268,5 +291,9 @@ async function onSubmit() {
     await errorStore.throwError(e, failureMessage)
   }
   emit('hideDialog', entry.slug)
+}
+function captureCamera(imageBlob) {
+  imageModel.value = imageBlob
+  uploadPhoto()
 }
 </script>
