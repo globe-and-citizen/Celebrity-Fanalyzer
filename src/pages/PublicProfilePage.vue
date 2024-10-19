@@ -6,7 +6,14 @@
         <q-card-section class="flex items-center">
           <div class="flex items-center q-gutter-x-md">
             <q-avatar size="7rem">
-              <q-img :src="user.photoURL" />
+              <template v-if="user.photoURL">
+                <q-img :src="user.photoURL" />
+              </template>
+              <template v-else>
+                <span class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+                  {{ user.displayName.charAt(0).toUpperCase() }}
+                </span>
+              </template>
             </q-avatar>
             <h5 class="q-my-none" data-test="user-displayName">{{ user.displayName }}</h5>
           </div>
