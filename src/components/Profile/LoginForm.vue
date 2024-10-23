@@ -160,7 +160,7 @@ async function handleResetPassword() {
           Notify.create({ message: 'Something went wrong', type: 'negative' })
         })
     } else {
-      Notify.create({ message: 'Email not found', type: 'negative' })
+      Notify.create({ message: 'This email does not exist', type: 'negative' })
     }
   }
 }
