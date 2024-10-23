@@ -202,6 +202,14 @@ export const useUserStore = defineStore('user', {
         transaction.update(doc(db, 'users', user.uid), user)
       }).finally(() => (this._isLoading = false))
     },
+    async checkEmailExists(email) {
+      if (!email) {
+        return false
+      }
+      const q = query(collection(db, 'users'), where('email', '==', email))
+      const userSnapsot = await getDocs(q)
+      return !userSnapsot.empty
+    },
 
     logout() {
       const walletStore = useWalletStore()
