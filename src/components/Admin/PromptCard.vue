@@ -20,21 +20,11 @@
                 <template v-slot:append>
                   <q-icon name="event" class="cursor-pointer" data-test="date-picker">
                     <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                      <q-date
-                        default-view="Months"
-                        emit-immediately
-                        :key="dataKey"
-                        mask="YYYY-MM"
-                        minimal
-                        :options="(date) => date >= '2023/11/01'"
-                        v-model="prompt.date"
-                        years-in-month-view
-                        @update:model-value="onUpdateMonth"
-                      >
+                      <MonthPicker v-model="prompt.date" mask="YYYY-MM" :options="['2024-09']">
                         <div class="row items-center justify-end">
                           <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
                         </div>
-                      </q-date>
+                      </MonthPicker>
                     </q-popup-proxy>
                   </q-icon>
                 </template>
@@ -172,6 +162,7 @@ import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
+import MonthPicker from '../date/MonthPicker.vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
