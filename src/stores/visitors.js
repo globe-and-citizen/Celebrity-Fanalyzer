@@ -10,7 +10,7 @@ export const useVisitorStore = defineStore('visitors', {
     _visitors: undefined
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getVisitors: (state) => state._visitors,

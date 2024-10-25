@@ -9,7 +9,7 @@ export const useNotificationStore = defineStore('notification', {
     _notifications: []
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getNotifications: (state) => state._notifications,

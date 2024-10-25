@@ -27,7 +27,7 @@ export const useLikeStore = defineStore('likes', {
     _isLoaded: false
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getLikes: (state) => state._likes,

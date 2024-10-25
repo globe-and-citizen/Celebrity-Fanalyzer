@@ -21,7 +21,7 @@ export const useReportStore = defineStore('reports', {
     async fetchReports() {
       const userStore = useUserStore()
       if (!userStore.getUsers) {
-        await userStore.fetchUsers()
+        // await userStore.fetchUsers()
       }
 
       if (!this._unSubscribe)

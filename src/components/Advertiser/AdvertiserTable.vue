@@ -241,7 +241,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { getCurrentDate, calculateEndDate, computedDuration, dayMonthYear } from 'src/utils/date'
+import { getCurrentDate, calculateEndDate, computedDuration } from 'src/utils/date'
 import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
 
 const props = defineProps({
@@ -401,7 +401,10 @@ async function _completeAdvertise(advertise) {
 }
 async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
-  const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
+  const result = await requestAndApproveWithdrawal({
+    campaignCode: advertise.campaignCode,
+    currentAmounSpentInMatic: currentAmounSpent
+  })
   if (result.status.includes('success')) {
     $q.notify({ message: 'Remaining budget withdrawn successfully ', type: 'positive' })
     //let's change the advertise status
@@ -415,6 +418,7 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
 function goToUrl(id) {
   router.push('/campaign/' + id)
 }
+
 onMounted(async () => {
   await advertiseStore.fetchAdvertises(selectedDataType?.value.label)
 })
@@ -436,6 +440,7 @@ function openApprovalDialog(advertise, approve = true) {
   selectedAdvertise.value = { ...advertise }
   selectedAdvertise.value.isApproved = approve
 }
+
 function changePublishDate() {
   const date = getCurrentDate()
   selectedAdvertise.value.publishDate = date
@@ -472,6 +477,7 @@ function onDeleteAdvertise() {
   }
   selectedAdvertise.value = {}
 }
+
 function onDeselect() {
   selectedAdvertise.value = {}
 }
@@ -488,6 +494,7 @@ function onApproveAdvertise() {
       selectedAdvertise.value = {}
     })
 }
+
 const columns = ref([
   {
     name: 'status',
@@ -565,6 +572,7 @@ const columns = ref([
     label: ''
   }
 ])
+
 function changeActiveStatus(advertise, status) {
   if (!calculateStatus(advertise.publishDate) && status === 'Active') {
     dialog.value.open = true
@@ -579,7 +587,10 @@ function changeActiveStatus(advertise, status) {
   advertiseStore
     .editAdvertise(advertise)
     .then(() =>
-      $q.notify({ type: 'info', message: status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully' })
+      $q.notify({
+        type: 'info',
+        message: status === 'Active' ? 'Advertise published successfully' : 'Advertise unpublished successfully'
+      })
     )
     .catch((error) => {
       errorStore.throwError(error, 'Advertise edit failed')
@@ -598,6 +609,7 @@ watch(selectedDataType, (newType) => {
 })
 
 const maticCache = new Map()
+
 function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
   const key = `${impressions}-${clicks}-${views}`
   const impressionsMatic = impressions * import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE
@@ -646,6 +658,7 @@ async function onUpdate(e) {
     label: e.label
   }
 }
+
 function formatExpiryStatus(days) {
   if (days === 1) {
     return '1 day left'
@@ -671,6 +684,7 @@ function formatExpiryStatus(days) {
 .ads-select > :first-child > :first-child {
   background-color: white !important;
 }
+
 .singleLine_ellipsis {
   white-space: nowrap;
   overflow: hidden;

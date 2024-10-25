@@ -35,6 +35,8 @@ import { ref, computed } from 'vue'
 const userStore = useUserStore()
 const filter = ref('')
 
+userStore.fetchUsers()
+
 const filteredUsers = computed(() => {
   if (!filter.value) return userStore.getUsers
   const search = filter.value.toLowerCase()
