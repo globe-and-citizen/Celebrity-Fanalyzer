@@ -203,7 +203,7 @@
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useErrorStore, usePromptStore } from 'src/stores'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()

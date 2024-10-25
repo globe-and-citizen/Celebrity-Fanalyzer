@@ -9,7 +9,7 @@ export const useClicksStore = defineStore('clicks', {
     _clicks: undefined
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getClicks: (state) => state._clicks,
