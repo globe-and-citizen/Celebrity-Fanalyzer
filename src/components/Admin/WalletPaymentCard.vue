@@ -16,7 +16,7 @@
 import { useQuasar } from 'quasar'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref, onMounted } from 'vue'
-import { initiateSendEther, fetchMaticRate } from 'app/src/web3/transfers.js'
+import { fetchMaticRate } from 'app/src/web3/transfers.js'
 import { releaseFunds } from 'app/src/web3/escrow'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 const $q = useQuasar()
