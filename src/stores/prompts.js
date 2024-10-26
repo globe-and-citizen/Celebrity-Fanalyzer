@@ -63,8 +63,6 @@ export const usePromptStore = defineStore('prompts', {
     _hasMore: true
   }),
 
-  persist: true,
-
   getters: {
     getPromptRef: () => (id) => doc(db, 'prompts', id),
     getPrompts: (state) => state._prompts,
@@ -93,9 +91,6 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchPrompts(loadMore = false, count) {
       const userStore = useUserStore()
-      if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndEditors()
-      }
 
       try {
         this._isLoading = true
@@ -132,38 +127,11 @@ export const usePromptStore = defineStore('prompts', {
         this._isLoading = false
       }
     },
-    async fetchLatestPrompt() {
-      if (!this._prompts || this._prompts.length === 0) return
-
-      const userStore = useUserStore()
-
-      if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndEditors()
-      }
-
-      try {
-        this._isLoading = true
-
-        const latestPromptId = this._prompts[0].id
-        const queryRef = query(collection(db, 'prompts'), orderBy('id'), startAfter(latestPromptId), limit(this.loadCount))
-
-        const querySnapshot = await getDocs(queryRef)
-        const newPrompts = await getPrompts(querySnapshot, userStore)
-
-        if (newPrompts.length) {
-          this._prompts = [...newPrompts.reverse(), ...this._prompts]
-        }
-      } catch (error) {
-        console.error('Error fetching latest prompts:', error)
-      } finally {
-        this._isLoading = false
-      }
-    },
 
     async fetchPromptById(id) {
       const userStore = useUserStore()
       if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndEditors()
+        // await userStore.fetchAdminsAndEditors()
       }
 
       try {
@@ -182,9 +150,6 @@ export const usePromptStore = defineStore('prompts', {
         this._isLoading = true
         const userStore = useUserStore()
 
-        if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndEditors()
-        }
         const promptRef = await getDocs(query(collection(db, 'prompts'), or(where('slug', '==', slug), where('date', '==', slug))))
         const promptSnapshot = promptRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
@@ -213,10 +178,6 @@ export const usePromptStore = defineStore('prompts', {
       try {
         this._isLoading = true
         const userStore = useUserStore()
-
-        if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndEditors()
-        }
 
         const promptDocRef = doc(db, 'prompts', currentYearMonth())
         const promptSnapshotRef = await getDoc(promptDocRef)
@@ -380,7 +341,7 @@ export const usePromptStore = defineStore('prompts', {
         const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
-        const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
+        const deleteVisitors = visitorStore.deleteAllVisitors('prom]pts', id)
         const deletePromptFromStats = statStore.removeTopic(id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors, deletePromptFromStats])

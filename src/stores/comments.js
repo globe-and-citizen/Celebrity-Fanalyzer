@@ -44,7 +44,7 @@ export const useCommentStore = defineStore('comments', {
     _replyTo: ''
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getComments: (state) => state._comments,
@@ -70,7 +70,7 @@ export const useCommentStore = defineStore('comments', {
     async fetchComments(collectionName, documentId, startLoader = true) {
       const userStore = useUserStore()
       if (!userStore.getUsers) {
-        await userStore.fetchUsers()
+        // await userStore.fetchUsers()
       }
       if (this._unSubscribe) {
         this._unSubscribe()
@@ -123,7 +123,7 @@ export const useCommentStore = defineStore('comments', {
       this._initialLoading = true
       const userStore = useUserStore()
       if (!userStore.getUsers) {
-        await userStore.fetchUsers()
+        // await userStore.fetchUsers()
       }
 
       try {
