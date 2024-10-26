@@ -67,7 +67,7 @@ export const useCommentStore = defineStore('comments', {
   },
 
   actions: {
-    async fetchComments(collectionName, documentId) {
+    async fetchComments(collectionName, documentId, startLoader = true) {
       const userStore = useUserStore()
       if (!userStore.getUsers) {
         // await userStore.fetchUsers()
@@ -80,7 +80,7 @@ export const useCommentStore = defineStore('comments', {
         or(where('text', '!=', 'Comment Deleted'), where('isAnonymous', '==', false)),
         orderBy('created')
       )
-      this._initialLoading = true
+      if (startLoader) this._initialLoading = true
       this._unSubscribe = onSnapshot(q, async (querySnapshot) => {
         try {
           const comments = querySnapshot.docs
@@ -212,7 +212,7 @@ export const useCommentStore = defineStore('comments', {
       if (comment.dislikes?.includes(userId)) {
         await updateDoc(commentRef, { dislikes: arrayRemove(user) })
       }
-      await this.fetchComments(collectionName, documentId)
+      await this.fetchComments(collectionName, documentId, false)
     },
 
     async dislikeComment(collectionName, documentId, commentId) {
@@ -234,7 +234,7 @@ export const useCommentStore = defineStore('comments', {
       if (comment.likes?.includes(userId)) {
         await updateDoc(commentRef, { likes: arrayRemove(user) })
       }
-      await this.fetchComments(collectionName, documentId)
+      await this.fetchComments(collectionName, documentId, false)
     },
 
     async deleteComment(collectionName, documentId, commentId) {
