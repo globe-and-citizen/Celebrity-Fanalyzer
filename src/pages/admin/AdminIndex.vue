@@ -1,5 +1,5 @@
 <template>
-  <TheHeader title="Admin Panel" />
+  <TheHeader :title="userStore.getUser?.role + ' ' + 'Panel'" />
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs active-color="primary" align="justify">
@@ -8,7 +8,7 @@
           data-test="posts-tab"
           name="prompts"
           icon="view_list"
-          label="Prompts & Entries"
+          :label="userStore.isEditorOrAbove ? 'Prompts & Entries' : 'Entries'"
           :to="{ name: 'admin.prompts' }"
         />
         <q-route-tab
