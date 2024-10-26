@@ -10,7 +10,7 @@ export const useImpressionsStore = defineStore('impressions', {
     _impressions: undefined
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getImpressions: (state) => state._impressions,

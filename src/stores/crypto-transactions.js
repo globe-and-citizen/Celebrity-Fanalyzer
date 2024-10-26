@@ -11,7 +11,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
     _tab: 'post'
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getCryptoTransactions: (state) => state._cryptoTransactions,

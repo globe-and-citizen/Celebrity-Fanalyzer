@@ -41,7 +41,7 @@ export const useAdvertiseStore = defineStore('advertises', {
     _allActiveAdvertises: []
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getAdvertises: (state) => state._advertises,

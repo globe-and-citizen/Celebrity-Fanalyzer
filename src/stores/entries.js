@@ -57,7 +57,7 @@ export const useEntryStore = defineStore('entries', {
     _loadedEntries: []
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getEntries: (state) => state._entries,
@@ -71,10 +71,6 @@ export const useEntryStore = defineStore('entries', {
   actions: {
     async fetchEntries() {
       const userStore = useUserStore()
-
-      if (!userStore.getUsers) {
-        await userStore.fetchAdminsAndEditors()
-      }
 
       try {
         this._isLoading = true
@@ -98,10 +94,6 @@ export const useEntryStore = defineStore('entries', {
 
       try {
         this._isLoading = true
-
-        if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndEditors()
-        }
 
         const userDocRef = doc(db, 'users', userId)
         const querySnapshot = await getDocs(query(collection(db, 'entries'), where('author', '==', userDocRef)))
@@ -130,10 +122,6 @@ export const useEntryStore = defineStore('entries', {
     async fetchPromptsEntries(slugArray) {
       const userStore = useUserStore()
       try {
-        if (!userStore.getUsers) {
-          await userStore.fetchAdminsAndEditors()
-        }
-
         this._isLoading = true
 
         let allEntries = []
