@@ -49,9 +49,6 @@
           <q-item clickable @click="openAdvertiseDialog()">
             <q-item-section>New Advertise</q-item-section>
           </q-item>
-          <q-item v-if="userStore.isAdmin && uniqueUsers?.length" clickable @click="addAllUsersToStatsDb()">
-            <q-item-section>Add new users</q-item-section>
-          </q-item>
         </q-list>
       </q-btn-dropdown>
     </q-toolbar>
@@ -147,7 +144,7 @@
 <script setup>
 import { useUserStore, useEntryStore, useErrorStore } from 'src/stores'
 import { useRouter } from 'vue-router'
-import { ref, onMounted, computed } from 'vue'
+import { ref } from 'vue'
 import NotificationBubble from './NotificationBubble.vue'
 import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
@@ -177,24 +174,6 @@ const errorStore = useErrorStore()
 const openFilter = ref(false)
 const selectedDate = ref('')
 const dataKey = ref(Date.now())
-
-const uniqueUsers = computed(() => {
-  const firebaseUsers = userStore?.getUsers?.map((user) => user.uid) || []
-  const statsUsersIds = userStore.getAllUsers?.usersList.map((user) => user.user_id) || []
-  return firebaseUsers.filter((user) => !statsUsersIds.includes(user))
-})
-
-onMounted(async () => {
-  await userStore.fetchUsers()
-  await userStore.getStatsUsers()
-})
-
-const addAllUsersToStatsDb = () => {
-  const allUsersMap = userStore?.getUsers.map((user) => {
-    return { user_id: user.uid }
-  })
-  userStore.addAllUsers(allUsersMap)
-}
 
 function goBack() {
   router.go(-1)
@@ -268,7 +247,7 @@ defineExpose({
 .filter-title {
   font-weight: bold;
   color: #333;
-  margin: none;
+  margin: 0;
 }
 
 .filter-section {
