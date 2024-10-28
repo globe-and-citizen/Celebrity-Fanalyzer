@@ -4,123 +4,145 @@
       <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'">
           <q-card-section>
-            <div class="row items-baseline no-wrap">
-              <h2 class="q-my-none text-h6">Competition</h2>
-              <span>&nbsp; for &nbsp;</span>
-              <q-input
-                borderless
-                dense
-                :disable="Boolean(id)"
-                readonly
-                :rules="[(val) => val?.length > 0 || 'Date is required']"
-                style="max-width: 5.5rem"
-                v-model="prompt.date"
-                data-test="date"
-              >
-                <template v-slot:append>
-                  <q-icon name="event" class="cursor-pointer" data-test="date-picker">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                      <MonthPicker v-model="prompt.date" mask="YYYY-MM" :options="['2024-09']">
-                        <div class="row items-center justify-end">
-                          <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
-                        </div>
-                      </MonthPicker>
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-              </q-input>
-            </div>
-            <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
-            <q-input
-              counter
-              data-test="input-title"
-              label="Title"
-              maxlength="80"
-              required
-              v-model="prompt.title"
-              :hint="!prompt.title ? '*Title is required' : ''"
-            />
-            <q-field
-              counter
-              label="Description"
-              maxlength="400"
-              v-model="prompt.description"
-              :hint="!prompt.description ? '*Description is required' : ''"
-            >
-              <template v-slot:control>
-                <q-editor
-                  class="q-mt-md"
-                  data-test="input-description"
+            <template v-if="promptStore.isLoading">
+              <div class="skeleton-loading">
+                <q-skeleton type="text" class="skeleton-title" style="height: 32px; width: 200px" />
+                <q-skeleton type="text" class="skeleton-input" style="max-width: 5rem; height: 40px" />
+                <q-skeleton type="text" class="skeleton-select" style="height: 40px; width: 100%" />
+                <q-skeleton type="text" class="skeleton-input" style="height: 40px; width: 100%" />
+                <q-skeleton type="text" class="skeleton-textarea" style="height: 120px; width: 100%" />
+                <div class="row">
+                  <div class="col-8">
+                    <q-skeleton type="text" class="skeleton-file" style="height: 40px; width: 100%" />
+                  </div>
+                  <div class="col-1 flex justify-center items-center">
+                    <q-skeleton type="text" class="skeleton-or" style="height: 40px; width: 40px" />
+                  </div>
+                  <q-skeleton type="text" class="skeleton-button" style="height: 40px; width: 120px" />
+                </div>
+                <q-skeleton type="text" class="skeleton-select" style="height: 40px; width: 100%" />
+                <q-skeleton type="text" class="skeleton-image-preview" style="height: 200px; width: 100%" />
+              </div>
+            </template>
+            <template v-else>
+              <div class="row items-baseline no-wrap">
+                <h2 class="q-my-none text-h6">Competition</h2>
+                <span>&nbsp; for &nbsp;</span>
+                <q-input
+                  borderless
                   dense
-                  flat
-                  min-height="5rem"
-                  ref="editorRef"
-                  style="width: 100%"
-                  :toolbar="[
-                    [
-                      {
-                        icon: $q.iconSet.editor.align,
-                        options: ['left', 'center', 'right', 'justify']
-                      },
-                      {
-                        icon: $q.iconSet.editor.fontSize,
-                        list: 'no-icons',
-                        options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
-                      },
-                      {
-                        icon: $q.iconSet.editor.formatting,
-                        options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
-                      },
-                      ['link']
-                    ],
-                    ['undo', 'redo']
-                  ]"
-                  v-model="prompt.description"
-                  @paste="onPaste($event)"
-                />
-              </template>
-            </q-field>
-            <div class="row">
-              <diV class="col-8">
-                <q-file
-                  accept=".jpg, image/*"
-                  counter
-                  data-test="file-image"
-                  :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
-                  label="Chose File"
-                  :max-total-size="2097152"
-                  :required="!id"
-                  use-chips
-                  v-model="imageModel"
-                  @rejected="onRejected()"
-                  @update:model-value="uploadPhoto()"
+                  :disable="Boolean(id)"
+                  readonly
+                  :rules="[(val) => val?.length > 0 || 'Date is required']"
+                  style="max-width: 5.5rem"
+                  v-model="prompt.date"
+                  data-test="date"
                 >
                   <template v-slot:append>
-                    <q-icon name="image" />
+                    <q-icon name="event" class="cursor-pointer" data-test="date-picker">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <MonthPicker v-model="prompt.date" mask="YYYY-MM" :options="unavailablePromptsMonth">
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                          </div>
+                        </MonthPicker>
+                      </q-popup-proxy>
+                    </q-icon>
                   </template>
-                </q-file>
-              </diV>
-              <div class="col-1 flex justify-center items-center"><p>or</p></div>
-              <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
-            </div>
-            <q-select
-              behavior="menu"
-              counter
-              data-test="select-categories"
-              hide-dropdown-icon
-              :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
-              input-debounce="0"
-              label="Categories"
-              multiple
-              new-value-mode="add-unique"
-              use-input
-              use-chips
-              :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
-              v-model="prompt.categories"
-            />
-            <div class="text-center">
-              <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
-            </div>
+                </q-input>
+              </div>
+              <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
+              <q-input
+                counter
+                data-test="input-title"
+                label="Title"
+                maxlength="80"
+                required
+                v-model="prompt.title"
+                :hint="!prompt.title ? '*Title is required' : ''"
+              />
+              <q-field
+                counter
+                label="Description"
+                maxlength="400"
+                v-model="prompt.description"
+                :hint="!prompt.description ? '*Description is required' : ''"
+              >
+                <template v-slot:control>
+                  <q-editor
+                    class="q-mt-md"
+                    data-test="input-description"
+                    dense
+                    flat
+                    min-height="5rem"
+                    ref="editorRef"
+                    style="width: 100%"
+                    :toolbar="[
+                      [
+                        {
+                          icon: $q.iconSet.editor.align,
+                          options: ['left', 'center', 'right', 'justify']
+                        },
+                        {
+                          icon: $q.iconSet.editor.fontSize,
+                          list: 'no-icons',
+                          options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
+                        },
+                        {
+                          icon: $q.iconSet.editor.formatting,
+                          options: ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript', 'quote', 'unordered', 'ordered']
+                        },
+                        ['link']
+                      ],
+                      ['undo', 'redo']
+                    ]"
+                    v-model="prompt.description"
+                    @paste="onPaste($event)"
+                  />
+                </template>
+              </q-field>
+              <div class="row">
+                <div class="col-8">
+                  <q-file
+                    accept=".jpg, image/*"
+                    counter
+                    data-test="file-image"
+                    :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
+                    label="Choose File"
+                    :max-total-size="2097152"
+                    :required="!id"
+                    use-chips
+                    v-model="imageModel"
+                    @rejected="onRejected()"
+                    @update:model-value="uploadPhoto()"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="image" />
+                    </template>
+                  </q-file>
+                </div>
+                <div class="col-1 flex justify-center items-center"><p>or</p></div>
+                <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+              </div>
+              <q-select
+                behavior="menu"
+                counter
+                data-test="select-categories"
+                hide-dropdown-icon
+                :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
+                input-debounce="0"
+                label="Categories"
+                multiple
+                new-value-mode="add-unique"
+                use-input
+                use-chips
+                :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
+                v-model="prompt.categories"
+              />
+              <div class="text-center">
+                <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
+              </div>
+            </template>
           </q-card-section>
         </q-step>
         <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
@@ -133,25 +155,37 @@
         </q-step>
         <template v-slot:navigation>
           <q-stepper-navigation class="flex justify-end q-gutter-md">
-            <q-btn flat rounded label="Cancel" v-close-popup />
-            <q-btn
-              color="primary"
-              data-test="button-submit"
-              :disable="!prompt.date || !prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image"
-              :label="id ? 'Save Edits' : 'Submit Prompt'"
-              :loading="promptStore.isLoading || storageStore.isLoading"
-              rounded
-              type="submit"
-            />
+            <template v-if="promptStore.isLoading">
+              <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 100px" />
+              <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
+            </template>
+            <template v-else>
+              <q-btn flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" />
+              <q-btn
+                color="primary"
+                data-test="button-submit"
+                :disable="
+                  !prompt.date ||
+                  !prompt.title ||
+                  !prompt.description ||
+                  !prompt.categories?.length ||
+                  !prompt.image ||
+                  promptStore.isLoading
+                "
+                :label="id ? 'Save Edits' : 'Submit Prompt'"
+                :loading="promptStore.isLoading || storageStore.isLoading"
+                rounded
+                type="submit"
+              />
+            </template>
           </q-stepper-navigation>
         </template>
       </q-stepper>
     </q-form>
+    <q-dialog v-model="openCamera" persistent>
+      <CaptureCamera @onCapture="captureCamera" />
+    </q-dialog>
   </q-card>
-  <q-dialog v-model="openCamera" persistent>
-    <CaptureCamera @onCapture="captureCamera" />
-  </q-dialog>
-  <q-dialog></q-dialog>
 </template>
 
 <script setup>
@@ -186,6 +220,7 @@ const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
+const unavailablePromptsMonth = ref([])
 
 watchEffect(() => {
   if (props.id) {
@@ -203,12 +238,33 @@ watchEffect(() => {
   } else {
     prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
-    prompt.date = currentYearMonth()
   }
 })
 
-onMounted(() => {
+onMounted(async () => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  const promptDates = await promptStore.getPromptDates()
+  unavailablePromptsMonth.value = promptDates
+
+  const currentMonth = currentYearMonth()
+
+  if (unavailablePromptsMonth.value.includes(currentMonth)) {
+    const nextMonth = new Date()
+    nextMonth.setMonth(nextMonth.getMonth() + 1)
+
+    while (true) {
+      const formattedNextMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`
+
+      if (!unavailablePromptsMonth.value.includes(formattedNextMonth)) {
+        prompt.date = formattedNextMonth
+        break
+      }
+
+      nextMonth.setMonth(nextMonth.getMonth() + 1)
+    }
+  } else {
+    prompt.date = currentMonth
+  }
 })
 
 function onUpdateMonth() {
