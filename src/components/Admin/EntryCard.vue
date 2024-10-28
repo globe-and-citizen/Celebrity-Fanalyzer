@@ -150,7 +150,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
@@ -246,7 +246,10 @@ async function onSubmit() {
   const hasEntry = entryStore.hasEntry(entry.prompt?.value)
 
   if (!props.id && hasEntry) {
-    $q.notify({ type: 'info', message: 'You have already submitted an entry for this prompt. Please select another prompt' })
+    $q.notify({
+      type: 'info',
+      message: 'You have already submitted an entry for this prompt. Please select another prompt'
+    })
     return
   }
 
@@ -294,6 +297,7 @@ async function onSubmit() {
   }
   emit('hideDialog', entry.slug)
 }
+
 function captureCamera(imageBlob) {
   imageModel.value = imageBlob
   uploadPhoto()
