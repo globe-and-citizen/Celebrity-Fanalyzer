@@ -189,7 +189,7 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { useQuasar, date as qDate } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
@@ -246,24 +246,31 @@ onMounted(async () => {
   const promptDates = await promptStore.getPromptDates()
   unavailablePromptsMonth.value = promptDates
 
-  const currentMonth = currentYearMonth()
+  if (!props.id) {
+    const promptDates = await promptStore.getPromptDates()
+    unavailablePromptsMonth.value = promptDates
+    const currentMonth = currentYearMonth()
 
-  if (unavailablePromptsMonth.value.includes(currentMonth)) {
-    const nextMonth = new Date()
-    nextMonth.setMonth(nextMonth.getMonth() + 1)
+    console.log('Current Month:', currentMonth)
+    console.log('Unavailable Months:', unavailablePromptsMonth.value)
 
-    while (true) {
-      const formattedNextMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`
+    if (unavailablePromptsMonth.value.includes(currentMonth)) {
+      const dateObj = new Date()
+      while (true) {
+        dateObj.setMonth(dateObj.getMonth() + 1)
+        const monthToCheck = qDate.formatDate(dateObj, 'YYYY-MM')
+        console.log('Checking Month:', monthToCheck)
 
-      if (!unavailablePromptsMonth.value.includes(formattedNextMonth)) {
-        prompt.date = formattedNextMonth
-        break
+        if (!unavailablePromptsMonth.value.includes(monthToCheck)) {
+          prompt.date = monthToCheck
+          console.log('Found Available Month:', prompt.date)
+          break
+        }
       }
-
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
+    } else {
+      prompt.date = currentMonth
+      console.log('Setting Prompt Date to Current Month:', prompt.date)
     }
-  } else {
-    prompt.date = currentMonth
   }
 })
 
