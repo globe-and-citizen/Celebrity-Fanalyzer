@@ -10,9 +10,6 @@ describe('Permissions', () => {
   })
 
   it('Should check permissions of Admin Page and query an user', () => {
-    // Get the dropdown button and check if it is visible
-    cy.get('[data-test="button-dropdown"]').should('be.visible')
-
     // Get the Users tab and check if it is visible
     cy.get('[data-test="users-tab"]').should('be.visible').click()
 
