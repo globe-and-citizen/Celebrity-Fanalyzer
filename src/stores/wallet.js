@@ -28,7 +28,7 @@ export const useWalletStore = defineStore('wallet', {
         name: import.meta.env.VITE_INFURA_POLYGON_MAINET_NETWORK_NAME,
         currency: import.meta.env.VITE_POLYGON_MAINET_CURRENCY,
         explorerUrl: import.meta.env.VITE_INFURA_POLYGON_MAINET_SCAN_URL,
-        rpcUrl: 'https://polygon-mainnet.infura.io',
+        rpcUrl: 'https://polygon-rpc.com',
         blockExplorerUrls: ['https://polygonscan.com/'],
 
         nativeCurrency: {
