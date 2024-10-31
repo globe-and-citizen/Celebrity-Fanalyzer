@@ -1,7 +1,7 @@
-import { addDoc, collection, doc, getDoc, getDocs, query, Timestamp, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, query, runTransaction, Timestamp, updateDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { db } from 'src/firebase'
-import { usePromptStore } from 'src/stores'
+import { useEntryStore, usePromptStore, useUserStore } from 'src/stores'
 
 export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
   state: () => ({
@@ -11,7 +11,7 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
     _tab: 'post'
   }),
 
-  persist: true,
+  // persist: true,
 
   getters: {
     getCryptoTransactions: (state) => state._cryptoTransactions,
@@ -22,7 +22,8 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
   actions: {
     async addCryptoTransaction(payload) {
       const promptStore = usePromptStore()
-
+      const entryStore = useEntryStore()
+      const userStore = useUserStore()
       // Clone the payload to avoid mutating the original object
       const { prompt, ...cryptoTransaction } = payload
 
@@ -39,13 +40,26 @@ export const useCryptoTransactionStore = defineStore('cryptoTransactions', {
       try {
         // Update the prompt document
         await updateDoc(doc(db, 'prompts', promptRef.id), { isTreated: true, updated: Timestamp.fromDate(new Date()) })
-        // Add the new transaction document to the 'cryptoTransactions' collection
+        await updateDoc(doc(db, 'entries', payload.entry.id), {
+          isTreated: true,
+          updated: Timestamp.fromDate(new Date())
+        })
         const cryptoTransactionRef = await addDoc(collection(db, 'cryptoTransactions'), cryptoTransaction)
-
         // Fetch updated documents separately after the transaction
         const updatedEntryDoc = await getDoc(doc(db, 'entries', cryptoTransaction.entry.id))
-
         const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt?.id))
+        if (!userStore.isEditorOrAbove) {
+          const updatedEntry = updatedEntryDoc.data()
+          const index = entryStore.getUserRelatedEntries.findIndex((entry) => entry.id === updatedEntry.id)
+          if (index !== -1) {
+            const newEntry = {
+              ...updatedEntry,
+              isTreated: true
+            }
+            entryStore.getUserRelatedEntries.splice(index, 1, newEntry)
+          }
+        }
+
         return {
           _entry: updatedEntryDoc.data(),
           _prompt: updatedPromptDoc.data()

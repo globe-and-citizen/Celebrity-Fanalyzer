@@ -40,13 +40,7 @@
                 </template>
               </q-input>
             </div>
-            <q-select
-              data-test="select-author"
-              :disable="!userStore.isAdmin"
-              label="Author"
-              :options="authorOptions"
-              v-model="prompt.author"
-            />
+            <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
             <q-input
               counter
               data-test="input-title"
@@ -71,6 +65,7 @@
                   flat
                   min-height="5rem"
                   ref="editorRef"
+                  style="width: 100%"
                   :toolbar="[
                     [
                       {
@@ -95,23 +90,29 @@
                 />
               </template>
             </q-field>
-            <q-file
-              accept=".jpg, image/*"
-              counter
-              data-test="file-image"
-              :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
-              label="Image"
-              :max-total-size="2097152"
-              :required="!id"
-              use-chips
-              v-model="imageModel"
-              @rejected="onRejected()"
-              @update:model-value="uploadPhoto()"
-            >
-              <template v-slot:append>
-                <q-icon name="image" />
-              </template>
-            </q-file>
+            <div class="row">
+              <diV class="col-8">
+                <q-file
+                  accept=".jpg, image/*"
+                  counter
+                  data-test="file-image"
+                  :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
+                  label="Chose File"
+                  :max-total-size="2097152"
+                  :required="!id"
+                  use-chips
+                  v-model="imageModel"
+                  @rejected="onRejected()"
+                  @update:model-value="uploadPhoto()"
+                >
+                  <template v-slot:append>
+                    <q-icon name="image" />
+                  </template>
+                </q-file>
+              </diV>
+              <div class="col-1 flex justify-center items-center"><p>or</p></div>
+              <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+            </div>
             <q-select
               behavior="menu"
               counter
@@ -157,6 +158,10 @@
       </q-stepper>
     </q-form>
   </q-card>
+  <q-dialog v-model="openCamera" persistent>
+    <CaptureCamera @onCapture="captureCamera" />
+  </q-dialog>
+  <q-dialog></q-dialog>
 </template>
 
 <script setup>
@@ -166,6 +171,7 @@ import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'sr
 import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
+import CaptureCamera from '../shared/CameraCapture.vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -188,6 +194,7 @@ const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
+const openCamera = ref(false)
 
 watchEffect(() => {
   if (props.id) {
@@ -219,6 +226,9 @@ function onUpdateMonth() {
 
 function uploadPhoto() {
   prompt.image = ''
+  if (!imageModel.value) {
+    return
+  }
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (prompt.image = reader.result)
@@ -286,5 +296,10 @@ async function onSubmit() {
 
 function onRejected() {
   $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 2MB.' })
+}
+
+function captureCamera(imageBlob) {
+  imageModel.value = imageBlob
+  uploadPhoto()
 }
 </script>

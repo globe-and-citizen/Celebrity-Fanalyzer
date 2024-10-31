@@ -21,14 +21,13 @@
 </template>
 <script setup>
 import { useQuasar } from 'quasar'
-import { useErrorStore, useUserStore } from 'src/stores'
+import { useErrorStore } from 'src/stores'
 import { ref, onMounted } from 'vue'
 import { getTransactionDetails } from 'app/src/web3/transfers.js'
 const $q = useQuasar()
 
 const errorStore = useErrorStore()
 
-const userStore = useUserStore()
 const props = defineProps({
   cryptoTransaction: { required: true },
   detail: { required: true }
@@ -68,8 +67,8 @@ async function loadCrytptoTransactionDetail() {
     cryptoTransactionDetail.value.checkLink = props.cryptoTransaction?.explorerUrl + props.cryptoTransaction?.tHash
     cryptoTransactionDetail.value.networkName = props.cryptoTransaction?.networkName
   } catch (error) {
-    errorStore.throwError(error, 'Error updating profile')
-    $q.notify({ type: 'negative', message: ' the entry author should set wallet address ' })
+    await errorStore.throwError(error, 'Error updating profile')
+    $q.notify({ type: 'negative', message: 'The entry author should set wallet address ' })
   }
 }
 </script>

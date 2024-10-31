@@ -82,7 +82,7 @@ async function onSubmit(event) {
         await promptStore
           .updateEscrowId(payload)
           .then(() => {
-            $q.notify({ type: 'info', message: 'fund deposited sucessfully' })
+            $q.notify({ type: 'info', message: 'Fund deposited successfully' })
           })
           .catch((error) => {
             errorStore.throwError(error, 'fund deposit failed on prompt edition')
@@ -92,7 +92,7 @@ async function onSubmit(event) {
             emit('hideDialog')
           })
       } else {
-        $q.notify({ type: 'negative', message: 'prompt should not be null' })
+        $q.notify({ type: 'negative', message: 'Prompt should not be null' })
         emit('hideDialog')
       }
     } else {
@@ -101,7 +101,7 @@ async function onSubmit(event) {
       emit('hideDialog')
     }
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'oups fund deposit failed' })
+    $q.notify({ type: 'negative', message: 'Fund deposit failed' })
     errorStore.throwError(errorMessage, error)
     emit('hideDialog')
     $q.loading.hide()

@@ -16,7 +16,7 @@
 import { useQuasar } from 'quasar'
 import { useErrorStore, useUserStore } from 'src/stores'
 import { ref, onMounted } from 'vue'
-import { initiateSendEther, fetchMaticRate } from 'app/src/web3/transfers.js'
+import { fetchMaticRate } from 'app/src/web3/transfers.js'
 import { releaseFunds } from 'app/src/web3/escrow'
 import { useCryptoTransactionStore } from 'app/src/stores/crypto-transactions'
 const $q = useQuasar()
@@ -78,7 +78,7 @@ async function onSubmit(event) {
           if (_entry && _prompt) {
             emit('forward-update-entry', { _entry, _prompt })
           }
-          $q.notify({ type: 'info', message: 'payment successfull and transaction saved sucessfully' })
+          $q.notify({ type: 'info', message: 'Payment successful and transaction saved successfully' })
           emit('hideDialog')
           $q.loading.hide()
         })
@@ -88,12 +88,12 @@ async function onSubmit(event) {
           $q.loading.hide()
         })
     } else {
-      $q.notify({ type: 'negative', message: 'funds released failed please retry' })
+      $q.notify({ type: 'negative', message: 'Funds released failed please retry' })
       $q.loading.hide()
       emit('hideDialog')
     }
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'oups transaction failed' })
+    $q.notify({ type: 'negative', message: 'Transaction failed' })
     errorStore.throwError(errorMessage, error)
     emit('hideDialog')
     $q.loading.hide()

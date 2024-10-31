@@ -1,7 +1,6 @@
 import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { store } from 'quasar/wrappers'
-import SecureLS from 'secure-ls'
 import { useCommentStore } from './comments'
 import { useEntryStore } from './entries'
 import { useErrorStore } from './errors'
@@ -37,14 +36,10 @@ export default store(() => {
     createPersistedState({
       storage: {
         getItem: (key) => {
-          return new SecureLS({
-            encryptionSecret: import.meta.env.VITE_LS_SECRET_KEY
-          }).get(key)
+          return localStorage.getItem(key)
         },
         setItem: (key, value) => {
-          new SecureLS({
-            encryptionSecret: import.meta.env.VITE_LS_SECRET_KEY
-          }).set(key, value)
+          localStorage.setItem(key, value)
         }
       }
     })

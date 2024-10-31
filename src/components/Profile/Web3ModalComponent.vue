@@ -39,7 +39,7 @@
         <h6 class="q-my-sm">Wallet address change</h6>
       </q-card-section>
       <q-card-section>
-        <span class="q-ml-sm">Are you sure you want to to set this as your new wallet address?</span>
+        <span class="q-ml-sm">Are you sure you want to set this as your new wallet address?</span>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" label="Cancel" v-close-popup />
@@ -52,12 +52,11 @@
 <script setup>
 import { customWeb3modal } from 'src/web3/walletConnect'
 import { computed, ref } from 'vue'
-import { useWalletStore, useUserStore, useErrorStore } from 'app/src/stores'
+import { useWalletStore, useUserStore } from 'app/src/stores'
 import { Notify } from 'quasar'
 
 const walletStore = useWalletStore()
 const userStore = useUserStore()
-const errorStore = useErrorStore()
 const changeWalletAddressDialog = ref({ show: false })
 
 function onChangeWalletAddressDialog() {
@@ -87,7 +86,7 @@ const isConnected = computed(() => {
 async function updateWalletInfo() {
   changeWalletAddressDialog.value.show = false
 
-  customWeb3modal.open()
+  await customWeb3modal.open()
   if (chainId.value) {
     walletStore.setNetworkId(chainId.value)
   }
@@ -110,10 +109,13 @@ async function saveWalletAddress() {
     userStore.getUser.walletAddress = currentWalletAddress
     try {
       await userStore.updateProfile(userStore.getUser)
-      Notify.create({ message: 'Wallet address saved successfully. You will receive payments on this address.', type: 'positive' })
+      Notify.create({
+        message: 'Wallet address saved successfully. You will receive payments on this address.',
+        type: 'positive'
+      })
     } catch (error) {
       console.error(error)
-      await Notify.create({ message: 'Error saving wallet address', type: 'negative' })
+      Notify.create({ message: 'Error saving wallet address', type: 'negative' })
     }
   }
 }
