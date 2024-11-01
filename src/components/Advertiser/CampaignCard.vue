@@ -29,17 +29,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getFormattedLink } from 'src/utils/getFormattedLink'
+import { LocalStorage } from 'quasar'
 
 const router = useRouter()
 const articleRef = ref(null)
 const errorStore = useErrorStore()
 const clicksStore = useClicksStore()
 const impressionsStore = useImpressionsStore()
-
+const impressions = {}
 const props = defineProps({
   advertise: {
     type: Object,
@@ -55,23 +56,31 @@ function goToUrl() {
   router.push('/campaign/' + props.advertise.id)
 }
 
-onMounted(async () => {
+onMounted(() => {
   articleRef.value.focus()
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      const intersecting = entry.isIntersecting
-      if (intersecting && props.advertise?.status === 'Active') {
-        impressionsStore.addImpression('advertises', props.advertise?.id).catch((error) => errorStore.throwError(error))
+      if (entry.isIntersecting && props.advertise?.status === 'Active') {
+        const adId = props.advertise.id
+        // Increment count for each specific adId
+        impressions[adId] = (impressions[adId] || 0) + 1
+        LocalStorage.set(adId, impressions[adId])
       }
     })
   })
-  observer.observe(articleRef.value)
+
+  if (articleRef.value) {
+    observer.observe(articleRef.value)
+  }
+})
+
+onUnmounted(async () => {
+  await impressionsStore.addImpression(impressions)
 })
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,700');
-
 $bg: #eedfcc;
 $text: #777;
 $black: #121212;

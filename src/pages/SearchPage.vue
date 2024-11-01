@@ -29,7 +29,7 @@
           </section>
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
             <ItemCard
-              v-for="prompt in computedPromptsAndAdvertises"
+              v-for="prompt in combinedItems"
               :key="prompt?.id"
               v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
               :item="prompt"
@@ -43,11 +43,11 @@
           <TheEntries :entries="computedEntries" />
         </div>
       </TransitionGroup>
+      <div v-if="promptStore._hasMore" class="row justify-center q-mt-md">
+        <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="70px" :thickness="5" />
+        <q-btn v-else @click="loadMorePrompts" label="Load More" color="primary" />
+      </div>
     </q-page>
-    <div class="row justify-center">
-      <q-spinner v-if="promptStore.isLoading" color="primary" size="70px" :thickness="5" />
-      <div ref="observer" style="height: 1px"></div>
-    </div>
   </q-page-container>
 </template>
 
@@ -69,13 +69,18 @@ const category = ref('All')
 const router = useRouter()
 const search = ref('')
 const searchDate = ref('')
-const observer = ref(null)
 const pageRef = ref(null)
-const skeletons = 10
+const skeletons = 6
 
-onUnmounted(() => {
-  advertiseStore.reset()
-})
+const loadMorePrompts = async () => {
+  if (!promptStore.isLoading && promptStore._hasMore) {
+    try {
+      await promptStore.fetchPrompts(true, 5)
+    } catch (error) {
+      await errorStore.throwError(error, 'Error loading more prompts')
+    }
+  }
+}
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
@@ -83,59 +88,27 @@ const computedCategories = computed(() => {
   const allCategory = { label: 'All', value: 'All' }
   return [allCategory, ...uniqueCategories]
 })
+
 const computedAdvertises = computed(() => {
-  return advertiseStore.getActiveAdvertises
+  return advertiseStore.getActiveAdvertises.filter((ad) => {
+    const adDetails = [ad.title, ad.description]
+    return search.value ? adDetails.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
+  })
 })
+
 const computedPrompts = computed(() => {
   return promptStore.getPrompts
-    ?.filter((item) => {
-      const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
+    ? promptStore.getPrompts
+        .filter((item) => {
+          const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
 
-      const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
-      const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
+          const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
+          const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
 
-      return matchesDate && matchesSearch
-    })
-    .sort((a, b) => new Date(b?.id) - new Date(a?.id))
-})
-
-const computedPromptsAndAdvertises = computed(() => {
-  const map = new Map()
-  const promptsLength = computedPrompts.value?.length ?? 0
-  const advertisesLength = computedAdvertises.value?.length ?? 0
-
-  let i = 0,
-    j = 0
-
-  while (i < promptsLength && j < advertisesLength) {
-    if (Math.random() > 0.5) {
-      if (!map.has(computedPrompts.value[i].id)) {
-        map.set(computedPrompts.value[i].id, computedPrompts.value[i])
-      }
-      i++
-    } else {
-      if (!map.has(computedAdvertises.value[j].id)) {
-        map.set(computedAdvertises.value[j].id, computedAdvertises.value[j])
-      }
-      j++
-    }
-  }
-
-  while (i < promptsLength) {
-    if (!map.has(computedPrompts.value[i].id)) {
-      map.set(computedPrompts.value[i].id, computedPrompts.value[i])
-    }
-    i++
-  }
-
-  while (j < advertisesLength) {
-    if (!map.has(computedAdvertises.value[j].id)) {
-      map.set(computedAdvertises.value[j].id, computedAdvertises.value[j])
-    }
-    j++
-  }
-
-  return Array.from(map.values())
+          return matchesDate && matchesSearch
+        })
+        .sort((a, b) => new Date(b?.id) - new Date(a?.id))
+    : []
 })
 
 const computedEntries = computed(() => {
@@ -144,51 +117,42 @@ const computedEntries = computed(() => {
   )
 })
 
+const combinedItems = computed(() => {
+  const items = [...computedPrompts.value]
+  const adsToAdd = computedAdvertises.value.filter((ad) => !items.some((item) => item.id === ad.id))
+
+  const result = []
+
+  items.forEach((prompt, index) => {
+    result.push(prompt)
+    if ((index + 1) % 5 === 0 && adsToAdd.length > 0) {
+      result.push(adsToAdd.shift())
+    }
+  })
+  result.push(...adsToAdd)
+  return result
+})
+
 function updateSearchDate(date) {
   searchDate.value = date
-}
-const initIntersectionObserver = () => {
-  const options = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 1.0
-  }
-  const observerInstance = new IntersectionObserver(onIntersect, options)
-  observerInstance.observe(observer.value)
-}
-
-function onIntersect(entries) {
-  const [entry] = entries
-  if (entry.isIntersecting) {
-    if (promptStore.hasMore) {
-      promptStore.fetchPrompts(true)
-    }
-  }
-}
-
-function computeFetchPromptCount(height, width) {
-  const basePromptCount = 3
-
-  const heightFactor = height / 400
-  const widthFactor = width / 700
-
-  const computedCount = Math.round(basePromptCount + heightFactor * widthFactor)
-  return computedCount
 }
 
 onMounted(async () => {
   try {
     if (!promptStore.getPrompts?.length) {
-      const height = pageRef.value.$el.clientHeight
-      const width = pageRef.value.$el.clientWidth
-      const promptFetchCount = computeFetchPromptCount(height, width)
-      await promptStore.fetchPrompts(true, promptFetchCount)
+      await promptStore.fetchPrompts()
     }
-    await advertiseStore.getActiveAdvertise()
-    initIntersectionObserver()
+
+    if (!advertiseStore.getActiveAdvertises?.length) {
+      await advertiseStore.getActiveAdvertise()
+    }
   } catch (error) {
-    errorStore.throwError(error)
+    await errorStore.throwError(error, 'Error fetching prompts and ads')
   }
+})
+
+onUnmounted(() => {
+  advertiseStore.reset()
 })
 </script>
 
