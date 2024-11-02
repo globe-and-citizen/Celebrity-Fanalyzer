@@ -2,7 +2,7 @@ name: Vitest Unit Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [ "*" ]
   workflow_dispatch:
 
 jobs:
