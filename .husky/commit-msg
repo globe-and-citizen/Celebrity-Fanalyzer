@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-message="$(cat $1)"
-requiredPattern="^(revert: )?(feat|fix|docs|dx|style|refactor|perf|test|workflow|build|ci|chore|types|wip):#\d+ - .{1,100}$"
+message="$(cat "$1")"
+requiredPattern="^(revert: )?(feat|fix|docs|dx|style|refactor|perf|test|workflow|build|ci|chore|types|wip):#\\d+ - .{1,100}$"
 mergePattern="^Merge (branch|remote-tracking branch)"
 
 # Check if the commit message is a merge message
