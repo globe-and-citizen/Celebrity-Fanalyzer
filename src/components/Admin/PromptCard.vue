@@ -251,25 +251,19 @@ onMounted(async () => {
     unavailablePromptsMonth.value = promptDates
     const currentMonth = currentYearMonth()
 
-    console.log('Current Month:', currentMonth)
-    console.log('Unavailable Months:', unavailablePromptsMonth.value)
-
     if (unavailablePromptsMonth.value.includes(currentMonth)) {
       const dateObj = new Date()
       while (true) {
         dateObj.setMonth(dateObj.getMonth() + 1)
         const monthToCheck = qDate.formatDate(dateObj, 'YYYY-MM')
-        console.log('Checking Month:', monthToCheck)
 
         if (!unavailablePromptsMonth.value.includes(monthToCheck)) {
           prompt.date = monthToCheck
-          console.log('Found Available Month:', prompt.date)
           break
         }
       }
     } else {
       prompt.date = currentMonth
-      console.log('Setting Prompt Date to Current Month:', prompt.date)
     }
   }
 })
