@@ -80,9 +80,10 @@ watch(modelValue, setCurrentDate, { immediate: true })
           <div class="q-date__months-item flex flex-center" v-for="(month, idx) in months" :key="month">
             <q-btn
               :flat="!isActive(idx)"
-              :color="isActive(idx) ? 'primary' : 'default'"
+              :color="isActive(idx) ? 'primary' : isDisabled(idx) ? 'grey' : 'default'"
               :disable="isDisabled(idx)"
-              @click="onSelectMonth(idx)"
+              @click="!isDisabled(idx) && onSelectMonth(idx)"
+              :class="{ 'disabled-month': isDisabled(idx) }"
             >
               {{ month }}
             </q-btn>
@@ -96,3 +97,9 @@ watch(modelValue, setCurrentDate, { immediate: true })
     </div>
   </div>
 </template>
+
+<style>
+.disabled-month {
+  opacity: 0.5;
+}
+</style>

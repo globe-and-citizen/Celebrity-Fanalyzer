@@ -333,19 +333,19 @@ async function onSubmit() {
     prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${prompt.date}`)
   }
 
-  if (props.id) {
-    await promptStore
-      .editPrompt(prompt)
-      .then(() => $q.notify({ type: 'info', message: 'Prompt successfully edited' }))
-      .catch((error) => errorStore.throwError(error, 'Prompt edit failed'))
-  } else {
-    await promptStore
-      .addPrompt(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' }))
-      .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
-  }
+  try {
+    if (props.id) {
+      await promptStore.editPrompt(prompt)
+      $q.notify({ type: 'info', message: 'Prompt successfully edited' })
+    } else {
+      await promptStore.addPrompt(prompt)
+      $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' })
+    }
 
-  emit('hideDialog', prompt.slug)
+    emit('hideDialog', prompt.slug)
+  } catch (error) {
+    errorStore.throwError(error, props.id ? 'Prompt edit failed' : 'Prompt submission failed')
+  }
 }
 
 function onRejected() {
