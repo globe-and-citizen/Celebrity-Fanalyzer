@@ -2,7 +2,7 @@ name: Cypress End-to-End Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: ["*"]
   workflow_dispatch:
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
           # pass GitHub token to detect new build vs re-run build
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: ✅ Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+      - name: Codecov
+        uses: codecov/codecov-action@v4.6.0
         with:
           flags: E2E
