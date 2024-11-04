@@ -11,6 +11,10 @@ const props = defineProps({
   },
   options: {
     type: [Array, Function]
+  },
+  navigationMinYearMonth: {
+    type: String,
+    default: undefined
   }
 })
 
@@ -20,6 +24,14 @@ const modelValue = defineModel({
 
 const currentDate = shallowRef(new Date())
 const currentYear = computed(() => currentDate.value.getFullYear())
+const canTraverseLeft = computed(() => {
+  if (!props.navigationMinYearMonth) {
+    return true
+  }
+
+  const dateObj = date.extractDate(props.navigationMinYearMonth, props.mask)
+  return dateObj.getFullYear() < currentYear.value
+})
 
 function setCurrentDate() {
   if (modelValue.value) {
@@ -72,7 +84,7 @@ watch(modelValue, setCurrentDate, { immediate: true })
       <div class="q-date__content col relative-position">
         <div class="q-date__view q-date__months flex flex-center">
           <div class="row no-wrap full-width justify-between items-center">
-            <q-btn icon="chevron_left" round flat size="sm" dense @click="onClickLeft" />
+            <q-btn icon="chevron_left" round flat size="sm" dense @click="onClickLeft" :disable="!canTraverseLeft" />
             <q-btn flat dense>{{ currentYear }}</q-btn>
             <q-btn icon="chevron_right" round flat size="sm" dense @click="onClickRight" />
           </div>

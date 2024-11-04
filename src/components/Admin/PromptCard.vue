@@ -41,7 +41,12 @@
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer" data-test="date-picker">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                        <MonthPicker v-model="prompt.date" mask="YYYY-MM" :options="unavailablePromptsMonth">
+                        <MonthPicker
+                          v-model="prompt.date"
+                          mask="YYYY-MM"
+                          navigation-min-year-month="2023-11"
+                          :options="unavailablePromptsMonth"
+                        >
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
                           </div>
@@ -243,8 +248,6 @@ watchEffect(() => {
 
 onMounted(async () => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-  const promptDates = await promptStore.getPromptDates()
-  unavailablePromptsMonth.value = promptDates
 
   if (!props.id) {
     const promptDates = await promptStore.getPromptDates()
