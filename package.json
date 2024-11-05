@@ -19,8 +19,8 @@
     "cy:open": "cypress open",
     "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
     "prepare": "husky",
-    "lhci:mobile": "lhci autorun",
-    "lhci:desktop": "lhci autorun --collect.settings.preset=desktop"
+    "lhci:mobile": "lhci autorun --config=.lighthouserc.js --preset=mobile",
+    "lhci:desktop": "lhci autorun --config=.lighthouserc.js --preset=desktop"
   },
   "husky": {
     "hooks": {
