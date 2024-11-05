@@ -1,7 +1,8 @@
 name: Lighthouse Performance Test
 on:
   pull_request:
-      branches: [ "develop", "main" ]
+    branches: [ "develop", "main" ]
+
 jobs:
   lighthouse:
     name: Lighthouse CI
@@ -14,6 +15,15 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Build the application
+        run: npm run build
+
+      - name: Start server
+        run: npm run dev &
+     
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:9200
 
       - name: lighthouse mobile audit
         run: npm run lhci:mobile
