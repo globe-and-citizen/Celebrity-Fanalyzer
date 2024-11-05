@@ -23,7 +23,7 @@ jobs:
         run: npm run dev &
      
       - name: Wait for server to be ready
-        run: npx wait-on http://localhost:9200
+        run: npx wait-on http://10.1.0.8:9200/
 
       - name: lighthouse mobile audit
         run: npm run lhci:mobile
