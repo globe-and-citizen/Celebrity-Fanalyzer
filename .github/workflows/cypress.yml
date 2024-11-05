@@ -22,7 +22,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           start: npm run dev:e2e
-          wait-on: http://localhost:9200/
+          wait-on: http://10.1.0.8:9200/
           wait-on-timeout: 600
           browser: chrome
           headed: true
