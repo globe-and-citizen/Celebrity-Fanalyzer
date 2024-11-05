@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: 'serve -s build -l 9200',
+      startServerCommand: 'serve -s dist/pwa -l 9200',
       url: ['http://localhost:9200/'],
       numberOfRuns: 3
     },
