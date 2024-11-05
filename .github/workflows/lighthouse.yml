@@ -24,8 +24,8 @@ jobs:
         run: npm install -g serve
 
       - name: Start production server
-        run: serve -s build -l 9200 &
-     
+        run: serve -s dist/pwa -l 9200 &
+        
       - name: Wait for server to be ready
         run: npx wait-on http://localhost:9200/
 
