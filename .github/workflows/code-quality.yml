@@ -1,0 +1,33 @@
+name: Code Quality check
+
+on:
+  pull_request:
+    branches: "**"
+    paths:
+      - "src/**"
+  workflow_dispatch:
+jobs:
+  code_quality_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛫 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.10.0
+          cache: "npm"
+          cache-dependency-path: ./src/package-lock.json
+
+      - name: ⚙️ NPM install
+        run: npm install
+        working-directory: ./src
+
+      - name: ⚙️ Run lint
+        run: npm run lint:fix
+        working-directory: ./src
+
+      - name: 🧹Format code
+        run: npm run format
+        working-directory: ./src
