@@ -19,11 +19,14 @@ jobs:
       - name: Build the application
         run: npm run build
 
-      - name: Start server
-        run: npm run dev &
+      - name: Install serve
+        run: npm install -g serve
+
+      - name: Start production server
+        run: serve -s build -l 9200 &
      
       - name: Wait for server to be ready
-        run: npx wait-on http://10.1.0.8:9200/
+        run: npx wait-on http://localhost:9200/
 
       - name: lighthouse mobile audit
         run: npm run lhci:mobile
