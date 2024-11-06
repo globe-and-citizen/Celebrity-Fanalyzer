@@ -16,18 +16,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          until gh api \
-            "repos/${{ github.repository }}/deployments" \
+          # Fetch the most recent deployment data for debugging
+          echo "Fetching deployment data for debugging..."
+          gh api "repos/${{ github.repository }}/deployments" \
+            -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" > deployment_data.json
+          cat deployment_data.json
+
+          # Check if the latest deployment is in the preview environment and active
+          until PREVIEW_URL=$(gh api "repos/${{ github.repository }}/deployments" \
             -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" \
-            -q '.[0] | select(.environment == "preview") | select(.state == "active") | .url'
+            -q '.[0] | select(.environment == "preview") | select(.state == "active") | .url')
           do
             echo "Waiting for deployment..."
             sleep 10
           done
-          PREVIEW_URL=$(gh api \
-            "repos/${{ github.repository }}/deployments" \
-            -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" \
-            -q '.[0] | select(.environment == "preview") | .url')
+
+          # Verify if URL is captured
+          if [[ -z "$PREVIEW_URL" ]]; then
+            echo "Error: Preview URL is empty. Check deployment_data.json for details."
+            exit 1
+          fi
+
           echo "Preview URL: $PREVIEW_URL"
           echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
 
