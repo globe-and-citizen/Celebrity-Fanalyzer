@@ -1,4 +1,3 @@
-# Test for lighthouse performance score
 name: Lighthouse Performance Test
 on:
   pull_request:
@@ -11,30 +10,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Wait for Cloudflare Preview Deployment
+        id: wait_deployment
+        run: |
+          until gh api \
+            "repos/${{ github.repository }}/deployments" \
+            -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" \
+            -q '.[0] | select(.environment == "preview") | select(.state == "active") | .url'
+          do
+            echo "Waiting for deployment..."
+            sleep 10
+          done
+          PREVIEW_URL=$(gh api \
+            "repos/${{ github.repository }}/deployments" \
+            -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" \
+            -q '.[0] | select(.environment == "preview") | .url')
+          echo "Preview URL: $PREVIEW_URL"
+          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build the application
-        run: npm run build
-
-      - name: Install serve
-        run: npm install -g serve
-
-      - name: Start production server
-        run: serve -s dist/pwa -l 9200 &
-        
-      - name: Wait for server to be ready
-        run: npx wait-on http://localhost:9200/
-
       - name: lighthouse mobile audit
-        run: npm run lhci:mobile
+        run: npm run lhci:mobile --target=${{ env.PREVIEW_URL }}
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
       - name: lighthouse desktop audit
-        run: npm run lhci:desktop
+        run: npm run lhci:desktop --target=${{ env.PREVIEW_URL }}
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
