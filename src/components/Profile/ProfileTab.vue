@@ -13,8 +13,11 @@
           </q-img>
         </template>
         <template v-else>
-          <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white" @click="openUploadDialog">
-            {{ user.displayName.charAt(0).toUpperCase() }}
+          <div class="photo" @click="openUploadDialog">
+            <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
+            <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+              {{ user.displayName.charAt(0).toUpperCase() }}
+            </div>
           </div>
         </template>
       </q-avatar>
@@ -66,28 +69,59 @@
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
 
-  <q-dialog v-model="uploadDialog.show">
-    <q-card style="min-width: 300px">
+  <q-dialog v-model="uploadDialog.show" persistent>
+    <q-card style="max-width: 300px; width: 100%">
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Upload Profile Picture</h6>
       </q-card-section>
 
-      <q-card-section style="min-height: 200px">
+      <q-card-section class="q-pa-none" style="text-align: center; padding: 20px">
         <q-img
           v-if="previewImage"
           :src="previewImage"
-          class="q-mb-sm"
+          class="q-mb-md"
           spinner-color="primary"
-          spinner-size="3rem"
-          style="max-width: 100%; max-height: 200px"
+          spinner-size="5rem"
+          style="height: 200px; width: 200px; object-fit: cover; border-radius: 50%; border: 2px solid #ddd"
         />
-        <q-file v-model="newPhoto" accept="image/*" label="Choose a file" @update:model-value="changePhoto()" class="q-mb-md" dense />
+        <div v-else class="q-mb-md">
+          <q-avatar size="11rem" text-color="white" class="q-mt-lg">
+            <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+              {{ user.displayName.charAt(0).toUpperCase() }}
+            </div>
+          </q-avatar>
+        </div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn v-if="newPhoto || previewImage" color="negative" label="Delete" @click="deleteImage" flat />
-        <q-btn color="primary" label="Cancel" v-close-popup />
-        <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" />
+      <q-card-section style="min-height: 100px; padding: 10px">
+        <q-file
+          v-model="newPhoto"
+          accept="image/*"
+          :label="previewImage ? 'Change your profile picture' : 'Choose your profile picture'"
+          max-file-size="5242880"
+          style="height: 5rem"
+          @rejected="onRejected"
+          @update:model-value="changePhoto()"
+          class="q-mb-md q-mb-lg"
+          dense
+          filled
+          bottom-slots
+        ></q-file>
+      </q-card-section>
+
+      <q-card-actions align="center" class="q-gutter-sm">
+        <div style="width: 100%; display: flex; justify-content: space-between">
+          <q-btn color="primary" label="Cancel" v-close-popup style="flex: 1; margin-right: 10px" />
+          <q-btn
+            color="negative"
+            label="Delete"
+            v-close-popup
+            :disable="!Boolean(newPhoto || previewImage)"
+            @click="deleteImage"
+            style="flex: 1; margin-right: 10px"
+          />
+          <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" />
+        </div>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -201,14 +235,6 @@ function openUploadDialog() {
   uploadDialog.value.show = true
 }
 
-function handleFileAdded(file) {
-  if (file && file.size <= 5 * 1024 * 1024) {
-    previewImage.value = URL.createObjectURL(file)
-  } else {
-    Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
-  }
-}
-
 function onDeleteWalletAddressDialog() {
   removeWalletAddressDialog.value.show = true
 }
@@ -216,7 +242,10 @@ function onDeleteWalletAddressDialog() {
 function deleteImage() {
   previewImage.value = null
   newPhoto.value = null
-  user.value.photoURL = ''
+  if (userStore.getUser?.photoURL?.length) {
+    user.value.photoURL = ''
+    save()
+  }
 }
 
 function onRemoveWalletAddress() {
