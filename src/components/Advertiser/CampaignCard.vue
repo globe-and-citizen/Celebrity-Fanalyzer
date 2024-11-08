@@ -33,7 +33,6 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getFormattedLink } from 'src/utils/getFormattedLink'
-import { LocalStorage } from 'quasar'
 
 const router = useRouter()
 const articleRef = ref(null)
@@ -65,7 +64,6 @@ onMounted(() => {
         const adId = props.advertise.id
         // Increment count for each specific adId
         impressions[adId] = (impressions[adId] || 0) + 1
-        LocalStorage.set(adId, impressions[adId])
       }
     })
   })

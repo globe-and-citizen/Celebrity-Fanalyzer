@@ -16,7 +16,6 @@ import { useUserStore } from 'src/stores'
 import { db } from 'src/firebase'
 import { monthDayYear } from 'src/utils/date'
 import firebase from 'firebase/compat'
-import { LocalStorage } from 'quasar'
 
 export const useImpressionsStore = defineStore('impressions', {
   state: () => ({
@@ -50,8 +49,6 @@ export const useImpressionsStore = defineStore('impressions', {
             { views: firebase.firestore.FieldValue.arrayUnion(firebase.firestore.Timestamp.fromDate(new Date())) },
             { merge: true }
           )
-
-          LocalStorage.remove(adId)
         }
 
         batch
