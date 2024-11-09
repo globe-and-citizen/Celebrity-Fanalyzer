@@ -14,26 +14,20 @@ jobs:
       - name: Wait for Cloudflare Preview Deployment
         id: wait_deployment
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          # Fetch the most recent deployment data for debugging
-          echo "Fetching deployment data for debugging..."
-          gh api "repos/${{ github.repository }}/deployments" \
-            -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" > deployment_data.json
-          cat deployment_data.json
-
-          # Check if the latest deployment is in the preview environment and active
-          until PREVIEW_URL=$(gh api "repos/${{ github.repository }}/deployments" \
-            -H "Accept: application/vnd.github.ant-man-preview+json,application/vnd.github.flash-preview+json" \
-            -q '.[0] | select(.environment == "preview") | select(.state == "active") | .url')
+          # Check the latest Cloudflare deployment for a preview URL
+          echo "Fetching latest deployment for Cloudflare environment preview..."
+          until PREVIEW_URL=$(npx wrangler deployments --project-name celebrityfanalyzer \
+            | jq -r '.[0] | select(.env == "preview") | .url')
           do
-            echo "Waiting for deployment..."
+            echo "Waiting for Cloudflare deployment to be active..."
             sleep 10
           done
 
           # Verify if URL is captured
           if [[ -z "$PREVIEW_URL" ]]; then
-            echo "Error: Preview URL is empty. Check deployment_data.json for details."
+            echo "Error: Preview URL is empty. Deployment may have failed."
             exit 1
           fi
 
@@ -43,12 +37,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: lighthouse mobile audit
+      - name: Lighthouse mobile audit
         run: npm run lhci:mobile --target=${{ env.PREVIEW_URL }}
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
-      - name: lighthouse desktop audit
+      - name: Lighthouse desktop audit
         run: npm run lhci:desktop --target=${{ env.PREVIEW_URL }}
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
