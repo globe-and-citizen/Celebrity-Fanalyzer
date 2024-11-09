@@ -14,12 +14,13 @@ jobs:
       - name: Wait for Cloudflare Preview Deployment
         id: wait_deployment
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check the latest Cloudflare deployment for a preview URL
+          # Fetch the latest deployment from GitHub for the Cloudflare preview environment
           echo "Fetching latest deployment for Cloudflare environment preview..."
-          until PREVIEW_URL=$(npx wrangler deployments --project-name celebrityfanalyzer \
-            | jq -r '.[0] | select(.env == "preview") | .url')
+          until PREVIEW_URL=$(gh api "repos/${{ github.repository }}/deployments" \
+            -H "Accept: application/vnd.github.flash-preview+json,application/vnd.github.ant-man-preview+json" \
+            -q 'map(select(.environment == "preview") | select(.state == "active")) | .[0].statuses[0].target_url')
           do
             echo "Waiting for Cloudflare deployment to be active..."
             sleep 10
@@ -28,6 +29,7 @@ jobs:
           # Verify if URL is captured
           if [[ -z "$PREVIEW_URL" ]]; then
             echo "Error: Preview URL is empty. Deployment may have failed."
+            echo gh api "repos/${{ github.repository }}/deployments"
             exit 1
           fi
 
