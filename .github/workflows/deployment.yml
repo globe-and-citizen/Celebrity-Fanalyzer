@@ -37,10 +37,10 @@ jobs:
       - name: Run Lighthouse CI (Mobile)
         env:
             LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-        run: npx lighthouse-ci --url=${{ steps.deploy.outputs.deployment-url }} --preset=mobile
+        run: npx lighthouse-ci ${{ steps.deploy.outputs.deployment-url }} --preset=mobile
      
       - name: Run Lighthouse CI (Desktop)
         env:
             LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-        run: npx lighthouse-ci --url=${{ steps.deploy.outputs.deployment-url }} --preset=desktop
+        run: npx lighthouse-ci ${{ steps.deploy.outputs.deployment-url }} --preset=desktop
 
