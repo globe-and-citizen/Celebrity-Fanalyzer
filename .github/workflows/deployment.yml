@@ -27,3 +27,9 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/pwa --project-name=celebrityfanalyzer
+
+      - name: Run Lighthouse on urls and validate with lighthouserc
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: ${{ steps.deploy.outputs.deployment-url }}
+          configPath: './.github/workflows/lighthouserc.json'
