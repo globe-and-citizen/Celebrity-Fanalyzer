@@ -31,5 +31,23 @@ jobs:
         env:
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: echo $DEPLOYMENT_URL
-
+  
+  lighthouse:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+  
+        - name: Install dependencies
+          run: npm install
+  
+        - name: Lighthouse mobile audit
+          run: npm run lhci:mobile --target=${{ env.DEPLOYMENT_URL }}
+          env:
+            LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+  
+        - name: Lighthouse desktop audit
+          run: npm run lhci:desktop --target=${{ env.DEPLOYMENT_URL }}
+          env:
+            LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
