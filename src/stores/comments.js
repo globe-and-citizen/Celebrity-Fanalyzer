@@ -281,7 +281,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, documentId, 'comments', reply.id), reply).finally(() => (this._isLoading = false))
-      await this.fetchComments(collectionName, documentId)
+      await this.fetchComments(collectionName, documentId, false)
     },
 
     async removeCommentFromFirestore(collectionName, documentId, commentId) {
