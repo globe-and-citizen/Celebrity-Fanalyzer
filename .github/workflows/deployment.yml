@@ -28,12 +28,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/pwa --project-name=celebrityfanalyzer
 
-      - name: Print all deploy step outputs
-        run: echo "${{ steps.deploy }}"
-        
-      - name: Debug Print wrangler output
-        run: pages deploy dist/pwa --project-name=celebrityfanalyzer --dry-run
-
       - name: Print deployment outputs
         run: echo "Deployment Alias URL:${{ steps.deploy.outputs }}"
         
