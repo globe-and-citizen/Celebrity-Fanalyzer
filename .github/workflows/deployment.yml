@@ -20,29 +20,22 @@ jobs:
       - name: Build Quasar app
         run: npm run build
 
-      - name: Deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist/pwa --project-name=celebrityfanalyzer
-          
-      - name: Print deployment URL
-        run: echo "Deployment URL:${{ steps.deploy.outputs.deployment-url }}"
+      - name: Deploy to Cloudflare
+        id: deploy
+        run: |
+          ALIAS_URL=$(npx wrangler pages deploy dist/pwa --project-name=celebrityfanalyzer | grep 'Deployment alias URL' | awk '{print $5}')
+          echo "ALIAS_URL=${ALIAS_URL}" >> $GITHUB_ENV
 
-      - name: Print deployment alias URL
-        run: echo "Deployment Alias URL:${{ steps.deploy.outputs.pages-deployment-alias-url }}"
-  
-  lighthouse:
-      runs-on: ubuntu-latest
-      needs: deploy
-      steps:
-        - name: Run Lighthouse CI (Mobile)
-          env:
-            LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-          run: npx lighthouse-ci --url=${{ steps.deploy.outputs.deployment-url }} --preset=mobile
-        - name: Run Lighthouse CI (Desktop)
-          env:
-            LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-          run: npx lighthouse-ci --url=${{ steps.deploy.outputs.deployment-url }} --preset=desktop
+      - name: Run Lighthouse CI (Mobile)
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        run: npx lighthouse-ci --url=${{ env.ALIAS_URL }} --preset=mobile
+
+      - name: Run Lighthouse CI (Desktop)
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        run: npx lighthouse-ci --url=${{ env.ALIAS_URL }} --preset=desktop
+
+      - name: Print Deployment Alias URL
+        run: echo "Deployment Alias URL:${{ env.ALIAS_URL }}"
 
