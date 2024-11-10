@@ -10,3 +10,4 @@ jobs:
         with:
           urls: ${{ steps.deploy.outputs.deployment-url }}
           configPath: './.github/workflows/lighthouserc.json'
+          runs: 3
