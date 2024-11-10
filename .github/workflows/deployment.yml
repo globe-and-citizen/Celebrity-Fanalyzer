@@ -21,28 +21,30 @@ jobs:
         run: npm run build
 
       - name: Deploy
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/pwa --project-name=celebrityfanalyzer
-      
-      - name: Debug Print wrangler output
-        run: wrangler pages deploy dist/pwa --project-name=celebrityfanalyzer --dry-run
-
-      - name: Print deployment URL
-        run: echo "Deployment URL:${{ steps.deploy.outputs }}"
 
       - name: Print all deploy step outputs
         run: echo "${{ steps.deploy }}"
+        
+      - name: Debug Print wrangler output
+        run: pages deploy dist/pwa --project-name=celebrityfanalyzer --dry-run
 
-      - name: Print deployment alias URL
+      - name: Print deployment outputs
         run: echo "Deployment Alias URL:${{ steps.deploy.outputs }}"
+        
+      - name: Print deployment URL
+        run: echo "Deployment Alias URL:${{ steps.deploy.outputs.deployment-url }}"
 
       - name: Run Lighthouse CI (Mobile)
         env:
             LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
         run: npx lighthouse-ci --url=${{ steps.deploy.outputs.deployment-url }} --preset=mobile
+     
       - name: Run Lighthouse CI (Desktop)
         env:
             LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
