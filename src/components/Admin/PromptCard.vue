@@ -213,7 +213,6 @@ const storageStore = useStorageStore()
 const userStore = useUserStore()
 
 const authorOptions = reactive([])
-const dataKey = ref(Date.now())
 const prompt = reactive({
   description: '',
   image: '',
@@ -270,10 +269,6 @@ onMounted(async () => {
     }
   }
 })
-
-function onUpdateMonth() {
-  dataKey.value = Date.now()
-}
 
 function uploadPhoto() {
   prompt.image = ''
