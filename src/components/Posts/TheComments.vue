@@ -208,7 +208,7 @@ onUnmounted(() => {
 })
 
 commentStore.$subscribe(() => {
-  commentStore.haveToReply ? inputField.value.focus() : inputField.value?.blur()
+  commentStore.haveToReply ? inputField.value?.focus() : inputField.value?.blur()
 })
 
 async function addReply() {
