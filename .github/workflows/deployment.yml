@@ -28,6 +28,9 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/pwa --project-name=celebrityfanalyzer
 
+      - name: Wait for 3 minutes
+        run: sleep 180  # Sleep for 180 seconds (3 minutes)
+        
       - name: Run Lighthouse on urls and validate with lighthouserc
         uses: treosh/lighthouse-ci-action@v12
         with:
