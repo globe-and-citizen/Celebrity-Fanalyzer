@@ -243,7 +243,10 @@ export const usePromptStore = defineStore('prompts', {
 
     async getPromptDates() {
       const set = new Set()
-      await this.fetchPrompts()
+      if (this.hasMore) {
+        await this.fetchPrompts()
+        this._hasMore = false
+      }
       this.getPrompts?.map((prompt) => {
         set.add(prompt?.id)
       })
