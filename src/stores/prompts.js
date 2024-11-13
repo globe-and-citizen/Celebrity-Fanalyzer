@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   limit,
@@ -60,6 +61,7 @@ export const usePromptStore = defineStore('prompts', {
     promptDialog: false,
     entryDialog: {},
     loadCount: 6,
+    _totalPrompts: undefined,
     _lastVisible: null,
     _hasMore: true
   }),
@@ -116,7 +118,7 @@ export const usePromptStore = defineStore('prompts', {
           this._hasMore = false
         }
 
-        this._prompts = loadMore ? [...this._prompts, ...newPrompts] : newPrompts
+        this._prompts = loadMore ? [...(this._prompts || []), ...newPrompts] : newPrompts
 
         return newPrompts
       } catch (error) {
@@ -125,6 +127,17 @@ export const usePromptStore = defineStore('prompts', {
         this._isLoading = false
       }
     },
+
+    async getTotalPromptsCount() {
+      try {
+        const totalCountFunc = await getCountFromServer(collection(db, 'prompts'))
+        this._totalPrompts = totalCountFunc.data().count
+        return this._totalPrompts
+      } catch (e) {
+        console.error('Failed fetching errors count', e)
+      }
+    },
+
     async fetchActivePrompts() {
       const userStore = useUserStore()
       this._isLoading = true

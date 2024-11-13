@@ -24,7 +24,7 @@
       </q-scroll-area>
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <section class="card-items-wrapper" v-if="!promptStore.getPrompts && promptStore.isLoading">
+          <section class="card-items-wrapper" v-if="!promptStore.getPrompts?.length && promptStore.isLoading">
             <ArticleSkeleton v-for="n in skeletons" :key="n" />
           </section>
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
@@ -57,7 +57,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, watch, onUnmounted, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -133,11 +133,26 @@ const combinedItems = computed(() => {
   return result
 })
 
-function updateSearchDate(date) {
-  searchDate.value = date
+const updateSearchDate = (value) => {
+  searchDate.value = value
 }
 
+watch(search, async (newSearch) => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    if (newSearch.trim()) {
+      await promptStore.fetchPrompts(true)
+    }
+  }
+})
+
+watch(searchDate, async () => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    await promptStore.fetchPrompts(true)
+  }
+})
+
 onMounted(async () => {
+  await promptStore.getTotalPromptsCount()
   try {
     if (!promptStore.getPrompts?.length) {
       await promptStore.fetchPrompts()

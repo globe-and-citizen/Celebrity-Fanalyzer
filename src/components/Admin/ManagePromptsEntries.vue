@@ -161,13 +161,14 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
-import { computed, onBeforeUnmount, onMounted, watchEffect, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watchEffect, ref, watch } from 'vue'
 import FundDepositCard from './FundDepositCard.vue'
 
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
+import TheHeader from 'components/shared/TheHeader.vue'
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -349,6 +350,14 @@ async function onProceedDepositFundDialog(props) {
 function getOrigin(slug) {
   return window.origin + slug
 }
+
+watch(filter, async (newSearch) => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    if (newSearch.trim()) {
+      await promptStore.fetchPrompts(true)
+    }
+  }
+})
 </script>
 <style scoped>
 .custom-table {
