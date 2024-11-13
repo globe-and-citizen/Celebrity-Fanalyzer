@@ -32,10 +32,6 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-prompt"]').should('be.visible').click()
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
-    cy.get('.q-date__view > .no-wrap > :nth-child(1) > .q-btn > .q-btn__content').click()
-    cy.get('.q-date__view > :nth-child(1)> :nth-child(2) >:nth-child(1) ').click()
-    cy.contains('2022').click({ force: true })
-    cy.get('.q-date__view > :nth-child(2)').click()
     cy.get('[data-test="close"]').click()
 
     // Get the title input and type 'Hello World!' into it
