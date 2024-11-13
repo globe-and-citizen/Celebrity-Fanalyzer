@@ -5,6 +5,9 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
+  let name = 'Hello World!' + Math.random()
+  let date = ''
+  let visit = '/'
   beforeEach(() => {
     cy.viewport('macbook-16')
     // Visits the profile page
@@ -33,9 +36,15 @@ describe('Admin Prompt & Entry', () => {
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
     cy.get('[data-test="close"]').click()
+    cy.get('input[data-test="date"]')
+      .invoke('val')
+      .then((value) => {
+        date = value
+        visit += value.replace('-', '/')
+      })
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('Hello World!')
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample prompt' into it
     cy.get('[data-test="input-description"]').type('This is a sample prompt')
@@ -62,10 +71,10 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-entry"]').should('be.visible').click()
 
     // Get the prompt select and choose the "Hello World!" option
-    cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
+    cy.get('[data-test="select-prompt"]').wait(4000).select(name)
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('Hello World!')
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample entry' into it
     cy.get('[data-test="input-description"]').type('This is a sample entry')
@@ -81,8 +90,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should Navigate  in prompt and entry', () => {
-    cy.visit('/2022/01')
-    cy.contains('Hello World!')
+    cy.visit(visit)
+    cy.contains(name)
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
@@ -93,8 +102,8 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should display the prompt and interact', () => {
     // cy.visit('/hello-world-')
-    cy.visit('/2022/01')
-    cy.contains('Hello World!')
+    cy.visit(visit)
+    cy.contains(name)
     cy.scrollTo('bottom')
     cy.get('[data-test="entries"]')
     cy.scrollTo('top')
@@ -157,7 +166,7 @@ describe('Admin Prompt & Entry', () => {
     // Get the second button (Delete Entry) and click it
     cy.get('[data-test="input-search"]').type('tester')
     // Get the expand button and click it
-    cy.get('[data-test="2022-01"] > .q-table--col-auto-width > [data-test="button-expand"]').click()
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
@@ -182,7 +191,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
     // Get the delete button and click it
-    cy.get('[data-test="2022-01"] > .text-right > [data-test="button-delete-prompt"]').click()
+    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-delete-prompt"]`).click()
 
     // Get the confirm button and click it
     cy.get('[data-test="confirm-delete-prompt"]').click().wait(2000)
