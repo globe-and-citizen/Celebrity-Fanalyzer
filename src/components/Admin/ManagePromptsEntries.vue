@@ -21,7 +21,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr class="new" :data-test="props.key" :props="props">
+      <q-tr class="new" data-test="item-card" :props="props">
         <q-td auto-width>
           <q-btn
             dense
@@ -122,7 +122,14 @@
   />
   <div class="row justify-center q-mr-md float-right">
     <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
-    <q-btn v-else @click="loadMorePrompts" label="Load More" color="primary" :disable="!promptStore._hasMore || promptStore.isLoading" />
+    <q-btn
+      v-else
+      @click="loadMorePrompts"
+      label="Load More"
+      color="primary"
+      :disable="!promptStore._hasMore || promptStore.isLoading"
+      data-test="load-more-btn"
+    />
   </div>
   <q-dialog v-model="deleteDialog.show">
     <q-card>

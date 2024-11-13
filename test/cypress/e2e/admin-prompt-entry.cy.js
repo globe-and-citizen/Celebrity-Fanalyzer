@@ -193,4 +193,11 @@ describe('Admin Prompt & Entry', () => {
     // Wait the notification
     cy.get('.q-notification__message').contains('Prompt successfully deleted')
   })
+
+  it('Should load more prompt when clicking "Load More" button', () => {
+    cy.visit('/search')
+    cy.get('[data-test="item-card"]', { timeout: 10000 }).should('have.length', 6)
+    cy.get('[data-test="load-more-btn"]').first().click({ force: true })
+    cy.get('[data-test="item-card"]').should('have.length.greaterThan', 6)
+  })
 })

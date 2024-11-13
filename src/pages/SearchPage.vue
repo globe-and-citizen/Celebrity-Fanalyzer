@@ -29,6 +29,7 @@
           </section>
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
             <ItemCard
+              data-test="item-card"
               v-for="prompt in combinedItems"
               :key="prompt?.id"
               v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
@@ -45,7 +46,7 @@
       </TransitionGroup>
       <div v-if="promptStore._hasMore" class="row justify-center q-mt-md">
         <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="70px" :thickness="5" />
-        <q-btn v-else @click="loadMorePrompts" label="Load More" color="primary" />
+        <q-btn v-else @click="loadMorePrompts" label="Load More" data-test="load-more-btn" color="primary" />
       </div>
     </q-page>
   </q-page-container>
@@ -119,7 +120,7 @@ const computedEntries = computed(() => {
 
 const combinedItems = computed(() => {
   const items = [...computedPrompts.value]
-  const adsToAdd = computedAdvertises.value.filter((ad) => !items.some((item) => item.id === ad.id))
+  const adsToAdd = computedAdvertises?.value.filter((ad) => !items.some((item) => item.id === ad.id))
 
   const result = []
 
