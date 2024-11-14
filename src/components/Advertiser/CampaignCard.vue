@@ -55,15 +55,42 @@ function goToUrl() {
   router.push('/campaign/' + props.advertise.id)
 }
 
-onMounted(() => {
+const loadStoredImpressions = () => {
+  const storedImpressions = localStorage.getItem('impressions')
+  return storedImpressions ? JSON.parse(storedImpressions) : {}
+}
+
+const saveImpressionsToStorage = () => {
+  localStorage.setItem('impressions', JSON.stringify(impressions))
+}
+
+const sendImpressions = async () => {
+  const storedImpressions = loadStoredImpressions()
+  if (Object.keys(storedImpressions).length > 0) {
+    const res = await impressionsStore.addImpression(storedImpressions)
+    if (res) {
+      Object.keys(impressions).forEach((key) => delete impressions[key])
+      localStorage.removeItem('impressions')
+    }
+  }
+}
+
+Object.assign(impressions, loadStoredImpressions())
+
+onMounted(async () => {
+  const storedImpressions = loadStoredImpressions()
+
   articleRef.value.focus()
+  if (Object.keys(storedImpressions).length > 0) {
+    await sendImpressions()
+  }
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting && props.advertise?.status === 'Active') {
         const adId = props.advertise.id
-        // Increment count for each specific adId
         impressions[adId] = (impressions[adId] || 0) + 1
+        saveImpressionsToStorage()
       }
     })
   })
@@ -71,10 +98,19 @@ onMounted(() => {
   if (articleRef.value) {
     observer.observe(articleRef.value)
   }
+
+  window.addEventListener('beforeunload', sendImpressions)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      sendImpressions()
+    }
+  })
 })
 
 onUnmounted(async () => {
-  await impressionsStore.addImpression(impressions)
+  await sendImpressions()
+  window.removeEventListener('beforeunload', sendImpressions)
+  document.removeEventListener('visibilitychange', sendImpressions)
 })
 </script>
 

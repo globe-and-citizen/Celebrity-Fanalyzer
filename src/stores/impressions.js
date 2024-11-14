@@ -33,7 +33,6 @@ export const useImpressionsStore = defineStore('impressions', {
       this._isLoading = true
       const batch = writeBatch(db)
       const formattedDate = monthDayYear().replaceAll('/', '-')
-
       try {
         const userStore = useUserStore()
         const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash()
@@ -51,16 +50,11 @@ export const useImpressionsStore = defineStore('impressions', {
           )
         }
 
-        batch
-          .commit()
-          .then(() => {
-            console.log('Batch update completed successfully.')
-          })
-          .catch((error) => {
-            console.error('Error committing batch update:', error)
-          })
+        await batch.commit()
+        return 'Batch update completed'
       } catch (e) {
         console.error('Error during batch update:', e)
+        return null
       } finally {
         this._isLoading = false
       }
