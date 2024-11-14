@@ -5,6 +5,9 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
+  let name = 'Hello World!' + Math.random()
+  let date = ''
+  let visit = '/'
   beforeEach(() => {
     cy.viewport('macbook-16')
     // Visits the profile page
@@ -32,14 +35,16 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-prompt"]').should('be.visible').click()
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
-    cy.get('.q-date__view > .no-wrap > :nth-child(1) > .q-btn > .q-btn__content').click()
-    cy.get('.q-date__view > :nth-child(1)> :nth-child(2) >:nth-child(1) ').click()
-    cy.contains('2022').click({ force: true })
-    cy.get('.q-date__view > :nth-child(2)').click()
     cy.get('[data-test="close"]').click()
+    cy.get('input[data-test="date"]')
+      .invoke('val')
+      .then((value) => {
+        date = value
+        visit += value.replace('-', '/')
+      })
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('Hello World!')
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample prompt' into it
     cy.get('[data-test="input-description"]').type('This is a sample prompt')
@@ -66,10 +71,10 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-entry"]').should('be.visible').click()
 
     // Get the prompt select and choose the "Hello World!" option
-    cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
+    cy.get('[data-test="select-prompt"]').wait(4000).select(name)
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('Hello World!')
+    cy.get('[data-test="input-title"]').type('entry ' + name)
 
     // Get the description input and type 'This is a sample entry' into it
     cy.get('[data-test="input-description"]').type('This is a sample entry')
@@ -85,8 +90,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should Navigate  in prompt and entry', () => {
-    cy.visit('/2022/01')
-    cy.contains('Hello World!')
+    cy.visit(visit)
+    cy.contains(name)
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
@@ -97,8 +102,8 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should display the prompt and interact', () => {
     // cy.visit('/hello-world-')
-    cy.visit('/2022/01')
-    cy.contains('Hello World!')
+    cy.visit(visit)
+    cy.contains(name)
     cy.scrollTo('bottom')
     cy.get('[data-test="entries"]')
     cy.scrollTo('top')
@@ -157,11 +162,63 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
   })
 
+  it('Should edit the prompt', () => {
+    // Get the second button (Delete Prompt) and click it
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Get the edit button and click it
+    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-edit"]`).click()
+
+    cy.get('[data-test="input-title"]').type(name)
+
+    // Get the description input and type 'This is a sample prompt' into it
+    cy.get('[data-test="input-description"]').type('This is a sample prompt')
+
+    // Get the file image input and upload the Cypress logo
+    cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+
+    // Get the categories select and choose add 'Cypress' and 'Test' categories
+    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
+
+    // Get the submit button and click it
+    cy.get('[data-test="button-submit"] > .q-btn__content').click()
+    // cy.get('[data-test="button-submit"]').click()
+
+    //Check the Prompt is edited successfully
+    cy.get('.q-notification__message').contains('Prompt successfully edited')
+  })
+
+  it('Should edit a entry', () => {
+    // cy.visit(visit)
+    // cy.contains(name)
+    // cy.scrollTo('bottom')
+    // cy.get('entry ' + name).click()
+
+    // cy.scrollTo('bottom')
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
+    cy.get('data-test="button-edit-entry"').click()
+
+    // Get the edit button and click it
+
+    // Get the description input and type 'This is a sample entry' into it
+    cy.get('[data-test="input-description"]').type('This is a Updated entry')
+
+    // Get the file image input and upload the Cypress logo
+    // cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+
+    // Get the submit button and click it
+    cy.get('[data-test="button-submit"]').click({ force: true })
+
+    // Check the Entry is edited successfully
+    cy.get('.q-notification__message').contains('Entry successfully edited')
+  })
+
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
     cy.get('[data-test="input-search"]').type('tester')
     // Get the expand button and click it
-    cy.get('[data-test="2022-01"] > .q-table--col-auto-width > [data-test="button-expand"]').click()
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
@@ -186,7 +243,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
     // Get the delete button and click it
-    cy.get('[data-test="2022-01"] > .text-right > [data-test="button-delete-prompt"]').click()
+    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-delete-prompt"]`).click()
 
     // Get the confirm button and click it
     cy.get('[data-test="confirm-delete-prompt"]').click().wait(2000)

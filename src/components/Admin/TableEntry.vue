@@ -98,6 +98,7 @@
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="warning"
+                  data-test="button-edit-entry"
                   flat
                   icon="edit"
                   round
