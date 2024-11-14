@@ -21,7 +21,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr class="new" data-test="item-card" :props="props">
+      <q-tr class="new" :data-test="props.key" :props="props" id="item-card">
         <q-td auto-width>
           <q-btn
             dense
