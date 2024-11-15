@@ -5,7 +5,7 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
-  let name = 'Hello World!' + Math.random()
+  const name = 'Hello World!' + Math.random()
   let date = ''
   let visit = '/'
   beforeEach(() => {
@@ -169,16 +169,18 @@ describe('Admin Prompt & Entry', () => {
     // Get the edit button and click it
     cy.get(`[data-test="${date}"] > .text-right > [data-test="button-edit"]`).click()
 
-    cy.get('[data-test="input-title"]').type(name)
+    cy.get('[data-test="input-title"]').clear()
+    cy.get('[data-test="input-title"]').type(name + 'Updated')
 
     // Get the description input and type 'This is a sample prompt' into it
-    cy.get('[data-test="input-description"]').type('This is a sample prompt')
+    cy.get('[data-test="input-description"]').clear()
+    cy.get('[data-test="input-description"]').type('This is a Updated sample prompt')
 
     // Get the file image input and upload the Cypress logo
     cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
 
     // Get the categories select and choose add 'Cypress' and 'Test' categories
-    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
+    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Update{enter}')
 
     // Get the submit button and click it
     cy.get('[data-test="button-submit"] > .q-btn__content').click()
@@ -197,18 +199,22 @@ describe('Admin Prompt & Entry', () => {
     // cy.scrollTo('bottom')
     cy.get('[data-test="input-search"]').type('Cypress Tester')
     cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
-    cy.get('data-test="button-edit-entry"').click()
 
     // Get the edit button and click it
+    cy.get('[data-test="button-edit-entry"]').eq(0).click({ force: true })
+    // Get the title input and type 'Update entry' into it
+    cy.get('[data-test="input-title"]').clear()
+    cy.get('[data-test="input-title"]').type('Update entry')
 
-    // Get the description input and type 'This is a sample entry' into it
+    // Get the description input and type 'This is a Updated entry' into it
+    cy.get('[data-test="input-description"]').clear()
     cy.get('[data-test="input-description"]').type('This is a Updated entry')
-
+    cy.wait(2000)
     // Get the file image input and upload the Cypress logo
-    // cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+    cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
 
     // Get the submit button and click it
-    cy.get('[data-test="button-submit"]').click({ force: true })
+    cy.get('[data-test="button-submit"]').eq(0).click({ force: true })
 
     // Check the Entry is edited successfully
     cy.get('.q-notification__message').contains('Entry successfully edited')
