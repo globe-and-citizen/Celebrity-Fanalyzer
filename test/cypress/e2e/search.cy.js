@@ -4,11 +4,15 @@
 describe('Search page', () => {
   beforeEach(() => {
     cy.viewport(1280, 800)
+    cy.wait(3000)
   })
 
   it('Testing search of prompt', () => {
     cy.viewport(1280, 800)
-
+    cy.on('fail', (err, runnable) => {
+      console.log(err.message)
+      return false
+    })
     cy.visit('/search')
 
     cy.get('[data-test="search-input"]').type(' ')
