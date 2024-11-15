@@ -41,6 +41,7 @@ describe('Commenting', async () => {
     //   // Wait all comments to be loaded
     //   cy.getByData('comment-loaded')
     // expand the add reply form
+    cy.wait(3000)
     cy.getByData(comment + '-add-reply').click()
 
     // fill add reply form input
@@ -52,13 +53,12 @@ describe('Commenting', async () => {
     //Check the form is submitted successfully
     cy.get('.q-notification__message').contains('Reply successfully submitted')
 
+    cy.wait(3000)
     // Editing reply text
     cy.scrollTo('bottom')
     // Editing reply
-    cy.getByData(reply + '-option-button')
-      .should('exist')
-      .should('be.visible')
-      .click()
+    cy.wait(3000)
+    cy.getByData(reply + '-option-button').click()
 
     cy.getByData('comment-select-edit').click()
     const oldReply = reply
@@ -71,6 +71,7 @@ describe('Commenting', async () => {
 
     cy.getByData('submit-edited-comment').click()
     cy.get('.q-notification__message').contains('Comment successfully edited!')
+    cy.wait(3000)
 
     // deleting comment
     cy.getByData(reply + '-option-button').click()
@@ -102,7 +103,7 @@ describe('Commenting', async () => {
 
     cy.getByData('submit-edited-comment').click()
     cy.get('.q-notification__message').contains('Comment successfully edited!')
-
+    cy.wait(3000)
     // deleting comment
     cy.getByData(comment + '-option-button').click()
 
