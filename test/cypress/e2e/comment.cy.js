@@ -55,7 +55,10 @@ describe('Commenting', async () => {
     // Editing reply text
     cy.scrollTo('bottom')
     // Editing reply
-    cy.getByData(reply + '-option-button').click()
+    cy.getByData(reply + '-option-button')
+      .should('exist')
+      .should('be.visible')
+      .click()
 
     cy.getByData('comment-select-edit').click()
     const oldReply = reply
