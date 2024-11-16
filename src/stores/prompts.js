@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   limit,
@@ -10,9 +11,9 @@ import {
   query,
   runTransaction,
   setDoc,
+  startAfter,
   Timestamp,
-  where,
-  startAfter
+  where
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -55,10 +56,12 @@ export const usePromptStore = defineStore('prompts', {
     _isLoading: false,
     _prompts: undefined,
     _monthPrompt: undefined,
+    _activePrompts: undefined,
     _tab: 'post',
     promptDialog: false,
     entryDialog: {},
     loadCount: 6,
+    _totalPrompts: undefined,
     _lastVisible: null,
     _hasMore: true
   }),
@@ -91,20 +94,21 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchPrompts(loadMore = false, count) {
       const userStore = useUserStore()
+      this._isLoading = true
 
       try {
-        this._isLoading = true
-
         let queryRef = collection(db, 'prompts')
+        const limitCount = count ?? this.loadCount
 
-        if (loadMore && this._lastVisible) {
-          queryRef = query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(count ?? this.loadCount))
-        } else if (loadMore) {
-          queryRef = query(queryRef, orderBy('id', 'desc'), limit(count ?? this.loadCount))
+        if (loadMore) {
+          queryRef = this._lastVisible
+            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(limitCount))
+            : query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+        } else {
+          queryRef = query(queryRef, orderBy('id', 'desc'), limit(limitCount))
         }
 
         const querySnapshot = await getDocs(queryRef)
-
         const newPrompts = await getPrompts(querySnapshot, userStore)
 
         if (newPrompts.length > 0) {
@@ -114,15 +118,40 @@ export const usePromptStore = defineStore('prompts', {
           this._hasMore = false
         }
 
-        if (loadMore) {
-          this._prompts = updatedBefore ? [...this._prompts, ...newPrompts] : newPrompts
-          updatedBefore = true
-        } else {
-          this._prompts = newPrompts
-        }
+        this._prompts = loadMore ? [...(this._prompts || []), ...newPrompts] : newPrompts
+
         return newPrompts
+      } catch (error) {
+        console.error('Error fetching prompts:', error)
+      } finally {
+        this._isLoading = false
+      }
+    },
+
+    async getTotalPromptsCount() {
+      try {
+        const totalCountFunc = await getCountFromServer(collection(db, 'prompts'))
+        this._totalPrompts = totalCountFunc.data().count
+        return this._totalPrompts
       } catch (e) {
-        console.error('Error fetching prompts:', e)
+        console.error('Failed fetching errors count', e)
+      }
+    },
+
+    async fetchActivePrompts() {
+      const userStore = useUserStore()
+      this._isLoading = true
+
+      try {
+        let queryRef = collection(db, 'prompts')
+        queryRef = query(queryRef, where('hasWinner', '==', null), where('escrowId', '!=', null))
+
+        const querySnapshot = await getDocs(queryRef)
+        const activePrompts = await getPrompts(querySnapshot, userStore)
+        this._activePrompts = activePrompts
+        return activePrompts
+      } catch (error) {
+        console.error('Error fetching prompts:', error)
       } finally {
         this._isLoading = false
       }
@@ -130,9 +159,6 @@ export const usePromptStore = defineStore('prompts', {
 
     async fetchPromptById(id) {
       const userStore = useUserStore()
-      if (!userStore.getUsers) {
-        // await userStore.fetchAdminsAndEditors()
-      }
 
       try {
         this._isLoading = true
@@ -249,14 +275,14 @@ export const usePromptStore = defineStore('prompts', {
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
       prompt.id = prompt.date
+      prompt.hasWinner = null
 
       this._isLoading = true
       await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
 
       prompt.author = await userStore.fetchUser(prompt.author.id)
       prompt.entries = []
-      const prompts = this.getPrompts ? [prompt, ...this.getPrompts] : [prompt]
-      this._prompts = prompts
+      this._prompts = this.getPrompts ? [prompt, ...this.getPrompts] : [prompt]
 
       await notificationStore.toggleSubscription('prompts', prompt.id)
     },
@@ -307,8 +333,8 @@ export const usePromptStore = defineStore('prompts', {
         })
 
         // Update local state or cache if needed
-        this._prompts = this._prompts.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
-        this._monthPrompt = this._monthPrompt.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
+        this._prompts = this._prompts?.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
+        this._monthPrompt = this._monthPrompt?.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
       } catch (error) {
         console.error('Error updating escrowId:', error)
       } finally {
@@ -340,7 +366,7 @@ export const usePromptStore = defineStore('prompts', {
         const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
         const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
         const deleteShares = shareStore.deleteAllShares('prompts', id)
-        const deleteVisitors = visitorStore.deleteAllVisitors('prom]pts', id)
+        const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
         const deletePromptFromStats = statStore.removeTopic(id)
 
         await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors, deletePromptFromStats])

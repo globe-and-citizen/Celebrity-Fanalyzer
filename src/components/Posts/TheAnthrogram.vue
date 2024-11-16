@@ -34,7 +34,7 @@
           <div
             class="col-12 anthogram-border"
             v-if="!!shareStore?.getSharesStats?.length"
-            v-bind:class="!!likeStore.getLikes?.length ? 'col-md-6' : 'col-md-12'"
+            v-bind:class="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length ? 'col-md-6' : 'col-md-12'"
           >
             <SharesPie :data="shareStore?.getSharesStats" :interval="interval" />
           </div>

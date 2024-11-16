@@ -1,8 +1,21 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc, Timestamp, arrayUnion } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+  updateDoc,
+  Timestamp,
+  arrayUnion,
+  writeBatch
+} from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { useUserStore } from 'src/stores'
 import { db } from 'src/firebase'
 import { monthDayYear } from 'src/utils/date'
+import firebase from 'firebase/compat'
 
 export const useImpressionsStore = defineStore('impressions', {
   state: () => ({
@@ -10,43 +23,40 @@ export const useImpressionsStore = defineStore('impressions', {
     _impressions: undefined
   }),
 
-  // persist: true,
-
   getters: {
     getImpressions: (state) => state._impressions,
     isLoading: (state) => state._isLoading
   },
 
   actions: {
-    async addImpression(collectionName, documentId) {
-      const visitorRef = doc(db, collectionName, documentId, 'impressions', monthDayYear().replaceAll('/', '-'))
-      const visitorSnap = await getDoc(visitorRef)
-      const userStore = useUserStore()
-      const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
-
-      const lastViewsRef = doc(db, collectionName, documentId, 'lastViews', user_id)
-      const lastViewsSnap = await getDoc(lastViewsRef)
-
+    async addImpression(impressions) {
       this._isLoading = true
-      if (visitorSnap.exists()) {
-        await updateDoc(visitorRef, { impression: visitorSnap.data().impression + 1 })
-      } else {
-        const visitor = {
-          id: monthDayYear().replaceAll('/', '-'),
-          impression: 1
-        }
-        await setDoc(visitorRef, visitor)
-      }
-      this._isLoading = false
+      const batch = writeBatch(db)
+      const formattedDate = monthDayYear().replaceAll('/', '-')
+      try {
+        const userStore = useUserStore()
+        const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash()
 
-      if (lastViewsSnap.exists()) {
-        await updateDoc(lastViewsRef, { views: arrayUnion(Timestamp.fromDate(new Date())) })
-      } else {
-        const visitor = {
-          id: user_id,
-          views: [Timestamp.fromDate(new Date())]
+        for (const [adId, count] of Object.entries(impressions)) {
+          const impressionRef = doc(db, 'advertises', adId, 'impressions', formattedDate)
+          const lastViewsRef = doc(db, 'advertises', adId, 'lastViews', user_id)
+
+          batch.set(impressionRef, { impression: firebase.firestore.FieldValue.increment(count) }, { merge: true })
+
+          batch.set(
+            lastViewsRef,
+            { views: firebase.firestore.FieldValue.arrayUnion(firebase.firestore.Timestamp.fromDate(new Date())) },
+            { merge: true }
+          )
         }
-        await setDoc(lastViewsRef, visitor)
+
+        await batch.commit()
+        return 'Batch update completed'
+      } catch (e) {
+        console.error('Error during batch update:', e)
+        return null
+      } finally {
+        this._isLoading = false
       }
     },
 

@@ -40,7 +40,7 @@
                 </template>
               </q-input>
             </div>
-            <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
+            <q-select data-test="select-author" disable label="Author" v-model="prompt.author" />
             <q-input
               counter
               data-test="input-title"
@@ -91,7 +91,7 @@
               </template>
             </q-field>
             <div class="row">
-              <diV class="col-8">
+              <div class="col-8">
                 <q-file
                   accept=".jpg, image/*"
                   counter
@@ -109,7 +109,7 @@
                     <q-icon name="image" />
                   </template>
                 </q-file>
-              </diV>
+              </div>
               <div class="col-1 flex justify-center items-center"><p>or</p></div>
               <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
             </div>
@@ -169,7 +169,7 @@ import { useQuasar } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
 
@@ -182,7 +182,6 @@ const promptStore = usePromptStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
 
-const authorOptions = reactive([])
 const dataKey = ref(Date.now())
 const prompt = reactive({
   description: '',
@@ -214,10 +213,6 @@ watchEffect(() => {
     prompt.categories = null
     prompt.date = currentYearMonth()
   }
-})
-
-onMounted(() => {
-  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 })
 
 function onUpdateMonth() {
