@@ -21,9 +21,6 @@ function onClick() {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,600,700');
-@import url('https://fonts.googleapis.com/css?family=Catamaran:400,800');
-
 .page {
   background: #000;
   color: #fff;

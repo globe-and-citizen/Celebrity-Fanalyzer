@@ -1,6 +1,6 @@
 <template>
   <q-separator inset />
-  <div class="q-gutter-xs q-pa-md text-center" ref="excludedDiv" @click.stop="openDialog = true">
+  <div class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
     <q-img
       v-for="(art, index) in showcase?.arts"
       class="art-img"

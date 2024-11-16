@@ -3,7 +3,7 @@
     <CampaignCard v-if="item.isAdd" :advertise="item" />
     <div v-if="!item.isAdd" class="col-8 flex column" data-test="prompt-card">
       <div v-if="item?.isWinner || item?.hasWinner" class="winner-badge">
-        <img alt="favicon" height="40px" src="/favicon-128x128.png" />
+        <img alt="favicon" height="40" width="40" src="/favicon-128x128.png" />
       </div>
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">
@@ -20,7 +20,8 @@
         </h2>
 
         <p v-if="item.description" class="q-my-none text-body2 text-secondary">
-          {{ dayMonthYear(item.created) }} &nbsp;•&nbsp; {{ giveReadingTime(item.description) }} min read
+          {{ item?.date ? formatMonthYear(item?.date) : dayMonthYear(item.created) }} &nbsp;•&nbsp;
+          {{ giveReadingTime(item.description) }} min read
         </p>
         <div v-if="item.categories">
           <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
@@ -44,7 +45,7 @@
 
 <script setup>
 import CampaignCard from '../Advertiser/CampaignCard.vue'
-import { dayMonthYear } from 'src/utils/date'
+import { dayMonthYear, formatMonthYear } from 'src/utils/date'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

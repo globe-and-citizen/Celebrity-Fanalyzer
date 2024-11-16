@@ -61,8 +61,8 @@ async function updateAdvertiseStatus(docId) {
   const date2 = new Date(docData.endDate)
   date1.setHours(0, 0, 0, 0)
   date2.setHours(0, 0, 0, 0)
-  let Difference_In_Time = date2.getTime() - date1.getTime()
-  let Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
+  const Difference_In_Time = date2.getTime() - date1.getTime()
+  const Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
 
   let newStatus = docData.status
 
@@ -73,7 +73,10 @@ async function updateAdvertiseStatus(docId) {
   }
 
   await advertiseDocRef.update({
-    status: newStatus
+    status: newStatus,
+    totalClicks: totalClicks,
+    totalImpressions: totalImpressions,
+    totalVisits: totalVisits
   })
 
   console.log(`Document ${docId} updated with status: ${newStatus}`)

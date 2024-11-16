@@ -7,7 +7,7 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
-        <q-select data-test="select-author" :disable="!userStore.isAdmin" label="Author" :options="authorOptions" v-model="entry.author" />
+        <q-select data-test="select-author" disable label="Author" v-model="entry.author" />
         <q-select
           behavior="menu"
           counter
@@ -27,20 +27,21 @@
           </template>
         </q-select>
         <q-input
-        counter
-        data-test="input-title"
-        label="Title"
-        maxlength="80"
-        required
-        v-model="entry.title"
-        :hint="!entry.title ? '*Title is required':''"
-         />
+          counter
+          data-test="input-title"
+          label="Title"
+          maxlength="80"
+          required
+          v-model="entry.title"
+          :disable="!entry.prompt"
+          :hint="!entry.prompt ? 'Select prompt first' : !entry.title ? '*Title is required' : ''"
+        />
         <q-field
-        counter
-        label="Description"
-        maxlength="400"
-        v-model="entry.description"
-        :hint="!entry.description ? '*Description is required':''"
+          counter
+          label="Description"
+          maxlength="400"
+          v-model="entry.description"
+          :hint="!entry.description ? '*Description is required' : ''"
         >
           <template v-slot:control>
             <q-editor
@@ -50,6 +51,7 @@
               flat
               min-height="5rem"
               ref="editorRef"
+              style="width: 100%"
               :toolbar="[
                 [
                   {
@@ -74,24 +76,39 @@
             />
           </template>
         </q-field>
-        <q-file
-          accept=".jpg, image/*"
-          counter
-          data-test="file-image"
-          :disable="!entry.prompt"
-          :hint="!entry.prompt ? 'Select prompt first' :!entry.image ? '*Image is required. Max size is 2MB.':''"
-          label="Image"
-          :max-total-size="2097152"
-          :required="!id"
-          use-chips
-          v-model="imageModel"
-          @rejected="onRejected()"
-          @update:model-value="uploadPhoto()"
-        >
-          <template v-slot:append>
-            <q-icon name="image" />
-          </template>
-        </q-file>
+
+        <div class="row no-wrap">
+          <div class="col-9">
+            <q-file
+              accept=".jpg, image/*"
+              counter
+              data-test="file-image"
+              :disable="!entry.prompt"
+              :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : ''"
+              label="Image"
+              :max-total-size="2097152"
+              :required="!id"
+              use-chips
+              class="full-width"
+              v-model="imageModel"
+              @rejected="onRejected()"
+              @update:model-value="uploadPhoto()"
+            >
+              <template v-slot:append>
+                <q-icon name="image" />
+              </template>
+            </q-file>
+          </div>
+          <div class="col-1 flex justify-center items-center"><p>OR</p></div>
+          <q-btn
+            :disable="!entry.prompt"
+            color="primary"
+            icon="add_a_photo"
+            class="self-center col"
+            label="Capture Image"
+            @click="openCamera = true"
+          ></q-btn>
+        </div>
         <div class="text-center">
           <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
         </div>
@@ -124,16 +141,21 @@
       </q-form>
     </q-card-section>
   </q-card>
+  <q-dialog v-model="openCamera" persistent>
+    <CaptureCamera @onCapture="captureCamera" />
+  </q-dialog>
+  <q-dialog></q-dialog>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
+import CaptureCamera from '../shared/CameraCapture.vue'
 
-const emit = defineEmits(['hideDialog', 'forward-update-entry'])
+const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
 
 const $q = useQuasar()
@@ -145,7 +167,6 @@ const userStore = useUserStore()
 const router = useRouter()
 const { href } = router.currentRoute.value
 
-const authorOptions = reactive([])
 const editorRef = ref(null)
 const entry = reactive({
   author: { label: userStore.getUser.displayName, value: userStore.getUser.uid },
@@ -154,23 +175,17 @@ const entry = reactive({
   title: ''
 })
 const imageModel = ref([])
+const openCamera = ref(false)
+
 const promptOptions = computed(
   () =>
-    promptStore.getPrompts
-      ?.filter((prompt) => !prompt.hasWinner)
-      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date }))
+    promptStore._activePrompts
+      ?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
       .reverse() || []
 )
 
-watchEffect(() => {
-  if (!promptStore.getPrompts) {
-    promptStore.fetchPrompts()
-  }
-})
-
 onMounted(() => {
-  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-
+  promptStore.fetchActivePrompts()
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
@@ -184,6 +199,9 @@ onMounted(() => {
 
 function uploadPhoto() {
   entry.image = ''
+  if (!imageModel.value) {
+    return
+  }
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (entry.image = reader.result)
@@ -215,15 +233,33 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
-  const hasEntry = await entryStore.hasEntry(entry.prompt?.value)
-  if (hasEntry) {
-    $q.notify({ type: 'info', message: 'Entry already exists. Please select another prompt' })
+  entry.title = entry.title.trim()
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.prompt?.value)
+
+  if (!hasLoadedEntry) {
+    await entryStore.fetchEntryByPrompts(entry.prompt?.value)
+  }
+
+  const hasEntry = entryStore.hasEntry(entry.prompt?.value)
+
+  if (!props.id && hasEntry) {
+    $q.notify({
+      type: 'info',
+      message: 'You have already submitted an entry for this prompt. Please select another prompt'
+    })
+    return
+  }
+
+  const entryNameValidator = entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+
+  if (entryNameValidator) {
+    $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
-  if (imageModel.value && Object.keys(imageModel.value).length !== 0) {
+  if (imageModel.value) {
     entry.image = await uploadAndSetImage(imageModel.value, `images/entry-${entry.id}`)
   } else {
     entry.image = props.image
@@ -257,5 +293,10 @@ async function onSubmit() {
     await errorStore.throwError(e, failureMessage)
   }
   emit('hideDialog', entry.slug)
+}
+
+function captureCamera(imageBlob) {
+  imageModel.value = imageBlob
+  uploadPhoto()
 }
 </script>

@@ -202,6 +202,11 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
+import { useErrorStore, usePromptStore } from 'src/stores'
+import { computed, onMounted } from 'vue'
+
+const errorStore = useErrorStore()
+const promptStore = usePromptStore()
 import { fetchMonth } from 'src/api/prompts'
 import { useQuery } from '@tanstack/vue-query'
 

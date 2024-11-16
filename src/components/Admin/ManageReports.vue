@@ -1,15 +1,15 @@
 <template>
-  <h5 v-if="!reportStore.getReports" class="text-center">There are no reports yet.</h5>
+  <h5 v-if="!reportStore.getReports && reportStore.isLoaded" class="text-center">There are no reports yet.</h5>
   <q-table
     v-else
     :columns="columns"
     data-test="reports-table"
     grid
     hide-header
-    :loading="reportStore.isLoading"
+    :loading="!reportStore.isLoaded || reportStore.isLoading"
     :pagination="pagination"
     row-key="created"
-    :rows="reportStore.getReports"
+    :rows="reportStore.getReports ?? []"
     style="left: 0; right: 0"
     title="Manage Reports"
   >
@@ -124,5 +124,3 @@ function onDeleteReport() {
   deleteDialog.value.show = false
 }
 </script>
-
-<style scoped></style>

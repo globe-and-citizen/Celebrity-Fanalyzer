@@ -10,13 +10,30 @@
     "dev:e2e": "cross-env VITE_MODE=E2E quasar dev --mode pwa",
     "format": "prettier --write \"**/*.{js,vue,css,html,md,json}\" --ignore-path .gitignore",
     "lint": "eslint --ext .js,.vue ./",
+    "lint:fix": "eslint --ext .js,.vue ./src --fix --color",
     "test": "vitest",
     "vitest": "vitest -u",
     "vitest:coverage": "vitest run --coverage",
     "coverage": "cd coverage/src/stores && open index.html",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
-    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run"
+    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
+    "prepare": "husky",
+    "lhci:mobile": "lighthouse-ci --url=$1 --preset=mobile",
+    "lhci:desktop": "lighthouse-ci --url=$1 --preset=desktop"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.(vue|js)": [
+      "npm run lint:fix"
+    ],
+    "*.{json,js,ts,jsx,tsx,html}": [
+      "npm run format"
+    ]
   },
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
@@ -29,8 +46,9 @@
     "big-integer": "^1.6.52",
     "dotenv": "^16.3.1",
     "echarts": "^5.4.3",
+    "eslint-plugin-prettier": "^5.2.1",
     "ethers": "^5.7.2",
-    "firebase": "^10.13.0",
+    "firebase": "^10.13.1",
     "idb": "^8.0.0",
     "idb-keyval": "^6.2.1",
     "leaflet": "^1.9.4",
@@ -39,14 +57,14 @@
     "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
     "quasar": "^2.16.4",
-    "secure-ls": "^1.2.6",
     "sha1": "^1.1.1",
     "vue": "^3.2.47",
     "vue-echarts": "^6.6.1",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@cypress/code-coverage": "^3.12.1",
+    "@cypress/code-coverage": "^3.13.5",
+    "@lhci/cli": "^0.14.0",
     "@pinia/testing": "^0.1.3",
     "@quasar/app-vite": "^1.6.2",
     "@quasar/quasar-app-extension-testing-e2e-cypress": "^5.1.1",
@@ -61,12 +79,15 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-vue": "^9.17.0",
+    "husky": "^9.1.6",
     "jsdom": "^22.1.0",
+    "lint-staged": "^15.2.10",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
     "rollup-plugin-visualizer": "^5.12.0",
     "start-server-and-test": "^2.0.1",
     "vite-plugin-compression2": "^1.1.1",
+    "vite-plugin-istanbul": "^5.0.0",
     "vitest": "^0.31.4",
     "vue-router-mock": "^0.2.0",
     "workbox-build": "^6.6.0",

@@ -1,7 +1,7 @@
 <template>
   <q-card class="q-mt-none" :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-      <q-stepper alternative-labels animated color="primary" header-nav ref="stepper" v-model="step">
+      <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
         <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'">
           <q-card-section>
             <div class="row items-baseline no-wrap">
@@ -40,28 +40,22 @@
                 </template>
               </q-input>
             </div>
-            <q-select
-              data-test="select-author"
-              :disable="!userStore.isAdmin"
-              label="Author"
-              :options="authorOptions"
-              v-model="prompt.author"
-            />
+            <q-select data-test="select-author" disable label="Author" v-model="prompt.author" />
             <q-input
-            counter
-            data-test="input-title"
-            label="Title"
-            maxlength="80"
-            required
-            v-model="prompt.title"
-            :hint="!prompt.title ? '*Title is required':''"
+              counter
+              data-test="input-title"
+              label="Title"
+              maxlength="80"
+              required
+              v-model="prompt.title"
+              :hint="!prompt.title ? '*Title is required' : ''"
             />
             <q-field
-            counter
-            label="Description"
-            maxlength="400"
-            v-model="prompt.description"
-            :hint="!prompt.description ? '*Description is required':''"
+              counter
+              label="Description"
+              maxlength="400"
+              v-model="prompt.description"
+              :hint="!prompt.description ? '*Description is required' : ''"
             >
               <template v-slot:control>
                 <q-editor
@@ -71,6 +65,7 @@
                   flat
                   min-height="5rem"
                   ref="editorRef"
+                  style="width: 100%"
                   :toolbar="[
                     [
                       {
@@ -95,23 +90,29 @@
                 />
               </template>
             </q-field>
-            <q-file
-              accept=".jpg, image/*"
-              counter
-              data-test="file-image"
-              :hint="!prompt.image ? '*Image is required. Max size is 2MB.':''"
-              label="Image"
-              :max-total-size="2097152"
-              :required="!id"
-              use-chips
-              v-model="imageModel"
-              @rejected="onRejected()"
-              @update:model-value="uploadPhoto()"
-            >
-              <template v-slot:append>
-                <q-icon name="image" />
-              </template>
-            </q-file>
+            <div class="row">
+              <div class="col-8">
+                <q-file
+                  accept=".jpg, image/*"
+                  counter
+                  data-test="file-image"
+                  :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
+                  label="Chose File"
+                  :max-total-size="2097152"
+                  :required="!id"
+                  use-chips
+                  v-model="imageModel"
+                  @rejected="onRejected()"
+                  @update:model-value="uploadPhoto()"
+                >
+                  <template v-slot:append>
+                    <q-icon name="image" />
+                  </template>
+                </q-file>
+              </div>
+              <div class="col-1 flex justify-center items-center"><p>or</p></div>
+              <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+            </div>
             <q-select
               behavior="menu"
               counter
@@ -157,6 +158,10 @@
       </q-stepper>
     </q-form>
   </q-card>
+  <q-dialog v-model="openCamera" persistent>
+    <CaptureCamera @onCapture="captureCamera" />
+  </q-dialog>
+  <q-dialog></q-dialog>
 </template>
 
 <script setup>
@@ -164,8 +169,9 @@ import { useQuasar } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { currentYearMonth } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
+import CaptureCamera from '../shared/CameraCapture.vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -176,7 +182,6 @@ const promptStore = usePromptStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
 
-const authorOptions = reactive([])
 const dataKey = ref(Date.now())
 const prompt = reactive({
   description: '',
@@ -188,6 +193,7 @@ const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
+const openCamera = ref(false)
 
 watchEffect(() => {
   if (props.id) {
@@ -209,16 +215,15 @@ watchEffect(() => {
   }
 })
 
-onMounted(() => {
-  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-})
-
 function onUpdateMonth() {
   dataKey.value = Date.now()
 }
 
 function uploadPhoto() {
   prompt.image = ''
+  if (!imageModel.value) {
+    return
+  }
   const reader = new FileReader()
   reader.readAsDataURL(imageModel.value)
   reader.onload = () => (prompt.image = reader.result)
@@ -253,7 +258,7 @@ async function onSubmit() {
     return
   }
   if (!promptStore.getPrompts) {
-    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug,!!props.id)
+    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
     if (hasPrompt) {
       return
     }
@@ -277,7 +282,7 @@ async function onSubmit() {
   } else {
     await promptStore
       .addPrompt(prompt)
-      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted' }))
+      .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' }))
       .catch((error) => errorStore.throwError(error, 'Prompt submission failed'))
   }
 
@@ -286,5 +291,10 @@ async function onSubmit() {
 
 function onRejected() {
   $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 2MB.' })
+}
+
+function captureCamera(imageBlob) {
+  imageModel.value = imageBlob
+  uploadPhoto()
 }
 </script>

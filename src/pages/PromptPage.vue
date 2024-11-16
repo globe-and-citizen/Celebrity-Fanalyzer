@@ -64,6 +64,8 @@ const tab = ref(promptStore.tab)
 const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 const editPrompt = ref({})
+
+const params = computed(() => router.currentRoute.value?.params)
 const { data } = useQuery({
   queryKey: ['monthPrompt'],
   queryFn: fetchMonth,
@@ -71,7 +73,6 @@ const { data } = useQuery({
   refetchInterval: 5 * 24 * 60 * 60 * 1000,
   staleTime: 5 * 24 * 60 * 60 * 1000
 })
-const params = computed(() => router.currentRoute.value?.params)
 const prompt = computed(() => {
   if (route.name === 'month') {
     return data?.value?.[0]

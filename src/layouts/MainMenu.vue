@@ -6,7 +6,7 @@
       </q-route-tab>
 
       <q-route-tab class="adminTab" v-if="userStore.isAuthenticated" icon="admin_panel_settings" @click="onAdminTabClick">
-        <q-tooltip>Admin Panel</q-tooltip>
+        <q-tooltip>{{ userStore.getUser?.role + ' ' + 'Panel' }}</q-tooltip>
       </q-route-tab>
       <div class="q-tab__indicator absolute-top"></div>
     </q-tabs>
@@ -29,10 +29,11 @@
 
 <script setup>
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref, watchEffect, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from 'src/firebase'
+import { customWeb3modal } from 'src/web3/walletConnect'
 
 const updated = ref(false)
 const userStore = useUserStore()
@@ -53,6 +54,9 @@ const routes = computed(() => [
 ])
 
 function onLogout() {
+  if (customWeb3modal.getAddress()) {
+    customWeb3modal.disconnect()
+  }
   userStore.logout()
   updated.value = false
   router.push({ path: '/profile' })
@@ -60,7 +64,7 @@ function onLogout() {
 
 const onAdminTabClick = () => {
   if (userStore.isAuthenticated) {
-    router.push('/admin/advertises')
+    router.push('/admin/prompts')
   } else if (!isAdminPromptPath) {
     router.push('/admin/prompts')
   } else {
@@ -123,6 +127,9 @@ onMounted(async () => {
 
     promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
   }
+})
+onBeforeUnmount(() => {
+  promptStore.reset()
 })
 </script>
 

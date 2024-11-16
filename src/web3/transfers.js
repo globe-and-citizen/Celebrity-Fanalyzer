@@ -91,7 +91,7 @@ export const fetchMaticRate = async () => {
       maticRate: data['matic-network'].usd
     }
   } catch (error) {
-    console.error('error when getting matic Rate ')
+    console.error('error when getting pol Rate ')
     return {
       success: false,
       error: error
@@ -108,7 +108,6 @@ export const getTransactionDetails = async (txHash, networkName) => {
     // Fetch the transaction receipt to get the status
 
     const receipt = await provider.getTransactionReceipt(txHash)
-
     // Extracting the desired information
     // Convert Wei to Ether for the transaction amount
     const amount = ethers.utils.formatEther(transaction.value)

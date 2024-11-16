@@ -5,9 +5,10 @@
     searchInput
     :title="`${router.currentRoute.value.params.year ?? ''} Search Archive`"
     v-model="search"
+    @updateSearchDate="updateSearchDate"
   />
   <q-page-container class="search-page-container">
-    <q-page class="q-pa-md">
+    <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
           v-model="category"
@@ -21,17 +22,15 @@
           unelevated
         />
       </q-scroll-area>
-      <!--      <section v-if="!promptStore.getPrompts && promptStore.isLoading">-->
-      <!--        <ArticleSkeleton />-->
-      <!--        <ArticleSkeleton />-->
-      <!--        <ArticleSkeleton />-->
-      <!--        <ArticleSkeleton />-->
-      <!--      </section>-->
       <q-tab-panels animated swipeable v-model="category">
         <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper">
+          <section class="card-items-wrapper" v-if="!promptStore.getPrompts?.length && promptStore.isLoading">
+            <ArticleSkeleton v-for="n in skeletons" :key="n" />
+          </section>
+          <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
             <ItemCard
-              v-for="prompt in computedPromptsAndAdvertises"
+              data-test="item-card"
+              v-for="prompt in combinedItems"
               :key="prompt?.id"
               v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
               :item="prompt"
@@ -41,8 +40,14 @@
         </q-tab-panel>
       </q-tab-panels>
       <TransitionGroup tag="div">
-        <TheEntries v-if="search && computedEntries?.length > 0" :entries="computedEntries" />
+        <div v-if="(searchDate || search) && computedEntries?.length > 0">
+          <TheEntries :entries="computedEntries" />
+        </div>
       </TransitionGroup>
+      <div v-if="promptStore._hasMore" class="row justify-center q-mt-md">
+        <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="70px" :thickness="5" />
+        <q-btn v-else @click="loadMorePrompts" label="Load More" data-test="load-more-btn" color="primary" />
+      </div>
     </q-page>
   </q-page-container>
 </template>
@@ -53,7 +58,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch, onUnmounted, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -64,9 +69,19 @@ const advertiseStore = useAdvertiseStore()
 const category = ref('All')
 const router = useRouter()
 const search = ref('')
+const searchDate = ref('')
+const pageRef = ref(null)
+const skeletons = 6
 
-advertiseStore.getActiveAdvertise().catch((error) => errorStore.throwError(error))
-promptStore.fetchPrompts().catch((error) => errorStore.throwError(error))
+const loadMorePrompts = async () => {
+  if (!promptStore.isLoading && promptStore._hasMore) {
+    try {
+      await promptStore.fetchPrompts(true, 5)
+    } catch (error) {
+      await errorStore.throwError(error, 'Error loading more prompts')
+    }
+  }
+}
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
@@ -74,43 +89,86 @@ const computedCategories = computed(() => {
   const allCategory = { label: 'All', value: 'All' }
   return [allCategory, ...uniqueCategories]
 })
+
 const computedAdvertises = computed(() => {
-  return advertiseStore.getActiveAdvertises
-})
-const computedPrompts = computed(() => {
-  return promptStore.getPrompts?.filter((item) => {
-    const prompt = [item.title, item.description, item.author?.displayName, ...item.categories]
-    return search.value !== '' ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : prompt
+  return advertiseStore.getActiveAdvertises.filter((ad) => {
+    const adDetails = [ad.title, ad.description]
+    return search.value ? adDetails.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
   })
 })
-const computedPromptsAndAdvertises = computed(() => {
-  let i = 0,
-    j = 0
-  let arr = []
-  const promptsLength = computedPrompts.value?.length ?? 0
-  const advertisesLength = computedAdvertises.value?.length ?? 0
-  while (i < promptsLength && j < advertisesLength) {
-    if (Math.random() > 0.5) {
-      arr.push(computedPrompts.value[i])
-      i++
-    } else {
-      arr.push(computedAdvertises.value[j])
-      j++
-    }
-  }
-  if (i < promptsLength) {
-    arr = [...arr, ...computedPrompts.value.slice(i)]
-  }
-  if (j < advertisesLength) {
-    arr = [...arr, ...computedAdvertises.value.slice(j)]
-  }
-  return arr
+
+const computedPrompts = computed(() => {
+  return promptStore.getPrompts
+    ? promptStore.getPrompts
+        .filter((item) => {
+          const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
+
+          const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
+          const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
+
+          return matchesDate && matchesSearch
+        })
+        .sort((a, b) => new Date(b?.id) - new Date(a?.id))
+    : []
 })
 
 const computedEntries = computed(() => {
   return entryStore.getEntries?.filter((item) =>
     [item.title, item.description, item.author?.displayName].some((str) => str?.toLowerCase().includes(search.value.toLowerCase()))
   )
+})
+
+const combinedItems = computed(() => {
+  const items = [...computedPrompts.value]
+  const adsToAdd = computedAdvertises?.value.filter((ad) => !items.some((item) => item.id === ad.id))
+
+  const result = []
+
+  items.forEach((prompt, index) => {
+    result.push(prompt)
+    if ((index + 1) % 5 === 0 && adsToAdd.length > 0) {
+      result.push(adsToAdd.shift())
+    }
+  })
+  result.push(...adsToAdd)
+  return result
+})
+
+const updateSearchDate = (value) => {
+  searchDate.value = value
+}
+
+watch(search, async (newSearch) => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    if (newSearch.trim()) {
+      await promptStore.fetchPrompts(true)
+    }
+  }
+})
+
+watch(searchDate, async () => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    await promptStore.fetchPrompts(true)
+  }
+})
+
+onMounted(async () => {
+  await promptStore.getTotalPromptsCount()
+  try {
+    if (!promptStore.getPrompts?.length) {
+      await promptStore.fetchPrompts()
+    }
+
+    if (!advertiseStore.getActiveAdvertises?.length) {
+      await advertiseStore.getActiveAdvertise()
+    }
+  } catch (error) {
+    await errorStore.throwError(error, 'Error fetching prompts and ads')
+  }
+})
+
+onUnmounted(() => {
+  advertiseStore.reset()
 })
 </script>
 
@@ -131,7 +189,6 @@ const computedEntries = computed(() => {
 .prompt-enter-from,
 .prompt-leave-to {
   opacity: 0;
-  height: 0;
   transform: translateY(-90px);
 }
 

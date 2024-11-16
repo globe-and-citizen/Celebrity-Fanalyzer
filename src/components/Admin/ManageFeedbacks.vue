@@ -1,15 +1,15 @@
 <template>
-  <h5 v-if="!feedbackStore.getFeedbacks" class="text-center">There are no feedbacks yet.</h5>
+  <h5 v-if="!feedbackStore.getFeedbacks && feedbackStore.isLoaded" class="text-center">There are no feedbacks yet.</h5>
   <q-table
     v-else
     :columns="columns"
     data-test="feedback-table"
     grid
     hide-header
-    :loading="feedbackStore.isLoading"
+    :loading="!feedbackStore.isLoaded || feedbackStore.isLoading"
     :pagination="pagination"
     row-key="created"
-    :rows="feedbackStore.getFeedbacks"
+    :rows="feedbackStore.getFeedbacks ?? []"
     style="left: 0; right: 0"
     title="Manage Feedbacks"
   >

@@ -43,7 +43,7 @@ const getContractInstance = async () => {
 export const contractCreateAdCampaign = async (payload = { budgetInMatic: 0 }) => {
   if (payload.budgetInMatic > 0) {
     try {
-      // Convert the budget from MATIC to Wei
+      // Convert the budget from Pol to Wei
       const amountInWei = ethers.utils.parseUnits(payload.budgetInMatic.toString(), 'ether')
       // Get the contract instance
       const adCampaignManager = await getContractInstance()

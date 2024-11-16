@@ -1,6 +1,6 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, it, vi } from 'vitest'
 
 // Necessary Components
 import { useErrorStore, useUserStore } from 'src/stores'
@@ -33,7 +33,7 @@ describe('Errors Store', async () => {
      * each "it" block.
      */
     try {
-      let userObj = {
+      const userObj = {
         email: import.meta.env.VITE_TEST_USER,
         password: import.meta.env.VITE_TEST_PASSWORD
       }
@@ -67,8 +67,4 @@ describe('Errors Store', async () => {
     // expect(errorStore.isLoading).toBe(false)
     // expect(errorStore.getErrors.length).toBeGreaterThanOrEqual(initialLength)
   })
-})
-
-afterAll(async () => {
-  // clean up logic.
 })

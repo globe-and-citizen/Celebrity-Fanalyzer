@@ -13,6 +13,7 @@ import sha1 from 'sha1'
 import { auth, db } from 'src/firebase'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
+import { useWalletStore } from 'stores/wallet'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -79,15 +80,15 @@ export const useUserStore = defineStore('user', {
         .finally(() => (this._isLoading = false))
     },
 
-    async fetchAdminsAndEditors() {
-      this._isLoading = true
-      await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'))))
-        .then((querySnapshot) => {
-          const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
-          this.$patch({ _users: users })
-        })
-        .finally(() => (this._isLoading = false))
-    },
+    // async fetchAdminsAndEditors() {
+    //   this._isLoading = true
+    //   await getDocs(query(collection(db, 'users'), or(where('role', '==', 'Admin'), where('role', '==', 'Editor'))))
+    //     .then((querySnapshot) => {
+    //       const users = querySnapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }))
+    //       this.$patch({ _users: users })
+    //     })
+    //     .finally(() => (this._isLoading = false))
+    // },
 
     /**
      * Fetch the user ip from Cloudflare
@@ -120,7 +121,13 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await createUserWithEmailAndPassword(auth, user.email, user.password)
         .then(async (userCredential) => {
-          await setDoc(doc(db, 'users', userCredential.user.uid), { displayName: user.name, email: user.email, role: 'User' })
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            displayName: user.name,
+            email: user.email,
+            username: user.username,
+            role: 'User',
+            walletAddress: ''
+          })
             .then(() => this.emailSignIn(user))
             .then(() => Notify.create({ color: 'positive', message: 'Account created successfully' }))
             .catch((error) => console.error(error))
@@ -145,7 +152,6 @@ export const useUserStore = defineStore('user', {
             this.$patch({ _user: { uid: doc.id, ...doc.data() } })
           })
         })
-        .catch((error) => console.error(error))
         .finally(() => (this._isLoading = false))
     },
 
@@ -172,7 +178,7 @@ export const useUserStore = defineStore('user', {
 
     async checkUsernameAvailability(username) {
       this._isLoading = true
-      return await getDocs(query(collection(db, 'users'), where('uid', '!=', this.getUser.uid)))
+      return await getDocs(query(collection(db, 'users'), this.isAuthenticated ? where('uid', '!=', this.getUser.uid) : ''))
         .then((querySnapshot) => {
           const usernames = querySnapshot.docs.map((document) => document.data().username)
           return usernames.some((name) => name?.toLowerCase() === username?.toLowerCase())
@@ -184,7 +190,10 @@ export const useUserStore = defineStore('user', {
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'users', this.getUser.uid), user)
-      }).finally(() => (this._isLoading = false))
+      }).finally(() => {
+        this._user = user
+        this._isLoading = false
+      })
     },
 
     async updateRole(user) {
@@ -193,9 +202,19 @@ export const useUserStore = defineStore('user', {
         transaction.update(doc(db, 'users', user.uid), user)
       }).finally(() => (this._isLoading = false))
     },
+    async checkEmailExists(email) {
+      if (!email) {
+        return false
+      }
+      const q = query(collection(db, 'users'), where('email', '==', email))
+      const userSnapsot = await getDocs(q)
+      return !userSnapsot.empty
+    },
 
     logout() {
+      const walletStore = useWalletStore()
       signOut(auth).then(() => {
+        walletStore.$reset()
         this.$reset()
         LocalStorage.remove('user')
       })
@@ -203,23 +222,23 @@ export const useUserStore = defineStore('user', {
 
     setProfileTab(tab) {
       this.$patch({ _profileTab: tab })
-    },
-
-    async addAllUsers(users) {
-      await fetch(`${baseURL}/add-all-users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(users)
-      }).catch((error) => console.log(error))
-    },
-
-    async getStatsUsers() {
-      const allUsers = await mock_layer8_interceptor.fetch(`${baseURL}/users`, {
-        method: 'GET'
-      })
-      this._statsUsers = await allUsers.json()
     }
+
+    // async addAllUsers(users) {
+    //   await fetch(`${baseURL}/add-all-users`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify(users)
+    //   }).catch((error) => console.log(error))
+    // },
+
+    // async getStatsUsers() {
+    //   const allUsers = await mock_layer8_interceptor.fetch(`${baseURL}/users`, {
+    //     method: 'GET'
+    //   })
+    //   this._statsUsers = await allUsers.json()
+    // }
   }
 })

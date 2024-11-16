@@ -5,11 +5,11 @@
     bordered
     hide-bottom
     class="q-ma-md custom-table"
-    virtual-scroll
     title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
-    :loading="isLoading"
+    :loading="promptStore.isLoading"
+    no-data-label="No prompts found."
     :pagination="pagination"
     :rows="prompts"
   >
@@ -21,7 +21,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr class="new" :data-test="props.key" :props="props">
+      <q-tr class="new" :data-test="props.key" :props="props" id="item-card">
         <q-td auto-width>
           <q-btn
             dense
@@ -38,8 +38,38 @@
             </q-tooltip>
           </q-btn>
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">{{ col.value }}</q-td>
+
+        <q-td class="text-center" auto-width style="width: 101px">
+          <div style="width: 69px">
+            {{ props.row.date }}
+          </div>
+        </q-td>
+        <q-td class="authorRef text-center">
+          <a :href="`/fan/${props.row?.author?.uid}`" class="q-mr-sm" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
+            {{ props.row.author?.displayName }}
+          </a>
+        </q-td>
+        <q-td>
+          <a :href="props.row?.slug" class="q-mr-sm" @click.prevent="router.push(props.row?.slug)">
+            {{ props.row.title }}
+          </a>
+        </q-td>
         <q-td class="text-right">
+          <span v-if="!props.row?.escrowId">
+            <q-btn
+              v-if="userStore.isEditorOrAbove"
+              flat
+              round
+              color="green"
+              data-test="button-deposit"
+              icon="payment"
+              size="sm"
+              :disable="promptStore.isLoading"
+              @click="onProceedDepositFundDialog(props.row)"
+            >
+              <q-tooltip>Deposit escrow fund</q-tooltip>
+            </q-btn>
+          </span>
           <q-btn
             v-if="userStore.isEditorOrAbove"
             flat
@@ -66,6 +96,7 @@
           >
             <q-tooltip>Delete</q-tooltip>
           </q-btn>
+          <ShareComponent dense :label="''" :link="getOrigin(props.row.slug)" @share="share($event, 'prompts', props.row.id)" />
           <q-toggle
             :model-value="isMonthPrompt(props?.row.id)"
             color="primary"
@@ -85,12 +116,12 @@
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
           <TableEntry
             v-else
-            :filter="filter"
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
             :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"
             @delete-entry="handleDeleteEntry"
+            :maxWidth="maxWidth"
           />
         </q-td>
       </q-tr>
@@ -101,6 +132,17 @@
     :filter="filter"
     :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
   />
+  <div class="row justify-center q-mr-md float-right">
+    <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
+    <q-btn
+      v-else
+      @click="loadMorePrompts"
+      label="Load More"
+      color="primary"
+      :disable="!promptStore._hasMore || promptStore.isLoading"
+      data-test="load-more-btn"
+    />
+  </div>
   <q-dialog v-model="deleteDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
@@ -147,24 +189,45 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="proceedDepositFundDialog.show">
+    <q-card style="width: 400px; max-width: 60vw">
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Escrow fund deposit</h6>
+      </q-card-section>
+      <FundDepositCard
+        :walletAddress="proceedDepositFundDialog.walletAddress"
+        :prompt="proceedDepositFundDialog.prompt"
+        @hideDialog="proceedDepositFundDialog.show = false"
+      />
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
+import { onBeforeUnmount, watch } from 'vue'
+import FundDepositCard from './FundDepositCard.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
 import { computed, onMounted, watchEffect, ref } from 'vue'
 import { updateMonthPrompt } from 'src/api/prompts'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
-defineEmits(['openPromptDialog', 'openAdvertiseDialog'])
+import { customWeb3modal } from 'app/src/web3/walletConnect'
 
+import { useRouter } from 'vue-router'
+import ShareComponent from 'src/components/Posts/ShareComponent.vue'
+import TheHeader from 'components/shared/TheHeader.vue'
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
 const userStore = useUserStore()
 const queryClient = useQueryClient()
+const router = useRouter()
+const shareStore = useShareStore()
+defineEmits(['openPromptDialog'])
 
 const columns = [
   {},
@@ -176,8 +239,10 @@ const columns = [
 const deleteDialog = ref({})
 const filter = ref('')
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+const maxWidth = ref(0)
 
 const prompts = ref([])
+const proceedDepositFundDialog = ref({})
 const oldMonthPromptId = ref(null)
 const monthPromptId = ref(null)
 const changeMonthPromptDialog = ref({})
@@ -193,10 +258,16 @@ const updatePrompt = useMutation({
 onMounted(async () => {
   if (userStore.isEditorOrAbove) {
     entryStore._loadedEntries = []
-    await promptStore.fetchPrompts()
+    !promptStore.getPrompts?.length && (await promptStore.fetchPrompts())
   } else {
     await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }
+  window.addEventListener('resize', updateMaxWidth)
+  updateMaxWidth()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateMaxWidth)
 })
 
 const isLoaded = computed(() => promptStore.getPrompts)
@@ -206,6 +277,15 @@ watchEffect(async () => {
   prompts.value = promptStore.getPrompts
   monthPromptId.value = oldMonthPromptId.value = prompts?.value?.find((prompt) => prompt?.monthPrompt)?.id
 })
+
+function updateMaxWidth() {
+  const documents = document.getElementsByClassName('authorRef')
+  const docs = [...documents]
+  if (docs?.length) {
+    const width = docs.map((el) => el.clientWidth)
+    maxWidth.value = Math.max(...width)
+  }
+}
 
 function openDeleteDialog(prompt) {
   deleteDialog.value.show = true
@@ -221,11 +301,21 @@ function openConfirmDialog(value, promptId) {
 function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
-    .then(() => $q.notify({ type: 'negative', message: 'Prompt successfully deleted' }))
+    .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+const loadMorePrompts = async () => {
+  if (!promptStore.isLoading && promptStore._hasMore) {
+    try {
+      await promptStore.fetchPrompts(true, 5)
+    } catch (error) {
+      await errorStore.throwError(error, 'Error loading more prompts')
+    }
+  }
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
@@ -263,6 +353,10 @@ async function handleUpdateEntry({ _entry, _prompt }) {
 
   // Fetch updated prompts
   await promptStore.fetchPrompts()
+}
+
+async function share(socialNetwork, collectionName, id) {
+  await shareStore.addShare(collectionName, id, socialNetwork).catch((error) => errorStore.throwError(error))
 }
 
 function toggleExpand(props) {
@@ -310,6 +404,30 @@ function handleDeleteEntry(entryId, promptId) {
   promptStore.fetchPrompts()
 }
 
+//proceed deposit funds.
+async function onProceedDepositFundDialog(props) {
+  //let's check if the entry already have valid payment..
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
+    customWeb3modal.open()
+  } else {
+    proceedDepositFundDialog.value.show = true
+    proceedDepositFundDialog.value.walletAddress = customWeb3modal.getAddress()
+    proceedDepositFundDialog.value.prompt = props
+  }
+}
+function getOrigin(slug) {
+  return window.origin + slug
+}
+
+watch(filter, async (newSearch) => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    if (newSearch.trim()) {
+      await promptStore.fetchPrompts(true)
+    }
+  }
+})
+
 function cantUnselect() {
   $q.notify({ type: 'negative', message: "You can't unselect month prompt. Please choose another one first" })
 }
@@ -333,3 +451,10 @@ const confirmChangeMonthPrompt = () => {
   )
 }
 </script>
+<style scoped>
+.custom-table {
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - 300px);
+}
+</style>

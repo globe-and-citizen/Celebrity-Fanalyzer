@@ -1,12 +1,19 @@
 <template>
-  <TheHeader v-if="user?.uid" feedbackButton :title="user.role + ' Profile'" />
+  <TheHeader v-if="user?.uid" ref="header" feedbackButton :title="user.role + ' Profile'" />
   <q-page-container>
     <q-page v-if="user?.uid">
       <q-card flat>
         <q-card-section class="flex items-center">
           <div class="flex items-center q-gutter-x-md">
             <q-avatar size="7rem">
-              <q-img :src="user.photoURL" />
+              <template v-if="user.photoURL">
+                <q-img :src="user.photoURL" />
+              </template>
+              <template v-else>
+                <span class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+                  {{ user.displayName.charAt(0).toUpperCase() }}
+                </span>
+              </template>
             </q-avatar>
             <h5 class="q-my-none" data-test="user-displayName">{{ user.displayName }}</h5>
           </div>
@@ -28,7 +35,33 @@
         </q-card-section>
         <q-separator spaced inset />
         <q-card-section class="justify-center row">
-          <div v-for="post in computedPosts" class="col-sm-4 col-xs-6" :key="post.id" @click="goToUrl(post.slug)">
+          <div v-if="computedPosts.length === 0 && user?.uid === userStore.getUser?.uid" class="text-center q-mt-md">
+            <p class="text-h6">It looks like you haven't created any entries yet.</p>
+            <p>
+              Start sharing your thoughts and experiences with the
+              <b><i>Celebrity Fanalyzer!</i></b>
+            </p>
+            <q-btn label="Create Your First Entry" @click="header?.openEntryDialog()" color="primary" class="q-mt-md" rounded unelevated />
+          </div>
+          <div v-else-if="computedPosts.length === 0" class="text-center q-mt-md">
+            <p class="text-h6">This user has not created any entries yet.</p>
+          </div>
+          <div
+            v-else
+            v-for="post in computedPosts"
+            class="col-sm-4 col-xs-6"
+            :key="post.id"
+            @click="
+              () => {
+                post.slug
+                  ? goToUrl(post.slug)
+                  : $q.notify({
+                      type: 'error',
+                      message: 'Sorry. There is no link available for this entry at this time. Please contact support.'
+                    })
+              }
+            "
+          >
             <div class="cursor-pointer q-mx-xs">
               <q-img class="rounded-borders" height="12rem" :ratio="1" :src="post.image" />
               <p class="q-mb-none text-caption">{{ dayMonthYear(post.created) }} &bullet; {{ post.title }}</p>
@@ -60,13 +93,14 @@ const userStore = useUserStore()
 const $q = useQuasar()
 
 const user = ref()
+const header = ref(null)
 
 const socialNetworks = [
   { name: 'facebook', link: 'https://facebook.com/' },
   { name: 'instagram', link: 'https://instagram.com/' },
   { name: 'linkedin', link: 'https://linkedin.com/in/' },
   { name: 'telegram', link: 'https://web.telegram.org/a/#' },
-  { name: 'twitter', link: 'https://twitter.com/' }
+  { name: 'x', link: 'https://x.com/' }
 ]
 
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
