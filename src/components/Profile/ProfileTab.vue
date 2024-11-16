@@ -56,12 +56,28 @@
         label="Name"
         required
         :rules="[(val) => val.length || 'Name is required']"
+        data-test="input-name"
         v-model="user.displayName"
       />
     </div>
-    <q-input class="non-selectable" debounce="400" label="Username" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username">
+    <q-input
+      class="non-selectable"
+      debounce="400"
+      label="Username"
+      data-test="input-user-name"
+      :rules="[(val) => usernameValidator(val)]"
+      v-model.trim="user.username"
+    >
       <template v-slot:append>
-        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="content_copy" round size="sm" @click="copyLink">
+        <q-btn
+          v-if="userStore.getUser?.username && isUsernameSame"
+          flat
+          icon="content_copy"
+          data-test="button-username-copy"
+          round
+          size="sm"
+          @click="copyLink"
+        >
           <q-tooltip>Copy</q-tooltip>
         </q-btn>
         <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="open_in_new" round size="sm" @click="openUserProfile">
@@ -87,16 +103,16 @@
         </q-btn>
       </q-input>
     </div>
-    <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
+    <q-input counter label="Bio" maxlength="1000" type="textarea" data-test="input-bio" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input label="Facebook" placeholder="https://www.facebook.com/" v-model.trim="user.facebook" />
-    <q-input label="Instagram" placeholder="https://www.instagram.com/" v-model.trim="user.instagram" />
-    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" v-model.trim="user.linkedin" />
-    <q-input label="Telegram" placeholder="https://www.telegram.com/" v-model.trim="user.telegram" />
-    <q-input label="X" placeholder="https://www.x.com/" v-model.trim="user.x" />
+    <q-input label="Facebook" placeholder="https://www.facebook.com/" data-test="input-facebook" v-model.trim="user.facebook" />
+    <q-input label="Instagram" placeholder="https://www.instagram.com/" data-test="input-instagram" v-model.trim="user.instagram" />
+    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" data-test="input-linkedin" v-model.trim="user.linkedin" />
+    <q-input label="Telegram" placeholder="https://www.telegram.com/" data-test="input-telegram" v-model.trim="user.telegram" />
+    <q-input label="X" placeholder="https://www.x.com/" data-test="input-x" v-model.trim="user.x" />
 
-    <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
+    <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" data-test="button-submit" rounded type="submit" />
   </q-form>
   <q-dialog v-model="removeWalletAddressDialog.show">
     <q-card>
