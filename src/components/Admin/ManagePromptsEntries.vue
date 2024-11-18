@@ -8,7 +8,7 @@
     title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
-    :loading="isLoading"
+    :loading="promptStore.isLoading"
     no-data-label="No prompts found."
     :pagination="pagination"
     :rows="prompts"
@@ -21,7 +21,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr class="new" :data-test="props.key" :props="props">
+      <q-tr class="new" :data-test="props.key" :props="props" id="item-card">
         <q-td auto-width>
           <q-btn
             dense
@@ -102,7 +102,6 @@
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="padding: 0 !important" :data-test="props.row.entries ? 'entriesFetched' : ''">
           <p v-if="!entryStore.isLoading && !props.row.entries?.length" class="q-ma-sm text-body1">NO ENTRIES</p>
-
           <TableEntry
             v-else
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
@@ -121,7 +120,17 @@
     :filter="filter"
     :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
   />
-
+  <div class="row justify-center q-mr-md float-right">
+    <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
+    <q-btn
+      v-else
+      @click="loadMorePrompts"
+      label="Load More"
+      color="primary"
+      :disable="!promptStore._hasMore || promptStore.isLoading"
+      data-test="load-more-btn"
+    />
+  </div>
   <q-dialog v-model="deleteDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
@@ -159,13 +168,14 @@
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
-import { computed, onBeforeUnmount, onMounted, watchEffect, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watchEffect, ref, watch } from 'vue'
 import FundDepositCard from './FundDepositCard.vue'
 
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
+import TheHeader from 'components/shared/TheHeader.vue'
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -193,7 +203,7 @@ const proceedDepositFundDialog = ref({})
 onMounted(async () => {
   if (userStore.isEditorOrAbove) {
     entryStore._loadedEntries = []
-    await promptStore.fetchPrompts()
+    !promptStore.getPrompts?.length && (await promptStore.fetchPrompts())
   } else {
     await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }
@@ -234,6 +244,16 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
+}
+
+const loadMorePrompts = async () => {
+  if (!promptStore.isLoading && promptStore._hasMore) {
+    try {
+      await promptStore.fetchPrompts(true, 5)
+    } catch (error) {
+      await errorStore.throwError(error, 'Error loading more prompts')
+    }
+  }
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
@@ -337,4 +357,19 @@ async function onProceedDepositFundDialog(props) {
 function getOrigin(slug) {
   return window.origin + slug
 }
+
+watch(filter, async (newSearch) => {
+  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+    if (newSearch.trim()) {
+      await promptStore.fetchPrompts(true)
+    }
+  }
+})
 </script>
+<style scoped>
+.custom-table {
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - 300px);
+}
+</style>

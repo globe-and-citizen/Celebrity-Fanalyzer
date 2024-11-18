@@ -5,7 +5,7 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
-  let name = 'Hello World!' + Math.random()
+  const name = 'Hello World!' + Math.random()
   let date = ''
   let visit = '/'
   beforeEach(() => {
@@ -197,5 +197,11 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="confirm-delete-prompt"]').click().wait(2000)
     // Wait the notification
     cy.get('.q-notification__message').contains('Prompt successfully deleted')
+  })
+
+  it('Should load more prompt when clicking "Load More" button', () => {
+    cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
+    cy.get('[data-test="load-more-btn"]').first().click({ force: true })
+    cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
   })
 })

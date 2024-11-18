@@ -1,22 +1,5 @@
 <template>
   <q-footer class="bg-white" elevated>
-    <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-      <InstallAppBanner
-        v-if="showAppInstallBanner"
-        :deferredPrompt="deferredPrompt"
-        @closeBanner="
-          () => {
-            deferredPrompt = null
-            showAppInstallBanner = false
-          }
-        "
-        @setDeferredPrompt="
-          (e) => {
-            deferredPrompt = e
-          }
-        "
-      />
-    </transition>
     <q-tabs active-class="text-primary" align="justify" class="tabs text-secondary" data-test="main-menu" switch-indicator>
       <q-route-tab v-for="(route, index) in routes" :key="index" :icon="route?.icon" :to="route?.path">
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
@@ -50,8 +33,6 @@ import { computed, onMounted, ref, watchEffect, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from 'src/firebase'
-import InstallAppBanner from 'components/shared/InstallAppBanner.vue'
-import { LocalStorage } from 'quasar'
 import { customWeb3modal } from 'src/web3/walletConnect'
 
 const updated = ref(false)
@@ -64,9 +45,6 @@ const currentPath = ref('')
 const isAdminPromptPath = currentPath.value.includes('/admin/prompts')
 const { href, params } = router.currentRoute.value
 const userDocRef = ref({})
-let deferredPrompt
-const showAppInstallBanner = ref(false)
-const dismissed = LocalStorage.getItem('dismissBanner')
 
 const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
@@ -114,22 +92,7 @@ watchEffect(async () => {
   }
 })
 
-const showBannerOnLoad = () => {
-  deferredPrompt = null
-  if (!dismissed) {
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault()
-      deferredPrompt = e
-      setTimeout(() => {
-        showAppInstallBanner.value = true
-      }, 3000)
-    })
-  }
-}
-
 onMounted(async () => {
-  showBannerOnLoad()
-
   if (!userStore.getUserIp && !userStore.isAuthenticated) {
     await userStore.fetchUserIp()
   }
