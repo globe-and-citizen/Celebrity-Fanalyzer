@@ -270,7 +270,7 @@ export const usePromptStore = defineStore('prompts', {
     async getPromptDates() {
       const set = new Set()
       if (this.hasMore) {
-        await this.fetchPrompts()
+        await this.fetchPrompts(true, this._totalPrompts)
         this._hasMore = false
       }
       this.getPrompts?.map((prompt) => {
