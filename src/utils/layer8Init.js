@@ -9,8 +9,6 @@ export async function Layer8Init() {
   const layer8Proxy = import.meta.env.VITE_LAYER8_PROXY
 
   try {
-    console.log('mock_layer8:', mock_layer8)
-
     await mock_layer8.initEncryptedTunnel({
       providers: statsApiUrl,
       proxy: layer8Proxy,

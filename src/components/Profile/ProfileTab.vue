@@ -7,47 +7,17 @@
         </template>
         <template v-else-if="user.photoURL">
           <q-img :src="user.photoURL" spinner-color="primary" spinner-size="3rem">
-            <div class="photo">
+            <div class="photo" @click="openUploadDialog">
               <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
-              <q-file
-                accept="image/*"
-                borderless
-                class="absolute-full cursor-pointer"
-                dense
-                max-file-size="5242880"
-                style="height: 5rem"
-                v-model="newPhoto"
-                @rejected="onRejected"
-                @update:model-value="uploadPhoto"
-              >
-                <template v-slot:file>
-                  <q-chip class="hidden" />
-                </template>
-              </q-file>
             </div>
           </q-img>
         </template>
         <template v-else>
-          <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
-            {{ user.displayName.charAt(0).toUpperCase() }}
-          </div>
-          <div class="photo">
+          <div class="photo" @click="openUploadDialog">
             <q-icon class="absolute-center q-mx-auto" color="grey-6" name="upload" />
-            <q-file
-              accept="image/*"
-              borderless
-              class="absolute-full cursor-pointer"
-              dense
-              max-file-size="5242880"
-              style="height: 5rem"
-              v-model="newPhoto"
-              @rejected="onRejected"
-              @update:model-value="uploadPhoto"
-            >
-              <template v-slot:file>
-                <q-chip class="hidden" />
-              </template>
-            </q-file>
+            <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+              {{ user.displayName.charAt(0).toUpperCase() }}
+            </div>
           </div>
         </template>
       </q-avatar>
@@ -97,7 +67,7 @@
           class="self-center"
           flat
           dense
-          @click="onDeleteWalletAddressDialog()"
+          @click="onDeleteWalletAddressDialog"
         >
           <q-tooltip>Delete</q-tooltip>
         </q-btn>
@@ -114,6 +84,64 @@
 
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" data-test="button-submit" rounded type="submit" />
   </q-form>
+
+  <q-dialog v-model="uploadDialog.show" persistent>
+    <q-card style="max-width: 300px; width: 100%">
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Upload Profile Picture</h6>
+      </q-card-section>
+
+      <q-card-section class="q-pa-none" style="text-align: center; padding: 20px">
+        <q-img
+          v-if="previewImage"
+          :src="previewImage"
+          class="q-mb-md"
+          spinner-color="primary"
+          spinner-size="5rem"
+          style="height: 200px; width: 200px; object-fit: cover; border-radius: 50%; border: 2px solid #ddd"
+        />
+        <div v-else class="q-mb-md">
+          <q-avatar size="11rem" text-color="white" class="q-mt-lg">
+            <div class="q-avatar__content flex flex-center q-mx-auto bg-primary text-white">
+              {{ user.displayName.charAt(0).toUpperCase() }}
+            </div>
+          </q-avatar>
+        </div>
+      </q-card-section>
+
+      <q-card-section style="min-height: 100px; padding: 10px">
+        <q-file
+          v-model="newPhoto"
+          accept="image/*"
+          :label="previewImage ? 'Change your profile picture' : 'Choose your profile picture'"
+          max-file-size="5242880"
+          style="height: 5rem"
+          @rejected="onRejected"
+          @update:model-value="changePhoto()"
+          class="q-mb-md q-mb-lg"
+          dense
+          filled
+          bottom-slots
+        ></q-file>
+      </q-card-section>
+
+      <q-card-actions align="center" class="q-gutter-sm">
+        <div style="width: 100%; display: flex; justify-content: space-between">
+          <q-btn color="primary" label="Cancel" v-close-popup style="flex: 1; margin-right: 10px" />
+          <q-btn
+            color="negative"
+            label="Delete"
+            v-close-popup
+            :disable="!Boolean(newPhoto || previewImage)"
+            @click="deleteImage"
+            style="flex: 1; margin-right: 10px"
+          />
+          <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" />
+        </div>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
   <q-dialog v-model="removeWalletAddressDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
@@ -124,7 +152,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-remove-wallet" label="Remove" @click="onRemoveWalletAddress()" />
+        <q-btn color="negative" data-test="confirm-remove-wallet" label="Remove" v-close-popup @click="onRemoveWalletAddress" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -133,7 +161,7 @@
 <script setup>
 import { useErrorStore, useStorageStore, useUserStore } from 'app/src/stores'
 import { Notify, useQuasar } from 'quasar'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import Web3ModalComponent from './Web3ModalComponent.vue'
 import { useWalletStore } from 'app/src/stores'
 import { customWeb3modal } from 'src/web3/walletConnect'
@@ -151,6 +179,8 @@ const user = ref(JSON.parse(JSON.stringify(userStore.getUser)))
 const addressUpdated = ref(false)
 const removeWalletAddressDialog = ref({ show: false })
 const isUpdate = ref(false)
+const uploadDialog = ref({ show: false })
+const previewImage = ref(null)
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
@@ -160,15 +190,37 @@ const walletAddress = computed(() => {
   return user.value.walletAddress || currentWalletAddress.value
 })
 
+onMounted(() => {
+  if (userStore?.getUser?.photoURL) {
+    previewImage.value = userStore.getUser.photoURL
+  }
+})
+
 function onRejected() {
   Notify.create({ type: 'negative', message: 'File size is too big. Max file size is 5MB.' })
 }
 
-async function uploadPhoto() {
-  await storageStore
-    .uploadFile(newPhoto.value, `users/${userStore.getUser.uid}`)
-    .then((url) => (user.value.photoURL = url))
-    .catch((error) => errorStore.throwError(error))
+async function uploadPhotoToDB() {
+  if (newPhoto.value) {
+    await storageStore
+      .uploadFile(newPhoto.value, `users/${userStore.getUser.uid}`)
+      .then((url) => {
+        user.value.photoURL = url
+        previewImage.value = url
+      })
+      .catch((error) => errorStore.throwError(error))
+  }
+  save()
+}
+
+function changePhoto() {
+  previewImage.value = ''
+  if (!newPhoto.value) {
+    return
+  }
+  const reader = new FileReader()
+  reader.readAsDataURL(newPhoto.value)
+  reader.onload = () => (previewImage.value = reader.result)
 }
 
 async function usernameValidator(username) {
@@ -186,6 +238,41 @@ function copyLink() {
 function switchAddressUpdated(value) {
   addressUpdated.value = value
 }
+
+function openUserProfile() {
+  window.open(`${origin}fan/${user.value.username}`, '_blank', 'noopener, noreferrer')
+}
+
+const isUsernameSame = computed(() => {
+  return userStore.getUser?.username === user.value.username
+})
+
+function openUploadDialog() {
+  uploadDialog.value.show = true
+}
+
+function onDeleteWalletAddressDialog() {
+  removeWalletAddressDialog.value.show = true
+}
+
+function deleteImage() {
+  previewImage.value = null
+  newPhoto.value = null
+  if (userStore.getUser?.photoURL?.length) {
+    user.value.photoURL = ''
+    save()
+  }
+}
+
+function onRemoveWalletAddress() {
+  user.value.walletAddress = ''
+  walletStore.getWalletInfo.wallet_address = ''
+  removeWalletAddressDialog.value.show = false
+  customWeb3modal.disconnect()
+  save()
+  $q.notify({ message: 'Wallet address removed', type: 'negative' })
+}
+
 function save() {
   if (currentWalletAddress.value && addressUpdated.value === true) {
     user.value.walletAddress = currentWalletAddress.value
@@ -199,27 +286,6 @@ function save() {
     })
     .catch((error) => errorStore.throwError(error, 'Error updating profile'))
 }
-
-function onDeleteWalletAddressDialog() {
-  removeWalletAddressDialog.value.show = true
-}
-
-function onRemoveWalletAddress() {
-  user.value.walletAddress = ''
-  walletStore.getWalletInfo.wallet_address = ''
-  removeWalletAddressDialog.value.show = false
-  customWeb3modal.disconnect()
-  save()
-  $q.notify({ message: 'Wallet address removed', type: 'negative' })
-}
-
-function openUserProfile() {
-  window.open(`${origin}fan/${user.value.username}`, '_blank', 'noopener, noreferrer')
-}
-
-const isUsernameSame = computed(() => {
-  return userStore.getUser?.username === user.value.username
-})
 </script>
 
 <style scoped lang="scss">

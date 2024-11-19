@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useErrorStore, useClicksStore, useImpressionsStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getFormattedLink } from 'src/utils/getFormattedLink'
@@ -39,7 +39,7 @@ const articleRef = ref(null)
 const errorStore = useErrorStore()
 const clicksStore = useClicksStore()
 const impressionsStore = useImpressionsStore()
-
+const impressions = {}
 const props = defineProps({
   advertise: {
     type: Object,
@@ -55,23 +55,66 @@ function goToUrl() {
   router.push('/campaign/' + props.advertise.id)
 }
 
+const loadStoredImpressions = () => {
+  const storedImpressions = localStorage.getItem('impressions')
+  return storedImpressions ? JSON.parse(storedImpressions) : {}
+}
+
+const saveImpressionsToStorage = () => {
+  localStorage.setItem('impressions', JSON.stringify(impressions))
+}
+
+const sendImpressions = async () => {
+  const storedImpressions = loadStoredImpressions()
+  if (Object.keys(storedImpressions).length > 0) {
+    const res = await impressionsStore.addImpression(storedImpressions)
+    if (res) {
+      Object.keys(impressions).forEach((key) => delete impressions[key])
+      localStorage.removeItem('impressions')
+    }
+  }
+}
+
+Object.assign(impressions, loadStoredImpressions())
+
 onMounted(async () => {
+  const storedImpressions = loadStoredImpressions()
+
   articleRef.value.focus()
+  if (Object.keys(storedImpressions).length > 0) {
+    await sendImpressions()
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      const intersecting = entry.isIntersecting
-      if (intersecting && props.advertise?.status === 'Active') {
-        impressionsStore.addImpression('advertises', props.advertise?.id).catch((error) => errorStore.throwError(error))
+      if (entry.isIntersecting && props.advertise?.status === 'Active') {
+        const adId = props.advertise.id
+        impressions[adId] = (impressions[adId] || 0) + 1
+        saveImpressionsToStorage()
       }
     })
   })
-  observer.observe(articleRef.value)
+
+  if (articleRef.value) {
+    observer.observe(articleRef.value)
+  }
+
+  window.addEventListener('beforeunload', sendImpressions)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      sendImpressions()
+    }
+  })
+})
+
+onUnmounted(async () => {
+  await sendImpressions()
+  window.removeEventListener('beforeunload', sendImpressions)
+  document.removeEventListener('visibilitychange', sendImpressions)
 })
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,700');
-
 $bg: #eedfcc;
 $text: #777;
 $black: #121212;

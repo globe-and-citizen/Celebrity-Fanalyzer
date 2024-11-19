@@ -3,7 +3,7 @@
     <CampaignCard v-if="item.isAdd" :advertise="item" />
     <div v-if="!item.isAdd" class="col-8 flex column" data-test="prompt-card">
       <div v-if="item?.isWinner || item?.hasWinner" class="winner-badge">
-        <img alt="favicon" height="40px" src="/favicon-128x128.png" />
+        <img alt="favicon" height="40" width="40" src="/favicon-128x128.png" />
       </div>
       <router-link v-if="item.author" class="flex items-center link" :to="`/fan/${item.author.username || item.author.uid}`">
         <q-avatar size="2rem">

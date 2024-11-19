@@ -1,6 +1,6 @@
 //Testing Frameworks
 import { createPinia, setActivePinia } from 'pinia'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteUser, getAuth } from 'firebase/auth'
 
 // Necessary Components
@@ -293,8 +293,4 @@ describe('Users Store', () => {
       expect(await userStore.checkUsernameAvailability('abcd')).toEqual(false)
     })
   })
-})
-
-afterAll(async () => {
-  // clean up logic.
 })

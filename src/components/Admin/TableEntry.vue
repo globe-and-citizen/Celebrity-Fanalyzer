@@ -11,7 +11,7 @@
     :rows="rows"
     :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
     no-data-label="No entries found."
-    :loading="entryStore.isLoading"
+    :loading="entryStore.isLoading || promptStore.isLoading"
   >
     <template v-slot:body="props">
       <q-tr class="new" :data-test="props.key" :props="props">
