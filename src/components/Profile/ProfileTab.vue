@@ -1,7 +1,7 @@
 <template>
   <q-form class="q-gutter-y-md" greedy @submit="save">
     <div class="flex items-center no-wrap">
-      <q-avatar size="5rem" text-color="white" class="q-mt-lg">
+      <q-avatar size="5rem" text-color="white" class="q-mt-lg" data-test="avatar-upload">
         <template v-if="storageStore.isLoading">
           <q-spinner color="primary" size="3rem" />
         </template>
@@ -85,7 +85,7 @@
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" data-test="button-submit" rounded type="submit" />
   </q-form>
 
-  <q-dialog v-model="uploadDialog.show" persistent>
+  <q-dialog v-model="uploadDialog.show" persistent data-test="upload-dialog">
     <q-card style="max-width: 300px; width: 100%">
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Upload Profile Picture</h6>
@@ -98,6 +98,7 @@
           class="q-mb-md"
           spinner-color="primary"
           spinner-size="5rem"
+          data-test="upload-preview"
           style="height: 200px; width: 200px; object-fit: cover; border-radius: 50%; border: 2px solid #ddd"
         />
         <div v-else class="q-mb-md">
@@ -122,6 +123,7 @@
           dense
           filled
           bottom-slots
+          data-test="upload-file-input"
         ></q-file>
       </q-card-section>
 
@@ -135,8 +137,9 @@
             :disable="!Boolean(newPhoto || previewImage)"
             @click="deleteImage"
             style="flex: 1; margin-right: 10px"
+            data-test="upload-save-btn"
           />
-          <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" />
+          <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" data-test="upload-save-btn" />
         </div>
       </q-card-actions>
     </q-card>

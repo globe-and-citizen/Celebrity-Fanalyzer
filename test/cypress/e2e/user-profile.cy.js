@@ -111,4 +111,42 @@ describe('User Profile page', () => {
     // Verify the success notification appears
     cy.get('.q-notification').should('be.visible').and('contain', 'Feedback deleted successfully')
   })
+
+  it('should allow user to upload a profile picture', () => {
+    cy.visit('/profile')
+    // Open the upload dialog by clicking the avatar
+    cy.get('[data-test="avatar-upload"]') // Assuming the avatar has this test attribute
+      .click()
+
+    // Ensure the dialog appears
+    cy.get('[data-test="upload-dialog"]').should('be.visible')
+
+    // Choose a file
+    cy.get('[data-test="upload-file-input"]') // File input element in the dialog
+      .selectFile('src/assets/cypress.jpg') // Path from the cypress/fixtures folder
+
+    // Step 4: Wait for the preview image to show
+    cy.get('[data-test="upload-preview"]').should('be.visible')
+
+    // Step 5: Click the Save button in the dialog to upload the image
+    cy.get('[data-test="upload-save-btn"]').click()
+    cy.wait(2000) // Adjust wait time based on your app's image upload duration
+
+    //Check the Profile successfully updated
+    cy.get('.q-notification__message').contains('Profile successfully updated')
+  })
+
+  // it('should show an error if file size is too large', () => {
+  //   // Open the upload dialog by clicking the avatar
+  //   cy.get('[data-test="avatar-upload"]').click()
+
+  //   // Ensure the dialog appears
+  //   cy.get('[data-test="upload-dialog"]').should('be.visible')
+
+  //   // Choose a large file that exceeds the size limit (5MB)
+  //   cy.get('[data-test="upload-file-input"]').selectFile('src/assets/large.jpg')
+
+  //   // Verify the rejection message (this will depend on how the rejection is handled in the code)
+  //   cy.get('.q-notification__message').contains('File size is too big. Max file size is 5MB.')
+  // })
 })
