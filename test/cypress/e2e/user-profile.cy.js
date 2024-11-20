@@ -73,7 +73,7 @@ describe('User Profile page', () => {
 
     cy.get('[data-test="message-input"]')
       .type(
-        'Dear Celebrity-Fanalyzer Team,\n\nI wanted to say that Celebrity-Fanalyzer Platform is fantastic! The design is user-friendly, and the features are very engaging. I enjoy using it every day and look forward to more updates.\n\nThank you for your excellent work!\n\nBest regards,\n[Cypress Tester]'
+        'Dear Celebrity-Fanalyzer Team,\n\nI wanted to say that Celebrity-Fanalyzer Platform is fantastic! The design is user-friendly, and the features are very engaging. I enjoy using it every day and look forward to more updates.\n\nThank you for your excellent work!\n\nBest regards,\nCypress Tester'
       )
       .wait(1000)
 
@@ -112,11 +112,12 @@ describe('User Profile page', () => {
     cy.get('.q-notification').should('be.visible').and('contain', 'Feedback deleted successfully')
   })
 
-  it('should allow user to upload a profile picture', () => {
+  it('Should allow user to upload and delete profile picture', () => {
+    // Step 1: Upload a profile picture
     cy.visit('/profile')
+
     // Open the upload dialog by clicking the avatar
-    cy.get('[data-test="avatar-upload"]') // Assuming the avatar has this test attribute
-      .click()
+    cy.get('[data-test="avatar-upload"]').click()
 
     // Ensure the dialog appears
     cy.get('[data-test="upload-dialog"]').should('be.visible')
@@ -125,14 +126,32 @@ describe('User Profile page', () => {
     cy.get('[data-test="upload-file-input"]') // File input element in the dialog
       .selectFile('src/assets/cypress.jpg') // Path from the cypress/fixtures folder
 
-    // Step 4: Wait for the preview image to show
+    // Wait for the preview image to show
     cy.get('[data-test="upload-preview"]').should('be.visible')
 
-    // Step 5: Click the Save button in the dialog to upload the image
+    // Click the Save button in the dialog to upload the image
     cy.get('[data-test="upload-save-btn"]').click()
-    cy.wait(2000) // Adjust wait time based on your app's image upload duration
+    cy.wait(5000) // Adjust wait time based on your app's image upload duration
 
-    //Check the Profile successfully updated
+    // Check if the profile was successfully updated after upload
+    cy.get('.q-notification__message').contains('Profile successfully updated')
+
+    // Delete the profile picture
+    cy.get('[data-test="avatar-upload"]').click()
+
+    // Ensure the dialog appears
+    cy.get('[data-test="upload-dialog"]').should('be.visible')
+
+    // Wait for the preview image to show
+    cy.get('[data-test="upload-preview"]').should('be.visible')
+
+    // Click the delete button in the dialog
+    cy.get('[data-test="upload-delete-btn"]').should('be.enabled')
+
+    cy.get('[data-test="upload-delete-btn"]').click()
+    cy.wait(2000) // Adjust wait time based on your app's image deletion duration
+
+    // Check if the profile was successfully updated after deletion
     cy.get('.q-notification__message').contains('Profile successfully updated')
   })
 

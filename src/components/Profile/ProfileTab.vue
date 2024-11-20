@@ -50,7 +50,15 @@
         >
           <q-tooltip>Copy</q-tooltip>
         </q-btn>
-        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="open_in_new" round size="sm" @click="openUserProfile">
+        <q-btn
+          v-if="userStore.getUser?.username && isUsernameSame"
+          flat
+          icon="open_in_new"
+          round
+          size="sm"
+          @click="openUserProfile"
+          data-test="button-username-view-profile"
+        >
           <q-tooltip>View Profile</q-tooltip>
         </q-btn>
       </template>
@@ -137,7 +145,7 @@
             :disable="!Boolean(newPhoto || previewImage)"
             @click="deleteImage"
             style="flex: 1; margin-right: 10px"
-            data-test="upload-save-btn"
+            data-test="upload-delete-btn"
           />
           <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" data-test="upload-save-btn" />
         </div>
