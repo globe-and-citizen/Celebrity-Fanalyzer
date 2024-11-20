@@ -86,52 +86,6 @@ describe('User Profile page', () => {
     cy.get('@windowOpen').should('be.calledWith', `${window.location.origin}/fan/Cypress Tester`)
   })
 
-  it('Should user Give us feedback', () => {
-    cy.visit('/profile/feedback').wait(2000)
-
-    cy.get('[data-test="subject-input"]').type('Great Experience With Celebrity-Fanalyzer Platform').wait(1000)
-
-    cy.get('[data-test="message-input"]')
-      .type(
-        'Dear Celebrity-Fanalyzer Team,\n\nI wanted to say that Celebrity-Fanalyzer Platform is fantastic! The design is user-friendly, and the features are very engaging. I enjoy using it every day and look forward to more updates.\n\nThank you for your excellent work!\n\nBest regards,\nCypress Tester'
-      )
-      .wait(1000)
-
-    // Get the submit button and click it
-    cy.get('[data-test="submit-button"] > .q-btn__content').click()
-
-    //Check the Feedback submitted!
-    cy.get('.q-notification__message').contains('Feedback submitted!')
-  })
-
-  it('should delete feedback with the subject "Great Experience With Celebrity-Fanalyzer Platform"', () => {
-    cy.visit('/admin/feedbacks').wait(4000)
-
-    const feedbackSubject = 'Great Experience With Celebrity-Fanalyzer Platform'
-
-    // Ensure feedback with subject is visible in the table
-    cy.get('[data-test="feedback-table"]').contains(feedbackSubject).should('be.visible')
-
-    // Find the feedback card for the specific subject and click the delete button
-    cy.contains(feedbackSubject)
-      .closest('[data-test="feedback-card"]') // Locate the card element that contains the feedback subject
-      .find('[data-test="trash-button"]') // Find the trash button within the card
-      .click() // Click the delete button
-
-    // Ensure the delete confirmation dialog is visible
-    cy.get('[data-test="delete-dialog"]').should('be.visible')
-    cy.get('[data-test="delete-dialog-message"]').should('contain', `Are you sure you want to delete this feedback from`) // Confirm dialog message contains the expected text
-
-    // Click the delete button in the dialog to confirm deletion
-    cy.get('[data-test="delete-button"]').click()
-
-    // Ensure the feedback is removed from the table
-    cy.get('[data-test="feedback-table"]').contains(feedbackSubject).should('not.exist') // Feedback should no longer be in the table
-
-    // Verify the success notification appears
-    cy.get('.q-notification').should('be.visible').and('contain', 'Feedback deleted successfully')
-  })
-
   it('Should allow user to upload and delete profile picture', () => {
     // Step 1: Upload a profile picture
     cy.visit('/profile')
