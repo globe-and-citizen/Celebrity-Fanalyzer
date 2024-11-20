@@ -66,6 +66,26 @@ describe('User Profile page', () => {
     // cy.get('[data-test="entrie-unsubscribe"] > .q-btn__content').click().wait(1000)
   })
 
+  it('Should display the View Profile button and open the profile link in a new tab', () => {
+    cy.intercept('GET', '**/user', {
+      body: {
+        username: 'Cypress Tester'
+      }
+    })
+    cy.wait(4000)
+    // Ensure the "View Profile" button is visible
+    cy.get('[data-test="button-username-view-profile"]').should('exist').should('be.visible')
+
+    // Stub the window.open method
+    cy.window().then((win) => {
+      cy.stub(win, 'open').as('windowOpen')
+    })
+    // Click the button and verify the expected behavior
+    cy.get('[data-test="button-username-view-profile"]').click()
+    // Assert the new tab opens with the correct URL
+    cy.get('@windowOpen').should('be.calledWith', `${window.location.origin}/fan/Cypress Tester`)
+  })
+
   it('Should user Give us feedback', () => {
     cy.visit('/profile/feedback').wait(2000)
 
