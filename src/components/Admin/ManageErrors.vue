@@ -21,7 +21,16 @@
           {{ props.row.error.split('\n')[0] }}
         </q-td>
         <q-td key="action" :props="props">
-          <q-btn color="negative" :disable="errorStore.isLoading" flat icon="delete" round size="sm" @click="confirmDelete(props.row)" />
+          <q-btn
+            color="negative"
+            :disable="errorStore.isLoading"
+            flat
+            icon="delete"
+            round
+            size="sm"
+            @click="confirmDelete(props.row)"
+            data-test="delete-button"
+          />
         </q-td>
         <q-tooltip style="font-size: 0.8rem; white-space: pre">
           {{ props.row.error }}
@@ -37,11 +46,12 @@
       </q-card-section>
       <q-card-section>Are you sure you want to delete this error?</q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="onDeleteError(deleteDialog.id)" />
+        <q-btn flat label="Cancel" color="primary" v-close-popup data-test="cancel-delete-button" />
+        <q-btn flat label="Delete" color="negative" @click="onDeleteError(deleteDialog.id)" data-test="confirm-delete-button" />
       </q-card-actions>
     </q-card>
   </q-dialog>
+
   <q-btn
     v-if="errors.value?.length !== errorStore?.totalErrors"
     :loading="errorStore.isLoading"
@@ -49,6 +59,7 @@
     label="Load More"
     color="primary"
     class="q-mr-md float-right"
+    data-test="load-more-button"
   />
 </template>
 

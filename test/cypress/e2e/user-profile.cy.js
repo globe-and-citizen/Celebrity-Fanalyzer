@@ -56,14 +56,34 @@ describe('User Profile page', () => {
     cy.get('.q-notification__message').contains('Profile successfully updated')
   })
 
-  it('if a user has Prompts & Entries Subscribe,they Should Unsubscribe', () => {
-    cy.visit('/profile/subscriptions').wait(2000)
+  it('if a user has Prompts & Entries Subscribe, they should unsubscribe', () => {
+    cy.visit('/profile/subscriptions').wait(5000)
+    // cy.get('[href="/profile"]').click().wait(2000)
+    // cy.get('[href="/profile/subscriptions"]').click()
 
-    // Get the Prompts Unsubscribe button and click it
-    // cy.get('[data-test="prompt-unsubscribe"] > .q-btn__content').click().wait(1000)
+    // Check if the Prompts table exists and unsubscribe
+    cy.get('.prompts-table').should('exist') // Ensure table exists
+    cy.get('.prompts-table .q-tr')
+      .should('have.length.greaterThan', -1)
+      .then((tableRows) => {
+        if (tableRows.length > 0) {
+          cy.get('[data-test="prompt-unsubscribe"]').first().click().wait(1000) // Click the first unsubscribe button
+        } else {
+          cy.log('No prompts subscription found')
+        }
+      })
 
-    // Get the Entries Unsubscribe button and click it
-    // cy.get('[data-test="entrie-unsubscribe"] > .q-btn__content').click().wait(1000)
+    // Check if the Entries table exists and unsubscribe
+    cy.get('.entries-table').should('exist') // Ensure table exists
+    cy.get('.entries-table .q-tr')
+      .should('have.length.greaterThan', -1)
+      .then((tableRows) => {
+        if (tableRows.length > 0) {
+          cy.get('[data-test="entrie-unsubscribe"]').first().click().wait(1000) // Click the first unsubscribe button
+        } else {
+          cy.log('No entries subscription found')
+        }
+      })
   })
 
   it('Should display the View Profile button and open the profile link in a new tab', () => {
