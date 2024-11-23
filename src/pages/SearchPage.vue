@@ -44,7 +44,7 @@
           <TheEntries :entries="computedEntries" />
         </div>
       </TransitionGroup>
-      <div v-if="promptStore._hasMore" class="row justify-center q-mt-md">
+      <div v-if="showHasMore" class="row justify-center q-mt-md">
         <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="70px" :thickness="5" />
         <q-btn v-else @click="loadMorePrompts" label="Load More" data-test="load-more-btn" color="primary" />
       </div>
