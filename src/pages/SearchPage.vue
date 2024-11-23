@@ -134,6 +134,8 @@ const combinedItems = computed(() => {
   return result
 })
 
+const showHasMore = computed(() => promptStore._hasMore && category.value === 'All' && !search.value && !searchDate.value)
+
 const updateSearchDate = (value) => {
   searchDate.value = value
 }
