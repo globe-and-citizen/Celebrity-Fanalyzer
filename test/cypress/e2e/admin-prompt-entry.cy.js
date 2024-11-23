@@ -5,7 +5,6 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
-  const name = 'Hello World!' + Math.random()
   let date = ''
   let visit = '/'
   beforeEach(() => {
@@ -44,7 +43,7 @@ describe('Admin Prompt & Entry', () => {
       })
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type(name)
+    cy.get('[data-test="input-title"]').type('Hello World!')
 
     // Get the description input and type 'This is a sample prompt' into it
     cy.get('[data-test="input-description"]').type('This is a sample prompt')
@@ -71,10 +70,10 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-entry"]').should('be.visible').click()
 
     // Get the prompt select and choose the "Hello World!" option
-    cy.get('[data-test="select-prompt"]').wait(4000).select(name)
+    cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type(name)
+    cy.get('[data-test="input-title"]').type('Hello World!')
 
     // Get the description input and type 'This is a sample entry' into it
     cy.get('[data-test="input-description"]').type('This is a sample entry')
@@ -91,7 +90,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should Navigate  in prompt and entry', () => {
     cy.visit(visit)
-    cy.contains(name)
+    cy.contains('Hello World!')
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
@@ -103,7 +102,7 @@ describe('Admin Prompt & Entry', () => {
   it('Should display the prompt and interact', () => {
     // cy.visit('/hello-world-')
     cy.visit(visit)
-    cy.contains(name)
+    cy.contains('Hello World!')
     cy.scrollTo('bottom')
     cy.get('[data-test="entries"]')
     cy.scrollTo('top')
