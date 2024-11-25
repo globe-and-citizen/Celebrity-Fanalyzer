@@ -5,7 +5,7 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
-  const name = 'Hello World!' + Math.random()
+  const name = 'Hello World!'
   let date = ''
   let visit = '/'
   beforeEach(() => {
@@ -71,10 +71,10 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-entry"]').should('be.visible').click()
 
     // Get the prompt select and choose the "Hello World!" option
-    cy.get('[data-test="select-prompt"]').wait(4000).select(name)
+    cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('entry ' + name)
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample entry' into it
     cy.get('[data-test="input-description"]').type('This is a sample entry')
@@ -170,7 +170,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get(`[data-test="${date}"] > .text-right > [data-test="button-edit"]`).click()
 
     cy.get('[data-test="input-title"]').clear()
-    cy.get('[data-test="input-title"]').type(name + 'Updated')
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample prompt' into it
     cy.get('[data-test="input-description"]').clear()

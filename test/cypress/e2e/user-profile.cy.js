@@ -9,7 +9,7 @@ describe('User Profile page', () => {
     cy.visit('/profile')
   })
   it('Should user profile edit', () => {
-    const name = 'Cypress Tester' + Math.random()
+    const name = 'Cypress Tester'
 
     // Get the edit Name input
     cy.get('[data-test="input-name"]').clear()
