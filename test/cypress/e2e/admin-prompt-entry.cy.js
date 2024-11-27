@@ -222,7 +222,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('tester')
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
     // Get the expand button and click it
     cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     // Delete all entry in a prompt and left one
