@@ -46,3 +46,5 @@ package-lock.json
 
 src/web3/alternatives
 src/components/Admin/updatedTableEntry.vue
+
+src/web3/#walletConnect.js#
