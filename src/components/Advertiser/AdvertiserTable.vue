@@ -38,7 +38,12 @@
         <template #body-cell-action="props">
           <q-td :props="props">
             <q-icon
-              v-if="userStore.getUser.role === 'Admin' && props.row.campaignCode?.length > 5 && props.row.status === 'Active'"
+              v-if="
+                userStore.getUser.role === 'Admin' &&
+                props.row.campaignCode?.length > 5 &&
+                props.row.status !== 'Inactive' &&
+                props.row.status !== 'Complete'
+              "
               flat
               color="green"
               name="payment"
@@ -52,7 +57,10 @@
             </q-icon>
             <q-icon
               v-if="
-                userStore.getUser.email === props.row.author.email && props.row.campaignCode?.length > 5 && props.row.status === 'Active'
+                userStore.getUser.uid === props.row.author.id &&
+                props.row.campaignCode?.length > 5 &&
+                props.row.status !== 'Inactive' &&
+                props.row.status !== 'Complete'
               "
               flat
               color="primary"
@@ -187,7 +195,7 @@
     <q-dialog v-model="withdrawAmountSpentDialog.show">
       <q-card>
         <q-card-section class="q-pb-none">
-          <h6 class="q-my-sm">Withdraw Amount Spent : {{ withdrawAmountSpentDialog.currentAmountSpent }}</h6>
+          <h6 class="q-my-sm">Available Amount to withdraw : {{ withdrawAmountSpentDialog.unclaimedAmount }}</h6>
         </q-card-section>
         <q-card-section>Are you sure you want to withdraw it ?</q-card-section>
         <q-card-actions align="right">
@@ -243,6 +251,7 @@ import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getCurrentDate, calculateEndDate, computedDuration } from 'src/utils/date'
 import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
+import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 const props = defineProps({
   advertises: {
@@ -301,41 +310,48 @@ async function calculateAmountSpent(advertise) {
 async function _getEventsForCampaign(advertise) {
   if (advertise?.campaignCode) {
     $q.loading.show()
-    const result = await getEventsForCampaign(advertise.campaignCode)
-
-    if (result.status.includes('success')) {
-      // Combine events into a single array with eventType field
-
-      const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
-        ...event,
-        eventType: 'Campaign Created'
-      }))
-
-      const paymentReleasedEvents = result.events.paymentReleasedEvents.map((event) => ({
-        ...event,
-        eventType: 'Payment Released'
-      }))
-
-      const budgetWithdrawnEvents = result.events.budgetWithdrawnEvents.map((event) => ({
-        ...event,
-        eventType: 'Remaining Budget Withdrawn'
-      }))
-
-      const paymentReleasedOnWithdrawApprovalEvents = result.events.paymentReleasedOnWithdrawApprovalEvents.map((event) => ({
-        ...event,
-        eventType: 'Payment Released on Withdraw Approval'
-      }))
-
-      eventRows.value = [
-        ...adCampaignCreatedEvents,
-        ...paymentReleasedEvents,
-        ...budgetWithdrawnEvents,
-        ...paymentReleasedOnWithdrawApprovalEvents
-      ]
-      //let's change the advertise status.
-      advertismentPaymentEventsDialog.value.show = true
+    if (!customWeb3modal.getAddress()) {
+      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+      customWeb3modal.open()
+      $q.loading.hide()
     } else {
-      $q.notify({ message: result?.error?.message, type: 'negative' })
+      const result = await getEventsForCampaign(advertise.campaignCode)
+
+      if (result.status.includes('success')) {
+        $q.notify({ message: 'events retreived successfully ', type: 'positive' })
+        // Combine events into a single array with eventType field
+
+        const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
+          ...event,
+          eventType: 'Campaign Created'
+        }))
+
+        const paymentReleasedEvents = result.events.paymentReleasedEvents.map((event) => ({
+          ...event,
+          eventType: 'Payment Released'
+        }))
+
+        const budgetWithdrawnEvents = result.events.budgetWithdrawnEvents.map((event) => ({
+          ...event,
+          eventType: 'Remaining Budget Withdrawn'
+        }))
+
+        const paymentReleasedOnWithdrawApprovalEvents = result.events.paymentReleasedOnWithdrawApprovalEvents.map((event) => ({
+          ...event,
+          eventType: 'Payment Released on Withdraw Approval'
+        }))
+
+        eventRows.value = [
+          ...adCampaignCreatedEvents,
+          ...paymentReleasedEvents,
+          ...budgetWithdrawnEvents,
+          ...paymentReleasedOnWithdrawApprovalEvents
+        ]
+        //let's change the advertise status.
+        advertismentPaymentEventsDialog.value.show = true
+      } else {
+        $q.notify({ message: result?.error?.message, type: 'negative' })
+      }
     }
   } else {
     $q.notify({ message: 'No campaign code associated', type: 'negative' })
@@ -362,8 +378,21 @@ async function onwithdrawAmountSpentDialog(advertise) {
   if (advertise?.campaignCode) {
     $q.loading.show()
     const currentAmountSpent = await calculateAmountSpent(advertise)
-    if (currentAmountSpent > 0) {
+    const adEvents = await getEventsForCampaign(advertise.campaignCode)
+    let releasedAmount = 0
+    let unclaimedAmount = 0
+    if (adEvents.status.includes('success')) {
+      if (adEvents.events.paymentReleasedEvents) {
+        adEvents.events.paymentReleasedEvents.forEach((paymentReleasedEvent) => {
+          releasedAmount += parseFloat(paymentReleasedEvent.amount)
+        })
+      }
+    }
+    unclaimedAmount = parseFloat(currentAmountSpent - releasedAmount).toFixed(3)
+
+    if (unclaimedAmount > 0) {
       withdrawAmountSpentDialog.value.advertise = advertise
+      withdrawAmountSpentDialog.value.unclaimedAmount = unclaimedAmount
       withdrawAmountSpentDialog.value.currentAmountSpent = currentAmountSpent
       withdrawAmountSpentDialog.value.show = true
     } else {
@@ -377,16 +406,23 @@ async function onwithdrawAmountSpentDialog(advertise) {
 
 async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.show()
-  const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent })
-  if (result.status.includes('success')) {
-    $q.notify({ message: 'Campaign payment claimed successfully', type: 'positive' })
-    //let's change the advertise status.
-    if (currentAmountSpent >= advertise.budget) {
-      await _completeAdvertise(advertise)
-    }
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    customWeb3modal.open()
+    $q.loading.hide()
   } else {
-    $q.notify({ message: result?.error?.message, type: 'negative' })
+    const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent.toString() })
+    if (result.status.includes('success')) {
+      $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
+      //let's change the advertise status.
+      if (currentAmountSpent >= advertise.budget) {
+        await _completeAdvertise(advertise)
+      }
+    } else {
+      $q.notify({ message: result?.error?.message, type: 'negative' })
+    }
   }
+
   $q.loading.hide()
 }
 
@@ -401,16 +437,19 @@ async function _completeAdvertise(advertise) {
 }
 async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
-  const result = await requestAndApproveWithdrawal({
-    campaignCode: advertise.campaignCode,
-    currentAmounSpentInMatic: currentAmounSpent
-  })
-  if (result.status.includes('success')) {
-    $q.notify({ message: 'Remaining budget withdrawn successfully ', type: 'positive' })
-    //let's change the advertise status
-    await _completeAdvertise(advertise)
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: ' please connect your wallet' })
+    customWeb3modal.open()
+    $q.loading.hide()
   } else {
-    $q.notify({ message: result?.error?.message, type: 'negative' })
+    const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
+    if (result.status.includes('success')) {
+      $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
+      //let's change the advertise status
+      await _completeAdvertise(advertise)
+    } else {
+      $q.notify({ message: result?.error?.message, type: 'negative' })
+    }
   }
   $q.loading.hide()
 }
@@ -485,10 +524,10 @@ function onDeselect() {
 function onApproveAdvertise() {
   advertiseStore
     .editAdvertise(selectedAdvertise.value)
-    .then(() => $q.notify({ type: 'info', message: 'Advertise approved successfully' }))
+    .then(() => $q.notify({ type: 'info', message: 'Advertise Approved successfully' }))
     .catch((error) => {
       console.log(error)
-      errorStore.throwError(error, 'Advertise approval failed')
+      errorStore.throwError(error, 'Advertise Approval failed')
     })
     .finally(() => {
       selectedAdvertise.value = {}

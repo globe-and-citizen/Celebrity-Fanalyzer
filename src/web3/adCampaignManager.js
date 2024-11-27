@@ -225,7 +225,6 @@ export const getEventsForCampaign = async (campaignCode) => {
         adCampaignCreatedEvents: adCampaignCreatedData
       }
 
-      //console.log('Events retrieved successfully')
       return { status: 'success', events: result }
     } catch (error) {
       const errorMessage = error.error ? error.error.data : error
