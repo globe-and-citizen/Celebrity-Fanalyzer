@@ -55,8 +55,11 @@ async function updateAdvertiseStatus(docId) {
   const totalImpressions = await calculateTotalImpressions(advertiseDocRef)
   const totalClicks = await calculateTotalClicks(advertiseDocRef)
   const totalVisits = await calculateTotalVisits(advertiseDocRef)
+  const impressionsMatic = totalImpressions * 0.001
+  const clicksMatic = totalClicks * 0.001
+  const viewsMatic = totalVisits * 0.001
+  const totalCost = viewsMatic + clicksMatic + impressionsMatic
 
-  const totalCost = totalImpressions / 100 + totalClicks / 20 + totalVisits / 20
   const date1 = new Date()
   const date2 = new Date(docData.endDate)
   date1.setHours(0, 0, 0, 0)
