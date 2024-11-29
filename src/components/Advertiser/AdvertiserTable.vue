@@ -676,7 +676,7 @@ function viewMatic(matic) {
 function showStatus(data) {
   const create = calculateStatus(data.publishDate)
   const ended = calculateStatus(data.endDate)
-  const budgetCrossed = computeAdvertisementMatic(data.impressions, data.clicks, data.visits) > Number(data.budget)
+  const budgetCrossed = computeAdvertisementMatic(data.totalImpressions, data.totalClicks, data.totalVisits) > Number(data.budget)
   if (!create) {
     return 'Publish date pending'
   } else if (budgetCrossed || data.status === 'Budget Crossed') {

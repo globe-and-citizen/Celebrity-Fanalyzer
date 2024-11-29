@@ -73,10 +73,7 @@ export const claimPayment = async (payload = { campaignCode: '', currentAmounSpe
   if (payload.campaignCode.length > 1 && payload.currentAmounSpentInMatic > 0) {
     try {
       const adCampaignManager = await getContractInstance()
-      if (
-        customWeb3modal.getAddress() &&
-        customWeb3modal.getAddress().toLowerCase() === import.meta.env.VITE_ADVERTISEMENT_COMPAIGN_CONTRACT_OWNER.toLowerCase()
-      ) {
+      if (customWeb3modal.getAddress()) {
         const tx = await adCampaignManager.claimPayment(
           payload.campaignCode,
           ethers.utils.parseEther(payload.currentAmounSpentInMatic.toString())

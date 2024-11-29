@@ -46,6 +46,14 @@ async function calculateTotalVisits(advertiseDocRef) {
   return totalVisits
 }
 
+async function calculateAmountSpent(totalClicks, totalImpressions, totalVisits) {
+  return (
+    import.meta.env.VITE_ADVERTISE_CLICK_RATE * totalClicks +
+    import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * totalImpressions +
+    import.meta.env.VITE_ADVERTISE_VIEWS_RATE * totalVisits
+  )
+}
+
 async function updateAdvertiseStatus(docId) {
   const advertiseDocRef = db.collection('advertises').doc(docId)
 
@@ -56,7 +64,7 @@ async function updateAdvertiseStatus(docId) {
   const totalClicks = await calculateTotalClicks(advertiseDocRef)
   const totalVisits = await calculateTotalVisits(advertiseDocRef)
 
-  const totalCost = totalImpressions / 100 + totalClicks / 20 + totalVisits / 20
+  const totalCost = calculateAmountSpent(totalClicks, totalImpressions, totalVisits)
   const date1 = new Date()
   const date2 = new Date(docData.endDate)
   date1.setHours(0, 0, 0, 0)
