@@ -267,6 +267,18 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
+    async getPromptDates() {
+      const set = new Set()
+      if (this.hasMore) {
+        await this.fetchPrompts(true, this._totalPrompts)
+        this._hasMore = false
+      }
+      this.getPrompts?.map((prompt) => {
+        set.add(prompt?.id)
+      })
+      return Array.from(set)
+    },
+
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()

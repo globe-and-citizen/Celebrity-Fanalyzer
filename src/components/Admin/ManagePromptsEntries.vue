@@ -423,7 +423,8 @@ function getOrigin(slug) {
 watch(filter, async (newSearch) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     if (newSearch.trim()) {
-      await promptStore.fetchPrompts(true)
+      const promptsCount = promptStore._totalPrompts ? promptStore._totalPrompts : promptStore.getTotalPromptsCount
+      await promptStore.fetchPrompts(true, promptsCount)
     }
   }
 })
