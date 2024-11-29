@@ -44,7 +44,7 @@
           <TheEntries :entries="computedEntries" />
         </div>
       </TransitionGroup>
-      <div v-if="promptStore._hasMore" class="row justify-center q-mt-md">
+      <div v-if="showHasMore" class="row justify-center q-mt-md">
         <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="70px" :thickness="5" />
         <q-btn v-else @click="loadMorePrompts" label="Load More" data-test="load-more-btn" color="primary" />
       </div>
@@ -133,6 +133,8 @@ const combinedItems = computed(() => {
   result.push(...adsToAdd)
   return result
 })
+
+const showHasMore = computed(() => promptStore._hasMore && category.value === 'All' && !search.value && !searchDate.value)
 
 const updateSearchDate = (value) => {
   searchDate.value = value
