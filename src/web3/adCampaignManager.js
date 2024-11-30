@@ -23,7 +23,7 @@ const getProvider = async () => {
     }
   } catch (error) {
     console.error('Error getting provider:', error)
-    error = 'please connect your wallet'
+    error = 'Please connect your wallet and  try again'
     // Rethrow the error to handle it where getProvider is called
     throw error
   }

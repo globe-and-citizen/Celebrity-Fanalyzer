@@ -311,7 +311,7 @@ async function _getEventsForCampaign(advertise) {
   if (advertise?.campaignCode) {
     $q.loading.show()
     if (!customWeb3modal.getAddress()) {
-      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+      $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
       customWeb3modal.open()
       $q.loading.hide()
     } else {
@@ -407,7 +407,7 @@ async function onwithdrawAmountSpentDialog(advertise) {
 async function _claimPayment(advertise, currentAmountSpent) {
   $q.loading.show()
   if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
     customWeb3modal.open()
     $q.loading.hide()
   } else {
@@ -438,13 +438,13 @@ async function _completeAdvertise(advertise) {
 async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   $q.loading.show()
   if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: ' please connect your wallet' })
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
     customWeb3modal.open()
     $q.loading.hide()
   } else {
     const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
     if (result.status.includes('success')) {
-      $q.notify({ message: 'remaing budget withdrawn successfully ', type: 'positive' })
+      $q.notify({ message: 'Remaing budget withdrawn successfully ', type: 'positive' })
       //let's change the advertise status
       await _completeAdvertise(advertise)
     } else {

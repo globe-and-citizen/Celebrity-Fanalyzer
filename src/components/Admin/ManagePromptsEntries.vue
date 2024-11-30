@@ -346,7 +346,7 @@ function handleDeleteEntry(entryId, promptId) {
 async function onProceedDepositFundDialog(props) {
   //let's check if the entry already have valid payment..
   if (!customWeb3modal.getAddress()) {
-    $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
     customWeb3modal.open()
   } else {
     proceedDepositFundDialog.value.show = true

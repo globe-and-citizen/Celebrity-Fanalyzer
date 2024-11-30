@@ -302,7 +302,7 @@ async function onProceedPaymentDialog(props) {
   if (_currentPrompt.value) {
     $q.loading.show()
     if (!customWeb3modal.getAddress()) {
-      $q.notify({ type: 'negative', message: ' please connect your wallet ' })
+      $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
       customWeb3modal.open()
       $q.loading.hide()
     } else {
