@@ -78,7 +78,7 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, onUnmounted } from 'vue'
 import { useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -145,4 +145,12 @@ function openAdvertiseDialog(props) {
   advertise.value = props?.id ? props : {}
   advertise.value.dialog = true
 }
+
+onUnmounted(async () => {
+  const adminTab = document.querySelector('.adminTab')
+  const activeHomeTab = document.querySelector('[href="/"]')
+  activeHomeTab?.classList.remove('q-tab--inactive')
+  adminTab?.classList.remove('admin_tab', 'cursor-pointer', 'q-router-link--active')
+  adminTab?.classList.replace('q-tab--active', 'q-tab--inactive')
+})
 </script>
