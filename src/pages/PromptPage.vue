@@ -43,8 +43,8 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore } from 'src/stores'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
-import { useQuery } from '@tanstack/vue-query'
-import { fetchMonth } from 'src/api/prompts'
+import { useInfiniteQuery, useQuery } from '@tanstack/vue-query'
+import { QueryKeys } from 'src/utils/query-keys'
 
 const router = useRouter()
 const entryStore = useEntryStore()
@@ -66,20 +66,37 @@ const shareIsLoaded = ref(false)
 const editPrompt = ref({})
 
 const params = computed(() => router.currentRoute.value?.params)
-const { data } = useQuery({
-  queryKey: ['monthPrompt'],
-  queryFn: fetchMonth,
+const { data: monthPrompt } = useQuery({
+  queryKey: [QueryKeys.MONTH_PROMPT],
+  queryFn: () => promptStore.fetchMonthPrompt,
   // 5 days
   refetchInterval: 5 * 24 * 60 * 60 * 1000,
   staleTime: 5 * 24 * 60 * 60 * 1000
 })
+
+const { data: allPrompts } = useInfiniteQuery({
+  queryKey: [QueryKeys.ALL_PROMPTS],
+  queryFn: ({ pageParam = null }) => promptStore.fetchPromptsInfinite({ pageParam }),
+  getNextPageParam: (lastPage) => {
+    const lastVisibleId = lastPage.lastVisible?._document?.data.value.mapValue.fields.id.stringValue
+    return lastVisibleId || null
+  },
+  staleTime: 5 * 24 * 60 * 60 * 1000,
+  refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  keepPreviousData: true
+})
+
+const loadedPrompts = computed(() => {
+  return allPrompts?.value?.pages.flatMap((page) => page.prompts) || []
+})
+
 const prompt = computed(() => {
   if (route.name === 'month') {
-    return data?.value?.[0]
+    return monthPrompt?.value?.[0]
   }
 
   // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-  return promptStore.getPrompts
+  return loadedPrompts.value
     ?.sort((a, b) => a.id - b.id)
     ?.find((prompt) => {
       switch (route.name) {
@@ -163,6 +180,7 @@ function openPromptDialog() {
   editPrompt.value = prompt.value
   editPrompt.value.dialog = true
 }
+
 onBeforeRouteLeave(async () => {
   stats = stopTracking()
 })

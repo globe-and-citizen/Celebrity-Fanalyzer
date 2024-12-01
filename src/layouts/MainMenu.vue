@@ -94,37 +94,25 @@ watchEffect(async () => {
 
 onMounted(async () => {
   if (!userStore.getUserIp && !userStore.isAuthenticated) {
-    console.log('1')
-    requestIdleCallback(async () => {
-      await userStore.fetchUserIp()
-    })
+    await userStore.fetchUserIp()
   }
 
   if (userStore.isAuthenticated && userStore.getUser && !userStore.getUser.location) {
-    console.log('2')
-    requestIdleCallback(async () => {
-      await userStore.fetchUserIp()
-    })
+    await userStore.fetchUserIp()
   }
   if (params.year && params.month && !params.id) {
-    console.log('3')
     promptStore.fetchPromptBySlug(`${params.year}-${params.month}`).catch((error) => errorStore.throwError(error))
   }
 
   if (params.id) {
-    console.log('4')
     entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
   }
 
   // if (href === '/month') {
-  //   console.log('5')
-  //
-  //    await promptStore.fetchMonthsPrompt()
+  //   await promptStore.fetchMonthsPrompt()
   // }
 
   if (params.slug) {
-    console.log('6')
-
     promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
   }
 })

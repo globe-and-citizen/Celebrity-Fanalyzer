@@ -137,8 +137,7 @@ onMounted(async () => {
 })
 
 function openPromptDialog(props) {
-  prompt.value = props?.id ? props : {}
-  prompt.value.dialog = true
+  prompt.value = { ...props, dialog: true }
 }
 
 function openAdvertiseDialog(props) {

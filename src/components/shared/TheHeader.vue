@@ -185,6 +185,7 @@ function goToFeedback() {
 }
 
 function openPromptDialog(props) {
+  console.log('here?')
   prompt.value = props?.id ? props : {}
   prompt.value.dialog = true
 }

@@ -207,11 +207,13 @@
 
 <script setup>
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { fetchMonth } from 'src/api/prompts'
-import { useQuery } from '@tanstack/vue-query'
-import { ref } from 'vue'
-const isInView = ref(false)
 
+import { useQuery } from '@tanstack/vue-query'
+import { QueryKeys } from 'src/utils/query-keys'
+import { ref } from 'vue'
+import { usePromptStore } from 'src/stores'
+const isInView = ref(false)
+const promptStore = usePromptStore()
 const onIntersection = (entry) => {
   isInView.value = entry.isIntersecting
 }
@@ -222,14 +224,15 @@ const options = {
     rootMargin: '-150px 0px -50px 0px'
   }
 }
-
 const { data } = useQuery({
-  queryKey: ['monthPrompt'],
-  queryFn: fetchMonth,
+  queryKey: [QueryKeys.MONTH_PROMPT],
+  queryFn: promptStore.fetchMonthPrompt,
   // 5 days
   refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  enabled: true,
   staleTime: 5 * 24 * 60 * 60 * 1000
 })
+promptStore.checkNewMonthPrompt()
 </script>
 
 <style scoped lang="scss">

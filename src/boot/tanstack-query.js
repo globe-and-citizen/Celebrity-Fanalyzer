@@ -20,9 +20,10 @@ export default ({ app }) => {
               storage: newIdbStorage(createStore('db_name', 'store_name')),
               maxAge: Infinity
             }),
+
         networkMode: 'offlineFirst',
         refetchOnReconnect: false,
-        refetchOnMount: true,
+        refetchOnMount: false,
         refetchOnWindowFocus: false,
         refetchInterval: 60000,
         retry: 2,

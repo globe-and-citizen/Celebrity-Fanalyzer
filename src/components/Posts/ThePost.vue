@@ -170,11 +170,10 @@ import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
-import { getFormattedLink } from '../../utils/getFormattedLink'
+import { getFormattedLink } from 'src/utils/getFormattedLink'
 
 const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit'])
 const emit = defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog', 'openEntryDialog'])
-
 const router = useRouter()
 
 const commentStore = useCommentStore()
