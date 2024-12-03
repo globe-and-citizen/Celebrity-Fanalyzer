@@ -42,12 +42,6 @@ describe('Admin Prompt & Entry', () => {
         date = value
         visit += value.replace('-', '/')
       })
-    cy.get('input[data-test="date"]')
-      .invoke('val')
-      .then((value) => {
-        date = value
-        visit += value.replace('-', '/')
-      })
 
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type(name)
@@ -229,7 +223,6 @@ describe('Admin Prompt & Entry', () => {
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
     // Get the expand button and click it
     cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
@@ -257,7 +250,6 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
     // Get the delete button and click it
-    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-delete-prompt"]`).click()
     cy.get(`[data-test="${date}"] > .text-right > [data-test="button-delete-prompt"]`).click()
 
     // Get the confirm button and click it
