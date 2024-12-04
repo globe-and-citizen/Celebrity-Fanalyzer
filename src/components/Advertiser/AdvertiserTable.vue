@@ -413,7 +413,7 @@ async function _claimPayment(advertise, currentAmountSpent) {
   } else {
     const result = await claimPayment({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmountSpent.toString() })
     if (result.status.includes('success')) {
-      $q.notify({ message: 'campaign payment claimed successfully ', type: 'positive' })
+      $q.notify({ message: 'Campaign payment claimed successfully ', type: 'positive' })
       //let's change the advertise status.
       if (currentAmountSpent >= advertise.budget) {
         await _completeAdvertise(advertise)
