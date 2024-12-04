@@ -23,7 +23,7 @@ const getProvider = async () => {
     }
   } catch (error) {
     console.error('Error getting provider:', error)
-    error = 'please connect your wallet'
+    error = 'Please connect your wallet and  try again'
     // Rethrow the error to handle it where getProvider is called
     throw error
   }
@@ -73,10 +73,7 @@ export const claimPayment = async (payload = { campaignCode: '', currentAmounSpe
   if (payload.campaignCode.length > 1 && payload.currentAmounSpentInMatic > 0) {
     try {
       const adCampaignManager = await getContractInstance()
-      if (
-        customWeb3modal.getAddress() &&
-        customWeb3modal.getAddress().toLowerCase() === import.meta.env.VITE_ADVERTISEMENT_COMPAIGN_CONTRACT_OWNER.toLowerCase()
-      ) {
+      if (customWeb3modal.getAddress()) {
         const tx = await adCampaignManager.claimPayment(
           payload.campaignCode,
           ethers.utils.parseEther(payload.currentAmounSpentInMatic.toString())
@@ -225,7 +222,6 @@ export const getEventsForCampaign = async (campaignCode) => {
         adCampaignCreatedEvents: adCampaignCreatedData
       }
 
-      //console.log('Events retrieved successfully')
       return { status: 'success', events: result }
     } catch (error) {
       const errorMessage = error.error ? error.error.data : error
