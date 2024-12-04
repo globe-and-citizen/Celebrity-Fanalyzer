@@ -318,7 +318,7 @@ async function _getEventsForCampaign(advertise) {
       const result = await getEventsForCampaign(advertise.campaignCode)
 
       if (result.status.includes('success')) {
-        $q.notify({ message: 'events retreived successfully ', type: 'positive' })
+        $q.notify({ message: 'Events retreived successfully ', type: 'positive' })
         // Combine events into a single array with eventType field
 
         const adCampaignCreatedEvents = result.events.adCampaignCreatedEvents.map((event) => ({
