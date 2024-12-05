@@ -157,7 +157,7 @@ watch(searchDate, async () => {
 onMounted(async () => {
   await promptStore.getTotalPromptsCount()
   try {
-    if (!promptStore.getPrompts?.length) {
+    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) {
       await promptStore.fetchPrompts()
     }
 
