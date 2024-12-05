@@ -8,7 +8,7 @@
     title="Manage Prompts & Entries"
     :columns="columns"
     :filter="filter"
-    :loading="promptStore.isLoading"
+    :loading="isLoading"
     no-data-label="No prompts found."
     :pagination="pagination"
     :rows="prompts"
@@ -97,6 +97,22 @@
             <q-tooltip>Delete</q-tooltip>
           </q-btn>
           <ShareComponent dense :label="''" :link="getOrigin(props.row.slug)" @share="share($event, 'prompts', props.row.id)" />
+          <q-toggle
+            :model-value="isMonthPrompt(props?.row.id)"
+            color="primary"
+            size="xs"
+            @update:model-value="
+              (v) => {
+                if (isMonthPrompt(props?.row.id)) {
+                  cantUnselect()
+                } else {
+                  openConfirmDialog(v, props.row.id)
+                }
+              }
+            "
+          >
+            <q-tooltip>{{ isMonthPrompt(props?.row.id) ? 'Current month prompt' : 'Mark as month prompt' }}</q-tooltip>
+          </q-toggle>
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
@@ -121,15 +137,8 @@
     :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
   />
   <div class="row justify-center q-mr-md float-right">
-    <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
-    <q-btn
-      v-else
-      @click="loadMorePrompts"
-      label="Load More"
-      color="primary"
-      :disable="!promptStore._hasMore || promptStore.isLoading"
-      data-test="load-more-btn"
-    />
+    <q-spinner v-if="isLoading || (isFetchingNextPage && !isError)" color="primary" size="30px" :thickness="5" />
+    <q-btn v-else @click="fetchNextPage" label="Load More" color="primary" :disable="!hasNextPage" data-test="load-more-btn" />
   </div>
   <q-dialog v-model="deleteDialog.show">
     <q-card>
@@ -145,7 +154,35 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn
+          color="negative"
+          data-test="confirm-delete-prompt"
+          flat
+          label="Delete"
+          :disabled="isMonthPrompt(deleteDialog.prompt.id)"
+          @click="onDeletePrompt(deleteDialog.prompt.id)"
+        >
+          <q-tooltip v-if="isMonthPrompt(deleteDialog.prompt.id)">Please choose another month prompt first</q-tooltip>
+        </q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="changeMonthPromptDialog.show">
+    <q-card>
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Change current month prompt?</h6>
+      </q-card-section>
+      <q-card-section>
+        <span class="q-ml-sm">
+          Are you sure you want to replace the current month prompt with:
+          <b>{{ changeMonthPromptDialog.prompt.title }}</b>
+          ?
+        </span>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn color="negative" flat label="Confirm" @click="confirmChangeMonthPrompt" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -167,15 +204,17 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import TableEntry from 'src/components/Admin/TableEntry.vue'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
-import { computed, onBeforeUnmount, onMounted, watchEffect, ref, watch } from 'vue'
+import { onBeforeUnmount, watch } from 'vue'
 import FundDepositCard from './FundDepositCard.vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
+import { onMounted, watchEffect, ref } from 'vue'
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/vue-query'
 
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
-import TheHeader from 'components/shared/TheHeader.vue'
+import { QueryKeys } from 'src/utils/query-keys'
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -183,7 +222,7 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const router = useRouter()
 const shareStore = useShareStore()
-defineEmits(['openPromptDialog'])
+const emit = defineEmits(['openPromptDialog'])
 
 const columns = [
   {},
@@ -199,11 +238,29 @@ const maxWidth = ref(0)
 
 const prompts = ref([])
 const proceedDepositFundDialog = ref({})
+const monthPromptId = ref(null)
+const changeMonthPromptDialog = ref({})
+const isMonthPrompt = (promptId) => monthPromptId?.value === promptId
+
+const updatePrompt = useMutation({
+  mutationFn: ({ oldMonthPromptId, newMonthPromptId }) => promptStore.updateMonthPrompt(oldMonthPromptId, newMonthPromptId)
+})
+
+const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery({
+  queryKey: [QueryKeys.ALL_PROMPTS],
+  queryFn: ({ pageParam = null }) => promptStore.fetchPromptsInfinite({ pageParam }),
+  getNextPageParam: (lastPage) => {
+    const lastVisibleId = lastPage.lastVisible?._document?.data.value.mapValue.fields.id.stringValue
+    return lastVisibleId || null
+  },
+  staleTime: 5 * 24 * 60 * 60 * 1000,
+  refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  keepPreviousData: true
+})
 
 onMounted(async () => {
   if (userStore.isEditorOrAbove) {
     entryStore._loadedEntries = []
-    !promptStore.getPrompts?.length && (await promptStore.fetchPrompts())
   } else {
     await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }
@@ -215,11 +272,18 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateMaxWidth)
 })
 
-const isLoaded = computed(() => promptStore.getPrompts)
-const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
+const { data: monthPrompt } = useQuery({
+  queryKey: [QueryKeys.MONTH_PROMPT],
+  queryFn: promptStore.fetchMonthPrompt,
+  // 5 days
+  refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  enabled: true,
+  staleTime: 5 * 24 * 60 * 60 * 1000
+})
 
 watchEffect(async () => {
-  prompts.value = promptStore.getPrompts
+  prompts.value = data?.value?.pages.flatMap((page) => page.prompts) || []
+  monthPromptId.value = monthPrompt?.value?.[0].id
 })
 
 function updateMaxWidth() {
@@ -236,6 +300,12 @@ function openDeleteDialog(prompt) {
   deleteDialog.value.prompt = prompt
 }
 
+function openConfirmDialog(value, promptId) {
+  changeMonthPromptDialog.value.show = true
+  changeMonthPromptDialog.value.prompt = prompts.value.find((prompt) => prompt.id === promptId)
+  changeMonthPromptDialog.value.confirm = value
+}
+
 function onDeletePrompt(id) {
   promptStore
     .deletePrompt(id)
@@ -244,16 +314,6 @@ function onDeletePrompt(id) {
 
   deleteDialog.value.show = false
   deleteDialog.value.prompt = {}
-}
-
-const loadMorePrompts = async () => {
-  if (!promptStore.isLoading && promptStore._hasMore) {
-    try {
-      await promptStore.fetchPrompts(true, 5)
-    } catch (error) {
-      await errorStore.throwError(error, 'Error loading more prompts')
-    }
-  }
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
@@ -359,13 +419,44 @@ function getOrigin(slug) {
 }
 
 watch(filter, async (newSearch) => {
-  if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
+  if (newSearch.trim()) {
+    pagination.page = 1
+    await fetchNextPage({ pageParam: null })
+  } else if (!newSearch.trim() && !isLoading.value && hasNextPage.value) {
+    await fetchNextPage({ pageParam: null })
+  }
+
+  if (hasNextPage.value) {
     if (newSearch.trim()) {
-      const promptsCount = promptStore._totalPrompts ? promptStore._totalPrompts : promptStore.getTotalPromptsCount
-      await promptStore.fetchPrompts(true, promptsCount)
+      await fetchNextPage({ pageParam: null })
     }
   }
 })
+
+function cantUnselect() {
+  $q.notify({ type: 'negative', message: "You can't unselect month prompt. Please choose another one first" })
+}
+
+promptStore.getTotalPromptsCount()
+
+const confirmChangeMonthPrompt = () => {
+  updatePrompt.mutate(
+    {
+      oldMonthPromptId: monthPromptId.value,
+      newMonthPromptId: changeMonthPromptDialog.value.prompt.id
+    },
+    {
+      onSuccess: () => {
+        monthPromptId.value = changeMonthPromptDialog.value.prompt.id
+        changeMonthPromptDialog.value.show = false
+        $q.notify({ type: 'positive', message: 'Month prompt updated successfully' })
+      },
+      onError: (error) => {
+        errorStore.throwError(error, 'Failed to update month prompt')
+      }
+    }
+  )
+}
 </script>
 <style scoped>
 .custom-table {

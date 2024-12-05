@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   or,
   orderBy,
   query,
@@ -31,6 +32,8 @@ import {
 } from 'src/stores'
 import { Notify } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
+import { QueryKeys } from 'src/utils/query-keys'
+import { useQueryClient } from '@tanstack/vue-query'
 
 let updatedBefore = false
 const getPrompts = async (querySnapshot, userStore) => {
@@ -63,7 +66,8 @@ export const usePromptStore = defineStore('prompts', {
     loadCount: 6,
     _totalPrompts: undefined,
     _lastVisible: null,
-    _hasMore: true
+    _hasMore: true,
+    _newPromptListenerUnsubscribe: null
   }),
 
   getters: {
@@ -90,6 +94,73 @@ export const usePromptStore = defineStore('prompts', {
       setTimeout(async () => {
         window.location.href = '/404'
       }, 6000)
+    },
+
+    listenForNewPrompts() {
+      const queryClient = useQueryClient()
+      const promptsQuery = query(collection(db, 'prompts'), orderBy('id', 'desc'), limit(1))
+
+      onSnapshot(promptsQuery, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const newPrompt = change.doc.data()
+
+            const currentPrompts = queryClient.getQueryData([QueryKeys.ALL_PROMPTS])
+
+            if (currentPrompts) {
+              const promptExists = currentPrompts.pages[0].prompts.some((prompt) => prompt.id === newPrompt.id)
+
+              if (!promptExists) {
+                const updatedPrompts = [newPrompt, ...currentPrompts.pages[0].prompts]
+
+                queryClient.setQueryData([QueryKeys.ALL_PROMPTS], {
+                  ...currentPrompts,
+                  pages: [
+                    {
+                      ...currentPrompts.pages[0],
+                      prompts: updatedPrompts
+                    },
+                    ...currentPrompts.pages.slice(1)
+                  ]
+                })
+              }
+            } else {
+              queryClient.setQueryData([QueryKeys.ALL_PROMPTS], {
+                pages: [
+                  {
+                    prompts: [newPrompt],
+                    nextPage: null
+                  }
+                ]
+              })
+            }
+          }
+        })
+      })
+    },
+
+    async fetchMonthPrompt() {
+      const userStore = useUserStore()
+
+      try {
+        const querySnapshot = await getDocs(query(collection(db, 'prompts'), where('monthPrompt', '==', true)))
+        const promptData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+
+        if (promptData?.author?.id) {
+          const authorId = promptData.author.id
+          promptData.author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
+        }
+
+        return [
+          {
+            ...promptData,
+            entries: promptData?.entries?.map((entry) => entry.id) || []
+          }
+        ]
+      } catch (e) {
+        console.error("Error fetching month's prompts:", e)
+        return []
+      }
     },
 
     async fetchPrompts(loadMore = false, count) {
@@ -119,7 +190,6 @@ export const usePromptStore = defineStore('prompts', {
         }
 
         this._prompts = loadMore ? [...(this._prompts || []), ...newPrompts] : newPrompts
-
         return newPrompts
       } catch (error) {
         console.error('Error fetching prompts:', error)
@@ -200,49 +270,6 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchMonthsPrompt() {
-      try {
-        this._isLoading = true
-        const userStore = useUserStore()
-
-        const promptDocRef = doc(db, 'prompts', currentYearMonth())
-        const promptSnapshotRef = await getDoc(promptDocRef)
-
-        if (promptSnapshotRef.exists()) {
-          const promptSnapshot = { id: promptSnapshotRef.id, ...promptSnapshotRef.data() }
-
-          if (promptSnapshot.author && promptSnapshot.author.id) {
-            promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
-          }
-
-          this._isLoading = false
-          this._monthPrompt = [
-            {
-              ...promptSnapshot,
-              entries: promptSnapshot?.entries?.map((entry) => entry.id) || []
-            }
-          ]
-        } else {
-          const lastPromptAvailableRef = await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1)))
-          const lastPrompt = lastPromptAvailableRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-          if (lastPrompt.author && lastPrompt.author.id) {
-            lastPrompt.author = userStore.getUserById(lastPrompt.author.id) || (await userStore.fetchUser(lastPrompt.author.id))
-          }
-          this._isLoading = false
-          this._monthPrompt = [
-            {
-              ...lastPrompt,
-              entries: lastPrompt?.entries?.map((entry) => entry.id) || []
-            }
-          ]
-        }
-      } catch (e) {
-        await this.redirect()
-        console.error('Error fetching months prompts:', e)
-      }
-    },
-
     async hasPrompt(date, title, slug, isEdit = false) {
       try {
         const promptSnapshot = await getDocs(
@@ -306,18 +333,12 @@ export const usePromptStore = defineStore('prompts', {
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
 
-      this._isLoading = true
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'prompts', prompt.id), prompt)
+      }).then(async () => {
+        prompt.entries = []
+        prompt.author = await userStore.fetchUser(prompt.author.id)
       })
-        .then(async () => {
-          prompt.entries = []
-          prompt.author = await userStore.fetchUser(prompt.author.id)
-
-          this._prompts = this._prompts.map((element) => (element.id === prompt.id ? prompt : element))
-          this._monthPrompt = this._monthPrompt?.map((element) => (element.id === prompt.id ? prompt : element))
-        })
-        .finally(() => (this._isLoading = false))
     },
 
     async updateEscrowId(payload) {
@@ -363,7 +384,7 @@ export const usePromptStore = defineStore('prompts', {
       const visitorStore = useVisitorStore()
       const statStore = useStatStore()
 
-      const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
+      const relatedEntries = this._prompts?.find((prompt) => prompt.id === id)?.entries || []
 
       this._isLoading = true
       if (relatedEntries.length) {
@@ -397,6 +418,71 @@ export const usePromptStore = defineStore('prompts', {
       this._prompts = undefined
       this._hasMore = true
       updatedBefore = false
+    },
+
+    async fetchPromptsInfinite({ pageParam = null }) {
+      const userStore = useUserStore()
+
+      try {
+        const queryRef = collection(db, 'prompts')
+        const limitCount = 5
+
+        let q = query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+
+        if (pageParam) {
+          q = query(q, startAfter(pageParam))
+        }
+
+        const querySnapshot = await getDocs(q)
+        const newPrompts = await getPrompts(querySnapshot, userStore)
+
+        this._hasMore = newPrompts.length > 0
+
+        return {
+          prompts: newPrompts,
+          lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1] || null
+        }
+      } catch (error) {
+        console.error('Error fetching prompts:', error)
+        this._hasMore = false
+        return { prompts: [], lastVisible: null }
+      }
+    },
+
+    async checkNewMonthPrompt() {
+      const queryClient = useQueryClient()
+
+      const currentMonthPromptQuery = query(collection(db, 'prompts'), where('monthPrompt', '==', true))
+
+      onSnapshot(currentMonthPromptQuery, (querySnapshot) => {
+        if (!querySnapshot.empty) {
+          const currentPromptId = queryClient.getQueryData([QueryKeys.MONTH_PROMPT])?.[0]?.id
+          querySnapshot.forEach((docSnapshot) => {
+            const promptId = docSnapshot.id
+            if (promptId !== currentPromptId) {
+              queryClient.invalidateQueries({ queryKey: [QueryKeys.MONTH_PROMPT] })
+            } else {
+              console.log(`Current month prompt is still active: ${promptId}`)
+            }
+          })
+        } else {
+          console.error('No active monthPrompt found.')
+          queryClient.invalidateQueries([QueryKeys.MONTH_PROMPT])
+        }
+      })
+    },
+    async updateMonthPrompt(oldMonthPromptId, newMonthPromptId) {
+      try {
+        await runTransaction(db, async (transaction) => {
+          const oldPromptRef = doc(db, 'prompts', oldMonthPromptId)
+          const newPromptRef = doc(db, 'prompts', newMonthPromptId)
+
+          transaction.update(newPromptRef, { monthPrompt: true })
+          transaction.update(oldPromptRef, { monthPrompt: false })
+        })
+      } catch (e) {
+        console.error('Transaction failed: ', e)
+      }
     }
   }
 })

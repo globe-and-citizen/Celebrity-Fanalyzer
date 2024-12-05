@@ -8,6 +8,10 @@
 
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
+import { registerRoute } from 'workbox-routing'
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
+import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 
 self.skipWaiting()
 clientsClaim()
@@ -55,10 +59,25 @@ self.addEventListener('fetch', (event) => {
             })
           })
           .catch((error) => {
-            console.error(error)
-            return caches.match('/icons/icon-512x512.png')
+            console.error('Image not found', error)
           })
       })
     )
   }
 })
+
+registerRoute(
+  ({ url }) => url.host.startsWith('fonts.g'),
+  new CacheFirst({
+    cacheName: 'google-fonts',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 30
+      }),
+      new CacheableResponsePlugin({
+        statuses: [0, 200]
+      })
+    ]
+  })
+)
+registerRoute(({ url }) => url.href.startsWith('http'), new StaleWhileRevalidate())

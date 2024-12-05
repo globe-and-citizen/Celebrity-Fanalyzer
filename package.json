@@ -54,13 +54,13 @@
     "leaflet": "^1.9.4",
     "mock_layer8_module": "^1.0.4",
     "pica": "^9.0.1",
-    "pinia": "^2.2.1",
+    "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
     "quasar": "^2.16.4",
     "sha1": "^1.1.1",
-    "vue": "^3.5.12",
-    "vue-echarts": "^7.0.2",
-    "vue-router": "^4.4.3"
+    "vue": "^3.2.47",
+    "vue-echarts": "^6.6.1",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.13.5",

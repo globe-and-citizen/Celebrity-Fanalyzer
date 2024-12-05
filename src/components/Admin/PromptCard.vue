@@ -202,6 +202,8 @@ import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import MonthPicker from '../date/MonthPicker.vue'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { QueryKeys } from 'src/utils/query-keys'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -225,6 +227,7 @@ const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
 const unavailablePromptsMonth = ref([])
+const queryClient = useQueryClient()
 
 watchEffect(() => {
   if (props.id) {
@@ -301,6 +304,42 @@ function onPaste(evt) {
   }
 }
 
+const { mutate } = useMutation({
+  mutationFn: (prompt) => promptStore.editPrompt(prompt),
+  onSuccess: (data, variables) => {
+    const updatedPrompt = variables
+    queryClient.setQueryData([QueryKeys.ALL_PROMPTS], (oldData) => {
+      if (!oldData) return oldData
+      const updatedPages = oldData.pages.map((page) => {
+        if (page.prompts.some((prompt) => prompt.id === updatedPrompt.id)) {
+          return {
+            ...page,
+            prompts: page.prompts.map((prompt) => {
+              return prompt.id === updatedPrompt.id
+                ? {
+                    ...prompt,
+                    categories: updatedPrompt.categories,
+                    slug: updatedPrompt.slug,
+                    title: updatedPrompt.title,
+                    image: updatedPrompt.image,
+                    description: updatedPrompt.description,
+                    showcase: updatedPrompt.showcase
+                  }
+                : prompt
+            })
+          }
+        }
+        return page
+      })
+      return {
+        ...oldData,
+        pages: updatedPages
+      }
+    })
+  },
+  retry: 3
+})
+
 async function onSubmit() {
   prompt.slug = '/' + prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
@@ -327,7 +366,7 @@ async function onSubmit() {
 
   try {
     if (props.id) {
-      await promptStore.editPrompt(prompt)
+      mutate(prompt)
       $q.notify({ type: 'info', message: 'Prompt successfully edited' })
     } else {
       await promptStore.addPrompt(prompt)
