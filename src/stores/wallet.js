@@ -63,6 +63,7 @@ export const useWalletStore = defineStore('wallet', {
       this.temp_address = this.wallet_info.wallet_address
     },
     getChainConfig(networkName) {
+      console.log('the network name is ', networkName)
       for (const key in this.chains) {
         if (networkName.includes(key)) {
           return this.chains[key]
