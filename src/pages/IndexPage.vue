@@ -6,7 +6,7 @@
       <section class="text-center">
         <h2 class="q-my-md text-h6">Welcome to Celebrity Fanalyzer!</h2>
         <RouterLink to="month">
-          <q-responsive :ratio="1" :style="{ backgroundImage: `url(${data?.[0].image})`, borderRadius: '300px' }">
+          <q-responsive :ratio="1" :style="{ backgroundImage: `url(${data?.[0]?.image})`, borderRadius: '300px' }">
             <div class="bg-blur flex">
               <q-img
                 fit="contain"
@@ -232,6 +232,9 @@ const { data } = useQuery({
   enabled: true,
   staleTime: 5 * 24 * 60 * 60 * 1000
 })
+
+const something = useQuery({ queryKey: [QueryKeys.MONTH_PROMPT] })
+console.log(something, '')
 promptStore.checkNewMonthPrompt()
 </script>
 

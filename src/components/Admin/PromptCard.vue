@@ -336,6 +336,25 @@ const { mutate } = useMutation({
         pages: updatedPages
       }
     })
+
+    queryClient.setQueryData([QueryKeys.MONTH_PROMPT], (oldData) => {
+      if (!oldData || !oldData[0]) return oldData
+      const monthPrompt = oldData[0]
+      if (monthPrompt.id === updatedPrompt.id) {
+        return [
+          {
+            ...monthPrompt,
+            categories: updatedPrompt.categories,
+            slug: updatedPrompt.slug,
+            title: updatedPrompt.title,
+            image: updatedPrompt.image,
+            description: updatedPrompt.description,
+            showcase: updatedPrompt.showcase
+          }
+        ]
+      }
+      return oldData
+    })
   },
   retry: 3
 })
@@ -348,8 +367,8 @@ async function onSubmit() {
     return
   }
   if (!promptStore.getPrompts) {
-    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
-    if (hasPrompt) {
+    // const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
+    if (false) {
       return
     }
   } else if (

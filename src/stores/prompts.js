@@ -33,7 +33,7 @@ import {
 import { Notify } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
 import { QueryKeys } from 'src/utils/query-keys'
-import { useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
 let updatedBefore = false
 const getPrompts = async (querySnapshot, userStore) => {
@@ -103,35 +103,52 @@ export const usePromptStore = defineStore('prompts', {
       onSnapshot(promptsQuery, (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           if (change.type === 'added') {
-            const newPrompt = change.doc.data()
+            queryClient.invalidateQueries([QueryKeys.ALL_PROMPTS])
+          }
+        })
+      })
+    },
 
-            const currentPrompts = queryClient.getQueryData([QueryKeys.ALL_PROMPTS])
+    listenForUpdatedPrompts() {
+      const queryClient = useQueryClient()
+      const promptsQuery = query(collection(db, 'prompts'))
+      onSnapshot(promptsQuery, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'modified') {
+            const updatedPrompt = change.doc.data()
+            const cachedPrompts = queryClient.getQueryData([QueryKeys.ALL_PROMPTS])
+            const monthPrompt = queryClient.getQueryData([QueryKeys.MONTH_PROMPT])
 
-            if (currentPrompts) {
-              const promptExists = currentPrompts.pages[0].prompts.some((prompt) => prompt.id === newPrompt.id)
+            if (!cachedPrompts || !cachedPrompts.pages) return
 
-              if (!promptExists) {
-                const updatedPrompts = [newPrompt, ...currentPrompts.pages[0].prompts]
+            const allPrompts = cachedPrompts.pages.flatMap((page) => page.prompts) || []
+            const promptExists = allPrompts.some((prompt) => prompt.id === updatedPrompt.id)
 
-                queryClient.setQueryData([QueryKeys.ALL_PROMPTS], {
-                  ...currentPrompts,
-                  pages: [
-                    {
-                      ...currentPrompts.pages[0],
-                      prompts: updatedPrompts
-                    },
-                    ...currentPrompts.pages.slice(1)
-                  ]
-                })
+            if (promptExists) {
+              if (monthPrompt && updatedPrompt.id === monthPrompt[0].id) {
+                // queryClient.setQueryData([QueryKeys.MONTH_PROMPT], { ...monthPrompt, updatedPrompt })
+                queryClient.invalidateQueries([QueryKeys.ALL_PROMPTS, QueryKeys.MONTH_PROMPT])
               }
-            } else {
-              queryClient.setQueryData([QueryKeys.ALL_PROMPTS], {
-                pages: [
-                  {
-                    prompts: [newPrompt],
-                    nextPage: null
-                  }
-                ]
+
+              // const updatedPrompts = allPrompts.map((prompt) =>
+              //   prompt.id === updatedPrompt.id
+              //     ? {
+              //         ...prompt,
+              //         categories: updatedPrompt.categories,
+              //         slug: updatedPrompt.slug,
+              //         title: updatedPrompt.title,
+              //         image: updatedPrompt.image,
+              //         description: updatedPrompt.description,
+              //         showcase: updatedPrompt.showcase
+              //       }
+              //     : prompt
+              // )
+              // queryClient.setQueryData([QueryKeys.ALL_PROMPTS], {
+              //   pages: [{ prompts: updatedPrompts }],
+              //   pageParams: cachedPrompts.pageParams || []
+              // })
+              queryClient.invalidateQueries([QueryKeys.ALL_PROMPTS]).then((result) => {
+                console.log(result)
               })
             }
           }
@@ -139,6 +156,29 @@ export const usePromptStore = defineStore('prompts', {
       })
     },
 
+    listenForDeletedPrompts() {
+      const queryClient = useQueryClient()
+      const promptsQuery = query(collection(db, 'prompts'))
+
+      onSnapshot(promptsQuery, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'removed') {
+            // const updatedPrompt = change.doc.data()
+            // const cachedPrompts = queryClient.getQueryData([QueryKeys.ALL_PROMPTS])
+            //
+            // if (!cachedPrompts || !cachedPrompts.pages) return
+            //
+            // const allPrompts = cachedPrompts.pages.flatMap((page) => page.prompts) || []
+            // const filteredPrompts = allPrompts.filter((prompt) => prompt.id !== updatedPrompt.id)
+            // queryClient.setQueryData([QueryKeys.ALL_PROMPTS], {
+            //   pages: [{ prompts: filteredPrompts }],
+            //   pageParams: cachedPrompts.pageParams || []
+            // })
+            queryClient.invalidateQueries([QueryKeys.ALL_PROMPTS])
+          }
+        })
+      })
+    },
     async fetchMonthPrompt() {
       const userStore = useUserStore()
 
@@ -270,29 +310,29 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async hasPrompt(date, title, slug, isEdit = false) {
-      try {
-        const promptSnapshot = await getDocs(
-          query(
-            collection(db, 'prompts'),
-            isEdit ? where('id', '!=', date) : '',
-            or(isEdit ? '' : where('date', '==', date), where('slug', '==', slug), where('title', '==', title))
-          )
-        )
-        promptSnapshot.docs.forEach((doc) => {
-          const data = doc.data()
-          if (data.title.toLowerCase() === title.toLowerCase() || data.slug === slug) {
-            Notify.create({ message: 'Prompt with this title already exists. Please choose another title.', type: 'negative' })
-          } else if (data.date === date) {
-            Notify.create({ message: 'Choose another month for this prompt.', type: 'negative' })
-          }
-        })
-        return !promptSnapshot.empty
-      } catch (error) {
-        console.log('Error occurred while checking', error)
-        return false
-      }
-    },
+    // async hasPrompt(date, title, slug, isEdit = false) {
+    //   try {
+    //     const promptSnapshot = await getDocs(
+    //       query(
+    //         collection(db, 'prompts'),
+    //         isEdit ? where('id', '!=', date) : '',
+    //         or(isEdit ? '' : where('date', '==', date), where('slug', '==', slug), where('title', '==', title))
+    //       )
+    //     )
+    //     promptSnapshot.docs.forEach((doc) => {
+    //       const data = doc.data()
+    //       if (data.title.toLowerCase() === title.toLowerCase() || data.slug === slug) {
+    //         Notify.create({ message: 'Prompt with this title already exists. Please choose another title.', type: 'negative' })
+    //       } else if (data.date === date) {
+    //         Notify.create({ message: 'Choose another month for this prompt.', type: 'negative' })
+    //       }
+    //     })
+    //     return !promptSnapshot.empty
+    //   } catch (error) {
+    //     console.log('Error occurred while checking', error)
+    //     return false
+    //   }
+    // },
 
     async getPromptDates() {
       const set = new Set()

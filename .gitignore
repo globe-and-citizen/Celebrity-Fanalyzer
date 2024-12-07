@@ -24,7 +24,6 @@ ui-debug.log
 /coverage
 
 # Editor directories and files
-.env.production
 .idea
 *.suo
 *.ntvs*
@@ -48,3 +47,4 @@ src/web3/alternatives
 src/components/Admin/updatedTableEntry.vue
 
 src/web3/#walletConnect.js#
+config.bat
