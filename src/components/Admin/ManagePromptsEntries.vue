@@ -437,8 +437,6 @@ function cantUnselect() {
   $q.notify({ type: 'negative', message: "You can't unselect month prompt. Please choose another one first" })
 }
 
-promptStore.getTotalPromptsCount()
-
 const confirmChangeMonthPrompt = () => {
   updatePrompt.mutate(
     {
@@ -457,6 +455,14 @@ const confirmChangeMonthPrompt = () => {
     }
   )
 }
+
+promptStore.getTotalPromptsCount()
+
+// if (prompts.value.length !== 0) {
+promptStore.listenForNewPrompts()
+promptStore.listenForUpdatedPrompts()
+promptStore.listenForDeletedPrompts()
+// }
 </script>
 <style scoped>
 .custom-table {

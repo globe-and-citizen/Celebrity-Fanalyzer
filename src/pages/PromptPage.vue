@@ -43,7 +43,7 @@ import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore } from 'src/stores'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
-import { useInfiniteQuery, useQuery } from '@tanstack/vue-query'
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { QueryKeys } from 'src/utils/query-keys'
 
 const router = useRouter()
@@ -68,12 +68,13 @@ const editPrompt = ref({})
 const params = computed(() => router.currentRoute.value?.params)
 const { data: monthPrompt } = useQuery({
   queryKey: [QueryKeys.MONTH_PROMPT],
-  queryFn: () => promptStore.fetchMonthPrompt,
+  queryFn: promptStore.fetchMonthPrompt,
   // 5 days
   refetchInterval: 5 * 24 * 60 * 60 * 1000,
+  enabled: true,
   staleTime: 5 * 24 * 60 * 60 * 1000
 })
-
+const queryClient = useQueryClient()
 const { data: allPrompts } = useInfiniteQuery({
   queryKey: [QueryKeys.ALL_PROMPTS],
   queryFn: ({ pageParam = null }) => promptStore.fetchPromptsInfinite({ pageParam }),
@@ -85,10 +86,12 @@ const { data: allPrompts } = useInfiniteQuery({
   refetchInterval: 5 * 24 * 60 * 60 * 1000,
   keepPreviousData: true
 })
-
 const loadedPrompts = computed(() => {
   return allPrompts?.value?.pages.flatMap((page) => page.prompts) || []
 })
+const asdf = queryClient.getQueryData([QueryKeys.MONTH_PROMPT])
+
+console.log(asdf, '')
 
 const prompt = computed(() => {
   if (route.name === 'month') {
@@ -198,6 +201,7 @@ onUnmounted(async () => {
 
   window.removeEventListener('scroll', onScroll)
 })
+promptStore.checkNewMonthPrompt()
 </script>
 
 <style scoped lang="scss">

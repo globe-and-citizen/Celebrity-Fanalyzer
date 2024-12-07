@@ -144,12 +144,18 @@ const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useI
   queryKey: [QueryKeys.ALL_PROMPTS],
   queryFn: ({ pageParam = null }) => promptStore.fetchPromptsInfinite({ pageParam }),
   getNextPageParam: (lastPage) => {
-    const lastVisibleId = lastPage.lastVisible?._document?.data.value.mapValue.fields.id.stringValue
-    return lastVisibleId || null
+    if (lastPage?.lastVisible?._document?.data?.value?.mapValue?.fields?.id?.stringValue) {
+      return lastPage.lastVisible._document.data.value.mapValue.fields.id.stringValue
+    }
+    return null
   },
   staleTime: 5 * 24 * 60 * 60 * 1000,
-  refetchInterval: 5 * 24 * 60 * 60 * 1000,
-  keepPreviousData: true
+  cacheTime: 10 * 24 * 60 * 60 * 1000,
+  refetchInterval: false,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  keepPreviousData: true,
+  refetchOnMount: false
 })
 
 const updateSearchDate = (value) => {
@@ -158,28 +164,28 @@ const updateSearchDate = (value) => {
 
 watch(search, async (newSearch) => {
   if (newSearch.trim()) {
-    await fetchNextPage({ pageParam: null })
+    await fetchNextPage()
   } else if (!newSearch.trim() && !isLoading.value && hasNextPage.value) {
-    await fetchNextPage({ pageParam: null })
+    await fetchNextPage()
   }
 
   if (hasNextPage.value) {
     if (newSearch.trim()) {
-      await fetchNextPage({ pageParam: null })
+      await fetchNextPage()
     }
   }
 })
 
 watch(searchDate, async (newSearch) => {
   if (newSearch.trim()) {
-    await fetchNextPage({ pageParam: null })
+    await fetchNextPage()
   } else if (!newSearch.trim() && !isLoading.value && hasNextPage.value) {
-    await fetchNextPage({ pageParam: null })
+    await fetchNextPage()
   }
 
   if (hasNextPage.value) {
     if (newSearch.trim()) {
-      await fetchNextPage({ pageParam: null })
+      await fetchNextPage()
     }
   }
 })
@@ -195,8 +201,11 @@ onMounted(async () => {
   }
 })
 
+promptStore.listenForNewPrompts()
+promptStore.listenForUpdatedPrompts()
+promptStore.listenForDeletedPrompts()
+
 onUnmounted(() => {
-  promptStore.listenForNewPrompts()
   advertiseStore.reset()
 })
 </script>
