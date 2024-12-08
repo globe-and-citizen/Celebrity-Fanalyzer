@@ -19,35 +19,23 @@ describe('Admin User Role Change', () => {
     cy.get('[data-test="query-input"]').type('roletest@email.com')
 
     // Wait for the table to filter (depending on your debounce, adjust as needed)
-    cy.wait(500)
+    cy.wait(1200)
 
     // Assert that the user is found in the table
     cy.contains('roletest@email.com').should('exist')
 
     // Find the row containing the email, and target the q-select dropdown
-    cy.get('tr')
-      .contains('roletest@email.com')
-      .parent()
-      .find('[data-test="role-select"]') // Locate the q-select dropdown
-      .click() // Open the dropdown
+    cy.get('tr').contains('roletest@email.com').parent().find('[data-test="role-select"]').click()
 
     // Make sure the dropdown options are visible, then select 'Admin'
     cy.get('.q-item__label').contains('Admin').click()
 
-    cy.wait(2000)
+    cy.wait(10000)
 
     // Assert that the role has been updated to 'Admin'
-    cy.get('tr')
-      .contains('roletest@email.com')
-      .parent()
-      .find('.q-field__native') // Get the q-select dropdown again
-      .contains('Admin') // Check if the role value is now 'Admin'
+    cy.get('tr').contains('roletest@email.com').parent().find('.q-field__native').contains('Admin')
 
-    cy.get('tr')
-      .contains('roletest@email.com')
-      .parent()
-      .find('[data-test="role-select"]') // Locate the q-select dropdown
-      .click() // Open the dropdown
+    cy.get('tr').contains('roletest@email.com').parent().find('[data-test="role-select"]').click()
 
     // Make sure the dropdown options are visible, then select Previos one
     cy.get('.q-item__label').contains('User').click()

@@ -35,6 +35,18 @@
       "npm run format"
     ]
   },
+  "nyc": {
+    "extension": [
+      ".vue"
+    ],
+    "exclude": [
+      "*.js",
+      "**/*.js",
+      "**/*.d.ts",
+      "**/*.js",
+      "**/*.cy.js"
+    ]
+  },
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.12",

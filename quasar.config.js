@@ -43,14 +43,7 @@ module.exports = configure(function (ctx) {
 
       extendViteConf(viteConf) {
         viteConf.plugins = viteConf.plugins || []
-        viteConf.plugins.push(
-          vitePluginIstanbul({
-            include: 'src/*',
-            exclude: ['node_modules', 'tests/'],
-            extension: ['.js', '.vue'],
-            requireEnv: false
-          })
-        )
+        viteConf.plugins.push(vitePluginIstanbul())
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {
