@@ -14,7 +14,7 @@
     "test": "vitest",
     "vitest": "vitest -u",
     "vitest:coverage": "vitest run --coverage",
-    "coverage": "cd coverage/src/stores && open index.html",
+    "cy:coverage": "cd coverage/lcov-report && open index.html",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
     "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",

@@ -10,7 +10,7 @@
 
 const { configure } = require('quasar/wrappers')
 const path = require('path')
-
+const vitePluginIstanbul = require('vite-plugin-istanbul')
 require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 module.exports = configure(function (ctx) {
   return {
@@ -42,6 +42,15 @@ module.exports = configure(function (ctx) {
       vueRouterMode: 'history',
 
       extendViteConf(viteConf) {
+        viteConf.plugins = viteConf.plugins || []
+        viteConf.plugins.push(
+          vitePluginIstanbul({
+            include: 'src/*',
+            exclude: ['node_modules', 'tests/'],
+            extension: ['.js', '.vue'],
+            requireEnv: false
+          })
+        )
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {
