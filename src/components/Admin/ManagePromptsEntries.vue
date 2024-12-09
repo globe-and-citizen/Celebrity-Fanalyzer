@@ -45,7 +45,12 @@
           </div>
         </q-td>
         <q-td class="authorRef text-center">
-          <a :href="`/fan/${props.row?.author?.uid}`" class="q-mr-sm" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
+          <a
+            :href="`/fan/${props.row?.author?.uid}`"
+            class="q-mr-sm"
+            data-test="author-name"
+            @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)"
+          >
             {{ props.row.author?.displayName }}
           </a>
         </q-td>

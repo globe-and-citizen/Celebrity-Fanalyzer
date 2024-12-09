@@ -162,6 +162,21 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
   })
 
+  it("Should navigate to the author's profile page", () => {
+    cy.wait(2000)
+    // Get the second button (Delete Prompt) and click it
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43' // example UID
+    const authorName = 'Cypress Tester' // example author name
+
+    // Check if the author link is visible and clickable
+    cy.get('[data-test="author-name"]').contains(authorName).should('have.attr', 'href', `/fan/${authorUid}`).click()
+
+    // Verify the redirection to the author's profile page
+    cy.location('pathname').should('eq', `/fan/${authorUid}`)
+  })
+
   it('Should edit the prompt', () => {
     // Get the second button (Delete Prompt) and click it
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
