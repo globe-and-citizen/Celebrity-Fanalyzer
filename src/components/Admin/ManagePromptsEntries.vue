@@ -55,7 +55,7 @@
           </a>
         </q-td>
         <q-td>
-          <a :href="props.row?.slug" class="q-mr-sm" @click.prevent="router.push(props.row?.slug)">
+          <a :href="props.row?.slug" class="q-mr-sm" data-test="prompt-title" @click.prevent="router.push(props.row?.slug)">
             {{ props.row.title }}
           </a>
         </q-td>

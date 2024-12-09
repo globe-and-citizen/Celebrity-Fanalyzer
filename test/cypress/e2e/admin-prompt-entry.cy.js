@@ -164,7 +164,7 @@ describe('Admin Prompt & Entry', () => {
 
   it("Should navigate to the author's profile page", () => {
     cy.wait(2000)
-    // Get the second button (Delete Prompt) and click it
+
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
     const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43' // example UID
@@ -177,8 +177,23 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', `/fan/${authorUid}`)
   })
 
+  it('Should navigate to the prompt page when the title is clicked', () => {
+    cy.wait(2000)
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    const promptSlug = '/hello-world-' // example slug
+    const promptTitle = 'Hello World!' // example title
+
+    // Check if the prompt title link is visible and clickable
+    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click().wait(2000)
+
+    // Verify the redirection to the prompt page
+    cy.location('pathname').should('eq', promptSlug)
+  })
+
   it('Should edit the prompt', () => {
-    // Get the second button (Delete Prompt) and click it
+    // Get the second button (edit Prompt) and click it
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
     // Get the edit button and click it
