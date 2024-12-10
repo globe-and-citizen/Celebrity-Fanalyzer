@@ -38,6 +38,6 @@ describe('Sharing a Prompt', () => {
     cy.get('[data-test="graph-tab"]').click({ force: true })
 
     // Selects the second canvas on the page and checks to see if it is visible
-    // cy.get('canvas').eq(1).should('be.visible')
+    cy.get('canvas').eq(1).should('be.visible')
   })
 })

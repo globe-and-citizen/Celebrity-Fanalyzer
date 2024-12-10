@@ -192,6 +192,32 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', promptSlug)
   })
 
+  it('Should display all entries in the entry table', () => {
+    // Wait for the page and table to load
+    cy.wait(2000)
+
+    // Perform search action
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Expand the table row if necessary
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
+
+    // Verify the entry table is visible
+    cy.get('[data-test="entry-table"]').should('be.visible')
+
+    // Ensure the table contains at least one row
+    cy.get('[data-test="entry-table"] tbody tr').should('have.length.greaterThan', 0)
+
+    // Check specific data in the first row
+    cy.get('[data-test="entry-table"] tbody tr')
+      .eq(0)
+      .within(() => {
+        cy.get('[data-test="entry-title"]').should('not.be.empty')
+        cy.get('[data-test="entry-author"]').should('not.be.empty')
+        cy.get('[data-test="entry-date"]').should('not.be.empty')
+      })
+  })
+
   it('Should edit the prompt', () => {
     // Get the second button (edit Prompt) and click it
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
@@ -254,7 +280,6 @@ describe('Admin Prompt & Entry', () => {
     // Get the second button (Delete Entry) and click it
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
     // Get the expand button and click it
-    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
