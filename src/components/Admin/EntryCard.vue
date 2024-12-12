@@ -7,7 +7,7 @@
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
-        <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="entry.author" />
+        <q-select data-test="select-author" disable label="Author" v-model="entry.author" />
         <q-select
           behavior="menu"
           counter
@@ -78,7 +78,7 @@
         </q-field>
 
         <div class="row no-wrap">
-          <diV class="col-9">
+          <div class="col-9">
             <q-file
               accept=".jpg, image/*"
               counter
@@ -98,7 +98,7 @@
                 <q-icon name="image" />
               </template>
             </q-file>
-          </diV>
+          </div>
           <div class="col-1 flex justify-center items-center"><p>OR</p></div>
           <q-btn
             :disable="!entry.prompt"
@@ -167,7 +167,6 @@ const userStore = useUserStore()
 const router = useRouter()
 const { href } = router.currentRoute.value
 
-const authorOptions = reactive([])
 const editorRef = ref(null)
 const entry = reactive({
   author: { label: userStore.getUser.displayName, value: userStore.getUser.uid },
@@ -180,15 +179,13 @@ const openCamera = ref(false)
 
 const promptOptions = computed(
   () =>
-    promptStore.getPrompts
-      ?.filter((prompt) => !prompt.hasWinner && prompt.escrowId)
-      .map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
+    promptStore._activePrompts
+      ?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
       .reverse() || []
 )
 
 onMounted(() => {
-  promptStore.fetchPrompts()
-  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+  promptStore.fetchActivePrompts()
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description

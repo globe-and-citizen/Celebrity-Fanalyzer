@@ -16,7 +16,7 @@
           lazy-rules
           required
           :rules="[(val) => /^.{2,}$/.test(val) || 'Invalid Name']"
-          v-model="user.name"
+          v-model.trim="user.name"
         />
         <q-input
           data-test="email-field"
@@ -148,15 +148,20 @@ async function googleSign() {
   await userStore.googleSignIn().catch((error) => errorStore.throwError(error))
 }
 
-function handleResetPassword() {
+async function handleResetPassword() {
   if (user.value.email) {
-    passwordResetEmail(user.value.email)
-      .then(() => {
-        Notify.create({ message: 'Password reset link sent. Please check your email.', type: 'positive' })
-      })
-      .catch(() => {
-        Notify.create({ message: 'Something went wrong', type: 'negative' })
-      })
+    const doesExists = await userStore.checkEmailExists(user.value.email)
+    if (doesExists) {
+      passwordResetEmail(user.value.email)
+        .then(() => {
+          Notify.create({ message: 'Password reset link sent. Please check your email.', type: 'positive' })
+        })
+        .catch(() => {
+          Notify.create({ message: 'Something went wrong', type: 'negative' })
+        })
+    } else {
+      Notify.create({ message: 'This email does not exist', type: 'negative' })
+    }
   }
 }
 function validateEmail(email) {

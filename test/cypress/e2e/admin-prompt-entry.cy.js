@@ -5,10 +5,11 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
+  let date = ''
+  let visit = '/'
   beforeEach(() => {
     cy.viewport('macbook-16')
     // Visits the profile page
-
     cy.login()
     cy.visit('/admin')
   })
@@ -28,19 +29,18 @@ describe('Admin Prompt & Entry', () => {
   })
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
-    cy.get('[data-test="button-dropdown"]').click()
-
+    cy.get('[data-test="dropdown-menu"]').click()
     // Get the first button (New Prompt) and click it
-    cy.get('[data-test="prompt-dropdown"]').should('be.visible').click()
-    cy.get('.q-card.not-loading')
-
+    cy.get('[data-test="create-prompt"]').should('be.visible').click()
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
-    cy.get('.q-date__view > .no-wrap > :nth-child(1) > .q-btn > .q-btn__content').click()
-    cy.get('.q-date__view > :nth-child(1)> :nth-child(2) >:nth-child(1) ').click()
-    cy.contains('2022').click({ force: true })
-    cy.get('.q-date__view > :nth-child(2)').click()
     cy.get('[data-test="close"]').click()
+    cy.get('input[data-test="date"]')
+      .invoke('val')
+      .then((value) => {
+        date = value
+        visit += value.replace('-', '/')
+      })
 
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type('Hello World!')
@@ -64,13 +64,13 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should create a entry', () => {
     // Get the dropdown button and click it
-    cy.get('[data-test="button-dropdown"]').click().wait(4000)
+    cy.get('[data-test="dropdown-menu"]').click()
 
     // Get the first button (New Entry) and click it
-    cy.get('[data-test="entry-dropdown"]').click()
+    cy.get('[data-test="create-entry"]').should('be.visible').click()
 
     // Get the prompt select and choose the "Hello World!" option
-    cy.get('[data-test="select-prompt"]').select('Hello World!')
+    cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
 
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type('Hello World!')
@@ -89,7 +89,7 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should Navigate  in prompt and entry', () => {
-    cy.visit('/2022/01')
+    cy.visit(visit)
     cy.contains('Hello World!')
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="like-button"]').click()
@@ -101,7 +101,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should display the prompt and interact', () => {
     // cy.visit('/hello-world-')
-    cy.visit('/2022/01')
+    cy.visit(visit)
     cy.contains('Hello World!')
     cy.scrollTo('bottom')
     cy.get('[data-test="entries"]')
@@ -163,9 +163,9 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('tester')
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
     // Get the expand button and click it
-    cy.get('[data-test="2022-01"] > .q-table--col-auto-width > [data-test="button-expand"]').click()
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
@@ -187,14 +187,20 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the prompt', () => {
     // Get the second button (Delete Prompt) and click it
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(1000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
     // Get the delete button and click it
-    cy.get('[data-test="2022-01"] > .text-right > [data-test="button-delete-prompt"]').click()
+    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-delete-prompt"]`).click()
 
     // Get the confirm button and click it
-    cy.get('[data-test="confirm-delete-prompt"]').click()
+    cy.get('[data-test="confirm-delete-prompt"]').click().wait(2000)
     // Wait the notification
     cy.get('.q-notification__message').contains('Prompt successfully deleted')
+  })
+
+  it('Should load more prompt when clicking "Load More" button', () => {
+    cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
+    cy.get('[data-test="load-more-btn"]').first().click({ force: true })
+    cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
   })
 })

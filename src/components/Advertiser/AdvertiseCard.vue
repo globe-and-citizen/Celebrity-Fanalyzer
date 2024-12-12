@@ -301,7 +301,7 @@ function isUrlValid(userInput = '') {
   return res !== null
 }
 
-async function createAdCampain(payload) {
+async function createAdCampaign(payload) {
   return await contractCreateAdCampaign(payload)
 }
 function convertToMatic() {
@@ -359,7 +359,7 @@ async function onSubmit() {
         .finally(() => $q.loading.hide())
     } else {
       //call contract create function
-      const result = await createAdCampain({ budgetInMatic: advertise.budget })
+      const result = await createAdCampaign({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
         advertise.campaignCode = result.events[0].args.campaignCode
         //save advertisement to database

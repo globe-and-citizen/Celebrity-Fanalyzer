@@ -1,5 +1,5 @@
 <template>
-  <TheHeader title="Admin Panel" />
+  <TheHeader :title="userStore.getUser?.role + ' ' + 'Panel'" />
   <q-page-container>
     <q-page class="absolute q-pt-sm q-pb-xl window-width" style="left: 0">
       <q-tabs active-color="primary" align="justify">
@@ -8,7 +8,7 @@
           data-test="posts-tab"
           name="prompts"
           icon="view_list"
-          label="Prompts & Entries"
+          :label="userStore.isEditorOrAbove ? 'Prompts & Entries' : 'Entries'"
           :to="{ name: 'admin.prompts' }"
         />
         <q-route-tab
@@ -78,7 +78,7 @@ import EntryCard from 'src/components/Admin/EntryCard.vue'
 import PromptCard from 'src/components/Admin/PromptCard.vue'
 import AdvertiseCard from 'src/components/Advertiser/AdvertiseCard.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, onUnmounted } from 'vue'
 import { useUserStore, useAdvertiseStore, useErrorStore } from 'src/stores'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -95,8 +95,6 @@ const router = useRouter()
 const route = useRoute()
 
 onMounted(async () => {
-  // await userStore.fetchUsers()
-  // await userStore.getStatsUsers()
   advertiseStore.fetchAdvertises().catch((error) => errorStore.throwError(error))
 
   currentPath.value = router.currentRoute.value.path
@@ -145,4 +143,12 @@ function openAdvertiseDialog(props) {
   advertise.value = props?.id ? props : {}
   advertise.value.dialog = true
 }
+
+onUnmounted(async () => {
+  const adminTab = document.querySelector('.adminTab')
+  const activeHomeTab = document.querySelector('[href="/"]')
+  activeHomeTab?.classList.remove('q-tab--inactive')
+  adminTab?.classList.remove('admin_tab', 'cursor-pointer', 'q-router-link--active')
+  adminTab?.classList.replace('q-tab--active', 'q-tab--inactive')
+})
 </script>
