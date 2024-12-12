@@ -24,11 +24,18 @@ export const useWalletStore = defineStore('wallet', {
         rpcUrl: import.meta.env.VITE_ALCHEMY_SEPOLIA_PROVIDER_URL
       },
       matic: {
-        chainId: import.meta.env.VITE_POLYGON_MAINET_CHAIN_ID,
+        chainId: 137,
         name: import.meta.env.VITE_INFURA_POLYGON_MAINET_NETWORK_NAME,
         currency: import.meta.env.VITE_POLYGON_MAINET_CURRENCY,
         explorerUrl: import.meta.env.VITE_INFURA_POLYGON_MAINET_SCAN_URL,
-        rpcUrl: import.meta.env.VITE_INFURA_POLYGON_MAINET_PROVIDER_URL
+        rpcUrl: 'https://polygon-rpc.com',
+        blockExplorerUrls: ['https://polygonscan.com/'],
+
+        nativeCurrency: {
+          name: 'Polygon',
+          symbol: 'MATIC',
+          decimals: 18
+        }
       }
     }
   }),
@@ -56,6 +63,7 @@ export const useWalletStore = defineStore('wallet', {
       this.temp_address = this.wallet_info.wallet_address
     },
     getChainConfig(networkName) {
+      console.log('the network name is ', networkName)
       for (const key in this.chains) {
         if (networkName.includes(key)) {
           return this.chains[key]

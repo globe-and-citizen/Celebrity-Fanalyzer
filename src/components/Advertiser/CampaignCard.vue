@@ -57,7 +57,12 @@ function goToUrl() {
 
 const loadStoredImpressions = () => {
   const storedImpressions = localStorage.getItem('impressions')
-  return storedImpressions ? JSON.parse(storedImpressions) : {}
+  try {
+    return storedImpressions ? JSON.parse(storedImpressions) : {}
+  } catch (error) {
+    console.error('Failed to parse stored impressions:', error)
+    return {}
+  }
 }
 
 const saveImpressionsToStorage = () => {

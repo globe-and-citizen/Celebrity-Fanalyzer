@@ -69,8 +69,8 @@
               v-if="
                 _currentPrompt?.isTreated ? props.row.isWinner && !_currentPrompt?.isTreated : props.row.isWinner && !props.row.isTreated
               "
-              color="green"
               :disable="props.row.author.uid !== userStore.getUserId"
+              color="green"
               icon="payment"
               unelevated
               size="sm"
@@ -308,6 +308,7 @@ async function onProceedPaymentDialog(props) {
     } else {
       //let's check if the entry already have valid payment..
       const cryptoTransactionExist = await cryptoTransactions.getCryptoTransactionsByEntry(props.id)
+
       if (cryptoTransactionExist.length > 0) {
         const escrowEvents = await getEventsForEscrow({ escrowId: _currentPrompt.value.escrowId })
         if (escrowEvents?.status?.includes('success')) {
