@@ -2,7 +2,7 @@ name: Cypress End-to-End Tests
 
 on:
   pull_request:
-    branches: ["*"]
+    branches: ['*']
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         with:
           start: npm run cy:test
           wait-on: http://localhost:9200/
-          wait-on-timeout: 600
+          wait-on-timeout: 1200
           browser: chrome
           headed: true
           record: true
