@@ -16,7 +16,7 @@
           lazy-rules
           required
           :rules="[(val) => /^.{2,}$/.test(val) || 'Invalid Name']"
-          v-model="user.name"
+          v-model.trim="user.name"
         />
         <q-input
           data-test="email-field"
