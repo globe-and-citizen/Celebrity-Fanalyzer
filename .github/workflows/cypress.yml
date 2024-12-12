@@ -18,6 +18,9 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
+      - name: 📦 Install Dependencies
+        run: npm install
+
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
@@ -31,8 +34,8 @@ jobs:
         env:
           # For recording and parallelization to work you must set your CYPRESS_RECORD_KEY
           # in GitHub repo → Settings → Secrets → Actions
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          # pass GitHub token to detect new build vs re-run build
+         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+         # pass GitHub token to detect new build vs re-run build
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Codecov
