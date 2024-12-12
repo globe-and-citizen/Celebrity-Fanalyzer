@@ -1,6 +1,12 @@
 name: Deploy to Cloudflare
 
-on: [push]
+on:
+      push:
+        branches:
+          - develop
+          - '*'
+        branches-ignore:
+          - main
 
 jobs:
   deploy:
