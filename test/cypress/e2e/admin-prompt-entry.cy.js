@@ -5,6 +5,7 @@
 // See https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
 
 describe('Admin Prompt & Entry', () => {
+  const name = 'Hello World!'
   let date = ''
   let visit = '/'
   beforeEach(() => {
@@ -43,7 +44,7 @@ describe('Admin Prompt & Entry', () => {
       })
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('Hello World!')
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample prompt' into it
     cy.get('[data-test="input-description"]').type('This is a sample prompt')
@@ -73,7 +74,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
 
     // Get the title input and type 'Hello World!' into it
-    cy.get('[data-test="input-title"]').type('Hello World!')
+    cy.get('[data-test="input-title"]').type(name)
 
     // Get the description input and type 'This is a sample entry' into it
     cy.get('[data-test="input-description"]').type('This is a sample entry')
@@ -90,7 +91,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should Navigate  in prompt and entry', () => {
     cy.visit(visit)
-    cy.contains('Hello World!')
+    cy.contains(name)
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="like-button"]').click()
     cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
@@ -102,7 +103,7 @@ describe('Admin Prompt & Entry', () => {
   it('Should display the prompt and interact', () => {
     // cy.visit('/hello-world-')
     cy.visit(visit)
-    cy.contains('Hello World!')
+    cy.contains(name)
     cy.scrollTo('bottom')
     cy.get('[data-test="entries"]')
     cy.scrollTo('top')
@@ -159,6 +160,120 @@ describe('Admin Prompt & Entry', () => {
     // Dislike To have a not liked & not disliked prompt
     cy.get('[data-test="dislike-button"]').click()
     cy.get('[data-test="dislike-button"]').find('img').should('have.attr', 'src').should('include', dislikeIcon)
+  })
+
+  it("Should navigate to the author's profile page", () => {
+    cy.wait(2000)
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43' // example UID
+    const authorName = 'Cypress Tester' // example author name
+
+    // Check if the author link is visible and clickable
+    cy.get('[data-test="author-name"]').contains(authorName).should('have.attr', 'href', `/fan/${authorUid}`).click()
+
+    // Verify the redirection to the author's profile page
+    cy.location('pathname').should('eq', `/fan/${authorUid}`)
+  })
+
+  it('Should navigate to the prompt page when the title is clicked', () => {
+    cy.wait(2000)
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    const promptSlug = '/hello-world-' // example slug
+    const promptTitle = 'Hello World!' // example title
+
+    // Check if the prompt title link is visible and clickable
+    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click().wait(2000)
+
+    // Verify the redirection to the prompt page
+    cy.location('pathname').should('eq', promptSlug)
+  })
+
+  it('Should display all entries in the entry table', () => {
+    // Wait for the page and table to load
+    cy.wait(2000)
+
+    // Perform search action
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Expand the table row if necessary
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
+
+    // Verify the entry table is visible
+    cy.get('[data-test="entry-table"]').should('be.visible')
+
+    // Ensure the table contains at least one row
+    cy.get('[data-test="entry-table"] tbody tr').should('have.length.greaterThan', 0)
+
+    // Check specific data in the first row
+    cy.get('[data-test="entry-table"] tbody tr')
+      .eq(0)
+      .within(() => {
+        cy.get('[data-test="entry-title"]').should('not.be.empty')
+        cy.get('[data-test="entry-author"]').should('not.be.empty')
+        cy.get('[data-test="entry-date"]').should('not.be.empty')
+      })
+  })
+
+  it('Should edit the prompt', () => {
+    // Get the second button (edit Prompt) and click it
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Get the edit button and click it
+    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-edit"]`).click()
+
+    cy.get('[data-test="input-title"]').clear()
+    cy.get('[data-test="input-title"]').type(name)
+
+    // Get the description input and type 'This is a sample prompt' into it
+    cy.get('[data-test="input-description"]').clear()
+    cy.get('[data-test="input-description"]').type('This is a Updated sample prompt')
+
+    // Get the file image input and upload the Cypress logo
+    cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+
+    // Get the categories select and choose add 'Cypress' and 'Test' categories
+    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Update{enter}')
+
+    // Get the submit button and click it
+    cy.get('[data-test="button-submit"] > .q-btn__content').click()
+    // cy.get('[data-test="button-submit"]').click()
+
+    //Check the Prompt is edited successfully
+    cy.get('.q-notification__message').contains('Prompt successfully edited')
+  })
+
+  it('Should edit a entry', () => {
+    // cy.visit(visit)
+    // cy.contains(name)
+    // cy.scrollTo('bottom')
+    // cy.get('entry ' + name).click()
+
+    // cy.scrollTo('bottom')
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
+
+    // Get the edit button and click it
+    cy.get('[data-test="button-edit-entry"]').eq(0).click({ force: true })
+    // Get the title input and type 'Update entry' into it
+    cy.get('[data-test="input-title"]').clear()
+    cy.get('[data-test="input-title"]').type('Update entry')
+
+    // Get the description input and type 'This is a Updated entry' into it
+    cy.get('[data-test="input-description"]').clear()
+    cy.get('[data-test="input-description"]').type('This is a Updated entry')
+    cy.wait(2000)
+    // Get the file image input and upload the Cypress logo
+    cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+
+    // Get the submit button and click it
+    cy.get('[data-test="button-submit"]').eq(0).click({ force: true })
+
+    // Check the Entry is edited successfully
+    // cy.get('.q-notification__message').contains('Entry successfully edited')
   })
 
   it('Should delete the entry', () => {
