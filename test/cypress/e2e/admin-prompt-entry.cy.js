@@ -403,7 +403,8 @@ describe('Admin Prompt & Entry', () => {
     cy.wait(5000)
     cy.get('[data-test="share-button"]').first().click({ force: true })
 
-    cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
+    cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible')
+    cy.get('.q-card > .row > :nth-child(1) > img').click({ force: true })
     cy.get('.q-card').should('not.be.visible')
   })
 
