@@ -23,11 +23,11 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           start: npm run cy:test
-          wait-on: http://localhost:9200/
+          wait-on: http://127.0.0.1:9200/
           wait-on-timeout: 40000
           browser: chrome
-          headed: true
-          record: true
+          headless: true
+          record: false
           parallel: true
         env:
           # For recording and parallelization to work you must set your CYPRESS_RECORD_KEY
