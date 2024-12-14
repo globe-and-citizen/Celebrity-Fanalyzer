@@ -17,7 +17,7 @@
     "cy:coverage": "cd coverage/lcov-report && open index.html",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
-    "cy:test": "start-server-and-test dev http-get://127.0.0.1:9200 cy:run",
+    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
     "prepare": "husky",
     "lhci:mobile": "lighthouse-ci --url=$1 --preset=mobile",
     "lhci:desktop": "lighthouse-ci --url=$1 --preset=desktop"

@@ -23,7 +23,7 @@ module.exports = defineConfig({
       registerCodeCoverageTasks(on, config)
       return config
     },
-    baseUrl: 'http://127.0.0.1:9200/',
+    baseUrl: 'http://localhost:9200/',
     supportFile: 'test/cypress/support/e2e.js',
     specPattern: 'test/cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     defaultCommandTimeout: 10000,
