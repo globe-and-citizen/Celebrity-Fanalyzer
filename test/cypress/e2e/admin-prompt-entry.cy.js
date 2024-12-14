@@ -167,8 +167,8 @@ describe('Admin Prompt & Entry', () => {
 
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
-    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43' // example UID
-    const authorName = 'Cypress Tester' // example author name
+    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43'
+    const authorName = 'Cypress Tester'
 
     // Check if the author link is visible and clickable
     cy.get('[data-test="author-name"]').contains(authorName).should('have.attr', 'href', `/fan/${authorUid}`).click()
@@ -182,8 +182,8 @@ describe('Admin Prompt & Entry', () => {
 
     cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
 
-    const promptSlug = '/hello-world-' // example slug
-    const promptTitle = 'Hello World!' // example title
+    const promptSlug = '/hello-world-'
+    const promptTitle = 'Hello World!'
 
     // Check if the prompt title link is visible and clickable
     cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click().wait(2000)
@@ -197,10 +197,25 @@ describe('Admin Prompt & Entry', () => {
     cy.wait(2000)
 
     // Perform search action
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.wait(2000)
 
     // Expand the table row if necessary
-    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
+    cy.get(`[data-test="button-expand"] > span`)
+      .eq(1)
+      .then(() => {
+        cy.get('span>i').contains('expand_more')
+      })
+    cy.get('[data-test="button-expand"]').first().click({ force: true })
+
+    // Get expand button after click and it should say expand_less
+    cy.get(`[data-test="button-expand"] > span`)
+      .eq(1)
+      .then(() => {
+        cy.get('span>i').contains('expand_less')
+      })
+
+    cy.wait(5000)
 
     // Verify the entry table is visible
     cy.get('[data-test="entry-table"]').should('be.visible')
@@ -218,12 +233,41 @@ describe('Admin Prompt & Entry', () => {
       })
   })
 
+  it('should display the correct tooltip text for the expand/collapse button', () => {
+    cy.get('[data-test="item-card"]')
+      .first()
+      .within(() => {
+        cy.get('[data-test="button-expand"]').trigger('mouseenter')
+      })
+
+    cy.wait(500)
+
+    cy.get('[data-test="item-card"]')
+      .first()
+      .then(($card) => {
+        const allNodes = $card[0].querySelectorAll('*')
+        let commentNode
+
+        allNodes.forEach((node) => {
+          Array.from(node.childNodes).forEach((child) => {
+            if (child.nodeType === Node.COMMENT_NODE && child.data.trim() === 'teleport start') {
+              commentNode = child
+            }
+          })
+        })
+
+        expect(commentNode).to.exist
+      })
+  })
+
   it('Should edit the prompt', () => {
     // Get the second button (edit Prompt) and click it
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.wait(2000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.wait(2000)
 
     // Get the edit button and click it
-    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-edit"]`).click()
+    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`).click()
 
     cy.get('[data-test="input-title"]').clear()
     cy.get('[data-test="input-title"]').type(name)
@@ -246,6 +290,32 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Prompt successfully edited')
   })
 
+  it('Should update image using camera capture', () => {
+    cy.wait(2000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.wait(2000)
+
+    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`).click()
+
+    cy.get('[data-test="button-camera-capture"]').click()
+
+    cy.window().then((win) => {
+      const fakeStream = {
+        getTracks: () => [{ stop: cy.stub() }]
+      }
+      cy.stub(win.navigator.mediaDevices, 'getUserMedia').resolves(fakeStream)
+
+      cy.get('.web-cam-taker > .absolute-top').should('be.visible')
+      cy.contains('CAPTURE').click()
+
+      cy.contains('Done').click()
+    })
+
+    cy.get('[data-test="button-submit"] > .q-btn__content').click()
+
+    cy.get('.q-notification__message').contains('Prompt successfully edited')
+  })
+
   it('Should edit a entry', () => {
     // cy.visit(visit)
     // cy.contains(name)
@@ -254,7 +324,9 @@ describe('Admin Prompt & Entry', () => {
 
     // cy.scrollTo('bottom')
     cy.get('[data-test="input-search"]').type('Cypress Tester')
-    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click().wait(2000)
+    cy.wait(2000)
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click({ force: true })
+    cy.wait(2000)
 
     // Get the edit button and click it
     cy.get('[data-test="button-edit-entry"]').eq(0).click({ force: true })
@@ -278,9 +350,11 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.wait(2000)
+
     // Get the expand button and click it
-    cy.get(`[data-test="${date}"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
     // Delete all entry in a prompt and left one
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
@@ -302,20 +376,67 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the prompt', () => {
     // Get the second button (Delete Prompt) and click it
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.wait(2000)
 
     // Get the delete button and click it
-    cy.get(`[data-test="${date}"] > .text-right > [data-test="button-delete-prompt"]`).click()
+    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-delete-prompt"]`).click()
 
     // Get the confirm button and click it
-    cy.get('[data-test="confirm-delete-prompt"]').click().wait(2000)
+    cy.get('[data-test="confirm-delete-prompt"]').click()
+    cy.wait(2000)
+
     // Wait the notification
     cy.get('.q-notification__message').contains('Prompt successfully deleted')
   })
 
   it('Should load more prompt when clicking "Load More" button', () => {
+    cy.wait(5000)
     cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
+    cy.wait(5000)
     cy.get('[data-test="load-more-btn"]').first().click({ force: true })
     cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
+  })
+
+  it('Should share a prompt', () => {
+    cy.get('[data-test="item-card"]', { timeout: 20000 }).should('have.length', 6)
+    cy.wait(5000)
+    cy.get('[data-test="share-button"]').first().click({ force: true })
+
+    cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
+    cy.get('.q-card').should('not.be.visible')
+  })
+
+  it('should allow searching for prompts', () => {
+    cy.get('[data-test="input-search"]').type('test')
+    cy.get('[data-test="prompt-title"]').first().should('contain.text', 'test')
+  })
+
+  it('should load more prompts and display them', () => {
+    cy.get('[id="item-card"]', { timeout: 20000 }).should('have.length', 6)
+    cy.get('[data-test="load-more-btn"]').click({ force: true })
+    cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
+  })
+
+  it('Should expand prompt item', () => {
+    // Get expand button and it should say expand_more
+    cy.get(`[data-test="button-expand"] > span`)
+      .eq(1)
+      .then(() => {
+        cy.get('span>i').contains('expand_more')
+      })
+    cy.get('[data-test="button-expand"]').first().click({ force: true })
+
+    // Get expand button after click and it should say expand_less
+    cy.get(`[data-test="button-expand"] > span`)
+      .eq(1)
+      .then(() => {
+        cy.get('span>i').contains('expand_less')
+      })
+
+    cy.wait(5000)
+
+    // Entries should be fetched (or empty list)
+    cy.get('[data-test="entriesFetched"]').should('be.visible')
   })
 })

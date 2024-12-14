@@ -1,5 +1,5 @@
 <template>
-  <q-btn color="secondary" dense flat icon="notifications" round size="1rem">
+  <q-btn color="secondary" dense flat icon="notifications" round size="1rem" data-test="notification-bubble-btn">
     <q-tooltip>Notifications</q-tooltip>
     <q-badge v-if="unreadNotifications.length" color="red" floating rounded>{{ unreadNotifications.length }}</q-badge>
     <q-menu v-if="notificationStore.getNotifications.length" anchor="bottom right" self="top right">

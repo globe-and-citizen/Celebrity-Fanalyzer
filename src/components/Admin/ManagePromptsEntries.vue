@@ -21,7 +21,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr class="new" :data-test="props.key" :props="props" id="item-card">
+      <q-tr class="new" data-test="item-card" :props="props" id="item-card">
         <q-td auto-width>
           <q-btn
             dense
@@ -363,6 +363,9 @@ function getOrigin(slug) {
   return window.origin + slug
 }
 
+// if (window.Cypress) {
+//   console.log(window)
+// }
 watch(filter, async (newSearch) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     if (newSearch.trim()) {

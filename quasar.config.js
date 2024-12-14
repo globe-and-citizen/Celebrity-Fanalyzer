@@ -31,7 +31,7 @@ module.exports = configure(function (ctx) {
     // Build configuration
     build: {
       // Disable source maps for production
-      sourceMap: false,
+      sourceMap: true,
       target: {
         // Use modern ECMAScript for browser support
         browser: 'es2020',

@@ -29,4 +29,21 @@ describe('Search page', () => {
     cy.get('[data-test="load-more-btn"]').first().click({ force: true })
     cy.get('[data-test="item-card"]').should('have.length.greaterThan', 6)
   })
+
+  it('Should open and close the filter dialog', () => {
+    cy.login()
+    cy.wait(1000)
+    cy.visit('/search')
+    cy.get('[data-test="filter-button"]').click()
+    cy.get('.filter-card').should('exist')
+    cy.get('.filter-title').should('contain', 'Filter By')
+
+    cy.get('[data-test="date-picker"]').click()
+    cy.get('[data-test="close"]').click()
+    cy.wait(1000)
+    cy.get('input[data-test="date"]').type('202412')
+    cy.get('[data-test="apply-filter-btn"]').click()
+
+    cy.get('.filter-card').should('not.exist')
+  })
 })
