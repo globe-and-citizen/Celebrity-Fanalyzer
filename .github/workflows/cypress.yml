@@ -23,9 +23,8 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           start: npm run cy:test
-          wait-on: http://127.0.0.1:9200/
+          wait-on: http://[::1]:9200/
           wait-on-timeout: 40000
-          browser: chrome
           headed: false
           record: true
           parallel: true
