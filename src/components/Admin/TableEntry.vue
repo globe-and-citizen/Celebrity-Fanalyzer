@@ -140,7 +140,7 @@
     <EntryCard v-bind="entry" @hideDialog="entry = {}" @forward-update-entry="forwardHandleUpdateEntry" />
   </q-dialog>
 
-  <q-dialog v-model="deleteDialog.show">
+  <q-dialog v-model="deleteDialog.show" data-test="entry-delete-dialog">
     <q-card>
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Delete Entry?</h6>

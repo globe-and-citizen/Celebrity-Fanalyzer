@@ -233,6 +233,47 @@ describe('Admin Prompt & Entry', () => {
       })
   })
 
+  it("Should navigate to the entry author's profile page", () => {
+    cy.wait(2000)
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Expand the table row if necessary
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
+
+    // Verify the entry table is visible
+    cy.get('[data-test="entry-table"]').should('be.visible')
+
+    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43' // example UID
+    const authorName = 'Cypress Tester' // example author name
+
+    // Check if the author link is visible and clickable
+    cy.get('[data-test="entry-author"]').contains(authorName).should('have.attr', 'href', `/fan/${authorUid}`).click()
+
+    // Verify the redirection to the author's profile page
+    cy.location('pathname').should('eq', `/fan/${authorUid}`)
+  })
+
+  it('Should navigate to the entry page when the title is clicked', () => {
+    cy.wait(2000)
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Expand the table row if necessary
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
+
+    // Verify the entry table is visible
+    cy.get('[data-test="entry-table"]').should('be.visible')
+    const entrySlug = `/${date.replace('-', '/')}/hello-world-` // example slug
+    const entryTitle = 'Hello World!' // example title
+
+    // Check if the entry title link is visible and clickable
+    cy.get('[data-test="entry-title"]').contains(entryTitle).should('have.attr', 'href', entrySlug).click().wait(2000)
+
+    // Verify the redirection to the entry page
+    cy.location('pathname').should('eq', entrySlug)
+  })
+
   it('should display the correct tooltip text for the expand/collapse button', () => {
     cy.get('[data-test="item-card"]')
       .first()
@@ -359,6 +400,9 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="button-delete-entry"]').then(($btn) => {
       for (let i = $btn.length - 1; i > 0; i--) {
         cy.get('[data-test="button-delete-entry"]').eq(i).click({ force: true })
+        // Verify the dialog appears with correct title
+        cy.get('[data-test="entry-delete-dialog"]').should('be.visible')
+        cy.contains('h6', 'Delete Entry?').should('exist')
         cy.get('[data-test="confirm-delete-entry"]').click()
         // Wait the notification
         cy.get('.q-notification__message').contains('Entry deleted')
@@ -369,6 +413,9 @@ describe('Admin Prompt & Entry', () => {
 
     // Delete the last one
     cy.get('[data-test="button-delete-entry"]').eq(0).click({ force: true })
+    // Verify the dialog appears with correct title
+    cy.get('[data-test="entry-delete-dialog"]').should('be.visible')
+    cy.contains('h6', 'Delete Entry?').should('exist')
     cy.get('[data-test="confirm-delete-entry"]').click()
     // Wait the notification
     cy.get('.q-notification__message').contains('Entry deleted')
