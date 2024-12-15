@@ -1,5 +1,5 @@
 <template>
-  <q-input v-model="userStore.getUser.email" disable label="Email" />
+  <q-input v-model="userStore.getUser.email" disable label="Email" data-test="profile-email" />
   <q-btn class="full-width q-mt-lg" color="secondary" data-test="logout-button" label="Logout" padding="12px" rounded @click="onLogout" />
 </template>
 
