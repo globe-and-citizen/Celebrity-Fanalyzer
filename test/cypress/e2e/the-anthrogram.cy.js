@@ -81,6 +81,14 @@ describe('TheAnthrogram Graph Visibility', () => {
 
     // Change filter and validate updates
     cy.get('[data-test="filter-select"]').click().first().click()
+
+    cy.get('[data-test="filter-select"]')
+      .invoke('val')
+      .then((selectedValue) => {
+        // Verify the total countries text matches the selected filter option
+        cy.get('.total-countries').should('contain.text', selectedValue)
+      })
+
     cy.get('#map').should('exist') // Ensure map remains visible and functional
   })
 
