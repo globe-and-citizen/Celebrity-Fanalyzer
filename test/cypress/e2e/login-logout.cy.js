@@ -71,4 +71,31 @@ describe('Login and Signup Flow', () => {
     cy.get('button').contains('Ok').click() // Clicks the "Ok" button
     cy.contains('Password reset link sent. Please check your email.').should('be.visible') // Verifies success message
   })
+
+  it('should validate fields during Sign Up', () => {
+    // Switch to Sign Up tab
+    cy.get('[data-test="signup-tab"]').click()
+
+    // Test Name field validation
+    cy.get('[data-test="name-field"]').type('S') // Input short name
+    cy.get('[data-test="sign-button"]').click() // Click "Sign Up"
+    cy.contains('Invalid Name').should('be.visible') // Check for name validation error
+
+    cy.get('[data-test="email-field"]').type('invalid-email') // Inputs invalid email
+    cy.get('[data-test="sign-button"]').click() // Click "Sign Up"
+    cy.contains('Invalid Email').should('be.visible') // Checks for email validation error
+
+    // Test Username field validation (invalid username)
+    cy.get('[data-test="username-field"]').type('ab') // Input too short username
+    cy.get('[data-test="sign-button"]').click() // Click "Sign Up"
+    cy.contains('Username must be between 3 and 20 characters long').should('be.visible') // Check for username length error
+    cy.get('[data-test="username-field"]').clear().type('Cypress Tester').wait(2000) // Input UnAvailable username
+    cy.get('[data-test="sign-button"]').click() // Click "Sign Up"
+    cy.contains('Username already taken').should('be.visible') // Check for username length error
+
+    // Test Password field validation (too short)
+    cy.get('[data-test="password-field"]').type('123') // Input too short password
+    cy.get('[data-test="sign-button"]').click() // Click "Sign Up"
+    cy.contains('Invalid Password').should('be.visible') // Check for password validation error
+  })
 })
