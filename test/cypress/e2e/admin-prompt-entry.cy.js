@@ -28,6 +28,55 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-btn').click()
     cy.location('pathname').should('eq', '/')
   })
+
+  it('Should prompt create time handles navigation, month selection, and disabled states correctly', () => {
+    // Ensure initial number of item cards
+    cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
+    cy.wait(2000)
+
+    // Click the "Load more" button
+    cy.get('[data-test="load-more-btn"]').first().click({ force: true })
+    cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
+
+    // Open the dropdown and navigate to the MonthPicker
+    cy.get('[data-test="dropdown-menu"]').click()
+    cy.get('[data-test="create-prompt"]').should('be.visible').click()
+    cy.get('[data-test="date-picker"]').click()
+
+    // Verify the left navigation button is enabled initially and navigate to the previous year
+    cy.get('[data-test="navigate-left"]')
+      .should('not.be.disabled') // Ensure it's clickable
+      .click() // Navigate to the previous year
+
+    // Verify the year has decreased by one
+    cy.get('[data-test="month-picker"]')
+      .contains(new Date().getFullYear() - 1)
+      .should('exist')
+
+    // Navigate to the next year
+    cy.get('[data-test="navigate-right"]').click()
+    cy.get('[data-test="month-picker"]')
+      .contains(new Date().getFullYear()) // Ensure the year is back to the current
+      .should('exist')
+
+    // Iterate over each month button to test disabled and enabled states
+    cy.get('[data-test="month-btn"]').each(($monthBtn) => {
+      if ($monthBtn.hasClass('disabled-month')) {
+        // If the month is disabled, it should not be clickable
+        cy.wrap($monthBtn)
+          .should('have.class', 'disabled-month')
+          .click({ force: true }) // Attempt to click
+          .should('not.have.class', 'q-btn--active') // Verify it wasn't selected
+      } else {
+        // If the month is enabled, it should be clickable and selected
+        cy.wrap($monthBtn).click().should('have.class', 'q-btn--active') // Verify it was selected
+      }
+    })
+
+    // Verify the popup closes when clicking the "Close" button
+    cy.get('[data-test="close-btn"]').click()
+  })
+
   it('Should create a prompt', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="dropdown-menu"]').click()
@@ -35,7 +84,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="create-prompt"]').should('be.visible').click()
     // Get the date input and choose the last option
     cy.get('[data-test="date-picker"]').should('be.visible').click()
-    cy.get('[data-test="close"]').click()
+    cy.get('[data-test="close-btn"]').click()
     cy.get('input[data-test="date"]')
       .invoke('val')
       .then((value) => {
