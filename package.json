@@ -44,7 +44,14 @@
       "**/*.js",
       "**/*.d.ts",
       "**/*.js",
-      "**/*.cy.js"
+      "**/*.cy.js",
+      "src/components/Admin/CryptoTransactionDetailCard.vue",
+      "src/components/Admin/FundDepositCard.vue",
+      "src/components/Admin/WalletPaymentCard.vue",
+      "src/components/Advertiser/AdvertiseCard.vue",
+      "src/components/Advertiser/CampaignCard.vue",
+      "src/components/Profile/Web3ModalComponent.vue",
+      "src/components/Profile/CTRBar.vue"
     ]
   },
   "dependencies": {
