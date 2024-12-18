@@ -274,6 +274,56 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', entrySlug)
   })
 
+  it('should test entry page tabs, comments interaction, edit dialog', () => {
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    // Expand the table row if necessary
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
+
+    // Verify the entry table is visible
+    cy.get('[data-test="entry-table"]').should('be.visible')
+    const entrySlug = `/${date.replace('-', '/')}/hello-world-` // example slug
+    const entryTitle = 'Hello World!' // example title
+
+    // Check if the entry title link is visible and clickable
+    cy.get('[data-test="entry-title"]').contains(entryTitle).should('have.attr', 'href', entrySlug).click()
+    // Verify the redirection to the entry page
+    cy.location('pathname').should('eq', entrySlug)
+    // 1. Verify Tabs and Panels
+    cy.get('[data-test="tabs-selector"]').should('be.visible')
+
+    // Switch to Post Tab
+    cy.get('[data-test="tab-post"]').click()
+    cy.get('[data-test="entry-page"]').should('be.visible')
+
+    // Switch to Stats Tab
+    cy.get('[data-test="tab-stats"]').click()
+    cy.get('[data-test="tab-panel-stats"]').should('be.visible')
+
+    // Switch to Comments Tab
+    cy.get('[data-test="tab-comments"]').click()
+    cy.get('[data-test="tab-panel-comments"]').should('be.visible')
+
+    // Switch to Post Tab
+    cy.get('[data-test="tab-post"]').click()
+    cy.get('[data-test="entry-page"]').should('be.visible')
+    // Switch to Comments Tab with comments button
+    cy.get('[data-test="comments"]').click().wait(1000)
+    cy.get('[data-test="tab-panel-comments"]').should('be.visible')
+    // Switch to Post Tab
+    cy.get('[data-test="tab-post"]').click()
+    cy.get('[data-test="entry-page"]').should('be.visible')
+
+    // 3. Open and Close the Edit Dialog
+    cy.get('[data-test="edit"]').click().wait(1000)
+
+    cy.get('[data-test="edit-entry-dialog"]').should('be.visible')
+
+    cy.get('[data-test="close-button"]').click()
+
+    cy.get('[data-test="edit-entry-dialog"]').should('not.exist')
+  })
+
   it('should display the correct tooltip text for the expand/collapse button', () => {
     cy.get('[data-test="item-card"]')
       .first()
@@ -486,5 +536,29 @@ describe('Admin Prompt & Entry', () => {
 
     // Entries should be fetched (or empty list)
     cy.get('[data-test="entriesFetched"]').should('be.visible')
+  })
+
+  it('should manage classes on tabs correctly', () => {
+    cy.get('[href="/"]').should('have.class', 'q-tab--inactive')
+
+    // Navigate to a non-admin route
+    cy.visit('/search') // Replace with your route
+    cy.get('[href="/search"]').should('not.have.class', 'q-tab--inactive')
+
+    // Check adminTab classes
+    cy.visit('/admin')
+    cy.get('.adminTab').should('have.class', 'q-tab--active')
+    cy.get('.adminTab').should('have.class', 'cursor-pointer')
+  })
+
+  it('should correctly handle home and admin tab class management on navigation', () => {
+    cy.visit('/admin')
+    cy.get('.adminTab').should('have.class', 'admin_tab')
+    cy.get('[href="/"]').should('have.class', 'q-tab--inactive')
+
+    // Navigate to home route
+    cy.visit('/')
+    cy.get('[href="/"]').should('not.have.class', 'q-tab--inactive')
+    cy.get('.adminTab').should('not.have.class', 'admin_tab')
   })
 })

@@ -105,7 +105,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
-            :data-test="commentStore.getCommentsCount ? 'panel-3-navigator' : ''"
+            data-test="comments"
             flat
             icon="chat_bubble_outline"
             :label="commentStore.getCommentsCount"
