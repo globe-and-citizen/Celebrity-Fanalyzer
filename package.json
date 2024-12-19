@@ -51,7 +51,7 @@
       "src/components/Advertiser/AdvertiseCard.vue",
       "src/components/Advertiser/CampaignCard.vue",
       "src/components/Profile/Web3ModalComponent.vue",
-      "src/components/Profile/CTRBar.vue"
+      "src/components/Posts/Graphs/CTRBar.vue"
     ]
   },
   "dependencies": {
