@@ -18,14 +18,14 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
+
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
-          start: npm run cy:test
+          start: npm run dev
           wait-on: http://localhost:9200/
-          wait-on-timeout: 600
-          browser: chrome
-          headed: true
+          wait-on-timeout: 40000
+          headed: false
           record: true
           parallel: true
         env:
