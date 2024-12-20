@@ -189,7 +189,7 @@ describe('Users Store', () => {
       name: 'Unit Tester',
       password: import.meta.env.VITE_TEST_PASSWORD
     }
-    console.log(userObj)
+
     // Check the user exit
     try {
       await userStore.emailSignIn(userObj).then(async () => {
@@ -258,7 +258,7 @@ describe('Users Store', () => {
     expect(userStore.isAuthenticated).toEqual(true)
     expect(userStore.isEditorOrAbove).toEqual(true)
     user = auth.currentUser
-    console.log(adminObj)
+
     try {
       await deleteUser(user)
       console.log('user removed')
