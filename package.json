@@ -33,7 +33,9 @@
     ],
     "*.{json,js,ts,jsx,tsx,html}": [
       "npm run format"
-    ]
+    ],
+    "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org testing-se --project javascript-vue dist && sentry-cli sourcemaps upload --org testing-se --project javascript-vue dist"
   },
   "dependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.3",
@@ -42,6 +44,8 @@
     "@tanstack/query-sync-storage-persister": "^5.51.21",
     "@tanstack/vue-query": "^5.51.21",
     "@tanstack/vue-query-devtools": "^5.51.21",
+    "@sentry/cli": "^2.33.0",
+    "@sentry/vue": "^8.20.0",
     "@web3modal/ethers5": "^4.2.3",
     "big-integer": "^1.6.52",
     "dotenv": "^16.3.1",
