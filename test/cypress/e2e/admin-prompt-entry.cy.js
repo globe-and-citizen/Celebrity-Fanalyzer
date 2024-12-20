@@ -112,6 +112,57 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
   })
 
+  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
+    cy.visit('/profile')
+    cy.get('[data-test="tab-settings"]').click()
+    // Verify user is logged in by checking their profile email visibility
+    cy.get('[data-test="profile-email"]').should('have.value', 'test@test.com')
+
+    // Logs out the user
+    cy.get('[data-test="logout-button"]').click() // Clicks the logout button
+    // Clear local storage
+    cy.clearLocalStorage()
+
+    cy.visit('/hello-world-').wait(2000)
+    // Ensure the "Create Entry" button exists and is visible
+    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
+
+    // Click the "Create entry" button without login
+    cy.get('[data-test="create-entry"]').click().wait(2000)
+
+    // Assert that the user is redirected to the login page
+    cy.url().should('include', '/profile') // Replace '/profile' with the actual login page path if different
+
+    // Assert the notification message
+    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
+
+    // Visits the profile page
+    cy.login()
+  })
+
+  it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {
+    cy.wait(2000)
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+
+    const promptSlug = '/hello-world-'
+    const promptTitle = 'Hello World!'
+
+    // Check if the prompt title link is visible and clickable
+    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click().wait(2000)
+
+    // Click the "Create entry" button
+    cy.get('[data-test="create-entry"]').click()
+
+    // Verify the dialog is visible
+    cy.get('.q-dialog[data-test="entry-dialog"]').should('be.visible')
+    // Click the "Close Entry Card" button
+    cy.get('[data-test="close-button"]').click()
+
+    // Verify the dialog is closed
+    cy.get('.q-dialog[data-test="entry-dialog"]').should('not.exist')
+  })
+
   it('Should create a entry', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="dropdown-menu"]').click()
