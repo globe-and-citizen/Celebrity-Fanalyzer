@@ -6,7 +6,7 @@ Sentry.init({
   // Performance Monitoring
   tracesSampleRate: 1.0,
   // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-  tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
+  tracePropagationTargets: ['localhost', /^https:\/\/5e9b2f6c\.celebrity-fanalyzer\.pages\.dev/],
   // Session Replay
   // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
   replaysSessionSampleRate: 0.1,
