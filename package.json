@@ -15,7 +15,7 @@
     "vitest": "vitest -u",
     "vitest:coverage": "vitest run --coverage",
     "cy:coverage": "cd coverage/lcov-report && open index.html",
-    "cy:run": "cypress run",
+    "cy:run": "cypress run && nyc report --reporter=text-summary",
     "cy:open": "cypress open",
     "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
     "prepare": "husky",
