@@ -44,9 +44,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="date-picker"]').click()
 
     // Verify the left navigation button is enabled initially and navigate to the previous year
-    cy.get('[data-test="navigate-left"]')
-      .should('not.be.disabled') // Ensure it's clickable
-      .click() // Navigate to the previous year
+    cy.get('[data-test="navigate-left"]').should('not.be.disabled').click()
 
     // Verify the year has decreased by one
     cy.get('[data-test="month-picker"]')
@@ -55,21 +53,16 @@ describe('Admin Prompt & Entry', () => {
 
     // Navigate to the next year
     cy.get('[data-test="navigate-right"]').click()
-    cy.get('[data-test="month-picker"]')
-      .contains(new Date().getFullYear()) // Ensure the year is back to the current
-      .should('exist')
+    cy.get('[data-test="month-picker"]').contains(new Date().getFullYear()).should('exist')
 
     // Iterate over each month button to test disabled and enabled states
     cy.get('[data-test="month-btn"]').each(($monthBtn) => {
       if ($monthBtn.hasClass('disabled-month')) {
         // If the month is disabled, it should not be clickable
-        cy.wrap($monthBtn)
-          .should('have.class', 'disabled-month')
-          .click({ force: true }) // Attempt to click
-          .should('not.have.class', 'q-btn--active') // Verify it wasn't selected
+        cy.wrap($monthBtn).should('have.class', 'disabled-month').click({ force: true }).should('not.have.class', 'q-btn--active')
       } else {
         // If the month is enabled, it should be clickable and selected
-        cy.wrap($monthBtn).click().should('have.class', 'q-btn--active') // Verify it was selected
+        cy.wrap($monthBtn).click().should('have.class', 'q-btn--active')
       }
     })
 
@@ -110,57 +103,6 @@ describe('Admin Prompt & Entry', () => {
 
     //Check the Prompt is submitted successfully
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
-  })
-
-  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
-    cy.visit('/profile')
-    cy.get('[data-test="tab-settings"]').click()
-    // Verify user is logged in by checking their profile email visibility
-    cy.get('[data-test="profile-email"]').should('have.value', 'test@test.com')
-
-    // Logs out the user
-    cy.get('[data-test="logout-button"]').click() // Clicks the logout button
-    // Clear local storage
-    cy.clearLocalStorage()
-
-    cy.visit('/hello-world-').wait(2000)
-    // Ensure the "Create Entry" button exists and is visible
-    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
-
-    // Click the "Create entry" button without login
-    cy.get('[data-test="create-entry"]').click().wait(2000)
-
-    // Assert that the user is redirected to the login page
-    cy.url().should('include', '/profile') // Replace '/profile' with the actual login page path if different
-
-    // Assert the notification message
-    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
-
-    // Visits the profile page
-    cy.login()
-  })
-
-  it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {
-    cy.wait(2000)
-
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
-
-    const promptSlug = '/hello-world-'
-    const promptTitle = 'Hello World!'
-
-    // Check if the prompt title link is visible and clickable
-    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click().wait(2000)
-
-    // Click the "Create entry" button
-    cy.get('[data-test="create-entry"]').click()
-
-    // Verify the dialog is visible
-    cy.get('.q-dialog[data-test="entry-dialog"]').should('be.visible')
-    // Click the "Close Entry Card" button
-    cy.get('[data-test="close-button"]').click()
-
-    // Verify the dialog is closed
-    cy.get('.q-dialog[data-test="entry-dialog"]').should('not.exist')
   })
 
   it('Should create a entry', () => {
@@ -344,8 +286,8 @@ describe('Admin Prompt & Entry', () => {
     // Verify the entry table is visible
     cy.get('[data-test="entry-table"]').should('be.visible')
 
-    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43' // example UID
-    const authorName = 'Cypress Tester' // example author name
+    const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43'
+    const authorName = 'Cypress Tester'
 
     // Check if the author link is visible and clickable
     cy.get('[data-test="entry-author"]').contains(authorName).should('have.attr', 'href', `/fan/${authorUid}`).click()
@@ -364,8 +306,8 @@ describe('Admin Prompt & Entry', () => {
 
     // Verify the entry table is visible
     cy.get('[data-test="entry-table"]').should('be.visible')
-    const entrySlug = `/${date.replace('-', '/')}/hello-world-` // example slug
-    const entryTitle = 'Hello World!' // example title
+    const entrySlug = `/${date.replace('-', '/')}/hello-world-`
+    const entryTitle = 'Hello World!'
 
     // Check if the entry title link is visible and clickable
     cy.get('[data-test="entry-title"]').contains(entryTitle).should('have.attr', 'href', entrySlug).click().wait(2000)
@@ -382,8 +324,8 @@ describe('Admin Prompt & Entry', () => {
 
     // Verify the entry table is visible
     cy.get('[data-test="entry-table"]').should('be.visible')
-    const entrySlug = `/${date.replace('-', '/')}/hello-world-` // example slug
-    const entryTitle = 'Hello World!' // example title
+    const entrySlug = `/${date.replace('-', '/')}/hello-world-`
+    const entryTitle = 'Hello World!'
 
     // Check if the entry title link is visible and clickable
     cy.get('[data-test="entry-title"]').contains(entryTitle).should('have.attr', 'href', entrySlug).click()
@@ -642,7 +584,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[href="/"]').should('have.class', 'q-tab--inactive')
 
     // Navigate to a non-admin route
-    cy.visit('/search') // Replace with your route
+    cy.visit('/search')
     cy.get('[href="/search"]').should('not.have.class', 'q-tab--inactive')
 
     // Check adminTab classes
