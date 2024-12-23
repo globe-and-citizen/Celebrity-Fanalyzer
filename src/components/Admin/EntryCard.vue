@@ -106,7 +106,7 @@
             icon="add_a_photo"
             class="self-center col"
             label="Capture Image"
-            @click="openCamera = true"
+            @click="(openCamera = true)"
           ></q-btn>
         </div>
         <div class="text-center">
@@ -259,7 +259,7 @@ async function onSubmit() {
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
-  if (imageModel.value) {
+  if (Object.keys(imageModel.value ?? {}).length || imageModel.value?.type) {
     entry.image = await uploadAndSetImage(imageModel.value, `images/entry-${entry.id}`)
   } else {
     entry.image = props.image
