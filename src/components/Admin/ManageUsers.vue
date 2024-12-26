@@ -13,7 +13,8 @@
     title="Manage Users"
     class="q-ma-md custom-table"
     selection="multiple"
-    v-model:selected="selectedRows"
+    :selected="selectedRows"
+    @update:selected="onSelect"
   >
     <template v-slot:top-right>
       <q-input debounce="400" data-test="query-input" dense placeholder="Search" v-model="filter">
@@ -21,7 +22,18 @@
           <q-icon name="search" />
         </template>
       </q-input>
-      <q-btn v-if="selectedRows.length > 1" label="Delete Selected" color="primary" @click="confirmDeleteMultiple" class="q-ml-sm" dense />
+      <q-btn
+        v-if="selectedRows.length > 1"
+        label="Delete Selected"
+        color="primary"
+        @click="confirmDeleteMultiple"
+        class="q-ml-sm"
+        dense
+        :disable="selectedRows.some((row) => row.role === 'Admin')"
+      />
+    </template>
+    <template v-slot:body-selection="scope">
+      <q-checkbox v-if="scope.row.role !== 'Admin'" v-model="scope.selected" />
     </template>
     <template v-slot:body-cell-role="props">
       <q-td>
@@ -36,7 +48,7 @@
     </template>
     <template v-slot:body-cell-actions="props">
       <q-td>
-        <q-btn flat dense icon="delete" color="negative" @click="confirmDelete(props.row)" />
+        <q-btn flat dense icon="delete" color="negative" @click="confirmDelete(props.row)" :disable="props.row.role === 'Admin'" />
       </q-td>
     </template>
   </q-table>
@@ -87,6 +99,10 @@ const columnsUser = [
 ]
 const options = ['Admin', 'Editor', 'Advertiser', 'User']
 
+function onSelect(selected) {
+  selectedRows.value = selected.filter((item) => item.role !== 'Admin')
+}
+
 function confirmDelete(row) {
   selectedRows.value = [row]
   deleteDialog.value = true
@@ -97,7 +113,6 @@ function confirmDeleteMultiple() {
 }
 
 async function deleteUsers() {
-  // const emailsToDelete = selectedRows.value.map((row) => row.email)
   for (const row of selectedRows.value) {
     await userStore.deleteUser(row.uid)
   }
