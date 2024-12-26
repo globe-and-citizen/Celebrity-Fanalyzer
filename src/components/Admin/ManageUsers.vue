@@ -12,6 +12,8 @@
     :rows="filteredUsers"
     title="Manage Users"
     class="q-ma-md custom-table"
+    selection="multiple"
+    v-model:selected="selectedRows"
   >
     <template v-slot:top-right>
       <q-input debounce="400" data-test="query-input" dense placeholder="Search" v-model="filter">
@@ -19,13 +21,43 @@
           <q-icon name="search" />
         </template>
       </q-input>
+      <q-btn v-if="selectedRows.length > 1" label="Delete Selected" color="primary" @click="confirmDeleteMultiple" class="q-ml-sm" dense />
     </template>
     <template v-slot:body-cell-role="props">
       <q-td>
-        <q-select borderless dense :options="options" v-model="props.row.role" @update:model-value="userStore.updateRole(props.row)" />
+        <q-select
+          borderless
+          dense
+          :options="options"
+          v-model="props.row.role"
+          @update:model-value="(value) => userStore.updateRole(props.row, value)"
+        />
+      </q-td>
+    </template>
+    <template v-slot:body-cell-actions="props">
+      <q-td>
+        <q-btn flat dense icon="delete" color="negative" @click="confirmDelete(props.row)" />
       </q-td>
     </template>
   </q-table>
+
+  <q-dialog v-model="deleteDialog">
+    <q-card>
+      <q-card-section>
+        <div class="text-h6">Delete Confirmation</div>
+      </q-card-section>
+      <q-card-section>
+        Are you sure you want to delete the following user(s)?
+        <ul>
+          <li v-for="user in selectedRows" :key="user.email">{{ user.displayName }}</li>
+        </ul>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="primary" v-close-popup />
+        <q-btn flat label="Delete" color="negative" @click="deleteUsers" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -34,6 +66,8 @@ import { ref, computed } from 'vue'
 
 const userStore = useUserStore()
 const filter = ref('')
+const deleteDialog = ref(false)
+const selectedRows = ref([])
 
 userStore.fetchUsers()
 
@@ -48,7 +82,26 @@ const filteredUsers = computed(() => {
 const columnsUser = [
   { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
   { name: 'email', label: 'Email', field: 'email', sortable: true, align: 'left' },
-  { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center' }
+  { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'left' },
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'left' }
 ]
 const options = ['Admin', 'Editor', 'Advertiser', 'User']
+
+function confirmDelete(row) {
+  selectedRows.value = [row]
+  deleteDialog.value = true
+}
+
+function confirmDeleteMultiple() {
+  deleteDialog.value = true
+}
+
+async function deleteUsers() {
+  // const emailsToDelete = selectedRows.value.map((row) => row.email)
+  for (const row of selectedRows.value) {
+    await userStore.deleteUser(row.uid)
+  }
+  deleteDialog.value = false
+  selectedRows.value = []
+}
 </script>
