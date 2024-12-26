@@ -37,13 +37,7 @@
     </template>
     <template v-slot:body-cell-role="props">
       <q-td>
-        <q-select
-          borderless
-          dense
-          :options="options"
-          v-model="props.row.role"
-          @update:model-value="(value) => userStore.updateRole(props.row, value)"
-        />
+        <q-select borderless dense :options="options" v-model="props.row.role" @update:model-value="userStore.updateRole(props.row)" />
       </q-td>
     </template>
     <template v-slot:body-cell-actions="props">
