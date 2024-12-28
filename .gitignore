@@ -50,4 +50,4 @@ src/components/Admin/updatedTableEntry.vue
 src/web3/#walletConnect.js#
 # Sentry Config File
 .sentryclirc
-!/.env
+/.env
