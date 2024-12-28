@@ -46,7 +46,13 @@
       </TransitionGroup>
       <div v-if="showHasMore" class="row justify-center q-mt-md">
         <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="70px" :thickness="5" />
-        <q-btn v-else @click="loadMorePrompts" label="Load More" data-test="load-more-btn" color="primary" />
+        <q-btn
+          v-else-if="promptStore.getPrompts?.length"
+          @click="loadMorePrompts"
+          label="Load More"
+          data-test="load-more-btn"
+          color="primary"
+        />
       </div>
     </q-page>
   </q-page-container>
@@ -157,7 +163,7 @@ watch(searchDate, async () => {
 onMounted(async () => {
   await promptStore.getTotalPromptsCount()
   try {
-    if (!promptStore.getPrompts?.length) {
+    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) {
       await promptStore.fetchPrompts()
     }
 

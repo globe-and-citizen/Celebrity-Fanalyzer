@@ -208,7 +208,7 @@ const proceedDepositFundDialog = ref({})
 onMounted(async () => {
   if (userStore.isEditorOrAbove) {
     entryStore._loadedEntries = []
-    !promptStore.getPrompts?.length && (await promptStore.fetchPrompts())
+    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
   } else {
     await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }

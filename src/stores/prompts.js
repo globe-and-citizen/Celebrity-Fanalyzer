@@ -112,12 +112,11 @@ export const usePromptStore = defineStore('prompts', {
 
         if (newPrompts.length > 0) {
           this._lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1]
-          this._hasMore = true
-        } else {
-          this._hasMore = false
         }
+        if (newPrompts.length > 4) this._hasMore = true
+        else this._hasMore = false
 
-        this._prompts = loadMore ? [...(this._prompts || []), ...newPrompts] : newPrompts
+        this._prompts = loadMore ? [...(this._prompts?.length > 5 ? this._prompts : []), ...newPrompts] : newPrompts
 
         return newPrompts
       } catch (error) {
