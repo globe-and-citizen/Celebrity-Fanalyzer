@@ -36,7 +36,8 @@
             v-if="!!shareStore?.getSharesStats?.length"
             v-bind:class="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length ? 'col-md-6' : 'col-md-12'"
           >
-            <SharesPie :data="shareStore?.getSharesStats" :interval="interval" />
+            <q-skeleton v-if="shareStore?.isLoading" width="100%" height="40vh" />
+            <SharesPie v-else :data="shareStore?.getSharesStats" :interval="interval" />
           </div>
           <div
             class="col-12 anthogram-border"
