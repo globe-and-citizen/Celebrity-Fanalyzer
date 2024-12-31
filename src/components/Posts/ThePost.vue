@@ -105,7 +105,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
-            :data-test="commentStore.getCommentsCount ? 'panel-3-navigator' : ''"
+            data-test="comments"
             flat
             icon="chat_bubble_outline"
             :label="commentStore.getCommentsCount"
@@ -141,7 +141,7 @@
           >
             <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
           </q-btn>
-          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit">
+          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit" data-test="edit">
             <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
           </q-btn>
         </div>
