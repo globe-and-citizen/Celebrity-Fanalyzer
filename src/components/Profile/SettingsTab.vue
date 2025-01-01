@@ -12,7 +12,7 @@
     @click="openDeleteConfirmationDialog"
   />
 
-  <q-dialog v-model="deleteDialog">
+  <q-dialog v-model="deleteDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Delete Account?</h6>
@@ -38,7 +38,10 @@ import { ref } from 'vue'
 
 const userStore = useUserStore()
 const router = useRouter()
-const deleteDialog = ref(false)
+const deleteDialog = ref({
+  show: false,
+  author: userStore.getUser
+})
 
 function onLogout() {
   if (customWeb3modal.getAddress()) {
@@ -49,7 +52,7 @@ function onLogout() {
 }
 
 function openDeleteConfirmationDialog() {
-  deleteDialog.value = true
+  deleteDialog.value.show = true
 }
 
 async function onDeleteAccount() {
@@ -59,7 +62,7 @@ async function onDeleteAccount() {
   } catch (error) {
     console.error('Account deletion failed:', error)
   } finally {
-    deleteDialog.value = false
+    deleteDialog.value.show = false
   }
 }
 </script>
