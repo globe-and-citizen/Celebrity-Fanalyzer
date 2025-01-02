@@ -16,6 +16,7 @@ import { auth, db } from 'src/firebase'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
 import { useWalletStore } from 'stores/wallet'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -238,6 +239,30 @@ export const useUserStore = defineStore('user', {
           color: 'positive',
           message: 'User deleted successfully'
         })
+        this._users = this._users.filter((user) => user.uid !== uid)
+      } catch (error) {
+        console.error('Error deleting user: ', error)
+        Notify.create({
+          color: 'negative',
+          message: 'Error deleting user. Please try again.'
+        })
+      } finally {
+        this._isLoading = false
+      }
+    },
+
+    async deleteUser(uid) {
+      this._isLoading = true
+      try {
+        const functions = getFunctions()
+        const deleteUserFunction = httpsCallable(functions, 'deleteUser')
+        await deleteUserFunction({ uid })
+
+        Notify.create({
+          color: 'positive',
+          message: 'User deleted successfully'
+        })
+
         this._users = this._users.filter((user) => user.uid !== uid)
       } catch (error) {
         console.error('Error deleting user: ', error)
