@@ -189,6 +189,7 @@ const initMap = async () => {
 
     toRaw(mapRef.value).setMaxBounds(bounds)
     toRaw(mapRef.value).fitBounds(bounds)
+
     if (selectedDataType.value.value === 'interactions' && interactionsExists) {
       handleLikesAndDislikes(allInteractions, mapRef)
     } else if (selectedDataType.value.value === 'comments' && commentsExists) {
