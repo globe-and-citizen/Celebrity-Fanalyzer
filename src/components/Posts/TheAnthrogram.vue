@@ -36,7 +36,8 @@
             v-if="!!shareStore?.getSharesStats?.length"
             v-bind:class="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length ? 'col-md-6' : 'col-md-12'"
           >
-            <SharesPie :data="shareStore?.getSharesStats" :interval="interval" />
+            <q-skeleton v-if="shareStore?.isLoading" width="100%" height="40vh" />
+            <SharesPie v-else :data="shareStore?.getSharesStats" :interval="interval" />
           </div>
           <div
             class="col-12 anthogram-border"
@@ -106,11 +107,17 @@ const hasValidStats = computed(() => {
 })
 
 onMounted(async () => {
-  await visitorStore.readVisitors(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
-  await shareStore.fetchSharesStats(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
-  await statStore.fetchStats(props.post.id)
-  await statStore.getArticleRating(props.post.id)
-  await statStore.getArticleMetrics(props.post.id)
+  try {
+    await Promise.all([
+      visitorStore.readVisitors(props.collectionName, props.post.id),
+      shareStore.fetchSharesStats(props.collectionName, props.post.id),
+      statStore.fetchStats(props.post.id),
+      statStore.getArticleRating(props.post.id),
+      statStore.getArticleMetrics(props.post.id)
+    ])
+  } catch (error) {
+    errorStore.throwError(error)
+  }
 })
 
 onUnmounted(() => {

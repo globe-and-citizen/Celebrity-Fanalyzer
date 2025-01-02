@@ -15,13 +15,13 @@ export const handleLikesAndDislikes = (data, mapRef) => {
   if (countryCoordinates) {
     toRaw(mapRef.value).setView(countryCoordinates, 3)
 
-    const minRadius = 40000
+    const minRadius = 20000
     data.forEach((countryData) => {
       const totalInteractions = countryData.interactions.likes + countryData.interactions.dislikes
       if (totalInteractions > 0) {
         const commentsLocation = countries.find((country) => country.code === countryData.location)?.country
         const popupContent = `Country: ${commentsLocation}<br>Total Likes: ${countryData.interactions.likes}<br>Total Dislikes: ${countryData.interactions.dislikes}`
-        const calcRadius = Math.sqrt(totalInteractions / Math.PI) * 4000
+        const calcRadius = totalInteractions * 30000
         const radius = Math.max(calcRadius, minRadius)
         const circleOptions = {
           autoClose: false,
