@@ -22,9 +22,24 @@
         <strong>{{ userStore.getUser.displayName }}</strong>
         , are you sure you want to delete your account? This action is irreversible.
       </q-card-section>
+      <q-card-section>
+        <q-input
+          v-model="confirmationText"
+          label="Type DELETE to confirm"
+          filled
+          :rules="[(val) => val === 'DELETE' || 'You must type DELETE to confirm']"
+        />
+      </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn data-test="delete-button" flat label="Delete" color="negative" @click="onDeleteAccount" />
+        <q-btn
+          data-test="delete-button"
+          flat
+          label="Delete"
+          color="negative"
+          :disable="confirmationText !== 'DELETE'"
+          @click="onDeleteAccount"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -42,6 +57,7 @@ const deleteDialog = ref({
   show: false,
   author: userStore.getUser
 })
+const confirmationText = ref('')
 
 function onLogout() {
   if (customWeb3modal.getAddress()) {
@@ -53,6 +69,7 @@ function onLogout() {
 
 function openDeleteConfirmationDialog() {
   deleteDialog.value.show = true
+  confirmationText.value = ''
 }
 
 async function onDeleteAccount() {
