@@ -28,7 +28,10 @@ jobs:
           echo VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }} >> .env
           echo VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }} >> .env
           echo VITE_FIREBASE_VAPID_KEY=${{ secrets.VITE_FIREBASE_VAPID_KEY }} >> .env
-          
+
+      - name: 📄 Verify .env file contents
+        run: cat .env
+  
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
