@@ -8,6 +8,7 @@ on:
 jobs:
   cypress:
     runs-on: ubuntu-latest
+    environment: Development
     steps:
       - name: 🛫 Checkout
         uses: actions/checkout@v3
