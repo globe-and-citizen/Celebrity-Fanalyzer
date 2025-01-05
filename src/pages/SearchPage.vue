@@ -88,7 +88,7 @@ const loadMorePrompts = async () => {
     }
   }
 }
-const contractAddress = import.meta.env.VITE_ESCROW_DEPLOYED_CONTRACT_ON_POLYGON_MAINET
+const contractAddress = import.meta.env.VITE_ESCROW_CONTRACT
 const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
 console.log({ contractAddress, projectId })
 
