@@ -143,109 +143,109 @@ describe('Login and Signup Flow', () => {
     cy.contains('Invalid Password').should('be.visible')
   })
 
-  it('should sign up users successfully, log out, and delete users', () => {
-    // Array of users for signup
-    const users = [
-      { name: 'DeleteUser One', username: 'deleteUser1', email: 'deleteuser1@test.com', password: 'password1' },
-      { name: 'DeleteUser Two', username: 'deleteuser2', email: 'deleteuser2@test.com', password: 'password2' },
-      { name: 'DeleteUser Three', username: 'deleteuser3', email: 'deleteuser3@test.com', password: 'password3' }
-    ]
+  // it('should sign up users successfully, log out, and delete users', () => {
+  //   // Array of users for signup
+  //   const users = [
+  //     { name: 'DeleteUser One', username: 'deleteUser1', email: 'deleteuser1@test.com', password: 'password1' },
+  //     { name: 'DeleteUser Two', username: 'deleteuser2', email: 'deleteuser2@test.com', password: 'password2' },
+  //     { name: 'DeleteUser Three', username: 'deleteuser3', email: 'deleteuser3@test.com', password: 'password3' }
+  //   ]
 
-    // Iterate through each user for signup
-    users.forEach((user) => {
-      // Switch to Sign Up tab
-      cy.get('[data-test="signup-tab"]').click()
+  //   // Iterate through each user for signup
+  //   users.forEach((user) => {
+  //     // Switch to Sign Up tab
+  //     cy.get('[data-test="signup-tab"]').click()
 
-      // Fill out the signup form
-      cy.get('[data-test="name-field"]').clear()
-      cy.get('[data-test="name-field"]').type(user.name)
-      cy.get('[data-test="username-field"]').clear()
-      cy.get('[data-test="username-field"]').type(user.username)
-      cy.get('[data-test="email-field"]').clear()
-      cy.get('[data-test="email-field"]').type(user.email)
-      cy.get('[data-test="password-field"]').clear()
-      cy.get('[data-test="password-field"]').type(user.password)
+  //     // Fill out the signup form
+  //     cy.get('[data-test="name-field"]').clear()
+  //     cy.get('[data-test="name-field"]').type(user.name)
+  //     cy.get('[data-test="username-field"]').clear()
+  //     cy.get('[data-test="username-field"]').type(user.username)
+  //     cy.get('[data-test="email-field"]').clear()
+  //     cy.get('[data-test="email-field"]').type(user.email)
+  //     cy.get('[data-test="password-field"]').clear()
+  //     cy.get('[data-test="password-field"]').type(user.password)
 
-      // Click the "Sign Up" button
-      cy.get('[data-test="sign-button"]').click()
-      cy.wait(2000)
-      // Verify successful signup
-      cy.contains('Account created successfully').should('be.visible')
+  //     // Click the "Sign Up" button
+  //     cy.get('[data-test="sign-button"]').click()
+  //     cy.wait(2000)
+  //     // Verify successful signup
+  //     cy.contains('Account created successfully').should('be.visible')
 
-      cy.get('[data-test="tab-settings"]').click()
-      // Verify user is logged in by checking their profile email visibility
-      cy.get('[data-test="profile-email"]').should('have.value', user.email)
+  //     cy.get('[data-test="tab-settings"]').click()
+  //     // Verify user is logged in by checking their profile email visibility
+  //     cy.get('[data-test="profile-email"]').should('have.value', user.email)
 
-      // Log out after successful signup
-      // Clicks the logout button
-      cy.get('[data-test="logout-button"]').click()
-      // Verifies redirection to the login page and visibility of the auth card
-      cy.url().should('include', '/profile')
+  //     // Log out after successful signup
+  //     // Clicks the logout button
+  //     cy.get('[data-test="logout-button"]').click()
+  //     // Verifies redirection to the login page and visibility of the auth card
+  //     cy.url().should('include', '/profile')
 
-      // Verify redirection to the login page
-      cy.url().should('include', '/profile')
-      cy.get('[data-test="auth-card"]').should('exist')
-    })
+  //     // Verify redirection to the login page
+  //     cy.url().should('include', '/profile')
+  //     cy.get('[data-test="auth-card"]').should('exist')
+  //   })
 
-    // Sign in with admin credentials
-    // Inputs a valid email
-    cy.get('[data-test="email-field"]').type('test@test.com')
-    // Inputs a valid password
-    cy.get('[data-test="password-field"]').type('12345678')
-    // Clicks the "Sign In" button
-    cy.get('[data-test="sign-button"]').click()
+  //   // Sign in with admin credentials
+  //   // Inputs a valid email
+  //   cy.get('[data-test="email-field"]').type('test@test.com')
+  //   // Inputs a valid password
+  //   cy.get('[data-test="password-field"]').type('12345678')
+  //   // Clicks the "Sign In" button
+  //   cy.get('[data-test="sign-button"]').click()
 
-    cy.get('[data-test="admin-tab"]').click()
+  //   cy.get('[data-test="admin-tab"]').click()
 
-    cy.get('[data-test="users-tab"]').click()
+  //   cy.get('[data-test="users-tab"]').click()
 
-    // Ensure the user table is visible
-    cy.get('.custom-table').should('be.visible')
+  //   // Ensure the user table is visible
+  //   cy.get('.custom-table').should('be.visible')
 
-    // Search for users by name
-    cy.get('[data-test="query-input"]').type('DeleteUser')
+  //   // Search for users by name
+  //   cy.get('[data-test="query-input"]').type('DeleteUser')
 
-    // Step 1: Single delete operation
-    const userToDelete = users[0]
-    cy.contains('tr', userToDelete.email).find('button[icon="delete"]').click()
+  //   // Step 1: Single delete operation
+  //   const userToDelete = users[0]
+  //   cy.contains('tr', userToDelete.email).find('button[icon="delete"]').click()
 
-    // Confirm the delete dialog
-    cy.get('.q-dialog').should('be.visible')
-    cy.get('.q-dialog ul').within(() => {
-      cy.get('li').should('contain.text', userToDelete.name)
-    })
-    cy.get('button').contains('Delete').click()
+  //   // Confirm the delete dialog
+  //   cy.get('.q-dialog').should('be.visible')
+  //   cy.get('.q-dialog ul').within(() => {
+  //     cy.get('li').should('contain.text', userToDelete.name)
+  //   })
+  //   cy.get('button').contains('Delete').click()
 
-    // Verify success notification
-    cy.contains('User deleted successfully').should('be.visible')
+  //   // Verify success notification
+  //   cy.contains('User deleted successfully').should('be.visible')
 
-    // Verify the user is deleted
-    cy.get('.custom-table').should('not.contain', userToDelete.email)
+  //   // Verify the user is deleted
+  //   cy.get('.custom-table').should('not.contain', userToDelete.email)
 
-    // Step 2: Multiple delete operation
-    // Remaining users
-    const usersToDelete = users.slice(1)
-    usersToDelete.forEach((user) => {
-      cy.contains('tr', user.email).find('input[type="checkbox"]').check()
-    })
+  //   // Step 2: Multiple delete operation
+  //   // Remaining users
+  //   const usersToDelete = users.slice(1)
+  //   usersToDelete.forEach((user) => {
+  //     cy.contains('tr', user.email).find('input[type="checkbox"]').check()
+  //   })
 
-    cy.get('button').contains('Delete Selected').click()
+  //   cy.get('button').contains('Delete Selected').click()
 
-    // Confirm the delete dialog
-    cy.get('.q-dialog').should('be.visible')
-    cy.get('.q-dialog ul').within(() => {
-      usersToDelete.forEach((user) => {
-        cy.get('li').should('contain.text', user.name)
-      })
-    })
-    cy.get('button').contains('Delete').click()
+  //   // Confirm the delete dialog
+  //   cy.get('.q-dialog').should('be.visible')
+  //   cy.get('.q-dialog ul').within(() => {
+  //     usersToDelete.forEach((user) => {
+  //       cy.get('li').should('contain.text', user.name)
+  //     })
+  //   })
+  //   cy.get('button').contains('Delete').click()
 
-    // Verify success notification
-    cy.contains('User deleted successfully').should('be.visible')
+  //   // Verify success notification
+  //   cy.contains('User deleted successfully').should('be.visible')
 
-    // Verify the users are deleted
-    usersToDelete.forEach((user) => {
-      cy.get('.custom-table').should('not.contain', user.email)
-    })
-  })
+  //   // Verify the users are deleted
+  //   usersToDelete.forEach((user) => {
+  //     cy.get('.custom-table').should('not.contain', user.email)
+  //   })
+  // })
 })

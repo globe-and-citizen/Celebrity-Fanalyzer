@@ -16,14 +16,16 @@ describe('User Profile page', () => {
     cy.get('[data-test="input-name"]').type(name)
 
     // Get the copy username button and click it
-    cy.get('[data-test="button-username-copy"]').click().wait(1000)
+    cy.get('[data-test="button-username-copy"]').click()
+    cy.wait(1000)
 
     //Check the Link copied to clipboard successfully
     cy.get('.q-notification__message').contains('Link copied to clipboard')
 
     // Get the edit UserName input
     cy.get('[data-test="input-user-name"]').clear()
-    cy.get('[data-test="input-user-name"]').type('Cypress Tester').wait(1000)
+    cy.get('[data-test="input-user-name"]').type('Cypress Tester')
+    cy.wait(1000)
 
     // Get the bio input and type 'User Bio Updated' into it
     cy.get('[data-test="input-bio"]').clear()
@@ -62,24 +64,30 @@ describe('User Profile page', () => {
     // cy.get('[href="/profile/subscriptions"]').click()
 
     // Check if the Prompts table exists and unsubscribe
-    cy.get('.prompts-table').should('exist') // Ensure table exists
+    // Ensure table exists
+    cy.get('.prompts-table').should('exist')
     cy.get('.prompts-table .q-tr')
       .should('have.length.greaterThan', -1)
       .then((tableRows) => {
         if (tableRows.length > 0) {
-          cy.get('[data-test="prompt-unsubscribe"]').first().click().wait(1000) // Click the first unsubscribe button
+          cy.get('[data-test="prompt-unsubscribe"]').first().click()
+          // Click the first unsubscribe button
+          cy.wait(1000)
         } else {
           cy.log('No prompts subscription found')
         }
       })
 
     // Check if the Entries table exists and unsubscribe
-    cy.get('.entries-table').should('exist') // Ensure table exists
+    // Ensure table exists
+    cy.get('.entries-table').should('exist')
     cy.get('.entries-table .q-tr')
       .should('have.length.greaterThan', -1)
       .then((tableRows) => {
         if (tableRows.length > 0) {
-          cy.get('[data-test="entrie-unsubscribe"]').first().click().wait(1000) // Click the first unsubscribe button
+          cy.get('[data-test="entrie-unsubscribe"]').first().click()
+          // Click the first unsubscribe button
+          cy.wait(1000)
         } else {
           cy.log('No entries subscription found')
         }
@@ -117,15 +125,16 @@ describe('User Profile page', () => {
     cy.get('[data-test="upload-dialog"]').should('be.visible')
 
     // Choose a file
-    cy.get('[data-test="upload-file-input"]') // File input element in the dialog
-      .selectFile('src/assets/cypress.jpg') // Path from the cypress/fixtures folder
+    // File input element in the dialog
+    cy.get('[data-test="upload-file-input"]').selectFile('src/assets/cypress.jpg')
 
     // Wait for the preview image to show
     cy.get('[data-test="upload-preview"]').should('be.visible')
 
     // Click the Save button in the dialog to upload the image
     cy.get('[data-test="upload-save-btn"]').click()
-    cy.wait(5000) // Adjust wait time based on your app's image upload duration
+    // Adjust wait time based on your app's image upload duration
+    cy.wait(5000)
 
     // Check if the profile was successfully updated after upload
     cy.get('.q-notification__message').contains('Profile successfully updated')
@@ -143,7 +152,8 @@ describe('User Profile page', () => {
     cy.get('[data-test="upload-delete-btn"]').should('be.enabled')
 
     cy.get('[data-test="upload-delete-btn"]').click()
-    cy.wait(2000) // Adjust wait time based on your app's image deletion duration
+    // Adjust wait time based on your app's image deletion duration
+    cy.wait(2000)
 
     // Check if the profile was successfully updated after deletion
     cy.get('.q-notification__message').contains('Profile successfully updated')
@@ -162,4 +172,32 @@ describe('User Profile page', () => {
   //   // Verify the rejection message (this will depend on how the rejection is handled in the code)
   //   cy.get('.q-notification__message').contains('File size is too big. Max file size is 5MB.')
   // })
+
+  it('should handle notifications correctly', () => {
+    // Check if the notification button exists
+    cy.get('[data-test="notification-bubble-btn"]').should('exist')
+
+    // Click the notification button
+    cy.get('[data-test="notification-bubble-btn"]').click()
+
+    // Ensure the notification menu appears
+    cy.get('.q-menu').should('be.visible')
+
+    // Check if notifications exist
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-test="notification-item"]').length > 0) {
+        // Ensure notification message is visible
+        cy.get('[data-test="notification-message"]').should('be.visible')
+
+        // Click the clear icon to remove the notification
+        cy.get('[data-test="notification-clear-btn"]').first().click()
+
+        // Ensure the notification is removed
+        cy.get('[data-test="notification-item"]').should('not.exist')
+      } else {
+        // Wait for "no notifications" message to appear
+        cy.get('[data-test="no-notifications-message"]', { timeout: 10000 }).should('be.visible')
+      }
+    })
+  })
 })
