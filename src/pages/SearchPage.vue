@@ -88,6 +88,8 @@ const loadMorePrompts = async () => {
     }
   }
 }
+const contractAddress = import.meta.env.VITE_ESCROW_DEPLOYED_CONTRACT_ON_POLYGON_MAINET
+console.log(contractAddress)
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
