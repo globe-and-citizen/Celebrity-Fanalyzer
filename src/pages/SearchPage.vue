@@ -88,9 +88,6 @@ const loadMorePrompts = async () => {
     }
   }
 }
-const contractAddress = import.meta.env.VITE_ESCROW_CONTRACT
-const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
-console.log({ contractAddress, projectId })
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
