@@ -47,11 +47,7 @@ async function calculateTotalVisits(advertiseDocRef) {
 }
 
 async function calculateAmountSpent(totalClicks, totalImpressions, totalVisits) {
-  return (
-    import.meta.env.VITE_ADVERTISE_CLICK_RATE * totalClicks +
-    import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * totalImpressions +
-    import.meta.env.VITE_ADVERTISE_VIEWS_RATE * totalVisits
-  )
+  return 0.001 * totalClicks + 0.001 * totalImpressions + 0.001 * totalVisits
 }
 
 async function updateAdvertiseStatus(docId) {
