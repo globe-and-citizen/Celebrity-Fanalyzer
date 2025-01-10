@@ -51,3 +51,4 @@ src/web3/#walletConnect.js#
 # Sentry Config File
 .sentryclirc
 /.env
+/.env.local
