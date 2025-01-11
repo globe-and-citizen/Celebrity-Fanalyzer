@@ -85,9 +85,9 @@ const entry = computed(() => {
   )
 })
 watchEffect(async () => {
-  if (entry.value?.author?.uid) {
-    await statStore.getUserRating(entry.value?.author?.uid)
-  }
+  // if (entry.value?.author?.uid) {
+  //   await statStore.getUserRating(entry.value?.author?.uid)
+  // }
   if (entry.value?.prompt?.id) {
     prompt.value = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
   }
