@@ -36,6 +36,7 @@ export const useShareStore = defineStore('shares', {
 
   actions: {
     async fetchSharesCount(collectionName, documentId) {
+      this._isLoading = true
       try {
         const totalCountFunc = await getCountFromServer(collection(db, collectionName, documentId, 'shares'))
         this._sharesCount = totalCountFunc.data().count
@@ -43,6 +44,7 @@ export const useShareStore = defineStore('shares', {
       } catch (e) {
         console.error('Failed fetching shares count', e)
       }
+      this._isLoading = false
     },
 
     async fetchSharesStats(collectionName, documentId) {
@@ -92,6 +94,9 @@ export const useShareStore = defineStore('shares', {
       })
       await Promise.all(promises)
       this._isLoading = false
+    },
+    resetShares() {
+      this._sharesCount = undefined
     }
   }
 })

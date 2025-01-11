@@ -69,9 +69,7 @@ export const useCommentStore = defineStore('comments', {
   actions: {
     async fetchComments(collectionName, documentId, startLoader = true) {
       const userStore = useUserStore()
-      if (!userStore.getUsers) {
-        // await userStore.fetchUsers()
-      }
+
       if (this._unSubscribe) {
         this._unSubscribe()
       }
@@ -289,8 +287,9 @@ export const useCommentStore = defineStore('comments', {
       await deleteDoc(doc(db, collectionName, documentId, 'comments', commentId)).finally(() => (this._isLoading = false))
     },
 
-    async resetComments() {
+    resetComments() {
       this._comments = undefined
+      this._commentsCount = 0
     }
   }
 })

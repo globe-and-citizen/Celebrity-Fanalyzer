@@ -83,6 +83,7 @@
             "
             :label="likeStore.getLikes?.length || 0"
             rounded
+            :loading="likeStore.getIsLoading"
             size="0.75rem"
             @click="like()"
           >
@@ -99,6 +100,7 @@
             "
             :label="likeStore.getDislikes?.length || 0"
             rounded
+            :loading="likeStore.getIsLoading"
             size="0.75rem"
             @click="dislike()"
           >
@@ -109,13 +111,19 @@
             flat
             icon="chat_bubble_outline"
             :label="commentStore.getCommentsCount"
+            :loading="commentStore.isInitialLoading"
             rounded
             size="0.75rem"
             @click="$emit('clickComments')"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
+          <ShareComponent
+            :label="shareStore.getShares ? shareStore.getShares : 0"
+            :disable="shareStore.isLoading"
+            @share="share($event)"
+            :loading="shareStore.isLoading"
+          />
           <q-btn
             v-if="isAdd && post?.productLink"
             flat
@@ -166,7 +174,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { dayMonthYear, formatMonthYear } from 'src/utils/date'
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -196,10 +204,10 @@ const userLocation = userStore.getUser?.location || userStore.getUserLocation
 
 onMounted(async () => {
   await statsStore.addUser(userId, userLocation)
-
-  if (props.post?.id) {
-    await commentStore.getTotalComments(props.collectionName, props.post?.id)
-  }
+  //
+  // if (props.post?.id) {
+  //   await commentStore.getTotalComments(props.collectionName, props.post?.id)
+  // }
   if (!props.isAdd || props.post?.status === 'Active') {
     await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
   }
@@ -299,6 +307,12 @@ watchEffect(async () => {
   if (statsStore.getUserRate) {
     userRating.value = (statsStore.getUserRate / 100) * 5
   }
+})
+
+onUnmounted(() => {
+  likeStore.resetLikesDislikes()
+  commentStore.resetComments()
+  shareStore.resetShares()
 })
 </script>
 

@@ -85,9 +85,10 @@ watchEffect(async () => {
   if (entry.value?.id) {
     entryId = entry.value.id
     entryAuthor = entry.value?.author?.uid
-    await likeStore.getAllLikesDislikes('entries', entryId).catch((error) => errorStore.throwError(error))
-    await shareStore.fetchSharesCount('entries', entryId).catch((error) => errorStore.throwError(error))
-    await commentStore.getTotalComments('entries', entryId)
+    const getAllLikesDislikes = likeStore.getAllLikesDislikes('entries', entryId).catch((error) => errorStore.throwError(error))
+    const getSharesCount = shareStore.fetchSharesCount('entries', entryId).catch((error) => errorStore.throwError(error))
+    const getTotalComments = commentStore.getTotalComments('entries', entryId)
+    await Promise.all([getAllLikesDislikes, getSharesCount, getTotalComments])
   }
 })
 
