@@ -48,17 +48,17 @@
             <div>
               <p class="text-body1 text-bold q-mb-none q-ml-md text-capitalize">{{ post.author.displayName }}</p>
               <div class="flex q-ml-md">
-                <q-rating
-                  v-model="userRating"
-                  max="5"
-                  size="1.4rem"
-                  color="yellow"
-                  icon="star_border"
-                  icon-selected="star"
-                  icon-half="star_half"
-                  no-dimming
-                  readonly
-                />
+                <!--                <q-rating-->
+                <!--                  v-model="userRating"-->
+                <!--                  max="5"-->
+                <!--                  size="1.4rem"-->
+                <!--                  color="yellow"-->
+                <!--                  icon="star_border"-->
+                <!--                  icon-selected="star"-->
+                <!--                  icon-half="star_half"-->
+                <!--                  no-dimming-->
+                <!--                  readonly-->
+                <!--                />-->
               </div>
             </div>
           </div>
@@ -195,7 +195,7 @@ const visitorStore = useVisitorStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
 
-const userRating = ref(0)
+// const userRating = ref(0)
 const isPrompt = !!props.post?.entries
 const isEntry = props.post?.prompt
 const id = props.post.id
@@ -303,11 +303,11 @@ function manageEdit() {
   }
 }
 
-watchEffect(async () => {
-  if (statsStore.getUserRate) {
-    userRating.value = (statsStore.getUserRate / 100) * 5
-  }
-})
+// watchEffect(async () => {
+//   if (statsStore.getUserRate) {
+//     userRating.value = (statsStore.getUserRate / 100) * 5
+//   }
+// })
 
 onUnmounted(() => {
   likeStore.resetLikesDislikes()
