@@ -110,8 +110,7 @@
             :data-test="commentStore.getCommentsCount ? 'panel-3-navigator' : ''"
             flat
             icon="chat_bubble_outline"
-            :label="commentStore.getCommentsCount"
-            :loading="commentStore.isInitialLoading"
+            :label="post.totalComments?.length || 0"
             rounded
             size="0.75rem"
             @click="$emit('clickComments')"
@@ -194,7 +193,7 @@ const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
-
+console.log(props.post.totalComments)
 // const userRating = ref(0)
 const isPrompt = !!props.post?.entries
 const isEntry = props.post?.prompt

@@ -24,7 +24,6 @@ ui-debug.log
 /coverage
 
 # Editor directories and files
-.env.production
 .idea
 *.suo
 *.ntvs*
@@ -50,5 +49,5 @@ src/components/Admin/updatedTableEntry.vue
 src/web3/#walletConnect.js#
 # Sentry Config File
 .sentryclirc
-/.env
 /.env.local
+config.bat
