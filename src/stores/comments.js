@@ -149,6 +149,26 @@ export const useCommentStore = defineStore('comments', {
       }
     },
 
+    // async addComment(collectionName, comment, document, isTest = false) {
+    //   const userStore = useUserStore()
+    //   const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
+    //
+    //   comment.author = userStore.isAuthenticated ? userStore.getUserRef : userStore.getUserIpHash
+    //   comment.created = Timestamp.fromDate(new Date())
+    //   comment.id = Date.now() + '-' + (comment.author.id || comment.author)
+    //   comment.isAnonymous = !userStore.isAuthenticated
+    //
+    //   if (!isTest) {
+    //     await pushCommentToStats(user_id, document.id, comment.text)
+    //   }
+    //   const postRef = doc(db, collectionName, document.id)
+    //   const commentRef = doc(db, collectionName, document.id, 'comments', comment.id)
+    //   console.log(postRef)
+    //   console.log(commentRef)
+    //
+    //   this._isLoading = true
+    //   await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
+    // },
     async addComment(collectionName, comment, document, isTest = false) {
       const userStore = useUserStore()
       const user_id = userStore.getUserId ? userStore.getUserId : userStore.getUserIpHash
@@ -162,8 +182,16 @@ export const useCommentStore = defineStore('comments', {
         await pushCommentToStats(user_id, document.id, comment.text)
       }
 
+      const postRef = doc(db, collectionName, document.id)
+      const commentRef = doc(db, collectionName, document.id, 'comments', comment.id)
+
       this._isLoading = true
-      await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
+      await runTransaction(db, async (transaction) => {
+        transaction.set(commentRef, comment)
+        transaction.update(postRef, { totalComments: arrayUnion(comment.id) })
+      }).finally(() => {
+        this._isLoading = false
+      })
     },
 
     async editComment(collectionName, documentId, id, editedComment, userId) {
