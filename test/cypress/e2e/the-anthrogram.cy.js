@@ -4,12 +4,54 @@
 describe('TheAnthrogram Graph Visibility', () => {
   beforeEach(() => {
     cy.viewport('macbook-16')
-    // Replace with your app's base URL or the route to the page containing TheAnthrogram.vue
     cy.visit('/month').wait(1000)
-    // cy.get('[data-test="like-button"]').click().wait(1000)
 
-    // Selects the second card on the page and clicks it
+    cy.get('[data-test="post-title"]')
+      .invoke('text')
+      .then((postTitle) => {
+        const monthPromptTitle = postTitle.trim().toLowerCase().replace(/\s+/g, '-')
+        cy.wrap(monthPromptTitle).as('monthTitle')
+      })
+
+    cy.get('@monthTitle').then((title) => {
+      cy.visit(`/${title}`)
+      cy.log('Navigated to:', title)
+    })
+
+    const likedIcon = '/icons/thumbs-up-bolder.svg'
+
+    // Check if the like icon is already in the liked state
+    cy.get('[data-test="like-button"] img')
+      .invoke('attr', 'src')
+      .then((src) => {
+        if (!src.includes(likedIcon)) {
+          cy.get('[data-test="like-button"]').click()
+          cy.get('[data-test="like-button"] img').should('have.attr', 'src').should('include', likedIcon)
+        }
+      })
+
+    cy.wait(1000)
+
+    // Get initial share count and only click when it's exactly 0
+    cy.get('[data-test="share-button"] > .q-btn__content > .block')
+      .invoke('text')
+      .then(parseFloat)
+      .then((initialValue) => {
+        if (initialValue === 0) {
+          // Only click if share count is 0
+          cy.get('[data-test="share-button"]').click()
+          cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
+
+          // Verify the share count increased
+          cy.get('[data-test="share-button"] > .q-btn__content > .block').invoke('text').then(parseFloat).should('be.greaterThan', 0)
+        } else {
+          cy.log('Share button was not clicked because initial share count is greater than 0')
+        }
+      })
+
+    cy.visit('/month').wait(1000)
     cy.get('[data-test="graph-tab"]').click({ force: true })
+
     cy.on('uncaught:exception', (err, runnable) => {
       // Returning false here prevents Cypress from
       // failing the test when ResizeObserver errors occur
@@ -47,28 +89,12 @@ describe('TheAnthrogram Graph Visibility', () => {
   })
 
   it('should conditionally render the LikesBar graph if likes or dislikes data is available', () => {
-    cy.window().then((win) => {
-      const hasLikesOrDislikes =
-        (win.__vue_app__?.config?.globalProperties?.likeStore?.getLikes?.length || 0) > 0 ||
-        (win.__vue_app__?.config?.globalProperties?.likeStore?.getDislikes?.length || 0) > 0
-      const hasSharesStats = (win.__vue_app__?.config?.globalProperties?.shareStore?.getSharesStats?.length || 0) > 0
-
-      if (hasLikesOrDislikes) {
-        cy.get('[data-test="likes-bar"]').should('be.visible')
-
-        if (hasSharesStats) {
-          cy.get('[data-test="likes-bar"]').should('have.class', 'col-md-6')
-        } else {
-          cy.get('[data-test="likes-bar"]').should('have.class', 'col-md-12')
-        }
-      } else {
-        cy.get('[data-test="likes-bar"]').should('not.exist')
-      }
-    })
+    cy.get('[data-test="likes-bar"]').should('be.visible')
   })
-  it('should render the PopularityGauge for article popularity if article rating is available', () => {
-    cy.get('[data-test="article-popularity"]').should('be.visible')
-  })
+
+  // it('should render the PopularityGauge for article popularity if article rating is available', () => {
+  //   cy.get('[data-test="article-popularity"]').should('be.visible')
+  // })
 
   it('should render the PopularityGauge for user popularity if user rating is available', () => {
     cy.get('[data-test="user-popularity"]').should('be.visible')

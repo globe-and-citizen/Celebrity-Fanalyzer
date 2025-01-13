@@ -29,7 +29,7 @@
             </q-badge>
           </div>
         </div>
-        <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
+        <h1 class="q-mt-none text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
         <q-separator spaced />
         <section
           v-if="post?.author && !isAdd"
