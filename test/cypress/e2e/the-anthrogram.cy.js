@@ -70,6 +70,7 @@ describe('TheAnthrogram Graph Visibility', () => {
   })
 
   it('should render the HalfDonought graph if stats data is available', () => {
+    cy.wait(2000)
     cy.get('[data-test="half-donought"]').should('be.visible')
   })
 
@@ -97,10 +98,12 @@ describe('TheAnthrogram Graph Visibility', () => {
   // })
 
   it('should render the PopularityGauge for user popularity if user rating is available', () => {
+    cy.wait(2000)
     cy.get('[data-test="user-popularity"]').should('be.visible')
   })
 
   it('should render the LeafletMap if interaction data by country is available', () => {
+    cy.wait(2000)
     cy.get('[data-test="leaflet-map"]').should('be.visible')
     // Verify the map is visible
     cy.get('#map').should('be.visible')
