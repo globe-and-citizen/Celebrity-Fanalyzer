@@ -109,10 +109,17 @@ exports.onVisitorChange = functions.firestore.document('advertises/{docId}/visit
 })
 
 exports.deleteUser = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be signed in.')
+  }
+
+  const requesterUid = context.auth.uid
   const { uid } = data
 
-  if (!context.auth?.token.admin) {
-    throw new functions.https.HttpsError('permission-denied', 'Unauthorized access')
+  // Optional: Check if the requester is an admin (if needed)
+  const userRecord = await admin.auth().getUser(requesterUid)
+  if (!userRecord.customClaims?.admin) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can delete users.')
   }
 
   try {
