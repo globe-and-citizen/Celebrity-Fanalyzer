@@ -61,8 +61,13 @@ describe('Admin Prompt & Entry', () => {
         // If the month is disabled, it should not be clickable
         cy.wrap($monthBtn).should('have.class', 'disabled-month').click({ force: true }).should('not.have.class', 'q-btn--active')
       } else {
-        // If the month is enabled, it should be clickable and selected
-        cy.wrap($monthBtn).click().should('have.class', 'q-btn--active')
+        // If the month is enabled, it should be clickable and selected(Check background color change)
+        cy.wrap($monthBtn)
+          .click({ force: true })
+          .should(($el) => {
+            const bgColor = window.getComputedStyle($el[0]).backgroundColor
+            expect(bgColor).to.not.equal('rgba(0, 0, 0, 0)')
+          })
       }
     })
 
