@@ -298,7 +298,7 @@ function manageEdit() {
 //   if (statsStore.getUserRate) {
 //     userRating.value = (statsStore.getUserRate / 100) * 5
 //   }
-// })!!
+// })
 </script>
 
 <style scoped lang="scss">
