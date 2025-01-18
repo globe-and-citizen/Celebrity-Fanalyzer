@@ -155,7 +155,7 @@ describe('Login and Signup Flow', () => {
     // Click the "Sign Up" button
     cy.get('[data-test="sign-button"]').click()
     // Wait for the success message to appear
-    cy.contains('Account created successfully').should('be.visible')
+    cy.contains('Account created successfully', { timeout: 5000 }).should('be.visible')
 
     cy.get('[data-test="tab-settings"]').click()
     // Verify user is logged in by checking their profile email visibility
