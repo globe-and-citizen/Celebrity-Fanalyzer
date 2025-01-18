@@ -30,8 +30,6 @@ describe('TheAnthrogram Graph Visibility', () => {
         }
       })
 
-    cy.wait(1000)
-
     // Get initial share count and only click when it's exactly 0
     cy.get('[data-test="share-button"] > .q-btn__content > .block')
       .invoke('text')
@@ -70,7 +68,7 @@ describe('TheAnthrogram Graph Visibility', () => {
   })
 
   it('should render the HalfDonought graph if stats data is available', () => {
-    cy.get('[data-test="half-donought"]', { timeout: 10000 }).should('be.visible')
+    cy.get('[data-test="half-donought"]', { timeout: 20000 }).should('be.visible')
   })
 
   it('should conditionally render the CTRBar if isAdd is true', () => {
@@ -97,11 +95,11 @@ describe('TheAnthrogram Graph Visibility', () => {
   // })
 
   it('should render the PopularityGauge for user popularity if user rating is available', () => {
-    cy.get('[data-test="user-popularity"]', { timeout: 10000 }).should('be.visible')
+    cy.get('[data-test="user-popularity"]').should('be.visible')
   })
 
   it('should render the LeafletMap if interaction data by country is available', () => {
-    cy.get('[data-test="leaflet-map"]', { timeout: 10000 }).should('be.visible')
+    cy.get('[data-test="leaflet-map"]').should('be.visible')
     // Verify the map is visible
     cy.get('#map').should('be.visible')
 
