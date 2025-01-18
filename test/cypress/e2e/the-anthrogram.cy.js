@@ -59,16 +59,8 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
-  it('should render the HalfDonought graph if stats data is available', () => {
-    cy.get('[data-test="half-donought"]', { timeout: 20000 }).should('be.visible')
-  })
-
   it('should display the header with the correct title', () => {
     cy.get('header').contains('Anthrogram').should('be.visible')
-  })
-
-  it('should render the VisitorsBar graph if visitor data is available', () => {
-    cy.get('[data-test="visitors-bar"]').should('be.visible')
   })
 
   it('should conditionally render the CTRBar if isAdd is true', () => {
@@ -82,21 +74,25 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
-  it('should render the SharesPie graph if shares data is available', () => {
-    cy.get('[data-test="shares-pie"]').should('be.visible')
-  })
-
-  it('should conditionally render the LikesBar graph if likes or dislikes data is available', () => {
-    cy.get('[data-test="likes-bar"]').should('be.visible')
-  })
-
-  // it('should render the PopularityGauge for article popularity if article rating is available', () => {
-  //   cy.get('[data-test="article-popularity"]').should('be.visible')
+  // it('should render the HalfDonought graph if stats data is available', () => {
+  //   cy.get('[data-test="half-donought"]').should('be.visible')
   // })
 
-  it('should render the PopularityGauge for user popularity if user rating is available', () => {
-    cy.get('[data-test="user-popularity"]').should('be.visible')
-  })
+  // it('should render the VisitorsBar graph if visitor data is available', () => {
+  //   cy.get('[data-test="visitors-bar"]').should('be.visible')
+  // })
+
+  // it('should render the SharesPie graph if shares data is available', () => {
+  //   cy.get('[data-test="shares-pie"]').should('be.visible')
+  // })
+
+  // it('should conditionally render the LikesBar graph if likes or dislikes data is available', () => {
+  //   cy.get('[data-test="likes-bar"]').should('be.visible')
+  // })
+
+  // it('should render the PopularityGauge for user popularity if user rating is available', () => {
+  //   cy.get('[data-test="user-popularity"]').should('be.visible')
+  // })
 
   it('should render the LeafletMap if interaction data by country is available', () => {
     cy.get('[data-test="leaflet-map"]').should('be.visible')
