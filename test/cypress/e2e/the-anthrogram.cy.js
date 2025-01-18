@@ -59,8 +59,16 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
+  it('should render the HalfDonought graph if stats data is available', () => {
+    cy.get('[data-test="half-donought"]').should('be.visible').debug()
+  })
+
   it('should display the header with the correct title', () => {
-    cy.get('header').contains('Anthrogram').should('be.visible')
+    cy.get('header').contains('Anthrogram').should('be.visible').debug()
+  })
+
+  it('should render the VisitorsBar graph if visitor data is available', () => {
+    cy.get('[data-test="visitors-bar"]').should('be.visible').debug()
   })
 
   it('should conditionally render the CTRBar if isAdd is true', () => {
@@ -74,28 +82,20 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
-  // it('should render the HalfDonought graph if stats data is available', () => {
-  //   cy.get('[data-test="half-donought"]').should('be.visible')
-  // })
+  it('should render the SharesPie graph if shares data is available', () => {
+    cy.get('[data-test="shares-pie"]').should('be.visible').debug()
+  })
 
-  // it('should render the VisitorsBar graph if visitor data is available', () => {
-  //   cy.get('[data-test="visitors-bar"]').should('be.visible')
-  // })
+  it('should conditionally render the LikesBar graph if likes or dislikes data is available', () => {
+    cy.get('[data-test="likes-bar"]').should('be.visible').debug()
+  })
 
-  // it('should render the SharesPie graph if shares data is available', () => {
-  //   cy.get('[data-test="shares-pie"]').should('be.visible')
-  // })
-
-  // it('should conditionally render the LikesBar graph if likes or dislikes data is available', () => {
-  //   cy.get('[data-test="likes-bar"]').should('be.visible')
-  // })
-
-  // it('should render the PopularityGauge for user popularity if user rating is available', () => {
-  //   cy.get('[data-test="user-popularity"]').should('be.visible')
-  // })
+  it('should render the PopularityGauge for user popularity if user rating is available', () => {
+    cy.get('[data-test="user-popularity"]').should('be.visible').debug()
+  })
 
   it('should render the LeafletMap if interaction data by country is available', () => {
-    cy.get('[data-test="leaflet-map"]').should('be.visible')
+    cy.get('[data-test="leaflet-map"]').should('be.visible').debug()
     // Verify the map is visible
     cy.get('#map').should('be.visible')
 
@@ -112,7 +112,7 @@ describe('TheAnthrogram Graph Visibility', () => {
       })
 
     // Ensure map remains visible and functional
-    cy.get('#map').should('exist')
+    cy.get('#map').should('exist').debug()
   })
 
   it('should correctly toggle tabs and display the respective data', () => {
