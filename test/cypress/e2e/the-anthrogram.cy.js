@@ -59,16 +59,16 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
+  it('should render the HalfDonought graph if stats data is available', () => {
+    cy.get('[data-test="half-donought"]', { timeout: 20000 }).should('be.visible')
+  })
+
   it('should display the header with the correct title', () => {
     cy.get('header').contains('Anthrogram').should('be.visible')
   })
 
   it('should render the VisitorsBar graph if visitor data is available', () => {
     cy.get('[data-test="visitors-bar"]').should('be.visible')
-  })
-
-  it('should render the HalfDonought graph if stats data is available', () => {
-    cy.get('[data-test="half-donought"]', { timeout: 20000 }).should('be.visible')
   })
 
   it('should conditionally render the CTRBar if isAdd is true', () => {
