@@ -1,21 +1,29 @@
 <template>
   <section class="text-center">
+    <q-input
+      autogrow
+      class="col-grow q-pb-xl"
+      hint="Max length 180 characters (optional)"
+      label="Artist info"
+      v-model="modelArtistInfo"
+      @update:model-value="addArtistInfo"
+      maxlength="180"
+    />
+    <q-file class="hidden" multiple ref="artistFileRef" v-model="modelFileArtist" @update:model-value="addArtistPhoto" />
+    <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
+    <div v-if="modelArtistPhoto" class="items-center no-wrap q-my-md q-pa-md rounded-borders col shadow-1">
+      <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
+      <q-img v-else class="artist-img q-mr-md rounded-borders" fit="contain" :src="modelArtistPhoto" spinner-color="primary" />
+    </div>
+
     <q-file class="hidden" multiple ref="artsFileRef" v-model="modelFileArt" @update:model-value="addArts" />
     <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
-    <div class="items-center justify-around q-my-md q-pa-md rounded-borders row shadow-1">
+    <div v-if="modelArts.length" class="items-center justify-around q-my-md q-pa-md rounded-borders row shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArts.length" class="q-mx-auto" color="primary" size="3em" />
       <div v-for="(art, index) in modelArts" class="art-img q-ma-xs relative-position" :key="index">
         <q-img class="rounded-borders" fit="cover" :ratio="1" :src="art" style="width: 10rem" />
         <q-btn class="trash-icon" color="negative" icon="delete" round size="sm" @click="removeArt(art)" />
       </div>
-    </div>
-
-    <q-file class="hidden" multiple ref="artistFileRef" v-model="modelFileArtist" @update:model-value="addArtistPhoto" />
-    <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
-    <div class="items-center no-wrap q-my-md q-pa-md rounded-borders row shadow-1">
-      <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
-      <q-img v-else class="artist-img q-mr-md rounded-borders" fit="contain" :src="modelArtistPhoto" spinner-color="primary" />
-      <q-input autogrow class="col-grow" label="Artist info" v-model="modelArtistInfo" @update:model-value="addArtistInfo" />
     </div>
   </section>
 </template>
@@ -23,6 +31,8 @@
 <script setup>
 import { useErrorStore, useStorageStore } from 'src/stores'
 import { ref } from 'vue'
+import { useQuasar } from 'quasar'
+import { uploadAndSetImage } from 'src/utils/imageConvertor'
 
 const props = defineProps(['arts', 'artist', 'collectionName', 'date'])
 const emit = defineEmits(['update:arts', 'update:artist'])
@@ -37,6 +47,7 @@ const modelArtistInfo = ref(props.artist.info)
 const modelArtistPhoto = ref(props.artist.photo)
 const modelFileArt = ref(null)
 const modelFileArtist = ref(null)
+const $q = useQuasar()
 
 function onUploadArts() {
   artsFileRef.value.pickFiles()
@@ -46,12 +57,21 @@ function onUploadArtist() {
   artistFileRef.value.pickFiles()
 }
 
+console.log(modelArts)
+
 async function addArts(files) {
+  const maxImages = 10
+
+  if (modelArts.value.length >= maxImages) {
+    $q.notify({ type: 'negative', message: `You can only upload ${maxImages} images` })
+    await errorStore.throwError(`You can only upload ${maxImages} images`)
+    return
+  }
+
   for (const index in files) {
-    await storageStore
-      .uploadFile(files[index], `images/${props.collectionName}-${props.date}-art-${index}`)
-      .then((url) => modelArts.value.push(url))
-      .catch((error) => errorStore.throwError(error))
+    const uploaded = await uploadAndSetImage(files[index], `images/${props.collectionName}-${props.date}-art-${index}`)
+    modelArts.value.push(uploaded)
+    console.log(uploaded)
   }
   emit('update:arts', modelArts.value)
 }
