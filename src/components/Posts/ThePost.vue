@@ -70,8 +70,9 @@
         <q-separator v-if="!isAdd" spaced />
         <p v-if="isAdd" v-html="post?.content" class="q-mt-sm text-body1"></p>
         <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
-        <q-separator spaced="lg" />
-        <div class="text-center">
+        <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
+        <q-separator v-if="!isAdd" inset />
+        <div class="text-center q-pt-md">
           <q-btn
             color="green"
             :data-test="!likeStore._isLoading && likeStore.getLikes ? 'like-button' : ''"
@@ -146,8 +147,6 @@
           </q-btn>
         </div>
       </section>
-      <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
-      <q-separator v-if="!isAdd" inset />
     </q-page>
   </q-page-container>
 </template>
