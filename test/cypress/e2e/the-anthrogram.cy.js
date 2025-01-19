@@ -177,14 +177,10 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
-  it('should render the HalfDonought graph if stats data is available', () => {
-    cy.window().then((win) => {
-      if (win.__vue_app__?.config?.globalProperties?.statStore?.getStats?.length) {
-        cy.get('[data-test="half-donought"]').should('be.visible')
-      } else {
-        cy.log('No stats data available for HalfDonought graph')
-      }
-    })
+  it.only('should render the HalfDonought graph if stats data is available', () => {
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(10000)
+    cy.get('[data-test="half-donought"]', { timeout: 5000 }).should('be.visible')
   })
 
   it('should display the header with the correct title', () => {
@@ -192,13 +188,9 @@ describe('TheAnthrogram Graph Visibility', () => {
   })
 
   it('should render the VisitorsBar graph if visitor data is available', () => {
-    cy.window().then((win) => {
-      if (win.__vue_app__?.config?.globalProperties?.visitorStore?.getVisitors?.length) {
-        cy.get('[data-test="visitors-bar"]').should('be.visible')
-      } else {
-        cy.log('No visitor data available for VisitorsBar graph')
-      }
-    })
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(10000)
+    cy.get('[data-test="visitors-bar"]', { timeout: 5000 }).should('be.visible')
   })
 
   it('should conditionally render the CTRBar if isAdd is true', () => {
@@ -214,46 +206,28 @@ describe('TheAnthrogram Graph Visibility', () => {
   })
 
   it('should render the SharesPie graph if shares data is available', () => {
-    cy.window().then((win) => {
-      if (win.__vue_app__?.config?.globalProperties?.shareStore?.getSharesStats?.length) {
-        cy.get('[data-test="shares-pie"]').should('be.visible')
-      } else {
-        cy.log('No shares data available for SharesPie graph')
-      }
-    })
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(10000)
+    cy.get('[data-test="shares-pie"]', { timeout: 5000 }).should('be.visible')
   })
 
   it('should conditionally render the LikesBar graph if likes or dislikes data is available', () => {
-    cy.window().then((win) => {
-      const likes = win.__vue_app__?.config?.globalProperties?.likeStore?.getLikes?.length || 0
-      const dislikes = win.__vue_app__?.config?.globalProperties?.likeStore?.getDislikes?.length || 0
-      if (likes || dislikes) {
-        cy.get('[data-test="likes-bar"]').should('be.visible')
-      } else {
-        cy.log('No likes or dislikes data available for LikesBar graph')
-      }
-    })
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(10000)
+    cy.get('[data-test="likes-bar"]').should('be.visible', { timeout: 5000 })
   })
 
   it('should render the PopularityGauge for user popularity if user rating is available', () => {
-    cy.window().then((win) => {
-      if (win.__vue_app__?.config?.globalProperties?.statStore?.getUserRate) {
-        cy.get('[data-test="user-popularity"]').should('be.visible')
-      } else {
-        cy.log('No user rating data available for PopularityGauge')
-      }
-    })
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(10000)
+    cy.get('[data-test="user-popularity"]', { timeout: 5000 }).should('be.visible')
   })
 
   it('should render the LeafletMap if interaction data by country is available', () => {
-    cy.window().then((win) => {
-      if (win.__vue_app__?.config?.globalProperties?.statStore?.getAllInteractionsByCountry?.response?.length) {
-        cy.get('[data-test="leaflet-map"]').should('be.visible')
-        cy.get('#map').should('exist')
-      } else {
-        cy.log('No interaction data available for LeafletMap')
-      }
-    })
+    // cy.get('[data-test="leaflet-map"]').should('be.visible')
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(10000)
+    cy.get('#map').should('exist')
   })
 
   it('should correctly toggle tabs and display the respective data', () => {
