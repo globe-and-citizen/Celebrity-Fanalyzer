@@ -57,6 +57,7 @@
     ]
   },
   "dependencies": {
+    "@microsoft/clarity": "^1.0.0",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.12",
     "@sentry/cli": "^2.33.0",

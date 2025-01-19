@@ -20,7 +20,7 @@ module.exports = configure(function (ctx) {
     },
 
     // App boot file (/src/boot)
-    boot: ['tanstack-query', 'sentry'],
+    boot: ['tanstack-query', 'sentry', 'clarity'],
 
     // CSS to include
     css: ['app.css'],
