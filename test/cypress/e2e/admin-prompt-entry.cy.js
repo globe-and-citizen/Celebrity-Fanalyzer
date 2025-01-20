@@ -29,6 +29,38 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', '/')
   })
 
+  it('Cleanup: Delete Existing "Cypress Tester" Prompts Before Test', () => {
+    // Search for the prompt
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.wait(10000)
+
+    // Check if the item cards exist
+    cy.get('body').then(($body) => {
+      const itemCards = $body.find('[data-test="item-card"]')
+
+      if (itemCards.length > 0) {
+        cy.log(`Found ${itemCards.length} "Cypress Tester" prompts. Deleting all...`)
+
+        // Iterate through all item cards and delete them
+        Array.from(itemCards).forEach(() => {
+          // Delete the first visible prompt
+          cy.get('[data-test="item-card"] > .text-right > [data-test="button-delete-prompt"]').first().click()
+
+          // Confirm deletion
+          cy.get('[data-test="confirm-delete-prompt"]').click()
+          cy.wait(3000)
+
+          // Verify the success notification
+          cy.get('.q-notification__message').contains('Prompt successfully deleted')
+        })
+
+        cy.log('All "Cypress Tester" prompts successfully deleted.')
+      } else {
+        cy.log('No "Cypress Tester" prompts found to delete.')
+      }
+    })
+  })
+
   it('Should prompt create time handles navigation, month selection, and disabled states correctly', () => {
     // Ensure initial number of item cards
     cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
