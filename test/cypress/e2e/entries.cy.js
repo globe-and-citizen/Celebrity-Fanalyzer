@@ -24,7 +24,8 @@ describe('Home page', () => {
   })
 
   it('Should create a prompt', () => {
-    cy.login().wait(1000)
+    cy.login()
+    // cy.wait(1000)
     cy.visit('/admin')
     // Get the dropdown button and click it
     cy.get('[data-test="dropdown-menu"]').click()
@@ -44,8 +45,9 @@ describe('Home page', () => {
     cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
 
     // Get the categories select and choose add 'Cypress' and 'Test' categories
-    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
+    cy.get('[data-test="select-categories"]').type('Cypress{enter}')
 
+    cy.get('[data-test="select-categories"]').type('Test{enter}')
     // Get the submit button and click it
     cy.get('[data-test="button-submit"] > .q-btn__content').click()
     // cy.get('[data-test="button-submit"]').click()
@@ -55,17 +57,16 @@ describe('Home page', () => {
   })
 
   it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {
-    cy.login().wait(1000)
+    cy.login()
     cy.visit('/admin')
-    cy.wait(2000)
 
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
 
     const promptSlug = '/hello-world-'
     const promptTitle = 'Hello World!'
 
     // Check if the prompt title link is visible and clickable
-    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click().wait(2000)
+    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click()
 
     // Click the "Create entry" button
     cy.get('[data-test="create-entry"]').click()
@@ -83,12 +84,12 @@ describe('Home page', () => {
     // Clear local storage
     cy.clearLocalStorage()
 
-    cy.visit('/hello-world-').wait(2000)
+    cy.visit('/hello-world-')
     // Ensure the "Create Entry" button exists and is visible
     cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
 
     // Click the "Create entry" button without login
-    cy.get('[data-test="create-entry"]').click().wait(2000)
+    cy.get('[data-test="create-entry"]').click()
 
     // Assert that the user is redirected to the login page
     cy.url().should('include', '/profile')
@@ -98,10 +99,11 @@ describe('Home page', () => {
   })
 
   it('Should delete the prompt', () => {
-    cy.login().wait(1000)
+    cy.login()
     cy.visit('/admin')
     // Get the second button (Delete Prompt) and click it
     cy.get('[data-test="input-search"]').type('Cypress Tester')
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.wait(2000)
 
     // Get the delete button and click it
@@ -109,6 +111,7 @@ describe('Home page', () => {
 
     // Get the confirm button and click it
     cy.get('[data-test="confirm-delete-prompt"]').click()
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.wait(2000)
 
     // Wait the notification
