@@ -11,12 +11,12 @@
     <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
-          v-model="category"
+          v-model="statuses"
           class="q-my-sm"
           color="white"
           no-caps
           no-wrap
-          :options="computedCategories"
+          :options="statuses"
           rounded
           text-color="secondary"
           unelevated
@@ -64,7 +64,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref, onMounted, watch, onUnmounted, watchEffect } from 'vue'
+import { computed, ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -78,6 +78,13 @@ const search = ref('')
 const searchDate = ref('')
 const pageRef = ref(null)
 const skeletons = 6
+
+const statuses = [
+  { label: 'Top', value: 'Top' },
+  { label: 'New', value: 'New' },
+  { label: 'Active', value: 'Active' },
+  { label: 'Funded', value: 'Funded' }
+]
 
 const loadMorePrompts = async () => {
   if (!promptStore.isLoading && promptStore._hasMore) {
@@ -107,7 +114,7 @@ const computedPrompts = computed(() => {
   return promptStore.getPrompts
     ? promptStore.getPrompts
         .filter((item) => {
-          const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
+          const prompt = [item.title, item.description, item.author?.displayName, item.id, item.status]
 
           const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
           const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true

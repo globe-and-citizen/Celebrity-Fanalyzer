@@ -31,30 +31,41 @@
                 <q-input
                   borderless
                   dense
-                  :disable="Boolean(id)"
                   readonly
-                  :rules="[(val) => val?.length > 0 || 'Date is required']"
+                  label="Creation Date"
                   style="max-width: 5.5rem"
-                  v-model="prompt.date"
-                  data-test="date"
+                  v-model="prompt.creationDate"
+                  data-test="creation-date"
+                />
+                <q-input
+                  borderless
+                  dense
+                  label="Publication Date"
+                  readonly
+                  :model-value="prompt.publicationDate"
+                  data-test="input-publication-date"
+                  :rules="[(val) => val?.length > 0 || 'Publication Date is required']"
+                  style="max-width: 10rem"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer" data-test="date-picker">
-                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                        <MonthPicker
-                          v-model="prompt.date"
-                          mask="YYYY-MM"
-                          navigation-min-year-month="2023-11"
-                          :options="unavailablePromptsMonth"
+                      <q-popup-proxy>
+                        <q-date
+                          mask="YYYY-MM-DD"
+                          minimal
+                          v-model="prompt.publicationDate"
+                          :options="qDateOptions"
+                          @update:model-value="updateEndDate"
                         >
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
                           </div>
-                        </MonthPicker>
+                        </q-date>
                       </q-popup-proxy>
                     </q-icon>
                   </template>
                 </q-input>
+                <q-input borderless dense label="End Date" data-test="input-end-date" type="text" v-model="prompt.endDate" readonly />
               </div>
               <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
               <q-input
@@ -194,14 +205,12 @@
 </template>
 
 <script setup>
-import { useQuasar, date as qDate } from 'quasar'
+import { useQuasar, date as dateUtils } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { currentYearMonth } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
-import MonthPicker from '../date/MonthPicker.vue'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -217,20 +226,42 @@ const prompt = reactive({
   description: '',
   image: '',
   showcase: { arts: [], artist: { info: '', photo: '' } },
-  title: ''
+  title: '',
+  publicationDate: '',
+  endDate: '',
+  creationDate: new Date().toISOString().split('T')[0]
 })
 const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
-const unavailablePromptsMonth = ref([])
+
+function qDateOptions(currentDate) {
+  const timestamp = dateUtils.startOfDate(new Date(), 'day').getTime()
+  const dateObj = dateUtils.extractDate(currentDate, 'YYYY/MM/DD')
+  const limitObj = dateUtils.addToDate(timestamp, { months: 6 })
+  return timestamp <= dateObj.getTime() && dateObj.getTime() <= limitObj.getTime()
+}
+
+function updateEndDate() {
+  if (!prompt.publicationDate) {
+    prompt.endDate = ''
+    return
+  }
+  const date = new Date(prompt.publicationDate)
+  date.setDate(date.getDate() + 30)
+  prompt.endDate = date.toISOString().split('T')[0]
+}
 
 watchEffect(() => {
   if (props.id) {
     prompt.author = { label: props.author.displayName, value: props.author.uid }
     prompt.categories = props.categories
     prompt.date = props.date
+    prompt.creationDate = props.creationDate
+    prompt.publicationDate = props.publicationDate
+    prompt.endDate = props.endDate
     prompt.description = props.description
     prompt.id = props.id
     prompt.image = props.image
@@ -245,28 +276,15 @@ watchEffect(() => {
   }
 })
 
-onMounted(async () => {
+onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 
   if (!props.id) {
-    const promptDates = await promptStore.getPromptDates()
-    unavailablePromptsMonth.value = promptDates
-    const currentMonth = currentYearMonth()
-
-    if (unavailablePromptsMonth.value.includes(currentMonth)) {
-      const dateObj = new Date()
-      while (true) {
-        dateObj.setMonth(dateObj.getMonth() + 1)
-        const monthToCheck = qDate.formatDate(dateObj, 'YYYY-MM')
-
-        if (!unavailablePromptsMonth.value.includes(monthToCheck)) {
-          prompt.date = monthToCheck
-          break
-        }
-      }
-    } else {
-      prompt.date = currentMonth
-    }
+    prompt.publicationDate = ''
+  } else {
+    prompt.creationDate = props.creationDate
+    prompt.publicationDate = props.publicationDate
+    prompt.endDate = props.endDate
   }
 })
 
@@ -304,8 +322,8 @@ function onPaste(evt) {
 async function onSubmit() {
   prompt.slug = '/' + prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
 
-  if (!props.id && promptStore.getPrompts?.find((p) => p.date === prompt.date)) {
-    $q.notify({ type: 'negative', message: 'Choose another month for this prompt.' })
+  if (!prompt.publicationDate) {
+    $q.notify({ type: 'negative', message: 'Publication Date is required.' })
     return
   }
   if (!promptStore.getPrompts) {
