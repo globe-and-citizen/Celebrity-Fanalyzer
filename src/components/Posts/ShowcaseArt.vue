@@ -1,45 +1,54 @@
 <template>
   <q-separator inset />
-  <div class="q-gutter-xs q-pa-md text-center">
-    <!--    <q-img-->
-    <!--      v-if="showcase.artist.info"-->
-    <!--      class="art-img"-->
-    <!--      fit="cover"-->
-    <!--      :ratio="1"-->
-    <!--      :src="showcase.artist.photo"-->
-    <!--      width="6.5rem"-->
-    <!--      @click="slide = showcase?.arts.length"-->
-    <!--    />-->
-
-    <q-carousel
-      id="dialog"
-      @mousedown.stop.prevent
-      @touchstart="handleTouchStart"
-      animated
-      control-color="primary"
-      height="auto"
-      ref="initialCarouselRef"
-      style="max-height: 100%; touch-action: none"
-      swipeable
-      :arrows="initialSlides.length > 1"
-      :infinite="initialSlides.length > 1"
-      transition-prev="jump-right"
-      transition-next="jump-left"
-      v-model="initialSlides"
-    >
-      <q-carousel-slide
-        v-for="(art, index) in showcase?.arts"
-        class="flex justify-center q-pa-none cursor-pointer"
-        :key="index"
-        :name="index"
-      >
-        <q-img class="rounded-borders" fit="contain" :src="art" @click.stop="openDialog = true" />
-      </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
-      </q-carousel-slide>
-    </q-carousel>
+  <div class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
+    <q-img
+      v-for="(art, index) in showcase?.arts"
+      class="art-img"
+      fit="cover"
+      :key="index"
+      :ratio="1"
+      :src="art"
+      width="6.5rem"
+      @click="slide = index"
+    />
+    <q-img
+      v-if="showcase.artist.info"
+      class="art-img"
+      fit="cover"
+      :ratio="1"
+      :src="showcase.artist.photo"
+      width="6.5rem"
+      @click="slide = showcase?.arts.length"
+    />
+    <!--    <q-carousel-->
+    <!--      id="dialog"-->
+    <!--      @mousedown.stop.prevent-->
+    <!--      @touchstart="handleTouchStart"-->
+    <!--      animated-->
+    <!--      control-color="primary"-->
+    <!--      height="auto"-->
+    <!--      ref="initialCarouselRef"-->
+    <!--      style="max-height: 100%; touch-action: none"-->
+    <!--      swipeable-->
+    <!--      :arrows="initialSlides.length > 1"-->
+    <!--      :infinite="initialSlides.length > 1"-->
+    <!--      transition-prev="jump-right"-->
+    <!--      transition-next="jump-left"-->
+    <!--      v-model="initialSlides"-->
+    <!--    >-->
+    <!--      <q-carousel-slide-->
+    <!--        v-for="(art, index) in showcase?.arts"-->
+    <!--        class="flex justify-center q-pa-none cursor-pointer"-->
+    <!--        :key="index"-->
+    <!--        :name="index"-->
+    <!--      >-->
+    <!--        <q-img class="rounded-borders" fit="contain" :src="art" @click.stop="openDialog = true" />-->
+    <!--      </q-carousel-slide>-->
+    <!--      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">-->
+    <!--        <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />-->
+    <!--        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>-->
+    <!--      </q-carousel-slide>-->
+    <!--    </q-carousel>-->
   </div>
 
   <!--  <q-dialog position="top" ref="dialogRef" seamless style="background-color: rgba(0, 0, 0, 0.4) !important" v-model="openDialog">-->
@@ -49,7 +58,7 @@
       control-color="primary"
       height="auto"
       ref="carouselRef"
-      style="max-height: 100%; max-width: 90vw; width: 50rem"
+      style="max-height: 100%; max-width: 90vw; width: 80rem"
       swipeable
       arrows
       infinite
@@ -80,7 +89,6 @@ const initialCarouselRef = ref(null)
 const dialogRef = ref(false)
 const openDialog = ref(false)
 const slide = ref(0)
-const initialSlides = ref(0)
 
 onMounted(() => {
   document.addEventListener('keyup', handleKeyPress)
@@ -104,10 +112,6 @@ function handleKeyPress(e) {
   }
 }
 
-const handleTouchStart = (e) => {
-  e.stopPropagation()
-}
-
 onUnmounted(() => {
   document.removeEventListener('keyup', handleKeyPress)
 })
@@ -120,8 +124,8 @@ onUnmounted(() => {
   transition: filter 0.3s ease-in-out;
 }
 
-#dialog {
-  touch-action: none;
+#dialog::-webkit-scrollbar {
+  display: none;
 }
 
 .art-img:hover {

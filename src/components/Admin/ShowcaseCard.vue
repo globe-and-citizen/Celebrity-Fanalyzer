@@ -9,16 +9,34 @@
       @update:model-value="addArtistInfo"
       maxlength="180"
     />
-    <q-file class="hidden" multiple ref="artistFileRef" v-model="modelFileArtist" @update:model-value="addArtistPhoto" />
+    <q-file
+      class="hidden"
+      ref="artistFileRef"
+      v-model="modelFileArtist"
+      @update:model-value="addArtistPhoto"
+      :filter="checkFileSize"
+      @rejected="onRejected"
+      accept="image/*"
+    />
     <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
     <div v-if="modelArtistPhoto" class="items-center no-wrap q-my-md q-pa-md rounded-borders col shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
       <q-img v-else class="artist-img q-mr-md rounded-borders" fit="contain" :src="modelArtistPhoto" spinner-color="primary" />
     </div>
 
-    <q-file class="hidden" multiple ref="artsFileRef" v-model="modelFileArt" @update:model-value="addArts" />
-    <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" />
-    <div v-if="modelArts.length" class="items-center justify-around q-my-md q-pa-md rounded-borders row shadow-1">
+    <q-file
+      class="hidden"
+      ref="artsFileRef"
+      v-model="modelFileArt"
+      @update:model-value="addArts"
+      :filter="checkFileSize"
+      @rejected="onRejected"
+      accept="image/*"
+      multiple
+      max-files="10"
+    />
+    <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts"><q-tooltip>Max 10 Images</q-tooltip></q-btn>
+    <div v-if="modelArts.length" class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArts.length" class="q-mx-auto" color="primary" size="3em" />
       <div v-for="(art, index) in modelArts" class="art-img q-ma-xs relative-position" :key="index">
         <q-img class="rounded-borders" fit="cover" :ratio="1" :src="art" style="width: 10rem" />
@@ -57,7 +75,23 @@ function onUploadArtist() {
   artistFileRef.value.pickFiles()
 }
 
-console.log(modelArts)
+function checkFileSize(files) {
+  // if (files.length > 10) {
+  //   $q.notify({
+  //     type: 'negative',
+  //     message: 'Maximum 10 images can be uploaded'
+  //   })
+  //   return files.slice(0, 10)
+  // }
+  return files.filter((file) => file.size > 2048)
+}
+
+function onRejected(rejectedEntries) {
+  $q.notify({
+    type: 'negative',
+    message: `${rejectedEntries.length} file(s) did not pass validation constraints`
+  })
+}
 
 async function addArts(files) {
   const maxImages = 10
