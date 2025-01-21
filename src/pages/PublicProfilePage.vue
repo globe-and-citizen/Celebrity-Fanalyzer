@@ -22,7 +22,7 @@
               <q-btn
                 v-if="user[socialNetwork.name]"
                 flat
-                :href="socialNetwork.link + user[socialNetwork.name]"
+                :href="user[socialNetwork.name]"
                 :icon="`img:/icons/${socialNetwork.name}.svg`"
                 round
                 target="_blank"
@@ -95,13 +95,7 @@ const $q = useQuasar()
 const user = ref()
 const header = ref(null)
 
-const socialNetworks = [
-  { name: 'facebook', link: 'https://facebook.com/' },
-  { name: 'instagram', link: 'https://instagram.com/' },
-  { name: 'linkedin', link: 'https://linkedin.com/in/' },
-  { name: 'telegram', link: 'https://web.telegram.org/a/#' },
-  { name: 'x', link: 'https://x.com/' }
-]
+const socialNetworks = [{ name: 'facebook' }, { name: 'instagram' }, { name: 'linkedin' }, { name: 'telegram' }, { name: 'x' }]
 
 entryStore.fetchEntries().catch((error) => errorStore.throwError(error))
 promptStore.fetchPrompts()
