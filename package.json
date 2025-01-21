@@ -38,6 +38,7 @@
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org testing-se --project javascript-vue dist && sentry-cli sourcemaps upload --org testing-se --project javascript-vue dist"
   },
   "dependencies": {
+    "@microsoft/clarity": "^1.0.0",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.12",
     "@sentry/cli": "^2.33.0",
