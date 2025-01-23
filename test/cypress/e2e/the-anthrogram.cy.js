@@ -177,7 +177,7 @@ describe('TheAnthrogram Graph Visibility', () => {
     })
   })
 
-  it.only('should render the HalfDonought graph if stats data is available', () => {
+  it('should render the HalfDonought graph if stats data is available', () => {
     // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.wait(10000)
     cy.get('[data-test="half-donought"]', { timeout: 5000 }).should('be.visible')
