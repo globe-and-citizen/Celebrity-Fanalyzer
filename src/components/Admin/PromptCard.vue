@@ -25,48 +25,58 @@
               </div>
             </template>
             <template v-else>
-              <div class="row items-baseline no-wrap">
-                <h2 class="q-my-none text-h6">Competition</h2>
-                <span>&nbsp; for &nbsp;</span>
-                <q-input
-                  borderless
-                  dense
-                  readonly
-                  label="Creation Date"
-                  style="max-width: 5.5rem"
-                  v-model="prompt.creationDate"
-                  data-test="creation-date"
-                />
-                <q-input
-                  borderless
-                  dense
-                  label="Publication Date"
-                  readonly
-                  :model-value="prompt.publicationDate"
-                  data-test="input-publication-date"
-                  :rules="[(val) => val?.length > 0 || 'Publication Date is required']"
-                  style="max-width: 10rem"
-                >
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer" data-test="date-picker">
-                      <q-popup-proxy>
-                        <q-date
-                          mask="YYYY-MM-DD"
-                          minimal
-                          v-model="prompt.publicationDate"
-                          :options="qDateOptions"
-                          @update:model-value="updateEndDate"
-                        >
-                          <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
-                          </div>
-                        </q-date>
-                      </q-popup-proxy>
+              <q-card class="q-pa-md header-card q-mb-lg" flat bordered>
+                <div class="row items-center">
+                  <q-icon name="star" color="primary" class="text-h4 q-mr-sm" />
+                  <div class="q-my-none text-subtitle1 q-mt-xs text-primary">Competition</div>
+
+                  <div class="row items-center justify-end q-ml-auto no-wrap">
+                    <q-icon name="info" class="cursor-pointer q-mr-sm" color="primary">
+                      <q-tooltip>You can select a Publication Date from the Creation Date up to 6 months in the future.</q-tooltip>
                     </q-icon>
-                  </template>
-                </q-input>
-                <q-input borderless dense label="End Date" data-test="input-end-date" type="text" v-model="prompt.endDate" readonly />
-              </div>
+                    <q-input
+                      borderless
+                      label="Publication Date"
+                      readonly
+                      :model-value="prompt.publicationDate || 'YYYY-MM-DD'"
+                      data-test="input-publication-date"
+                      :rules="[(val) => val?.length > 0 || 'Publication Date is required']"
+                      style="max-width: 10rem"
+                      class="q-pb-none date-input"
+                    >
+                      <template v-slot:append>
+                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
+                          <q-popup-proxy>
+                            <q-date
+                              mask="YYYY-MM-DD"
+                              minimal
+                              v-model="prompt.publicationDate"
+                              :options="qDateOptions"
+                              @update:model-value="updateEndDate"
+                            >
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                              </div>
+                            </q-date>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
+
+                    <div class="q-mx-lg text-h5">-</div>
+
+                    <q-input
+                      readonly
+                      borderless
+                      label="End Date"
+                      data-test="input-end-date"
+                      class="q-pb-none date-input"
+                      type="text"
+                      :model-value="prompt.endDate || 'YYYY-MM-DD'"
+                    />
+                  </div>
+                </div>
+              </q-card>
               <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
               <q-input
                 counter
@@ -155,6 +165,19 @@
                 :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
                 v-model="prompt.categories"
               />
+
+              <q-card-section class="q-mt-md">
+                <div class="row items-center q-gutter-md">
+                  <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
+                  <q-btn
+                    :color="prompt.paymentDone ? 'positive' : 'secondary'"
+                    :label="prompt.paymentDone ? 'Funds Deposited' : 'Deposit Funds'"
+                    :icon="prompt.paymentDone ? 'check_circle' : 'account_balance_wallet'"
+                    @click="onProceedDepositFundDialog"
+                  />
+                </div>
+              </q-card-section>
+
               <div class="text-center">
                 <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
               </div>
@@ -180,14 +203,7 @@
               <q-btn
                 color="primary"
                 data-test="button-submit"
-                :disable="
-                  !prompt.date ||
-                  !prompt.title ||
-                  !prompt.description ||
-                  !prompt.categories?.length ||
-                  !prompt.image ||
-                  promptStore.isLoading
-                "
+                :disable="!prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image || promptStore.isLoading"
                 :label="id ? 'Save Edits' : 'Submit Prompt'"
                 :loading="promptStore.isLoading || storageStore.isLoading"
                 rounded
@@ -201,6 +217,18 @@
     <q-dialog v-model="openCamera" persistent>
       <CaptureCamera @onCapture="captureCamera" />
     </q-dialog>
+    <q-dialog v-model="proceedDepositFundDialog.show" persistent>
+      <q-card style="width: 400px; max-width: 60vw">
+        <q-card-section class="q-pb-none">
+          <h6 class="q-my-sm">Escrow Fund Deposit</h6>
+        </q-card-section>
+        <FundDepositCard
+          :walletAddress="proceedDepositFundDialog.walletAddress"
+          :prompt="proceedDepositFundDialog.prompt"
+          @hideDialog="proceedDepositFundDialog.show = false"
+        />
+      </q-card>
+    </q-dialog>
   </q-card>
 </template>
 
@@ -211,6 +239,8 @@ import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'sr
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
+import FundDepositCard from './FundDepositCard.vue'
+import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
@@ -229,8 +259,12 @@ const prompt = reactive({
   title: '',
   publicationDate: '',
   endDate: '',
-  creationDate: new Date().toISOString().split('T')[0]
+  creationDate: new Date().toISOString().split('T')[0],
+  paymentDone: false
 })
+
+const proceedDepositFundDialog = ref({})
+
 const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
@@ -254,6 +288,17 @@ function updateEndDate() {
   prompt.endDate = date.toISOString().split('T')[0]
 }
 
+async function onProceedDepositFundDialog() {
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
+    customWeb3modal.open()
+  } else {
+    proceedDepositFundDialog.value.show = true
+    proceedDepositFundDialog.value.walletAddress = customWeb3modal.getAddress()
+    proceedDepositFundDialog.value.prompt = null
+  }
+}
+
 watchEffect(() => {
   if (props.id) {
     prompt.author = { label: props.author.displayName, value: props.author.uid }
@@ -267,6 +312,7 @@ watchEffect(() => {
     prompt.image = props.image
     prompt.showcase = props.showcase
     prompt.title = props.title
+    prompt.paymentDone = props.paymentDone
     if (props.image) {
       imagePreview.value = props.image
     }
@@ -299,7 +345,6 @@ function uploadPhoto() {
 }
 
 function onPaste(evt) {
-  // Let inputs do their thing, so we don't break pasting of links.
   if (evt.target.nodeName === 'INPUT') return
   let text, onPasteStripFormattingIEPaste
   evt.preventDefault()
@@ -367,3 +412,22 @@ function captureCamera(imageBlob) {
   uploadPhoto()
 }
 </script>
+
+<style scoped lang="scss">
+.header-card {
+  background-color: #f0f4ff;
+  border-left: 5px solid var(--q-primary);
+  border-radius: 8px;
+}
+.text-primary {
+  color: var(--q-primary);
+}
+.q-ml-none {
+  margin-left: 0 !important;
+}
+.date-input {
+  ::v-deep(.q-field__native) {
+    width: 94px !important;
+  }
+}
+</style>
