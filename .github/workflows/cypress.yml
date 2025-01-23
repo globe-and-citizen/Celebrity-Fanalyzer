@@ -19,14 +19,14 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
-
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
-          start: npm run dev
+          start: npm run cy:test
           wait-on: http://localhost:9200/
-          wait-on-timeout: 40000
-          headed: false
+          wait-on-timeout: 600
+          browser: chrome
+          headed: true
           record: true
           parallel: true
         env:
@@ -41,6 +41,7 @@ jobs:
           VITE_FIREBASE_VAPID_KEY: ${{ secrets.VITE_FIREBASE_VAPID_KEY }}
           VITE_CURRENT_NETWORK_NAME: ${{ secrets.VITE_CURRENT_NETWORK_NAME }}
           VITE_WALLET_CONNECT_PROJECT_ID: ${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
+          VITE_STATS_API_URL: ${{ secrets.VITE_STATS_API_URL }}
           # For recording and parallelization to work, set your CYPRESS_RECORD_KEY
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           # Pass GitHub token to detect new build vs re-run build
