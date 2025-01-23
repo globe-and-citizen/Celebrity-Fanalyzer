@@ -18,7 +18,7 @@
         <q-td key="createdAt" :props="props">{{ shortMonthDayTime(props.row.createdAt) }}</q-td>
         <q-td key="user" :props="props">{{ props.row.user?.displayName || props.row.user }}</q-td>
         <q-td key="error" :props="props">
-          {{ props.row.error.split('\n')[0] }}
+          {{ props.row.error?.split('\n')[0] || '' }}
         </q-td>
         <q-td key="action" :props="props">
           <q-btn
@@ -78,7 +78,7 @@ const columns = [
 ]
 const deleteDialog = ref({})
 const errors = ref([])
-
+console.log(errorStore.getErrors)
 onMounted(async () => {
   await errorStore.fetchErrors()
   await errorStore.fetchErrorsCount()
