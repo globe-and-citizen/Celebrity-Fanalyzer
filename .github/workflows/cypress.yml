@@ -27,7 +27,6 @@ jobs:
           wait-on-timeout: 1000
           browser: chrome
           headed: true
-          parallel: true
         env:
           # Set Firebase secrets directly from GitHub Secrets
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
