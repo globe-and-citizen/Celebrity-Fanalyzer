@@ -285,7 +285,7 @@ export const usePromptStore = defineStore('prompts', {
       const prompt = isTester ? { ...payload, escrowId: '0.0000000000000000001' } : { ...payload }
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
-      prompt.id = prompt.date
+      prompt.id = `${prompt.creationDate}+${payload.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
       prompt.hasWinner = null
 
       this._isLoading = true
