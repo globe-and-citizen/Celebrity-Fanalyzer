@@ -43,6 +43,7 @@
                       :rules="[(val) => val?.length > 0 || 'Publication Date is required']"
                       style="max-width: 10rem"
                       class="q-pb-none date-input"
+                      :disable="disableStartDate"
                     >
                       <template v-slot:append>
                         <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
@@ -275,14 +276,29 @@
 import { useQuasar, date as dateUtils } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import FundDepositCard from './FundDepositCard.vue'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'categories', 'created', 'date', 'description', 'id', 'image', 'showcase', 'slug', 'title'])
+const props = defineProps([
+  'author',
+  'categories',
+  'created',
+  'date',
+  'description',
+  'id',
+  'image',
+  'showcase',
+  'slug',
+  'title',
+  'creationDate',
+  'publicationDate',
+  'endDate',
+  'paymentStatus'
+])
 
 const $q = useQuasar()
 const errorStore = useErrorStore()
@@ -337,10 +353,6 @@ watchEffect(() => {
     prompt.author = { label: props.author.displayName, value: props.author.uid }
     prompt.categories = props.categories
     // prompt.date = props.date
-    console.log('props.creationDate', props.creationDate)
-    console.log('props.publicationDate', props.publicationDate)
-    console.log('props.endDate', props.endDate)
-
     prompt.creationDate = props.creationDate
     prompt.publicationDate = props.publicationDate
     prompt.endDate = props.endDate
@@ -370,6 +382,11 @@ onMounted(() => {
   //   prompt.publicationDate = props.publicationDate
   //   prompt.endDate = props.endDate
   // }
+})
+const disableStartDate = computed(() => {
+  if (!props.id) return true
+  const currentDateData = new Date(props.publicationDate).getTime()
+  return Date.now() >= currentDateData
 })
 
 function uploadPhoto() {

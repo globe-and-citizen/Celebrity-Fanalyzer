@@ -91,7 +91,7 @@ export const usePromptStore = defineStore('prompts', {
       }, 6000)
     },
 
-    async fetchPrompts(loadMore = false, count) {
+    async fetchPrompts(loadMore = false, count, managePrompts = false) {
       const userStore = useUserStore()
       this._isLoading = true
 
@@ -100,7 +100,7 @@ export const usePromptStore = defineStore('prompts', {
         const limitCount = count ?? this.loadCount
         const conditions = [limit(limitCount)]
 
-        if (!userStore.isEditorOrAbove) {
+        if (!userStore.isEditorOrAbove && managePrompts) {
           const userRef = doc(db, 'users', userStore.getUser.uid)
           conditions.push(where('author', '==', userRef))
         }
@@ -113,7 +113,6 @@ export const usePromptStore = defineStore('prompts', {
         }
 
         const querySnapshot = await getDocs(queryRef)
-        console.log(querySnapshot)
 
         const newPrompts = await getPrompts(querySnapshot, userStore)
 

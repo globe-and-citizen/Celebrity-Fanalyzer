@@ -200,7 +200,7 @@ const proceedDepositFundDialog = ref({})
 
 onMounted(async () => {
   entryStore._loadedEntries = []
-  if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
+  if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts(false, 5, true)
   await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()
@@ -214,7 +214,11 @@ const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
 watchEffect(async () => {
-  prompts.value = promptStore.getPrompts
+  if (userStore.isEditorOrAbove) {
+    prompts.value = promptStore.getPrompts
+  } else {
+    prompts.value = promptStore.getPrompts?.filter((data) => data.author.uid === userStore.getUser.uid) ?? []
+  }
 })
 
 function updateMaxWidth() {
@@ -244,7 +248,7 @@ function onDeletePrompt(id) {
 const loadMorePrompts = async () => {
   if (!promptStore.isLoading && promptStore._hasMore) {
     try {
-      await promptStore.fetchPrompts(true, 5)
+      await promptStore.fetchPrompts(true, 5, true)
     } catch (error) {
       await errorStore.throwError(error, 'Error loading more prompts')
     }
@@ -285,7 +289,7 @@ async function handleUpdateEntry({ _entry, _prompt }) {
   })
 
   // Fetch updated prompts
-  await promptStore.fetchPrompts()
+  await promptStore.fetchPrompts(false, 5, true)
 }
 
 async function share(socialNetwork, collectionName, id) {
@@ -334,7 +338,7 @@ function handleDeleteEntry(entryId, promptId) {
     return prompt
   })
 
-  promptStore.fetchPrompts()
+  promptStore.fetchPrompts(false, 5, true)
 }
 
 //proceed deposit funds.
@@ -357,7 +361,7 @@ watch(filter, async (newSearch) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     if (newSearch.trim()) {
       const promptsCount = promptStore._totalPrompts ? promptStore._totalPrompts : promptStore.getTotalPromptsCount
-      await promptStore.fetchPrompts(true, promptsCount)
+      await promptStore.fetchPrompts(true, promptsCount, true)
     }
   }
 })
