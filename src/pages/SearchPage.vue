@@ -83,7 +83,9 @@ const statuses = [
   { label: 'Top', value: 'Top' },
   { label: 'New', value: 'New' },
   { label: 'Active', value: 'Active' },
-  { label: 'Funded', value: 'Funded' }
+  { label: 'Funded', value: 'Funded' },
+  { label: 'Upcoming', Value: 'Upcoming' },
+  { label: 'Winner Selected', Value: 'Winner Selected' }
 ]
 
 const loadMorePrompts = async () => {
