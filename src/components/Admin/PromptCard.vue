@@ -51,7 +51,7 @@
                               mask="YYYY-MM-DD"
                               minimal
                               v-model="prompt.publicationDate"
-                              :options="qDateOptions"
+                              :options="dateOptions"
                               @update:model-value="updateEndDate"
                             >
                               <div class="row items-center justify-end">
@@ -72,8 +72,21 @@
                       data-test="input-end-date"
                       class="q-pb-none date-input"
                       type="text"
+                      :disable="!prompt.publicationDate"
                       :model-value="prompt.endDate || 'YYYY-MM-DD'"
-                    />
+                    >
+                      <template v-slot:append>
+                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
+                          <q-popup-proxy>
+                            <q-date mask="YYYY-MM-DD" minimal v-model="prompt.endDate" :options="endDateOptions">
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                              </div>
+                            </q-date>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
                   </div>
                 </div>
               </q-card>
@@ -166,15 +179,40 @@
                 v-model="prompt.categories"
               />
 
-              <q-card-section class="q-mt-md">
+              <q-card-section class="q-mt-md q-pt-none">
                 <div class="row items-center q-gutter-md">
                   <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
                   <q-btn
-                    :color="prompt.paymentDone ? 'positive' : 'secondary'"
-                    :label="prompt.paymentDone ? 'Funds Deposited' : 'Deposit Funds'"
-                    :icon="prompt.paymentDone ? 'check_circle' : 'account_balance_wallet'"
-                    @click="onProceedDepositFundDialog"
-                  />
+                    class="deposite-button"
+                    :color="
+                      prompt.paymentStatus === 'Pay later'
+                        ? 'orange'
+                        : prompt.paymentStatus === 'Payment successful'
+                          ? 'positive'
+                          : 'secondary'
+                    "
+                    :label="
+                      prompt.paymentStatus === 'Pay later'
+                        ? 'Pay later'
+                        : prompt.paymentStatus === 'Payment successful'
+                          ? 'Funds Deposited'
+                          : 'Deposit Funds'
+                    "
+                    :icon="
+                      prompt.paymentStatus === 'Pay later'
+                        ? 'schedule'
+                        : prompt.paymentStatus === 'Payment successful'
+                          ? 'check_circle'
+                          : 'account_balance_wallet'
+                    "
+                  >
+                    <q-menu class="deposite-menu">
+                      <div class="row items-center q-gutter-xs" style="margin-top: 1px">
+                        <q-btn color="orange" label="Pay later" v-close-popup @click="updatepaymentStatus('Pay later')" />
+                        <q-btn label="Pay now" color="green" v-close-popup @click="onProceedDepositFundDialog" />
+                      </div>
+                    </q-menu>
+                  </q-btn>
                 </div>
               </q-card-section>
 
@@ -225,6 +263,7 @@
         <FundDepositCard
           :walletAddress="proceedDepositFundDialog.walletAddress"
           :prompt="proceedDepositFundDialog.prompt"
+          @paymentStatus="updatepaymentStatus($event)"
           @hideDialog="proceedDepositFundDialog.show = false"
         />
       </q-card>
@@ -260,32 +299,26 @@ const prompt = reactive({
   publicationDate: '',
   endDate: '',
   creationDate: new Date().toISOString().split('T')[0],
-  paymentDone: false
+  paymentStatus: ''
 })
 
 const proceedDepositFundDialog = ref({})
-
 const step = ref(1)
 const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
 
-function qDateOptions(currentDate) {
-  const timestamp = dateUtils.startOfDate(new Date(), 'day').getTime()
+function dateOptions(currentDate, today = new Date()) {
+  const timestamp = dateUtils.startOfDate(today, 'day').getTime()
   const dateObj = dateUtils.extractDate(currentDate, 'YYYY/MM/DD')
   const limitObj = dateUtils.addToDate(timestamp, { months: 6 })
   return timestamp <= dateObj.getTime() && dateObj.getTime() <= limitObj.getTime()
 }
 
-function updateEndDate() {
-  if (!prompt.publicationDate) {
-    prompt.endDate = ''
-    return
-  }
-  const date = new Date(prompt.publicationDate)
-  date.setDate(date.getDate() + 30)
-  prompt.endDate = date.toISOString().split('T')[0]
+function endDateOptions(currentDate) {
+  const publicationDate = dateUtils.addToDate(new Date(prompt.publicationDate), { days: 1 })
+  return dateOptions(currentDate, publicationDate)
 }
 
 async function onProceedDepositFundDialog() {
@@ -303,7 +336,11 @@ watchEffect(() => {
   if (props.id) {
     prompt.author = { label: props.author.displayName, value: props.author.uid }
     prompt.categories = props.categories
-    prompt.date = props.date
+    // prompt.date = props.date
+    console.log('props.creationDate', props.creationDate)
+    console.log('props.publicationDate', props.publicationDate)
+    console.log('props.endDate', props.endDate)
+
     prompt.creationDate = props.creationDate
     prompt.publicationDate = props.publicationDate
     prompt.endDate = props.endDate
@@ -312,7 +349,7 @@ watchEffect(() => {
     prompt.image = props.image
     prompt.showcase = props.showcase
     prompt.title = props.title
-    prompt.paymentDone = props.paymentDone
+    prompt.paymentStatus = props.paymentStatus
     if (props.image) {
       imagePreview.value = props.image
     }
@@ -327,11 +364,12 @@ onMounted(() => {
 
   if (!props.id) {
     prompt.publicationDate = ''
-  } else {
-    prompt.creationDate = props.creationDate
-    prompt.publicationDate = props.publicationDate
-    prompt.endDate = props.endDate
   }
+  //  else {
+  //   prompt.creationDate = props.creationDate
+  //   prompt.publicationDate = props.publicationDate
+  //   prompt.endDate = props.endDate
+  // }
 })
 
 function uploadPhoto() {
@@ -411,6 +449,9 @@ function captureCamera(imageBlob) {
   imageModel.value = imageBlob
   uploadPhoto()
 }
+function updatepaymentStatus(data) {
+  prompt.paymentStatus = data
+}
 </script>
 
 <style scoped lang="scss">
@@ -428,6 +469,34 @@ function captureCamera(imageBlob) {
 .date-input {
   ::v-deep(.q-field__native) {
     width: 94px !important;
+  }
+}
+.deposite-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  width: 200px;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &--positive {
+    background-color: #21ba45;
+    color: #ffffff;
+  }
+
+  &--secondary {
+    background-color: #36454f;
+    color: #ffffff;
+  }
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 }
 </style>
