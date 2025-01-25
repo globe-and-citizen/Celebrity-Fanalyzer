@@ -1,6 +1,6 @@
 <template>
   <q-table
-    v-if="prompts && userStore.isEditorOrAbove"
+    v-if="prompts"
     flat
     bordered
     hide-bottom
@@ -71,7 +71,6 @@
             </q-btn>
           </span>
           <q-btn
-            v-if="userStore.isEditorOrAbove"
             flat
             round
             color="warning"
@@ -84,7 +83,6 @@
             <q-tooltip>Edit</q-tooltip>
           </q-btn>
           <q-btn
-            v-if="userStore.isEditorOrAbove"
             flat
             round
             color="negative"
@@ -201,12 +199,9 @@ const prompts = ref([])
 const proceedDepositFundDialog = ref({})
 
 onMounted(async () => {
-  if (userStore.isEditorOrAbove) {
-    entryStore._loadedEntries = []
-    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
-  } else {
-    await entryStore.fetchUserRelatedEntries(userStore.getUserId)
-  }
+  entryStore._loadedEntries = []
+  if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
+  await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()
 })

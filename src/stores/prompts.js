@@ -40,7 +40,6 @@ const getPrompts = async (querySnapshot, userStore) => {
     const promptData = doc.data()
     const authorId = promptData.author.id
     const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
-
     prompts.push({
       id: doc.id,
       ...promptData,
@@ -99,16 +98,23 @@ export const usePromptStore = defineStore('prompts', {
       try {
         let queryRef = collection(db, 'prompts')
         const limitCount = count ?? this.loadCount
+        const conditions = [limit(limitCount)]
 
+        if (!userStore.isEditorOrAbove) {
+          const userRef = doc(db, 'users', userStore.getUser.uid)
+          conditions.push(where('author', '==', userRef))
+        }
         if (loadMore) {
           queryRef = this._lastVisible
-            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(limitCount))
-            : query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), ...conditions)
+            : query(queryRef, orderBy('id', 'desc'), ...conditions)
         } else {
-          queryRef = query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+          queryRef = query(queryRef, orderBy('id', 'desc'), ...conditions)
         }
 
         const querySnapshot = await getDocs(queryRef)
+        console.log(querySnapshot)
+
         const newPrompts = await getPrompts(querySnapshot, userStore)
 
         if (newPrompts.length > 0) {
