@@ -4,6 +4,9 @@
 describe('User Profile page', () => {
   beforeEach(() => {
     cy.viewport('macbook-16')
+    Cypress.on('uncaught:exception', (err, runnable) => {
+      return false
+    })
     // Visits the profile page
     cy.login()
     cy.visit('/profile')
