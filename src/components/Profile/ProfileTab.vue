@@ -60,11 +60,46 @@
     <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input label="Facebook" placeholder="https://www.facebook.com/" v-model.trim="user.facebook" />
-    <q-input label="Instagram" placeholder="https://www.instagram.com/" v-model.trim="user.instagram" />
-    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" v-model.trim="user.linkedin" />
-    <q-input label="Telegram" placeholder="https://www.telegram.com/" v-model.trim="user.telegram" />
-    <q-input label="X" placeholder="https://www.x.com/" v-model.trim="user.x" />
+    <q-input
+      label="Facebook"
+      placeholder="Facebook"
+      :model-value="user.facebook"
+      prefix="https://www.facebook.com/"
+      @update:model-value="updateSocialUrl($event, 'facebook', 'https://www.facebook.com/')"
+      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
+    />
+    <q-input
+      label="Instagram"
+      placeholder="Instagram"
+      :model-value="user.instagram"
+      prefix="https://www.instagram.com/"
+      @update:model-value="updateSocialUrl($event, 'instagram', 'https://www.instagram.com/')"
+      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
+    />
+    <q-input
+      label="LinkedIn"
+      placeholder="LinkedIn"
+      :model-value="user.linkedin"
+      prefix="https://www.linkedin.com/"
+      @update:model-value="updateSocialUrl($event, 'linkedin', 'https://www.linkedin.com/')"
+      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
+    />
+    <q-input
+      label="Telegram"
+      placeholder="Telegram"
+      :model-value="user.telegram"
+      prefix="https://www.telegram.com/"
+      @update:model-value="updateSocialUrl($event, 'telegram', 'https://www.telegram.com/')"
+      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
+    />
+    <q-input
+      label="X"
+      placeholder="X"
+      model-value="user.x"
+      prefix="https://www.x.com/"
+      @update:model-value="updateSocialUrl($event, 'x', 'https://www.x.com/')"
+      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
+    />
 
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
   </q-form>
@@ -165,6 +200,7 @@ const removeWalletAddressDialog = ref({ show: false })
 const isUpdate = ref(false)
 const uploadDialog = ref({ show: false })
 const previewImage = ref(null)
+console.log('user', user.value)
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
@@ -255,6 +291,23 @@ function onRemoveWalletAddress() {
   customWeb3modal.disconnect()
   save()
   $q.notify({ message: 'Wallet address removed', type: 'negative' })
+}
+
+function updateSocialUrl(data, key, prefix) {
+  if (!user.value[key]) return
+  // if (prefix === data.startsWith(prefix)) {
+  const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
+  user.value[key] = url
+  // }
+}
+
+function handlePaste(event, key, prefix) {
+  const data = event.target.value
+  if (!user.value[key]) return
+
+  const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
+
+  user.value[key] = url
 }
 
 function save() {
