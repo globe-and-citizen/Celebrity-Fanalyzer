@@ -32,8 +32,12 @@
 
                   <div class="row items-center justify-end q-ml-auto no-wrap">
                     <q-icon name="info" class="cursor-pointer q-mr-sm" color="primary">
-                      <q-tooltip>You can select a Publication Date from the Creation Date up to 6 months in the future.</q-tooltip>
+                      <q-tooltip v-if="!disablePublicationDate">
+                        You can select a Publication Date from the Creation Date up to 6 months in the future.
+                      </q-tooltip>
+                      <q-tooltip v-else>This prompt is now published, and the Publication Date is locked</q-tooltip>
                     </q-icon>
+
                     <q-input
                       borderless
                       label="Publication Date"
@@ -43,7 +47,7 @@
                       :rules="[(val) => val?.length > 0 || 'Publication Date is required']"
                       style="max-width: 10rem"
                       class="q-pb-none date-input"
-                      :disable="disableStartDate"
+                      :disable="disablePublicationDate"
                     >
                       <template v-slot:append>
                         <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
@@ -378,8 +382,8 @@ onMounted(() => {
     prompt.publicationDate = ''
   }
 })
-const disableStartDate = computed(() => {
-  if (!props.id) return true
+const disablePublicationDate = computed(() => {
+  if (!props.id) return false
   const currentDateData = new Date(props.publicationDate).getTime()
   return Date.now() >= currentDateData
 })
