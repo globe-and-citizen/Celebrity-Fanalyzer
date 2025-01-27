@@ -69,7 +69,12 @@
                     </q-input>
 
                     <div class="q-mx-lg text-h5">-</div>
-
+                    <q-icon name="info" class="cursor-pointer q-mr-sm" color="primary">
+                      <q-tooltip v-if="!disableEndDate">
+                        Select an End Date after the Publication Date and within the allowed range.
+                      </q-tooltip>
+                      <q-tooltip v-else>This prompt's competition has ended.</q-tooltip>
+                    </q-icon>
                     <q-input
                       readonly
                       borderless
@@ -77,7 +82,7 @@
                       data-test="input-end-date"
                       class="q-pb-none date-input"
                       type="text"
-                      :disable="!prompt.publicationDate"
+                      :disable="!prompt.publicationDate || disableEndDate"
                       :model-value="prompt.endDate || 'YYYY-MM-DD'"
                     >
                       <template v-slot:append>
