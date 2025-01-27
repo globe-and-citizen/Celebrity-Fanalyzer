@@ -377,15 +377,16 @@ onMounted(() => {
   if (!props.id) {
     prompt.publicationDate = ''
   }
-  //  else {
-  //   prompt.creationDate = props.creationDate
-  //   prompt.publicationDate = props.publicationDate
-  //   prompt.endDate = props.endDate
-  // }
 })
 const disableStartDate = computed(() => {
   if (!props.id) return true
   const currentDateData = new Date(props.publicationDate).getTime()
+  return Date.now() >= currentDateData
+})
+
+const disableEndDate = computed(() => {
+  if (!props.id) return false
+  const currentDateData = new Date(props.endDate).getTime()
   return Date.now() >= currentDateData
 })
 
@@ -440,7 +441,8 @@ async function onSubmit() {
   }
 
   if (imageModel.value) {
-    prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${prompt.date}`)
+    const id = `${prompt.creationDate}+${prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+    prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${id}`)
   }
 
   try {
