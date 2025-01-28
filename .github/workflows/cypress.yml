@@ -44,10 +44,3 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           # Pass GitHub token to detect new build vs re-run build
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          flags: E2E
-          directory: ./coverage
-          token: ${{ secrets.CODECOV_TOKEN }}
