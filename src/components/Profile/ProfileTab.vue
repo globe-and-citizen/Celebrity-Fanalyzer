@@ -61,44 +61,13 @@
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
     <q-input
-      label="Facebook"
-      placeholder="Facebook"
-      :model-value="user.facebook"
-      prefix="https://www.facebook.com/"
-      @update:model-value="updateSocialUrl($event, 'facebook', 'https://www.facebook.com/')"
-      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
-    />
-    <q-input
-      label="Instagram"
-      placeholder="Instagram"
-      :model-value="user.instagram"
-      prefix="https://www.instagram.com/"
-      @update:model-value="updateSocialUrl($event, 'instagram', 'https://www.instagram.com/')"
-      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
-    />
-    <q-input
-      label="LinkedIn"
-      placeholder="LinkedIn"
-      :model-value="user.linkedin"
-      prefix="https://www.linkedin.com/"
-      @update:model-value="updateSocialUrl($event, 'linkedin', 'https://www.linkedin.com/')"
-      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
-    />
-    <q-input
-      label="Telegram"
-      placeholder="Telegram"
-      :model-value="user.telegram"
-      prefix="https://www.telegram.com/"
-      @update:model-value="updateSocialUrl($event, 'telegram', 'https://www.telegram.com/')"
-      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
-    />
-    <q-input
-      label="X"
-      placeholder="X"
-      model-value="user.x"
-      prefix="https://www.x.com/"
-      @update:model-value="updateSocialUrl($event, 'x', 'https://www.x.com/')"
-      @paste="handlePaste($event, 'facebook', 'https://www.facebook.com/')"
+      v-for="network in socialNetworks"
+      :key="network.name"
+      :label="capitalize(network.name)"
+      :placeholder="capitalize(network.name)"
+      v-model="user[network.name]"
+      :prefix="network.link"
+      @update:model-value="updateSocialUrl($event, network.name, network.link)"
     />
 
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
@@ -202,6 +171,26 @@ const uploadDialog = ref({ show: false })
 const previewImage = ref(null)
 console.log('user', user.value)
 
+const socialNetworks = [
+  { name: 'facebook', link: 'https://www.facebook.com/' },
+  { name: 'instagram', link: 'https://www.instagram.com/' },
+  { name: 'linkedin', link: 'https://www.linkedin.com/in/' },
+  { name: 'telegram', link: 'https://t.me/' },
+  { name: 'x', link: 'https://x.com/' }
+]
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function updateSocialUrl(data, key, prefix) {
+  if (data.startsWith(prefix)) {
+    user.value[key] = data.replace(prefix, '')
+  } else {
+    user.value[key] = data
+  }
+}
+
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress
 })
@@ -293,20 +282,20 @@ function onRemoveWalletAddress() {
   $q.notify({ message: 'Wallet address removed', type: 'negative' })
 }
 
-function updateSocialUrl(data, key, prefix) {
-  if (!user.value[key]) return
-  if (prefix === data.startsWith(prefix)) {
-    const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
-    user.value[key] = url
-  }
-}
+// function updateSocialUrl(data, key, prefix) {
+//   if (!user.value[key]) return
+//   if (prefix === data.startsWith(prefix)) {
+//     const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
+//     user.value[key] = url
+//   }
+// }
 
-function handlePaste(event, key, prefix) {
-  if (!user.value[key]) return
-  const data = event.clipboardData.getData('text/plain').trim()
-  const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
-  user.value[key] = url
-}
+// function handlePaste(event, key, prefix) {
+//   if (!user.value[key]) return
+//   const data = event.clipboardData.getData('text/plain').trim()
+//   const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
+//   user.value[key] = url
+// }
 
 function save() {
   if (currentWalletAddress.value && addressUpdated.value === true) {

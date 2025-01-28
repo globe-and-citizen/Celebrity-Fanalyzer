@@ -96,10 +96,10 @@ const user = ref()
 const header = ref(null)
 
 const socialNetworks = [
-  { name: 'facebook', link: 'https://facebook.com/' },
-  { name: 'instagram', link: 'https://instagram.com/' },
-  { name: 'linkedin', link: 'https://linkedin.com/in/' },
-  { name: 'telegram', link: 'https://web.telegram.org/a/#' },
+  { name: 'facebook', link: 'https://www.facebook.com/' },
+  { name: 'instagram', link: 'https://www.instagram.com/' },
+  { name: 'linkedin', link: 'https://www.linkedin.com/in/' },
+  { name: 'telegram', link: 'https://t.me/' },
   { name: 'x', link: 'https://x.com/' }
 ]
 
