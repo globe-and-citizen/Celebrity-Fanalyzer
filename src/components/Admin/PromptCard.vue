@@ -389,14 +389,14 @@ onMounted(() => {
 })
 const disablePublicationDate = computed(() => {
   if (!props.id) return false
-  const currentDateData = new Date(props.publicationDate).getTime()
-  return Date.now() >= currentDateData
+  const publicationDateData = new Date(props.publicationDate).getTime()
+  return Date.now() >= publicationDateData
 })
 
 const disableEndDate = computed(() => {
   if (!props.id) return false
-  const currentDateData = new Date(props.endDate).getTime()
-  return Date.now() >= currentDateData
+  const endDateData = new Date(props.endDate).getTime()
+  return Date.now() >= endDateData
 })
 
 function uploadPhoto() {
