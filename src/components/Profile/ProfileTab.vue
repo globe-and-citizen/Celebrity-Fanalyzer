@@ -295,18 +295,16 @@ function onRemoveWalletAddress() {
 
 function updateSocialUrl(data, key, prefix) {
   if (!user.value[key]) return
-  // if (prefix === data.startsWith(prefix)) {
-  const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
-  user.value[key] = url
-  // }
+  if (prefix === data.startsWith(prefix)) {
+    const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
+    user.value[key] = url
+  }
 }
 
 function handlePaste(event, key, prefix) {
-  const data = event.target.value
   if (!user.value[key]) return
-
+  const data = event.clipboardData.getData('text/plain').trim()
   const url = data.startsWith(prefix) ? data.replace(prefix, '') : user.value[key]
-
   user.value[key] = url
 }
 
