@@ -57,7 +57,6 @@
         <q-td class="text-right">
           <span v-if="!props.row?.escrowId">
             <q-btn
-              v-if="userStore.isEditorOrAbove"
               flat
               round
               color="green"
