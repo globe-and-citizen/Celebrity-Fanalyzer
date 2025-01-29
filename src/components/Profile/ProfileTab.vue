@@ -169,7 +169,6 @@ const removeWalletAddressDialog = ref({ show: false })
 const isUpdate = ref(false)
 const uploadDialog = ref({ show: false })
 const previewImage = ref(null)
-console.log('user', user.value)
 
 const socialNetworks = [
   { name: 'facebook', link: 'https://www.facebook.com/' },
