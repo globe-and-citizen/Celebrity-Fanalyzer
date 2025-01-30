@@ -1,9 +1,9 @@
 <template>
   <q-card class="q-mt-none" :class="{ loading: promptStore.isLoading, 'not-loading': !promptStore.isLoading }">
     <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" @submit.prevent="onSubmit()">
-      <q-stepper alternative-labels animated color="primary" header-nav v-model="step">
-        <q-step icon="settings" :name="1" :title="id ? 'Edit Prompt' : 'New Prompt'">
-          <q-card-section>
+      <q-stepper alternative-labels animated color="primary" ref="stepper" header-nav v-model="step">
+        <q-step icon="settings" :name="1" :done="step > 1" :title="id ? 'Edit Prompt' : 'New Prompt'">
+          <q-card-section style="height: 65vh">
             <template v-if="promptStore.isLoading">
               <div class="skeleton-loading">
                 <q-skeleton type="text" class="skeleton-title" style="height: 32px; width: 200px" />
@@ -48,6 +48,7 @@
                       style="max-width: 10rem"
                       class="q-pb-none date-input"
                       :disable="disablePublicationDate"
+                      required
                     >
                       <template v-slot:append>
                         <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
@@ -82,6 +83,7 @@
                       data-test="input-end-date"
                       class="q-pb-none date-input"
                       type="text"
+                      required
                       :disable="!prompt.publicationDate || disableEndDate"
                       :model-value="prompt.endDate || 'YYYY-MM-DD'"
                     >
@@ -189,57 +191,57 @@
                 v-model="prompt.categories"
               />
 
-              <q-card-section class="q-mt-md q-pt-none">
-                <div class="row items-center q-gutter-md">
-                  <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
-                  <q-btn
-                    class="deposite-button"
-                    :color="
-                      prompt.paymentStatus === 'Pay later'
-                        ? 'orange'
-                        : prompt.paymentStatus === 'Payment successful'
-                          ? 'positive'
-                          : 'secondary'
-                    "
-                    :label="
-                      prompt.paymentStatus === 'Pay later'
-                        ? 'Pay later'
-                        : prompt.paymentStatus === 'Payment successful'
-                          ? 'Funds Deposited'
-                          : 'Deposit Funds'
-                    "
-                    :icon="
-                      prompt.paymentStatus === 'Pay later'
-                        ? 'schedule'
-                        : prompt.paymentStatus === 'Payment successful'
-                          ? 'check_circle'
-                          : 'account_balance_wallet'
-                    "
-                  >
-                    <q-menu class="deposite-menu">
-                      <div class="row items-center q-gutter-xs" style="margin-top: 1px">
-                        <q-btn color="orange" label="Pay later" v-close-popup @click="updatepaymentStatus('Pay later')" />
-                        <q-btn label="Pay now" color="green" v-close-popup @click="onProceedDepositFundDialog" />
-                      </div>
-                    </q-menu>
-                  </q-btn>
-                </div>
-              </q-card-section>
-
               <div class="text-center">
                 <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
               </div>
             </template>
           </q-card-section>
         </q-step>
-        <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
-          <ShowcaseCard
-            collectionName="prompt"
-            :date="prompt.date"
-            v-model:arts="prompt.showcase.arts"
-            v-model:artist="prompt.showcase.artist"
-          />
+
+        <q-step icon="money" :name="2" :done="step > 2" :disable="isNextStepDisabled" title="Deposit & Artist Carousel">
+          <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
+            <div class="row items-center q-gutter-md">
+              <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
+              <q-btn
+                class="deposite-button"
+                :color="
+                  prompt.paymentStatus === 'Pay later' ? 'orange' : prompt.paymentStatus === 'Payment successful' ? 'positive' : 'secondary'
+                "
+                :label="
+                  prompt.paymentStatus === 'Pay later'
+                    ? 'Pay later'
+                    : prompt.paymentStatus === 'Payment successful'
+                      ? 'Funds Deposited'
+                      : 'Deposit Funds'
+                "
+                :icon="
+                  prompt.paymentStatus === 'Pay later'
+                    ? 'schedule'
+                    : prompt.paymentStatus === 'Payment successful'
+                      ? 'check_circle'
+                      : 'account_balance_wallet'
+                "
+              >
+                <q-menu class="deposite-menu">
+                  <div class="row items-center q-gutter-xs" style="margin-top: 1px">
+                    <q-btn color="orange" label="Pay later" v-close-popup @click="updatepaymentStatus('Pay later')" />
+                    <q-btn label="Pay now" color="green" v-close-popup @click="onProceedDepositFundDialog" />
+                  </div>
+                </q-menu>
+              </q-btn>
+            </div>
+
+            <div class="q-my-lg">
+              <ShowcaseCard
+                collectionName="prompt"
+                :date="prompt.date"
+                v-model:arts="prompt.showcase.arts"
+                v-model:artist="prompt.showcase.artist"
+              />
+            </div>
+          </q-card-section>
         </q-step>
+
         <template v-slot:navigation>
           <q-stepper-navigation class="flex justify-end q-gutter-md">
             <template v-if="promptStore.isLoading">
@@ -247,15 +249,28 @@
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
             </template>
             <template v-else>
-              <q-btn flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" />
+              <q-btn v-if="step < 2" flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" />
+              <q-btn v-if="step > 1" flat rounded @click="$refs.stepper.previous()" label="Back" :disable="promptStore.isLoading" />
+
               <q-btn
+                v-if="step > 1"
                 color="primary"
                 data-test="button-submit"
-                :disable="!prompt.title || !prompt.description || !prompt.categories?.length || !prompt.image || promptStore.isLoading"
-                :label="id ? 'Save Edits' : 'Submit Prompt'"
+                :disable="isNextStepDisabled || !prompt.paymentStatus"
+                label="Submit Prompt"
                 :loading="promptStore.isLoading || storageStore.isLoading"
                 rounded
                 type="submit"
+              />
+
+              <q-btn
+                v-if="step < 2"
+                color="primary"
+                :disable="isNextStepDisabled"
+                label="Continue"
+                :loading="promptStore.isLoading || storageStore.isLoading"
+                rounded
+                @click="$refs.stepper.next()"
               />
             </template>
           </q-stepper-navigation>
@@ -290,6 +305,8 @@ import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import FundDepositCard from './FundDepositCard.vue'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
+import { collection, doc } from 'firebase/firestore'
+import { db } from 'src/firebase'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
@@ -375,8 +392,11 @@ watchEffect(() => {
       imagePreview.value = props.image
     }
   } else {
+    const collectionRef = collection(db, 'prompts')
+    const docRef = doc(collectionRef)
     prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     prompt.categories = null
+    prompt.id = docRef.id
   }
 })
 
@@ -480,6 +500,18 @@ function captureCamera(imageBlob) {
 function updatepaymentStatus(data) {
   prompt.paymentStatus = data
 }
+
+const isNextStepDisabled = computed(() => {
+  return (
+    !prompt.title ||
+    !prompt.description ||
+    !prompt.categories?.length ||
+    !prompt.image ||
+    promptStore.isLoading ||
+    !prompt.publicationDate ||
+    !prompt.endDate
+  )
+})
 </script>
 
 <style scoped lang="scss">
