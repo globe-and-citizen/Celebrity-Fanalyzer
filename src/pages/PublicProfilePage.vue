@@ -22,11 +22,11 @@
               <q-btn
                 v-if="user[socialNetwork.name]"
                 flat
-                :href="socialNetwork.link + user[socialNetwork.name]"
+                :href="normalizeRedirectUrl(user[socialNetwork.name] ,socialNetwork.link)"
                 :icon="`img:/icons/${socialNetwork.name}.svg`"
                 round
                 target="_blank"
-              />
+                />
             </span>
           </div>
         </q-card-section>
@@ -136,4 +136,17 @@ function goToUrl(link) {
   const normalizedLink = link.startsWith('/') ? link : `/${link}`
   router.push(normalizedLink)
 }
+
+function normalizeRedirectUrl (url, prefix){
+  let normalizedRedirectLink = ""
+  if(url.startsWith(prefix)) {
+    normalizedRedirectLink = url
+  } else if (url.startsWith("www")) {
+    normalizedRedirectLink = url
+  } else {
+    normalizedRedirectLink = prefix+url
+  }
+  return normalizedRedirectLink;
+}
+
 </script>
