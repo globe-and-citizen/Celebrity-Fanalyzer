@@ -5,7 +5,7 @@
     bordered
     hide-bottom
     class="q-ma-md custom-table"
-    title="Manage Prompts & Entries"
+    :title="userStore.isEditorOrAbove ? 'Manage Prompts & Entries' : 'My Prompts'"
     :columns="columns"
     :filter="filter"
     :loading="promptStore.isLoading"
@@ -41,7 +41,7 @@
 
         <q-td class="text-center" auto-width style="width: 101px">
           <div style="width: 69px">
-            {{ props.row.date }}
+            {{ props.row.creationDate }}
           </div>
         </q-td>
         <q-td class="authorRef text-center">
@@ -53,6 +53,17 @@
           <a :href="props.row?.slug" class="q-mr-sm" @click.prevent="router.push(props.row?.slug)">
             {{ props.row.title }}
           </a>
+        </q-td>
+        <q-td auto-width>
+          <div class="text-left">
+            {{ props.row.publicationDate }}
+          </div>
+        </q-td>
+
+        <q-td auto-width>
+          <div class="text-left">
+            {{ props.row.endDate }}
+          </div>
         </q-td>
         <q-td class="text-right">
           <span v-if="!props.row?.escrowId">
@@ -112,11 +123,6 @@
       </q-tr>
     </template>
   </q-table>
-  <TableEntry
-    v-else
-    :filter="filter"
-    :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
-  />
   <div class="row justify-center q-mr-md float-right">
     <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
     <q-btn
@@ -128,6 +134,24 @@
       data-test="load-more-btn"
     />
   </div>
+
+  <br />
+  <br />
+  <!-- <q-separator color="primary" /> -->
+
+  <TableEntry
+    v-if="!entryStore.isLoading && !userStore.isEditorOrAbove"
+    :filter="filter"
+    :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
+    :loaded-entries="entryStore._loadedEntries"
+    @update-entry="handleUpdateEntry"
+    @delete-entry="handleDeleteEntry"
+  />
+
+  <div class="row justify-center q-mr-md float-right">
+    <q-btn label="Load More" color="primary" data-test="load-more-btn" />
+  </div>
+
   <q-dialog v-model="deleteDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
@@ -184,14 +208,16 @@ defineEmits(['openPromptDialog'])
 
 const columns = [
   {},
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
+  { name: 'creationDate', align: 'center', label: 'Creation Date', field: (row) => row.creatinDate, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
+  { name: 'publicationDate', align: 'center', label: 'Publication Date', field: (row) => row.publicationDate, sortable: true },
+  { name: 'endDate', align: 'center', label: 'End Date', field: (row) => row.endDate, sortable: true },
   {}
 ]
 const deleteDialog = ref({})
 const filter = ref('')
-const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+const pagination = { sortBy: 'creationDate', descending: true, rowsPerPage: 0 }
 const maxWidth = ref(0)
 
 const prompts = ref([])

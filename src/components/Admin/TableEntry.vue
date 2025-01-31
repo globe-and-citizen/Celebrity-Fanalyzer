@@ -9,7 +9,7 @@
     :hide-header="userStore.isEditorOrAbove"
     :pagination="pagination"
     :rows="rows"
-    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+    :title="!userStore.isEditorOrAbove ? 'My Entries' : ''"
     no-data-label="No entries found."
     :loading="entryStore.isLoading || promptStore.isLoading"
   >
