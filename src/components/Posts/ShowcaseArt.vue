@@ -1,29 +1,9 @@
 <template>
   <q-separator inset />
   <div class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
-    <!--    <q-img-->
-    <!--      v-for="(art, index) in showcase?.arts"-->
-    <!--      class="art-img"-->
-    <!--      fit="cover"-->
-    <!--      :key="index"-->
-    <!--      :ratio="1"-->
-    <!--      :src="art"-->
-    <!--      width="6.5rem"-->
-    <!--      @click="slide = index"-->
-    <!--    />-->
-    <!--    <q-img-->
-    <!--      v-if="showcase.artist.info"-->
-    <!--      class="art-img"-->
-    <!--      fit="cover"-->
-    <!--      :ratio="1"-->
-    <!--      :src="showcase.artist.photo"-->
-    <!--      width="6.5rem"-->
-    <!--      @click="slide = showcase?.arts.length"-->
-    <!--    />-->
     <q-carousel
       id="dialog"
       @mousedown.stop.prevent
-      @touchstart="handleTouchStart"
       animated
       control-color="primary"
       height="auto"
@@ -45,13 +25,11 @@
         <q-img class="rounded-borders" fit="contain" :src="art" @click.stop="openDialog = true" />
       </q-carousel-slide>
       <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
+        <q-img v-if="showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
         <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
   </div>
-
-  <!--  <q-dialog position="top" ref="dialogRef" seamless style="background-color: rgba(0, 0, 0, 0.4) !important" v-model="openDialog">-->
   <q-dialog v-model="openDialog" ref="dialogRef" backdrop-filter="blur(4px)">
     <q-carousel
       animated
@@ -70,8 +48,10 @@
         <q-img class="rounded-borders" fit="contain" :src="art" />
       </q-carousel-slide>
       <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
+        <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
+        <div class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
+          <p style="border: 1px solid gray; width: 100%; border-radius: 8px; padding: 8px">{{ showcase.artist.info }}</p>
+        </div>
       </q-carousel-slide>
     </q-carousel>
   </q-dialog>

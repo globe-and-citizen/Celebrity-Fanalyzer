@@ -280,7 +280,7 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async deleteEntry(entryId) {
+    async deleteEntry(entryId, arts) {
       const commentStore = useCommentStore()
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
@@ -292,8 +292,16 @@ export const useEntryStore = defineStore('entries', {
       const entryRef = doc(db, 'entries', entryId)
 
       this._isLoading = true
+
       try {
         const deleteImage = deleteObject(ref(storage, `images/entry-${entryId}`))
+        if (arts) {
+          for (const art of arts) {
+            const imgId = art.match(/entry-[^?\/]+/)
+            await deleteObject(ref(storage, `images/${imgId}`))
+          }
+        }
+
         const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
         const deleteLikes = likeStore.deleteAllLikesDislikes('entries', entryId)
         const deleteShares = shareStore.deleteAllShares('entries', entryId)

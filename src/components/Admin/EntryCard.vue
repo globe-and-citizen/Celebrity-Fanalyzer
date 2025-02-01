@@ -114,7 +114,12 @@
             </div>
           </q-step>
           <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
-            <ShowcaseCard collectionName="entry" v-model:arts="entry.showcase.arts" v-model:artist="entry.showcase.artist" date="2024/12" />
+            <ShowcaseCard
+              collectionName="entry"
+              :date="todayDate"
+              v-model:arts="entry.showcase.arts"
+              v-model:artist="entry.showcase.artist"
+            />
           </q-step>
 
           <template v-slot:navigation>
@@ -124,7 +129,14 @@
                 <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
               </template>
               <template v-else>
-                <q-btn flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" />
+                <q-btn
+                  flat
+                  rounded
+                  label="Cancel"
+                  @click="storageStore.deleteMultipleFiles(entry.showcase.arts)"
+                  v-close-popup
+                  :disable="promptStore.isLoading"
+                />
                 <q-btn
                   color="primary"
                   data-test="button-submit"
@@ -150,7 +162,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
@@ -178,6 +190,16 @@ const entry = reactive({
 })
 const imageModel = ref([])
 const openCamera = ref(false)
+const todayDate = new Date().toISOString().replace(/[.:-]/g, '')
+const uploadedImages = ref([])
+
+watch(
+  () => entry.showcase.arts,
+  (newArts) => {
+    uploadedImages.value = newArts.map((art) => art.image)
+  },
+  { deep: true }
+)
 
 const promptOptions = computed(
   () =>

@@ -52,7 +52,7 @@ import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 
-const props = defineProps(['arts', 'artist', 'collectionName', 'date'])
+const props = defineProps(['arts', 'artist', 'collectionName', 'date', 'entryTitle'])
 const emit = defineEmits(['update:arts', 'update:artist'])
 
 const errorStore = useErrorStore()
@@ -105,16 +105,15 @@ async function addArts(files) {
   for (const index in files) {
     const uploaded = await uploadAndSetImage(files[index], `images/${props.collectionName}-${props.date}-art-${index}`)
     modelArts.value.push(uploaded)
-    console.log(uploaded)
   }
   emit('update:arts', modelArts.value)
 }
 
 function removeArt(file) {
-  const artNum = file.match(/art-(\d+)/)[1]
   const index = modelArts.value.indexOf(file)
+  const imgId = file.match(/entry-[^?\/]+/)
   storageStore
-    .deleteFile(`images/${props.collectionName}-${props.date}-art-${artNum}`)
+    .deleteFile(`images/${imgId}`)
     .then(() => modelArts.value.splice(index, 1))
     .catch((error) => errorStore.throwError(error))
   emit('update:arts', modelArts.value)
@@ -122,10 +121,7 @@ function removeArt(file) {
 
 async function addArtistPhoto(files) {
   modelArtistPhoto.value = ''
-  await storageStore
-    .uploadFile(files[0], `images/${props.collectionName}-${props.date}-artist`)
-    .then((url) => (modelArtistPhoto.value = url))
-    .catch((error) => errorStore.throwError(error))
+  modelArtistPhoto.value = await uploadAndSetImage(files, `images/${props.collectionName}-${props.date}-artist`)
   emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
 }
 

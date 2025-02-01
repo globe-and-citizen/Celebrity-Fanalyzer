@@ -152,7 +152,7 @@
           data-test="confirm-delete-entry"
           flat
           label="Delete"
-          @click="onDeleteEntry(deleteDialog.entry.id, deleteDialog.entry.prompt.id)"
+          @click="onDeleteEntry(deleteDialog.entry.id, deleteDialog.entry.prompt.id, deleteDialog.entry.showcase.arts)"
         />
       </q-card-actions>
     </q-card>
@@ -371,9 +371,9 @@ function forwardHandleUpdateEntry(payload) {
   emit('update-entry', payload)
 }
 
-function onDeleteEntry(entryId, promptId) {
+function onDeleteEntry(entryId, promptId, arts) {
   entryStore
-    .deleteEntry(entryId)
+    .deleteEntry(entryId, arts)
     .then(() => {
       if (!userStore.isEditorOrAbove) {
         entryStore.fetchUserRelatedEntries(userStore.getUserId)

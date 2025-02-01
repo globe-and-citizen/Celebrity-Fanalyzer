@@ -3,7 +3,6 @@ import { useStorageStore, useErrorStore } from 'src/stores'
 export async function uploadAndSetImage(imageFile, filePathAndName) {
   const storageStore = useStorageStore()
   const errorStore = useErrorStore()
-  console.log(imageFile)
   return new Promise((resolve, reject) => {
     // Validate imageFile
     if (!(imageFile instanceof Blob)) {
