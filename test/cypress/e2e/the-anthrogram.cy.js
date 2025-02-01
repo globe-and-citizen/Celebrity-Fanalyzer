@@ -217,11 +217,12 @@ describe('TheAnthrogram Graph Visibility', () => {
     cy.get('[data-test="likes-bar"]').should('be.visible', { timeout: 5000 })
   })
 
-  it('should render the PopularityGauge for user popularity if user rating is available', () => {
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(10000)
-    cy.get('[data-test="user-popularity"]', { timeout: 5000 }).should('be.visible')
-  })
+  // TODO POPULARITY GAUGE IS DISABLED TEMPORARILY
+  // it('should render the PopularityGauge for user popularity if user rating is available', () => {
+  //   // eslint-disable-next-line cypress/no-unnecessary-waiting
+  //   cy.wait(10000)
+  //   cy.get('[data-test="user-popularity"]', { timeout: 5000 }).should('be.visible')
+  // })
 
   it('should render the LeafletMap if interaction data by country is available', () => {
     // cy.get('[data-test="leaflet-map"]').should('be.visible')
