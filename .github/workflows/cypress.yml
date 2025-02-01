@@ -19,20 +19,13 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
-      - name: 🛠 Start the Service
-        run: |
-          npm run start:service
-
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
           start: npm run cy:test
           wait-on: http://localhost:9200/
           wait-on-timeout: 1200
-          browser: chrome
           headed: true
-          record: true
-          parallel: true
         env:
           # Set Firebase secrets directly from GitHub Secrets
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
