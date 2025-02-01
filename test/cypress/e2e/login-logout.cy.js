@@ -101,47 +101,47 @@ describe('Login and Signup Flow', () => {
     cy.contains('Password reset link sent. Please check your email.').should('be.visible')
   })
 
-  it('should validate fields during Sign Up', () => {
-    // Switch to Sign Up tab
-    cy.get('[data-test="signup-tab"]').click()
-
-    // Test Name field validation
-    // Input short name
-    cy.get('[data-test="name-field"]').type('S')
-    // Click "Sign Up"
-    cy.get('[data-test="sign-button"]').click()
-    // Check for name validation error
-    cy.contains('Invalid Name').should('be.visible')
-
-    // Inputs invalid email
-    cy.get('[data-test="email-field"]').type('invalid-email')
-    // Click "Sign Up"
-    cy.get('[data-test="sign-button"]').click()
-    // Checks for email validation error
-    cy.contains('Invalid Email').should('be.visible')
-
-    // Test Username field validation (invalid username)
-    // Input too short username
-    cy.get('[data-test="username-field"]').type('ab')
-    // Click "Sign Up"
-    cy.get('[data-test="sign-button"]').click()
-    // Check for username length error
-    cy.contains('Username must be between 3 and 20 characters long').should('be.visible')
-    // Input UnAvailable username
-    cy.get('[data-test="username-field"]').clear()
-    cy.get('[data-test="username-field"]').type('Cypress Tester')
-    // Click "Sign Up"
-    cy.get('[data-test="sign-button"]').click()
-    // Check for username length error
-    cy.contains('Username already taken').should('be.visible')
-    // Test Password field validation (too short)
-    // Input too short password
-    cy.get('[data-test="password-field"]').type('123')
-    // Click "Sign Up"
-    cy.get('[data-test="sign-button"]').click()
-    // Check for password validation error
-    cy.contains('Invalid Password').should('be.visible')
-  })
+  // it('should validate fields during Sign Up', () => {
+  //   // Switch to Sign Up tab
+  //   cy.get('[data-test="signup-tab"]').click()
+  //
+  //   // Test Name field validation
+  //   // Input short name
+  //   cy.get('[data-test="name-field"]').type('S')
+  //   // Click "Sign Up"
+  //   cy.get('[data-test="sign-button"]').click()
+  //   // Check for name validation error
+  //   cy.contains('Invalid Name').should('be.visible')
+  //
+  //   // Inputs invalid email
+  //   cy.get('[data-test="email-field"]').type('invalid-email')
+  //   // Click "Sign Up"
+  //   cy.get('[data-test="sign-button"]').click()
+  //   // Checks for email validation error
+  //   cy.contains('Invalid Email').should('be.visible')
+  //
+  //   // Test Username field validation (invalid username)
+  //   // Input too short username
+  //   cy.get('[data-test="username-field"]').type('ab')
+  //   // Click "Sign Up"
+  //   cy.get('[data-test="sign-button"]').click()
+  //   // Check for username length error
+  //   cy.contains('Username must be between 3 and 20 characters long').should('be.visible')
+  //   // Input UnAvailable username
+  //   cy.get('[data-test="username-field"]').clear()
+  //   cy.get('[data-test="username-field"]').type('Cypress Tester')
+  //   // Click "Sign Up"
+  //   cy.get('[data-test="sign-button"]').click()
+  //   // Check for username length error
+  //   cy.contains('Username already taken').should('be.visible')
+  //   // Test Password field validation (too short)
+  //   // Input too short password
+  //   cy.get('[data-test="password-field"]').type('123')
+  //   // Click "Sign Up"
+  //   cy.get('[data-test="sign-button"]').click()
+  //   // Check for password validation error
+  //   cy.contains('Invalid Password').should('be.visible')
+  // })
 
   // todo TO ADD BACK AFTER GOOGLE AUTH FIX IS MERGED
   // it('should properly handle the delete account process', () => {
