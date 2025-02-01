@@ -20,21 +20,13 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Install Dependencies
-        run: npm ci  # Ensures clean install
-
-      - name: 🚀 Start Application
-        run: npm run dev &  # Starts the app in the background
-
-      - name: ⏳ Wait for App to be Ready
-        run: |
-          npx wait-on http://localhost:9200/ --timeout 120000
-          sleep 10  # Extra buffer to prevent race conditions
+        run: npm ci  # Ensures a clean install
 
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
-          start: npm run cy:test
-          wait-on: http://localhost:9200/
+          start: npm run cy:test  # This starts the app AND runs Cypress
+          wait-on: http://localhost:9200/  # Ensure the app is up before testing
           wait-on-timeout: 1200
           headed: true
         env:
