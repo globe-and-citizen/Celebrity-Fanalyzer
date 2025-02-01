@@ -34,6 +34,7 @@ jobs:
           record: true
           parallel: true
         env:
+          # Set Firebase secrets directly from GitHub Secrets
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
@@ -45,6 +46,7 @@ jobs:
           VITE_CURRENT_NETWORK_NAME: ${{ secrets.VITE_CURRENT_NETWORK_NAME }}
           VITE_WALLET_CONNECT_PROJECT_ID: ${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
           VITE_STATS_API_URL: ${{ secrets.VITE_STATS_API_URL }}
+          # For recording and parallelization to work, set your CYPRESS_RECORD_KEY
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
