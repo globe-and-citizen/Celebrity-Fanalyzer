@@ -26,8 +26,8 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           start: npm run cy:test
-          wait-on: http://localhost:9200/
-          wait-on-timeout: 1200
+          wait-on: http://[::1]:9200/
+          wait-on-timeout: 5000
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
