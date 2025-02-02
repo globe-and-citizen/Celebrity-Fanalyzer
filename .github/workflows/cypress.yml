@@ -19,11 +19,8 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
-        run: npm install
-
       - name: 🚀 Start Application
-        run: npm run dev
+        run: npm run dev &
 
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
@@ -45,3 +42,51 @@ jobs:
           VITE_STATS_API_URL: ${{ secrets.VITE_STATS_API_URL }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+# name: Cypress End-to-End Tests
+
+# on:
+#   pull_request:
+#     branches: ["*"]
+#   workflow_dispatch:
+
+# jobs:
+#   cypress:
+#     runs-on: ubuntu-latest
+#     environment: Development
+#     steps:
+#       - name: 🛫 Checkout
+#         uses: actions/checkout@v3
+
+#       - name: 🏗 Set up NodeJS 18.14.0
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 18.14.0
+#           cache: 'npm'
+
+#       - name: 💻 Run Cypress
+#         uses: cypress-io/github-action@v5
+#         with:
+#           start: npm run cy:test
+#           wait-on: http://localhost:9200/
+#           wait-on-timeout: 1000
+#           browser: chrome
+#           headed: true
+#         env:
+#           # Set Firebase secrets directly from GitHub Secrets
+#           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+#           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+#           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+#           VITE_FIREBASE_MEASUREMENTID: ${{ secrets.VITE_FIREBASE_MEASUREMENTID }}
+#           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+#           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+#           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+#           VITE_FIREBASE_VAPID_KEY: ${{ secrets.VITE_FIREBASE_VAPID_KEY }}
+#           VITE_CURRENT_NETWORK_NAME: ${{ secrets.VITE_CURRENT_NETWORK_NAME }}
+#           VITE_WALLET_CONNECT_PROJECT_ID: ${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
+#           VITE_STATS_API_URL: ${{ secrets.VITE_STATS_API_URL }}
+#           # For recording and parallelization to work, set your CYPRESS_RECORD_KEY
+#           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+#           # Pass GitHub token to detect new build vs re-run build
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
