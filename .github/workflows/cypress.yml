@@ -19,16 +19,12 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
-        run: npm ci  # Ensures a clean install
-
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
-          start: npm run cy:test  # This starts the app AND runs Cypress
-          wait-on: http://localhost:9200/  # Ensure the app is up before testing
+          start: npm run cy:run
+          wait-on: http://localhost:9200/
           wait-on-timeout: 1200
-          headed: true
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
