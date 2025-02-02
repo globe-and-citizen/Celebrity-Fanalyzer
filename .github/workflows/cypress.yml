@@ -19,6 +19,9 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
+      - name: 📦 Install Dependencies
+        run: npm install
+
       - name: 🚀 Start Application
         run: npm run dev &
 
