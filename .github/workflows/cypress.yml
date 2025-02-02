@@ -19,6 +19,15 @@ jobs:
           node-version: 18.14.0
           cache: 'npm'
 
+      - name: 📦 Install Dependencies
+        run: npm install
+
+      - name: 🚀 Start Application
+        run: npm run dev &
+
+      - name: ⏳ Wait for App to be Ready
+        run: npx wait-on http://localhost:9200/ --timeout 300000
+
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
