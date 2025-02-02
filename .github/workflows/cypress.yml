@@ -17,7 +17,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
             build: npm run build
-            start: npm start
+            start: npm run dev
 
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
