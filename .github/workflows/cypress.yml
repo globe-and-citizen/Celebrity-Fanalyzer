@@ -22,9 +22,6 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm install
 
-      - name: 🚀 Start Application
-        run: npm run dev &
-
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
