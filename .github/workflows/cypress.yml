@@ -7,30 +7,18 @@ on:
 
 jobs:
   cypress:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: Development
     steps:
       - name: 🛫 Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: 🏗 Set up NodeJS 16
-        uses: actions/setup-node@v3
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
         with:
-          node-version: 16
-          cache: 'npm'
+            build: npm run build
+            start: npm start
 
-      - name: 📦 Install Dependencies
-        run: npm install
-
-      - name: Run dev
-        run: npm run dev &
-
-      - name: 💻 Run Cypress
-        uses: cypress-io/github-action@v5
-        with:
-          start: npm run cy:run
-          wait-on: http://localhost:9200/
-          wait-on-timeout: 1200
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
