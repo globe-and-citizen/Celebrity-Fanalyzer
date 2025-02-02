@@ -28,7 +28,7 @@ jobs:
       - name: 💻 Run Cypress
         uses: cypress-io/github-action@v5
         with:
-          start: npm run cy:run
+          start: npm run cy:test
           wait-on: http://localhost:9200/
           wait-on-timeout: 1200
         env:
