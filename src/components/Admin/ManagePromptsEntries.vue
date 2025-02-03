@@ -149,7 +149,7 @@
   />
 
   <div class="row justify-center q-mr-md float-right">
-    <q-btn label="Load More" color="primary" data-test="load-more-btn" />
+    <q-btn v-if="!entryStore.isLoading && !userStore.isEditorOrAbove" label="Load More" color="primary" data-test="load-more-btn" />
   </div>
 
   <q-dialog v-model="deleteDialog.show">
