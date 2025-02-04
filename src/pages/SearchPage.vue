@@ -11,7 +11,7 @@
     <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
-          v-model="statuses"
+          v-model="status"
           class="q-my-sm"
           color="white"
           no-caps
@@ -22,23 +22,17 @@
           unelevated
         />
       </q-scroll-area>
-      <q-tab-panels animated swipeable v-model="category">
-        <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <section class="card-items-wrapper" v-if="!promptStore.getPrompts?.length && promptStore.isLoading">
+      <q-tab-panels v-model="status" animated swipeable>
+        <q-tab-panel v-for="(option, i) in statuses" :key="i" :name="option.value" class="panel">
+          <section class="card-items-wrapper" v-if="!computedPromptsByStatus.length && promptStore.isLoading">
             <ArticleSkeleton v-for="n in skeletons" :key="n" />
           </section>
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
-            <ItemCard
-              data-test="item-card"
-              v-for="prompt in combinedItems"
-              :key="prompt?.id"
-              v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
-              :item="prompt"
-              :link="prompt?.slug"
-            />
+            <ItemCard v-for="prompt in computedPromptsByStatus" :key="prompt?.id" :item="prompt" :link="prompt?.slug" />
           </TransitionGroup>
         </q-tab-panel>
       </q-tab-panels>
+
       <TransitionGroup tag="div">
         <div v-if="(searchDate || search) && computedEntries?.length > 0">
           <TheEntries :entries="computedEntries" />
@@ -73,6 +67,7 @@ const promptStore = usePromptStore()
 const advertiseStore = useAdvertiseStore()
 
 const category = ref('All')
+const status = ref('Active')
 const router = useRouter()
 const search = ref('')
 const searchDate = ref('')
@@ -83,8 +78,7 @@ const statuses = [
   { label: 'Top', value: 'Top' },
   { label: 'New', value: 'New' },
   { label: 'Active', value: 'Active' },
-  { label: 'Funded', value: 'Funded' },
-  { label: 'Upcoming', Value: 'Upcoming' },
+  { label: 'Upcoming', value: 'Upcoming' },
   { label: 'Winner Selected', Value: 'Winner Selected' }
 ]
 
@@ -97,6 +91,43 @@ const loadMorePrompts = async () => {
     }
   }
 }
+
+const today = new Date()
+
+const computedPromptsByStatus = computed(() => {
+  let filteredPrompts = promptStore.getPrompts || []
+
+  if (statuses.value === 'Active') {
+    filteredPrompts = filteredPrompts.filter((prompt) => {
+      const publicationDate = new Date(prompt.publicationDate)
+      const endDate = new Date(prompt.endDate)
+      return prompt.escrowId && publicationDate <= today && endDate >= today
+    })
+  }
+
+  if (statuses.value === 'Upcoming') {
+    filteredPrompts = filteredPrompts.filter((prompt) => {
+      const publicationDate = new Date(prompt.publicationDate)
+      return prompt.escrowId && publicationDate > today
+    })
+  }
+
+  if (statuses.value === 'Winner Selected') {
+    filteredPrompts = filteredPrompts.filter((prompt) => prompt.isWinner || prompt.hasWinner)
+  }
+
+  if (statuses.value === 'New') {
+    filteredPrompts = filteredPrompts
+      .filter((prompt) => {
+        const publicationDate = new Date(prompt.publicationDate)
+        const endDate = new Date(prompt.endDate)
+        return prompt.escrowId && publicationDate <= today && endDate >= today
+      })
+      .sort((a, b) => new Date(a.publicationDate) - new Date(b.publicationDate))
+  }
+
+  return filteredPrompts
+})
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
@@ -116,7 +147,7 @@ const computedPrompts = computed(() => {
   return promptStore.getPrompts
     ? promptStore.getPrompts
         .filter((item) => {
-          const prompt = [item.title, item.description, item.author?.displayName, item.id, item.status]
+          const prompt = [item.title, item.description, item.author?.displayName, item.id]
 
           const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
           const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
