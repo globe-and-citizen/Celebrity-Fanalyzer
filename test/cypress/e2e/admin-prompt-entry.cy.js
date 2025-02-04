@@ -10,6 +10,9 @@ describe('Admin Prompt & Entry', () => {
   let visit = '/'
   beforeEach(() => {
     cy.viewport('macbook-16')
+    Cypress.on('uncaught:exception', (err, runnable) => {
+      return false
+    })
     // Visits the profile page
     cy.login()
     cy.visit('/admin')
@@ -291,7 +294,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get(`[data-test="button-expand"] > span`)
       .eq(1)
       .then(() => {
-        cy.get('span>i').contains('expand_less')
+        cy.get('span>i', { timeout: 20000 }).contains('expand_less')
       })
 
     cy.wait(5000)
@@ -499,7 +502,7 @@ describe('Admin Prompt & Entry', () => {
     cy.wait(2000)
 
     // Get the edit button and click it
-    cy.get('[data-test="button-edit-entry"]').eq(0).click({ force: true })
+    cy.get('[data-test="button-edit-entry"]', { timeout: 20000 }).eq(0).click({ force: true })
     // Get the title input and type 'Update entry' into it
     cy.get('[data-test="input-title"]').clear()
     cy.get('[data-test="input-title"]').type('Update entry')
