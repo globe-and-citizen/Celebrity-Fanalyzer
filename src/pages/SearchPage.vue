@@ -20,6 +20,7 @@
           rounded
           text-color="secondary"
           unelevated
+          @click="promptStore.filterOngoingCompetitions = false"
         />
       </q-scroll-area>
       <q-tab-panels v-model="status" animated swipeable>
@@ -79,7 +80,7 @@ const statuses = [
   { label: 'New', value: 'New' },
   { label: 'Active', value: 'Active' },
   { label: 'Upcoming', value: 'Upcoming' },
-  { label: 'Winner Selected', Value: 'Winner Selected' }
+  { label: 'Winner Selected', value: 'Winner Selected' }
 ]
 
 const loadMorePrompts = async () => {
@@ -96,8 +97,7 @@ const today = new Date()
 
 const computedPromptsByStatus = computed(() => {
   let filteredPrompts = promptStore.getPrompts || []
-
-  if (statuses.value === 'Active') {
+  if (status.value === 'Active' || promptStore.filterOngoingCompetitions) {
     filteredPrompts = filteredPrompts.filter((prompt) => {
       const publicationDate = new Date(prompt.publicationDate)
       const endDate = new Date(prompt.endDate)
@@ -105,18 +105,18 @@ const computedPromptsByStatus = computed(() => {
     })
   }
 
-  if (statuses.value === 'Upcoming') {
+  if (status.value === 'Upcoming') {
     filteredPrompts = filteredPrompts.filter((prompt) => {
       const publicationDate = new Date(prompt.publicationDate)
       return prompt.escrowId && publicationDate > today
     })
   }
 
-  if (statuses.value === 'Winner Selected') {
+  if (status.value === 'Winner Selected') {
     filteredPrompts = filteredPrompts.filter((prompt) => prompt.isWinner || prompt.hasWinner)
   }
 
-  if (statuses.value === 'New') {
+  if (status.value === 'New') {
     filteredPrompts = filteredPrompts
       .filter((prompt) => {
         const publicationDate = new Date(prompt.publicationDate)
@@ -194,11 +194,19 @@ watch(search, async (newSearch) => {
   }
 })
 
-watch(searchDate, async () => {
+watch(searchDate, async (val) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     await promptStore.fetchPrompts(true)
   }
 })
+watch(
+  () => promptStore.filterOngoingCompetitions,
+  (val) => {
+    if (val) {
+      status.value = 'Active'
+    }
+  }
+)
 
 onMounted(async () => {
   await promptStore.getTotalPromptsCount()

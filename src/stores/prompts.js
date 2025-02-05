@@ -62,7 +62,8 @@ export const usePromptStore = defineStore('prompts', {
     loadCount: 6,
     _totalPrompts: undefined,
     _lastVisible: null,
-    _hasMore: true
+    _hasMore: true,
+    filterOngoingCompetitions: false
   }),
 
   getters: {

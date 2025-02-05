@@ -76,7 +76,7 @@
         </q-input>
       </q-toolbar-title>
       <q-btn
-        :color="selectedDate || filterOngoingCompetitions ? 'primary' : 'secondary'"
+        :color="selectedDate || promptStore.filterOngoingCompetitions ? 'primary' : 'secondary'"
         class="q-mb-lg"
         data-test="filter-button"
         flat
@@ -136,7 +136,7 @@
 
           <div class="filter-section q-mt-md">
             <q-checkbox
-              v-model="filterOngoingCompetitions"
+              v-model="promptStore.filterOngoingCompetitions"
               label="Ongoing Competitions"
               color="primary"
               data-test="ongoing-competitions-checkbox"
@@ -157,7 +157,7 @@
 </template>
 
 <script setup>
-import { useUserStore, useEntryStore, useErrorStore } from 'src/stores'
+import { useUserStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import NotificationBubble from './NotificationBubble.vue'
@@ -186,6 +186,7 @@ const advertise = ref({})
 const userStore = useUserStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
+const promptStore = usePromptStore()
 
 const openFilter = ref(false)
 const selectedDate = ref('')
@@ -216,23 +217,22 @@ function openAdvertiseDialog(props) {
 }
 
 function applyFilters() {
-  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(selectedDate.value)
-  if (!hasLoadedEntry) {
-    entryStore.fetchEntryByPrompts(selectedDate.value)
+  if (selectedDate.value) {
+    const hasLoadedEntry = entryStore.checkPromptRelatedEntry(selectedDate.value)
+    if (!hasLoadedEntry) {
+      entryStore.fetchEntryByPrompts(selectedDate.value)
+    }
+    entryStore.fetchEntryByPrompts(selectedDate.value).catch((error) => errorStore.throwError(error))
   }
-  entryStore.fetchEntryByPrompts(selectedDate.value).catch((error) => errorStore.throwError(error))
-  emit('updateSearchDate', selectedDate.value)
-
   const filters = {
-    date: selectedDate.value,
-    ongoingCompetitions: filterOngoingCompetitions.value
+    date: selectedDate.value
   }
   emit('updateSearchDate', filters)
 }
 
 function clearFilters() {
   selectedDate.value = ''
-  filterOngoingCompetitions.value = false
+  promptStore.filterOngoingCompetitions = false
   emit('updateSearchDate', {})
 }
 
