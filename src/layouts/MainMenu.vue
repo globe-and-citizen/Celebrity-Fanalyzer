@@ -49,7 +49,7 @@ const userDocRef = ref({})
 const routes = computed(() => [
   { icon: 'home', path: '/', tooltip: 'Home' },
   { icon: 'search', path: '/search', tooltip: 'Search' },
-  { icon: 'description', path: '/month', tooltip: "Month's Prompt" },
+  // { icon: 'description', path: '/month', tooltip: "Month's Prompt" },
   { icon: 'person', path: '/profile', tooltip: 'Profile' }
 ])
 
@@ -108,9 +108,9 @@ onMounted(async () => {
     entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
   }
 
-  if (href === '/month') {
-    await promptStore.fetchMonthsPrompt()
-  }
+  // if (href === '/month') {
+  //   await promptStore.fetchMonthsPrompt()
+  // }
 
   if (params.slug) {
     promptStore.fetchPromptBySlug(href).catch((error) => errorStore.throwError(error))
