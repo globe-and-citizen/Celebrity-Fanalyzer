@@ -351,16 +351,21 @@ const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
 
-function dateOptions(currentDate, today = new Date()) {
-  const timestamp = dateUtils.startOfDate(today, 'day').getTime()
+function dateOptions(currentDate, creationDate = prompt.creationDate) {
+  const timestamp = dateUtils.startOfDate(creationDate, 'day').getTime()
+  const today = new Date()
+  const todayTimestamp = dateUtils.startOfDate(today, 'day').getTime()
   const dateObj = dateUtils.extractDate(currentDate, 'YYYY/MM/DD')
   const limitObj = dateUtils.addToDate(timestamp, { months: 6 })
-  return timestamp <= dateObj.getTime() && dateObj.getTime() <= limitObj.getTime()
+  return todayTimestamp <= dateObj.getTime() && dateObj.getTime() <= limitObj.getTime()
 }
 
 function endDateOptions(currentDate) {
   const publicationDate = dateUtils.addToDate(new Date(prompt.publicationDate), { days: 1 })
-  return dateOptions(currentDate, publicationDate)
+  const timestamp = dateUtils.startOfDate(publicationDate, 'day').getTime()
+  const dateObj = dateUtils.extractDate(currentDate, 'YYYY/MM/DD')
+  const limitObj = dateUtils.addToDate(timestamp, { months: 6 })
+  return timestamp <= dateObj.getTime() && dateObj.getTime() <= limitObj.getTime()
 }
 
 async function onProceedDepositFundDialog() {
@@ -378,7 +383,6 @@ watchEffect(() => {
   if (props.id) {
     prompt.author = { label: props.author.displayName, value: props.author.uid }
     prompt.categories = props.categories
-    // prompt.date = props.date
     prompt.creationDate = props.creationDate
     prompt.publicationDate = props.publicationDate
     prompt.endDate = props.endDate
