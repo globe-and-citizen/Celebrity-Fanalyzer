@@ -470,7 +470,7 @@ async function onSubmit() {
   }
 
   if (imageModel.value) {
-    const id = `${prompt.creationDate}+${prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+    const id = `${prompt.id}`
     prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${id}`)
   }
 
