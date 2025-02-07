@@ -28,7 +28,7 @@
       <TheComments v-if="entry" collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
-  <q-dialog full-width position="bottom" v-model="editEntry.dialog">
+  <q-dialog full-width position="bottom" v-model="editEntry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss>
     <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
   </q-dialog>
 </template>

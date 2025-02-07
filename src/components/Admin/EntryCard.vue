@@ -3,7 +3,7 @@
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
-      <q-btn flat round icon="close" v-close-popup />
+      <q-btn flat round icon="close" @click="handleDeleteImagesOnCancel" v-close-popup />
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
