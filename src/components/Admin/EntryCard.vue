@@ -119,6 +119,7 @@
               :date="todayDate"
               v-model:arts="entry.showcase.arts"
               v-model:artist="entry.showcase.artist"
+              @updateRecentUploads="updateRecentUploadsRef"
             />
           </q-step>
 
@@ -129,14 +130,7 @@
                 <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
               </template>
               <template v-else>
-                <q-btn
-                  flat
-                  rounded
-                  label="Cancel"
-                  @click="storageStore.deleteMultipleFiles(entry.showcase.arts)"
-                  v-close-popup
-                  :disable="promptStore.isLoading"
-                />
+                <q-btn flat rounded label="Cancel" @click="handleDeleteImagesOnCancel" v-close-popup :disable="promptStore.isLoading" />
                 <q-btn
                   color="primary"
                   data-test="button-submit"
@@ -162,7 +156,7 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
@@ -188,10 +182,12 @@ const entry = reactive({
   showcase: { arts: [], artist: { info: '', photo: '' } },
   title: ''
 })
+
 const imageModel = ref([])
 const openCamera = ref(false)
 const todayDate = new Date().toISOString().replace(/[.:-]/g, '')
 const uploadedImages = ref([])
+const recentUploadsRef = ref([])
 
 watch(
   () => entry.showcase.arts,
@@ -323,5 +319,16 @@ async function onSubmit() {
 function captureCamera(imageBlob) {
   imageModel.value = imageBlob
   uploadPhoto()
+}
+
+function handleDeleteImagesOnCancel() {
+  storageStore.deleteMultipleFiles(entry.showcase.arts.length ? recentUploadsRef.value : entry.showcase.arts)
+  entry.showcase.arts = entry.showcase.arts.filter((item) => {
+    return !recentUploadsRef.value.includes(item)
+  })
+}
+
+function updateRecentUploadsRef(updatedArts) {
+  recentUploadsRef.value.push(updatedArts)
 }
 </script>

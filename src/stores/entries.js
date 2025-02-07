@@ -295,13 +295,6 @@ export const useEntryStore = defineStore('entries', {
 
       try {
         const deleteImage = deleteObject(ref(storage, `images/entry-${entryId}`))
-        if (arts) {
-          for (const art of arts) {
-            const imgId = art.match(/entry-[^?\/]+/)
-            await deleteObject(ref(storage, `images/${imgId}`))
-          }
-        }
-
         const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
         const deleteLikes = likeStore.deleteAllLikesDislikes('entries', entryId)
         const deleteShares = shareStore.deleteAllShares('entries', entryId)
@@ -320,6 +313,13 @@ export const useEntryStore = defineStore('entries', {
           deleteVisitors,
           deleteEntryFromStats
         ])
+
+        if (arts) {
+          for (const art of arts) {
+            const imgId = art.match(/entry-[^?\/]+/)
+            await deleteObject(ref(storage, `images/${imgId}`))
+          }
+        }
         this._entries = this._entries?.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')

@@ -33,7 +33,7 @@
       @rejected="onRejected"
       accept="image/*"
       multiple
-      max-files="10"
+      :max-files="10"
     />
     <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts"><q-tooltip>Max 10 Images</q-tooltip></q-btn>
     <div v-if="modelArts.length" class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
@@ -51,9 +51,10 @@ import { useErrorStore, useStorageStore } from 'src/stores'
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
+import { uid } from 'quasar'
 
 const props = defineProps(['arts', 'artist', 'collectionName', 'date', 'entryTitle'])
-const emit = defineEmits(['update:arts', 'update:artist'])
+const emit = defineEmits(['update:arts', 'update:artist', 'updateRecentUploads'])
 
 const errorStore = useErrorStore()
 const storageStore = useStorageStore()
@@ -76,13 +77,6 @@ function onUploadArtist() {
 }
 
 function checkFileSize(files) {
-  // if (files.length > 10) {
-  //   $q.notify({
-  //     type: 'negative',
-  //     message: 'Maximum 10 images can be uploaded'
-  //   })
-  //   return files.slice(0, 10)
-  // }
   return files.filter((file) => file.size > 2048)
 }
 
@@ -95,18 +89,30 @@ function onRejected(rejectedEntries) {
 
 async function addArts(files) {
   const maxImages = 10
+  const remainingImages = maxImages - modelArts.value.length
 
-  if (modelArts.value.length >= maxImages) {
+  if (remainingImages <= 0) {
     $q.notify({ type: 'negative', message: `You can only upload ${maxImages} images` })
     await errorStore.throwError(`You can only upload ${maxImages} images`)
     return
   }
 
-  for (const index in files) {
-    const uploaded = await uploadAndSetImage(files[index], `images/${props.collectionName}-${props.date}-art-${index}`)
+  const filesToUpload = files.slice(0, remainingImages)
+
+  for (const index in filesToUpload) {
+    const uploaded = await uploadAndSetImage(filesToUpload[index], `images/${props.collectionName}-${props.date}-${uid()}`)
     modelArts.value.push(uploaded)
+    emit('updateRecentUploads', uploaded)
   }
+
   emit('update:arts', modelArts.value)
+
+  if (filesToUpload.length < files.length) {
+    $q.notify({
+      type: 'negative',
+      message: `Only ${filesToUpload.length} file(s) were uploaded. You can upload maximum 10 images`
+    })
+  }
 }
 
 function removeArt(file) {
