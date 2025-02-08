@@ -22,7 +22,7 @@
               <q-btn
                 v-if="user[socialNetwork.name]"
                 flat
-                :href="socialNetwork.link + user[socialNetwork.name]"
+                :href="normalizeRedirectUrl(user[socialNetwork.name], socialNetwork.link)"
                 :icon="`img:/icons/${socialNetwork.name}.svg`"
                 round
                 target="_blank"
@@ -96,10 +96,10 @@ const user = ref()
 const header = ref(null)
 
 const socialNetworks = [
-  { name: 'facebook', link: 'https://facebook.com/' },
-  { name: 'instagram', link: 'https://instagram.com/' },
-  { name: 'linkedin', link: 'https://linkedin.com/in/' },
-  { name: 'telegram', link: 'https://web.telegram.org/a/#' },
+  { name: 'facebook', link: 'https://www.facebook.com/' },
+  { name: 'instagram', link: 'https://www.instagram.com/' },
+  { name: 'linkedin', link: 'https://www.linkedin.com/in/' },
+  { name: 'telegram', link: 'https://t.me/' },
   { name: 'x', link: 'https://x.com/' }
 ]
 
@@ -135,5 +135,27 @@ userStore.getUserByUidOrUsername(router.currentRoute.value.params.username).then
 function goToUrl(link) {
   const normalizedLink = link.startsWith('/') ? link : `/${link}`
   router.push(normalizedLink)
+}
+
+function normalizeRedirectUrl(url, prefix) {
+  url = url.trim()
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+
+  if (url.startsWith('www.')) {
+    return `https://${url}`
+  }
+
+  if (url.match(/^(facebook|instagram|linkedin|twitter|x|t\.me)\.com/)) {
+    return `https://www.${url}`
+  }
+
+  if (url.includes('profile.php') || url.includes('?id=')) {
+    return prefix + url
+  }
+
+  return prefix + url
 }
 </script>
