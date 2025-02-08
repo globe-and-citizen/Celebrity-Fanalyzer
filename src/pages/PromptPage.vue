@@ -40,7 +40,16 @@ import ThePost from 'src/components/Posts/ThePost.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import PromptCard from '../components/Admin/PromptCard.vue'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
-import { useEntryStore, useErrorStore, useLikeStore, usePromptStore, useShareStore, useStatStore, useUserStore } from 'src/stores'
+import {
+  useCommentStore,
+  useEntryStore,
+  useErrorStore,
+  useLikeStore,
+  usePromptStore,
+  useShareStore,
+  useStatStore,
+  useUserStore
+} from 'src/stores'
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router'
 
@@ -52,6 +61,7 @@ const promptStore = usePromptStore()
 const shareStore = useShareStore()
 const statStore = useStatStore()
 const userStore = useUserStore()
+const commentStore = useCommentStore()
 const route = useRoute()
 let promptId
 let authorId
@@ -59,7 +69,6 @@ let stats
 
 const entriesRef = ref(null)
 const tab = ref(promptStore.tab)
-const shareIsLoading = ref(false)
 const shareIsLoaded = ref(false)
 const editPrompt = ref({})
 
@@ -111,16 +120,10 @@ watchEffect(async () => {
   // }
 
   if (prompt.value?.id) {
-    await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
-
-    shareIsLoading.value = true
-    await shareStore
-      .fetchSharesCount('prompts', promptId)
-      .catch((error) => errorStore.throwError(error))
-      .finally(() => {
-        shareIsLoading.value = false
-        shareIsLoaded.value = true
-      })
+    const getAllLikesAndDislikes = likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
+    const getTotalComments = commentStore.getTotalComments('prompts', promptId)
+    const getSharesCount = shareStore.fetchSharesCount('prompts', promptId).catch((error) => errorStore.throwError(error))
+    await Promise.all([getAllLikesAndDislikes, getTotalComments, getSharesCount])
   }
 })
 

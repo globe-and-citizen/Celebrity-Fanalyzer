@@ -20,6 +20,8 @@ const pushLikeToStats = async (user_id, article_id, topic_id, isLike, ad_id) =>
 export const useLikeStore = defineStore('likes', {
   state: () => ({
     _likes: undefined,
+    _likesCount: 0,
+    _dislikesCounts: 0,
     _dislikes: undefined,
     _unSubscribeLike: undefined,
     _unSubscribeDislike: undefined,
@@ -31,7 +33,10 @@ export const useLikeStore = defineStore('likes', {
 
   getters: {
     getLikes: (state) => state._likes,
-    getDislikes: (state) => state._dislikes
+    getDislikes: (state) => state._dislikes,
+    getIsLoading: (state) => state._isLoading,
+    getLikesCount: (state) => state._likesCount,
+    getDislikesCount: (state) => state._dislikesCount
   },
 
   actions: {
@@ -44,13 +49,48 @@ export const useLikeStore = defineStore('likes', {
         this._unSubscribeLike()
         this._unSubscribeDislike()
       }
-      this._unSubscribeLike = onSnapshot(likesCollection, (likesSnapshot) => {
-        this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      })
-      this._unSubscribeDislike = onSnapshot(dislikesCollection, (dislikesSnapshot) => {
-        this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      })
-      this._isLoading = false
+
+      let likesLoaded = false
+      let dislikesLoaded = false
+
+      this._unSubscribeLike = onSnapshot(
+        likesCollection,
+        (likesSnapshot) => {
+          this._likes = likesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          this._likesCount = this._likes.length
+
+          if (!likesLoaded) {
+            likesLoaded = true
+            if (likesLoaded && dislikesLoaded) {
+              this._isLoading = false
+            }
+          }
+        },
+        (error) => {
+          console.error('Error fetching likes:', error)
+          this._isLoading = false
+        }
+      )
+
+      this._unSubscribeDislike = onSnapshot(
+        dislikesCollection,
+        (dislikesSnapshot) => {
+          this._dislikes = dislikesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          this._dislikesCount = this._dislikes.length
+
+          // Update loading state for dislikes
+          if (!dislikesLoaded) {
+            dislikesLoaded = true
+            if (likesLoaded && dislikesLoaded) {
+              this._isLoading = false
+            }
+          }
+        },
+        (error) => {
+          console.error('Error fetching dislikes:', error)
+          this._isLoading = false
+        }
+      )
     },
 
     async addLike(collectionName, documentId, article_id, topic_id, ad_id, isTest = false) {
@@ -145,6 +185,12 @@ export const useLikeStore = defineStore('likes', {
         await deleteDoc(doc.ref)
       })
       this._isLoading = false
+    },
+    async resetLikesDislikes() {
+      this._likes = undefined
+      this._dislikes = undefined
+      this._likesCount = 0
+      this._dislikesCount = 0
     }
   }
 })
