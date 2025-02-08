@@ -22,14 +22,16 @@
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
-          <p class="text-body2">{{ isPrompt ? `Prompt of ${formatMonthYear(post?.date)}` : `Posted on ${dayMonthYear(post.created)}` }}</p>
+          <p class="text-body2">
+            {{ isPrompt ? `Prompt of ${formatMonthYear(post?.date || 'unknown')}` : `Posted on ${dayMonthYear(post.created)}` }}
+          </p>
           <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}
             </q-badge>
           </div>
         </div>
-        <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
+        <h1 class="q-mt-none text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
         <q-separator spaced />
         <section
           v-if="post?.author && !isAdd"
@@ -105,7 +107,7 @@
             <q-tooltip anchor="bottom middle" self="center middle">Dislike</q-tooltip>
           </q-btn>
           <q-btn
-            :data-test="commentStore.getCommentsCount ? 'panel-3-navigator' : ''"
+            data-test="comments"
             flat
             icon="chat_bubble_outline"
             :label="commentStore.getCommentsCount"
@@ -141,7 +143,7 @@
           >
             <q-tooltip>{{ userStore.getUser.subscriptions?.includes(props.post.id) ? 'Subscribed' : 'Subscribe' }}</q-tooltip>
           </q-btn>
-          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit">
+          <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit" data-test="edit">
             <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
           </q-btn>
         </div>
