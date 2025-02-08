@@ -11,6 +11,7 @@
     :rows="rows"
     :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
     no-data-label="No entries found."
+    data-test="entry-table"
     :loading="entryStore.isLoading || promptStore.isLoading"
   >
     <template v-slot:body="props">
@@ -21,10 +22,14 @@
           </span>
         </q-td>
         <q-td auto-width style="width: 101px">
-          <div>{{ dayMonthYear(props.row.created) }}</div>
+          <div data-test="entry-date">{{ dayMonthYear(props.row.created) }}</div>
         </q-td>
         <q-td :style="widthStyle" style="text-align: center">
-          <a :href="`/fan/${props.row?.author?.uid}`" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
+          <a
+            :href="`/fan/${props.row?.author?.uid}`"
+            @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)"
+            data-test="entry-author"
+          >
             {{ props.row.author?.displayName }}
           </a>
         </q-td>
@@ -42,6 +47,7 @@
                     })
               }
             "
+            data-test="entry-title"
           >
             {{ props.row.title }}
           </a>
@@ -98,6 +104,7 @@
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="warning"
+                  data-test="button-edit-entry"
                   flat
                   icon="edit"
                   round
@@ -133,7 +140,7 @@
     <EntryCard v-bind="entry" @hideDialog="entry = {}" @forward-update-entry="forwardHandleUpdateEntry" />
   </q-dialog>
 
-  <q-dialog v-model="deleteDialog.show">
+  <q-dialog v-model="deleteDialog.show" data-test="entry-delete-dialog">
     <q-card>
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Delete Entry?</h6>

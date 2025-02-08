@@ -3,7 +3,7 @@
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
-      <q-btn flat round icon="close" @click="handleDeleteImagesOnCancel" v-close-popup />
+      <q-btn flat round icon="close" @click="handleDeleteImagesOnCancel" v-close-popup data-test="close-button" />
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
@@ -140,6 +140,21 @@
                   rounded
                   type="submit"
                 />
+                <q-tooltip
+                  v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
+                  class="text-center"
+                  style="white-space: pre-line"
+                >
+                  {{
+                    !entry.title || !entry.description
+                      ? 'Please make sure you have a title and description'
+                      : !entry.prompt
+                        ? 'Please select a prompt'
+                        : !entry.image
+                          ? 'Please select an image'
+                          : 'Please make sure all fields are filled'
+                  }}
+                </q-tooltip>
               </template>
             </q-stepper-navigation>
           </template>
