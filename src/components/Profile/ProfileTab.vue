@@ -64,10 +64,9 @@
       v-for="network in socialNetworks"
       :key="network.name"
       :label="capitalize(network.name)"
-      :placeholder="capitalize(network.name)"
-      v-model="user[network.name]"
-      :prefix="network.link"
-      @update:model-value="updateSocialUrl($event, network.name, network.link)"
+      :placeholder="network.link"
+      :model-value="user[network.name]"
+      @update:model-value="(val) => (user[network.name] = val.replace(/\s+/g, ''))"
     />
 
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
@@ -180,14 +179,6 @@ const socialNetworks = [
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-function updateSocialUrl(data, key, prefix) {
-  if (data.startsWith(prefix)) {
-    user.value[key] = data.replace(prefix, '')
-  } else {
-    user.value[key] = data
-  }
 }
 
 watch([currentWalletAddress, user], () => {

@@ -22,11 +22,11 @@
               <q-btn
                 v-if="user[socialNetwork.name]"
                 flat
-                :href="normalizeRedirectUrl(user[socialNetwork.name] ,socialNetwork.link)"
+                :href="normalizeRedirectUrl(user[socialNetwork.name], socialNetwork.link)"
                 :icon="`img:/icons/${socialNetwork.name}.svg`"
                 round
                 target="_blank"
-                />
+              />
             </span>
           </div>
         </q-card-section>
@@ -137,16 +137,25 @@ function goToUrl(link) {
   router.push(normalizedLink)
 }
 
-function normalizeRedirectUrl (url, prefix){
-  let normalizedRedirectLink = ""
-  if(url.startsWith(prefix)) {
-    normalizedRedirectLink = url
-  } else if (url.startsWith("www")) {
-    normalizedRedirectLink = url
-  } else {
-    normalizedRedirectLink = prefix+url
-  }
-  return normalizedRedirectLink;
-}
+function normalizeRedirectUrl(url, prefix) {
+  url = url.trim()
 
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+
+  if (url.startsWith('www.')) {
+    return `https://${url}`
+  }
+
+  if (url.match(/^(facebook|instagram|linkedin|twitter|x|t\.me)\.com/)) {
+    return `https://www.${url}`
+  }
+
+  if (url.includes('profile.php') || url.includes('?id=')) {
+    return prefix + url
+  }
+
+  return prefix + url
+}
 </script>
