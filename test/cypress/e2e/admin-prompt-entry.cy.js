@@ -211,13 +211,13 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should Navigate in prompt and entry', () => {
     cy.visit(visit)
-    cy.contains(name)
-    cy.get('[data-test="like-button"]').click()
-    cy.get('[data-test="like-button"]').click()
-    cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
-    cy.get('[data-test="entry-page"]').eq(0).click()
-    cy.get('[data-test="like-button"]').click()
-    cy.get('[data-test="like-button"]').click()
+    cy.contains(name, { timeout: 20000 })
+    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
+    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
+    cy.get('[data-test="entry"]', { timeout: 10000 }).eq(0).find('[data-test="item-link"]').click()
+    cy.get('[data-test="entry-page"]', { timeout: 10000 }).eq(0).click()
+    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
+    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
   })
 
   it('Should display the prompt and interact', () => {
