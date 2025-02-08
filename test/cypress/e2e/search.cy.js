@@ -15,11 +15,8 @@ describe('Search page', () => {
     })
     cy.visit('/search')
 
-    cy.get('[data-test="search-input"]').type(' ')
-    cy.wait(1000)
-    cy.get('[data-test="item-link"]').first().click({ force: true })
-    cy.wait(1000)
-
+    cy.get('[data-test="search-input"]', { timeout: 10000 }).type(' ')
+    cy.get('[data-test="item-link"]', { timeout: 10000 }).first().click({ force: true })
     cy.get('[data-test="title"]').should('contain.text', 'Prompt Page')
   })
 
@@ -32,16 +29,14 @@ describe('Search page', () => {
 
   it('Should open and close the filter dialog', () => {
     cy.login()
-    cy.wait(1000)
-    cy.visit('/search')
+    cy.visit('/search', { timeout: 10000 })
     cy.get('[data-test="filter-button"]').click()
     cy.get('.filter-card').should('exist')
     cy.get('.filter-title').should('contain', 'Filter By')
 
     cy.get('[data-test="date-picker"]').click()
     cy.get('[data-test="close"]').click()
-    cy.wait(1000)
-    cy.get('input[data-test="date"]').type('202412')
+    cy.get('input[data-test="date"]', { timeout: 10000 }).type('202412')
     cy.get('[data-test="apply-filter-btn"]').click()
 
     cy.get('.filter-card').should('not.exist')

@@ -19,19 +19,17 @@ describe('User Profile page', () => {
     cy.get('[data-test="input-name"]').type(name)
 
     // Get the copy username button and click it
-    cy.get('[data-test="button-username-copy"]').click()
-    cy.wait(1000)
+    cy.get('[data-test="button-username-copy"]', { timeout: 10000 }).click()
 
     //Check the Link copied to clipboard successfully
-    cy.get('.q-notification__message').contains('Link copied to clipboard')
+    cy.get('.q-notification__message', { timeout: 10000 }).contains('Link copied to clipboard')
 
     // Get the edit UserName input
     cy.get('[data-test="input-user-name"]').clear()
     cy.get('[data-test="input-user-name"]').type('Cypress Tester')
-    cy.wait(1000)
 
     // Get the bio input and type 'User Bio Updated' into it
-    cy.get('[data-test="input-bio"]').clear()
+    cy.get('[data-test="input-bio"]', { timeout: 10000 }).clear()
     cy.get('[data-test="input-bio"]').type('User Bio Updated')
 
     // Get the facebook input and type 'https://www.facebook.com/cypresstester' into it
@@ -62,7 +60,7 @@ describe('User Profile page', () => {
   })
 
   it('if a user has Prompts & Entries Subscribe, they should unsubscribe', () => {
-    cy.visit('/profile/subscriptions').wait(5000)
+    cy.visit('/profile/subscriptions', { timeout: 15000 })
     // cy.get('[href="/profile"]').click().wait(2000)
     // cy.get('[href="/profile/subscriptions"]').click()
 
@@ -73,9 +71,8 @@ describe('User Profile page', () => {
       .should('have.length.greaterThan', -1)
       .then((tableRows) => {
         if (tableRows.length > 0) {
-          cy.get('[data-test="prompt-unsubscribe"]').first().click()
+          cy.get('[data-test="prompt-unsubscribe"]', { timeout: 10000 }).first().click()
           // Click the first unsubscribe button
-          cy.wait(1000)
         } else {
           cy.log('No prompts subscription found')
         }
@@ -83,14 +80,13 @@ describe('User Profile page', () => {
 
     // Check if the Entries table exists and unsubscribe
     // Ensure table exists
-    cy.get('.entries-table').should('exist')
+    cy.get('.entries-table', { timeout: 10000 }).should('exist')
     cy.get('.entries-table .q-tr')
       .should('have.length.greaterThan', -1)
       .then((tableRows) => {
         if (tableRows.length > 0) {
-          cy.get('[data-test="entrie-unsubscribe"]').first().click()
+          cy.get('[data-test="entrie-unsubscribe"]', { timeout: 10000 }).first().click()
           // Click the first unsubscribe button
-          cy.wait(1000)
         } else {
           cy.log('No entries subscription found')
         }
@@ -103,9 +99,9 @@ describe('User Profile page', () => {
         username: 'Cypress Tester'
       }
     })
-    cy.wait(4000)
+
     // Ensure the "View Profile" button is visible
-    cy.get('[data-test="button-username-view-profile"]').should('exist').should('be.visible')
+    cy.get('[data-test="button-username-view-profile"]', { timeout: 10000 }).should('exist').should('be.visible')
 
     // Stub the window.open method
     cy.window().then((win) => {
@@ -137,10 +133,9 @@ describe('User Profile page', () => {
     // Click the Save button in the dialog to upload the image
     cy.get('[data-test="upload-save-btn"]').click()
     // Adjust wait time based on your app's image upload duration
-    cy.wait(5000)
 
     // Check if the profile was successfully updated after upload
-    cy.get('.q-notification__message').contains('Profile successfully updated')
+    cy.get('.q-notification__message', { timeout: 15000 }).contains('Profile successfully updated')
 
     // Delete the profile picture
     cy.get('[data-test="avatar-upload"]').click()
@@ -156,10 +151,9 @@ describe('User Profile page', () => {
 
     cy.get('[data-test="upload-delete-btn"]').click()
     // Adjust wait time based on your app's image deletion duration
-    cy.wait(2000)
 
     // Check if the profile was successfully updated after deletion
-    cy.get('.q-notification__message').contains('Profile successfully updated')
+    cy.get('.q-notification__message', { timeout: 15000 }).contains('Profile successfully updated')
   })
 
   // it('should show an error if file size is too large', () => {

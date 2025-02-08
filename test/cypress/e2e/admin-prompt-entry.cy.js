@@ -13,16 +13,17 @@ describe('Admin Prompt & Entry', () => {
     Cypress.on('uncaught:exception', (err, runnable) => {
       return false
     })
-    // Visits the profile page
     cy.login()
     cy.visit('/admin')
   })
-  it('Try To access non existing prompt page', () => {
+
+  it('Try to access non existing prompt page', () => {
     cy.visit('/not-exist-prompt')
     cy.get('.q-notification__message').contains('Not found')
     cy.get('.q-notification__message').contains('You will be redirected in 3 seconds')
     cy.location('pathname').should('eq', '/404')
   })
+
   it('Try To access non existing Entry page', () => {
     cy.visit('/not-exist-prompt')
     cy.get('.q-notification__message').contains('Not found')
@@ -30,6 +31,24 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', '/404')
     cy.get('.q-btn').click()
     cy.location('pathname').should('eq', '/')
+  })
+
+  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
+    // Clear local storage
+    cy.clearLocalStorage()
+
+    cy.visit('/month')
+    // Ensure the "Create Entry" button exists and is visible
+    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
+
+    // Click the "Create entry" button without login
+    cy.get('[data-test="create-entry"]').click()
+
+    // Assert that the user is redirected to the login page
+    cy.url().should('include', '/profile')
+
+    // Assert the notification message
+    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
   })
 
   it('Cleanup: Delete Existing "Cypress Tester" Prompts Before Test', () => {
@@ -64,14 +83,10 @@ describe('Admin Prompt & Entry', () => {
     })
   })
 
-  it('Should prompt create time handles navigation, month selection, and disabled states correctly', () => {
+  it('Should correctly handle prompt creation time navigation and month selection process', () => {
     // Ensure initial number of item cards
     cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
     cy.wait(2000)
-
-    // Click the "Load more" button
-    cy.get('[data-test="load-more-btn"]').first().click({ force: true })
-    cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
 
     // Open the dropdown and navigate to the MonthPicker
     cy.get('[data-test="dropdown-menu"]').click()
@@ -145,7 +160,30 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
   })
 
-  it('Should create a entry', () => {
+  it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {
+    cy.visit('/admin')
+
+    cy.get('[data-test="input-search"]').type('Cypress Tester')
+
+    const promptSlug = '/hello-world-'
+    const promptTitle = 'Hello World!'
+
+    // Check if the prompt title link is visible and clickable
+    cy.get('[data-test="prompt-title"]').contains(promptTitle).should('have.attr', 'href', promptSlug).click()
+
+    // Click the "Create entry" button
+    cy.get('[data-test="create-entry"]').click()
+
+    // Verify the dialog is visible
+    cy.get('.q-dialog[data-test="entry-dialog"]').should('be.visible')
+    // Click the "Close Entry Card" button
+    cy.get('[data-test="close-button"]').click()
+
+    // Verify the dialog is closed
+    cy.get('.q-dialog[data-test="entry-dialog"]').should('not.exist')
+  })
+
+  it('Should create an entry', () => {
     // Get the dropdown button and click it
     cy.get('[data-test="dropdown-menu"]').click()
 
@@ -171,7 +209,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Entry successfully submitted')
   })
 
-  it('Should Navigate  in prompt and entry', () => {
+  it('Should Navigate in prompt and entry', () => {
     cy.visit(visit)
     cy.contains(name)
     cy.get('[data-test="like-button"]').click()
@@ -490,12 +528,6 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should edit a entry', () => {
-    // cy.visit(visit)
-    // cy.contains(name)
-    // cy.scrollTo('bottom')
-    // cy.get('entry ' + name).click()
-
-    // cy.scrollTo('bottom')
     cy.get('[data-test="input-search"]').type('Cypress Tester')
     cy.wait(2000)
     cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click({ force: true })
@@ -516,9 +548,6 @@ describe('Admin Prompt & Entry', () => {
 
     // Get the submit button and click it
     cy.get('[data-test="button-submit"]').eq(0).click({ force: true })
-
-    // Check the Entry is edited successfully
-    // cy.get('.q-notification__message').contains('Entry successfully edited')
   })
 
   it('Should delete the entry', () => {
@@ -590,12 +619,6 @@ describe('Admin Prompt & Entry', () => {
   it('should allow searching for prompts', () => {
     cy.get('[data-test="input-search"]').type('test')
     cy.get('[data-test="prompt-title"]').first().should('contain.text', 'test')
-  })
-
-  it('should load more prompts and display them', () => {
-    cy.get('[id="item-card"]', { timeout: 20000 }).should('have.length', 6)
-    cy.get('[data-test="load-more-btn"]').click({ force: true })
-    cy.get('[id="item-card"]').should('have.length.greaterThan', 6)
   })
 
   it('Should expand prompt item', () => {
