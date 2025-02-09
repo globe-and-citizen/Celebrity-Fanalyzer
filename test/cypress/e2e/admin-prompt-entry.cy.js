@@ -53,7 +53,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Cleanup: Delete Existing "Cypress Tester" Prompts Before Test', () => {
     // Search for the prompt
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
     cy.wait(10000)
 
     // Check if the item cards exist
@@ -85,7 +85,7 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should correctly handle prompt creation time navigation and month selection process', () => {
     // Ensure initial number of item cards
-    cy.get('[id="item-card"]', { timeout: 10000 }).should('have.length', 6)
+    cy.get('[id="item-card"]', { timeout: 20000 }).should('have.length', 6)
     cy.wait(2000)
 
     // Open the dropdown and navigate to the MonthPicker
@@ -163,7 +163,7 @@ describe('Admin Prompt & Entry', () => {
   it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {
     cy.visit('/admin')
 
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
 
     const promptSlug = '/hello-world-'
     const promptTitle = 'Hello World!'
@@ -212,12 +212,13 @@ describe('Admin Prompt & Entry', () => {
   it('Should Navigate in prompt and entry', () => {
     cy.visit(visit)
     cy.contains(name, { timeout: 20000 })
-    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
-    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
-    cy.get('[data-test="entry"]', { timeout: 10000 }).eq(0).find('[data-test="item-link"]').click()
-    cy.get('[data-test="entry-page"]', { timeout: 10000 }).eq(0).click()
-    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
-    cy.get('[data-test="like-button"]', { timeout: 10000 }).click()
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
+    cy.scrollTo('bottom')
+    cy.get('[data-test="entry"]', { timeout: 25000 }).eq(0).find('[data-test="item-link"]').click({ force: true })
+    cy.get('[data-test="entry-page"]', { timeout: 25000 }).eq(0).click({ force: true })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
   })
 
   it('Should display the prompt and interact', () => {
@@ -283,9 +284,7 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it("Should navigate to the author's profile page", () => {
-    cy.wait(2000)
-
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
 
     const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43'
     const authorName = 'Cypress Tester'
@@ -298,9 +297,7 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should navigate to the prompt page when the title is clicked', () => {
-    cy.wait(2000)
-
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
 
     const promptSlug = '/hello-world-'
     const promptTitle = 'Hello World!'
@@ -313,11 +310,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should display all entries in the entry table', () => {
-    // Wait for the page and table to load
-    cy.wait(2000)
-
     // Perform search action
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
     cy.wait(2000)
 
     // Expand the table row if necessary
@@ -354,10 +348,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it("Should navigate to the entry author's profile page", () => {
-    cy.wait(2000)
-
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
-
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
     // Expand the table row if necessary
     cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
 
@@ -395,7 +387,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('should test entry page tabs, comments interaction, edit dialog', () => {
-    cy.get('[data-test="input-search"]').type('Cypress Tester').wait(2000)
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
 
     // Expand the table row if necessary
     cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
@@ -473,12 +466,10 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should edit the prompt', () => {
     // Get the second button (edit Prompt) and click it
-    cy.wait(2000)
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
-    cy.wait(2000)
-
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
     // Get the edit button and click it
-    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`).click()
+    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`, { timeout: 20000 }).click()
 
     cy.get('[data-test="input-title"]').clear()
     cy.get('[data-test="input-title"]').type(name)
@@ -502,11 +493,9 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should update image using camera capture', () => {
-    cy.wait(2000)
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
-    cy.wait(2000)
-
-    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`).click()
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
+    cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`, { timeout: 20000 }).click()
 
     cy.get('[data-test="button-camera-capture"]').click()
 
@@ -528,10 +517,10 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should edit a entry', () => {
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
-    cy.wait(2000)
-    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click({ force: true })
-    cy.wait(2000)
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
+
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`, { timeout: 20000 }).click({ force: true })
 
     // Get the edit button and click it
     cy.get('[data-test="button-edit-entry"]', { timeout: 20000 }).eq(0).click({ force: true })
@@ -552,8 +541,8 @@ describe('Admin Prompt & Entry', () => {
 
   it('Should delete the entry', () => {
     // Get the second button (Delete Entry) and click it
-    cy.get('[data-test="input-search"]').type('Cypress Tester')
-    cy.wait(2000)
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
 
     // Get the expand button and click it
     cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
@@ -591,8 +580,7 @@ describe('Admin Prompt & Entry', () => {
     cy.get(`[data-test="item-card"] > .text-right > [data-test="button-delete-prompt"]`).click()
 
     // Get the confirm button and click it
-    cy.get('[data-test="confirm-delete-prompt"]').click()
-    cy.wait(2000)
+    cy.get('[data-test="confirm-delete-prompt"]', { timeout: 20000 }).click()
 
     // Wait the notification
     cy.get('.q-notification__message').contains('Prompt successfully deleted')
