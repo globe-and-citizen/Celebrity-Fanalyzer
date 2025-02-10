@@ -146,10 +146,12 @@ export const usePromptStore = defineStore('prompts', {
     async fetchActivePrompts() {
       const userStore = useUserStore()
       this._isLoading = true
+      const today = new Date()
+      const formattedDate = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
       try {
         let queryRef = collection(db, 'prompts')
-        queryRef = query(queryRef, where('hasWinner', '==', null), where('escrowId', '!=', null))
+        queryRef = query(queryRef, where('', '==', null), where('escrowId', '!=', null), where('publicationDate', '<=', formattedDate))
 
         const querySnapshot = await getDocs(queryRef)
         const activePrompts = await getPrompts(querySnapshot, userStore)
