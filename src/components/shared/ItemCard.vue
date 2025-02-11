@@ -19,10 +19,16 @@
           {{ item.title?.length > 40 ? item.title.substring(0, 40) + '...' : item.title }}
         </h2>
 
-        <p v-if="item.description" class="q-my-none text-body2 text-secondary">
-          {{ item?.date ? formatMonthYear(item?.date) : dayMonthYear(item.created) }} &nbsp;•&nbsp;
-          {{ giveReadingTime(item.description) }} min read
-        </p>
+        <div v-if="item.description" class="q-my-none text-body2 text-secondary">
+          <p v-if="item.publicationDate">
+            {{ item?.publicationDate ? formatPublicationDate(item?.publicationDate) : '' }}&nbsp;•&nbsp;
+            {{ giveReadingTime(item.description) }} min read
+          </p>
+          <p v-else>
+            {{ item?.date ? formatMonthYear(item?.date) : dayMonthYear(item.created) }} &nbsp;•&nbsp;
+            {{ giveReadingTime(item.description) }} min read
+          </p>
+        </div>
         <div v-if="item.categories">
           <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
         </div>
@@ -30,7 +36,7 @@
         <div class="winner-amount-wrapper">
           <div class="winner-amount">
             <span class="trophy-icon">🏆</span>
-            <span>45$</span>
+            <span>{{ item?.rewardAmount ?? 0 }}$</span>
           </div>
         </div>
       </router-link>
@@ -51,7 +57,7 @@
 
 <script setup>
 import CampaignCard from '../Advertiser/CampaignCard.vue'
-import { dayMonthYear, formatMonthYear } from 'src/utils/date'
+import { dayMonthYear, formatMonthYear, formatPublicationDate } from 'src/utils/date'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

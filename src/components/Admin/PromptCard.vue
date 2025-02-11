@@ -289,6 +289,7 @@
           :walletAddress="proceedDepositFundDialog.walletAddress"
           :prompt="proceedDepositFundDialog.prompt"
           @paymentStatus="updatepaymentStatus($event)"
+          @winnerReward="updateWinnerReward($event)"
           @hideDialog="proceedDepositFundDialog.show = false"
         />
       </q-card>
@@ -323,7 +324,8 @@ const props = defineProps([
   'creationDate',
   'publicationDate',
   'endDate',
-  'paymentStatus'
+  'paymentStatus',
+  'rewardAmount'
 ])
 
 const $q = useQuasar()
@@ -504,7 +506,9 @@ function captureCamera(imageBlob) {
 function updatepaymentStatus(data) {
   prompt.paymentStatus = data
 }
-
+function updateWinnerReward(data) {
+  prompt.rewardAmount = data
+}
 const isNextStepDisabled = computed(() => {
   return (
     !prompt.title ||

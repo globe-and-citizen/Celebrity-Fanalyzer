@@ -151,7 +151,13 @@ export const usePromptStore = defineStore('prompts', {
 
       try {
         let queryRef = collection(db, 'prompts')
-        queryRef = query(queryRef, where('', '==', null), where('escrowId', '!=', null), where('publicationDate', '<=', formattedDate))
+        queryRef = query(
+          queryRef,
+          where('', '==', null),
+          where('escrowId', '!=', null),
+          where('publicationDate', '<=', formattedDate),
+          where('endDate', '>=', formattedDate)
+        )
 
         const querySnapshot = await getDocs(queryRef)
         const activePrompts = await getPrompts(querySnapshot, userStore)

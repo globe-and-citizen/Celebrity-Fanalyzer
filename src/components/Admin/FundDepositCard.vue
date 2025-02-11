@@ -35,7 +35,7 @@ const errorStore = useErrorStore()
 
 const promptStore = usePromptStore()
 
-const emit = defineEmits(['hideDialog', 'paymentStatus'])
+const emit = defineEmits(['hideDialog', 'paymentStatus', 'winnerReward'])
 
 const props = defineProps({
   walletAddress: { type: String, required: true },
@@ -84,6 +84,7 @@ async function onSubmit(event) {
           .then(() => {
             $q.notify({ type: 'info', message: 'Fund deposited successfully' })
             emit('paymentStatus', 'Payment successful')
+            emit('winnerReward', maticAmount.value)
           })
           .catch((error) => {
             errorStore.throwError(error, 'fund deposit failed on prompt edition')

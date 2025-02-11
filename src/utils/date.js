@@ -11,6 +11,14 @@ export function formatMonthYear(date) {
   return `${monthName} ${year}`
 }
 
+export function formatPublicationDate(date) {
+  const [year, month, day] = date.split('-')
+
+  const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long' })
+  // August 2030
+  return `${monthName.slice(0, 3)} ${day}, ${year}`
+}
+
 export function monthDay(date) {
   const seconds = date.split('T')[1]
   const dateObj = new Date(seconds * 1000)
