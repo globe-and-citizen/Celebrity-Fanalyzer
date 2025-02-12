@@ -273,45 +273,7 @@ export const useUserStore = defineStore('user', {
       } finally {
         this._isLoading = false
       }
-    }
-    // async deleteUser(uid) {
-    //   this._isLoading = true;
-    //   try {
-    //     // Delete from Firestore
-    //     await deleteDoc(doc(db, 'users', uid));
-
-    //     // Delete from Firebase Authentication
-    //     const userAuth = getAuth();
-    //     const currentUser = userAuth.currentUser;
-
-    //     if (currentUser?.uid === uid) {
-    //       // If the user to delete is the currently authenticated user
-    //       await signOut(userAuth);
-    //       await authDeleteUser(currentUser);
-    //     } else {
-    //       // For deleting other users, this requires Firebase Admin privileges
-    //       throw new Error(
-    //         'Deleting a user from Firebase Authentication by UID requires Firebase Admin privileges.'
-    //       );
-    //     }
-
-    //     Notify.create({
-    //       color: 'positive',
-    //       message: 'User deleted successfully',
-    //     });
-
-    //     // Remove the user from the local state
-    //     this._users = this._users.filter((user) => user.uid !== uid);
-    //   } catch (error) {
-    //     console.error('Error deleting user: ', error);
-    //     Notify.create({
-    //       color: 'negative',
-    //       message: 'Error deleting user. Please try again.',
-    //     });
-    //   } finally {
-    //     this._isLoading = false;
-    //   }
-    // }
+    },
 
     // async addAllUsers(users) {
     //   await fetch(${baseURL}/add-all-users, {
@@ -329,5 +291,44 @@ export const useUserStore = defineStore('user', {
     //   })
     //   this._statsUsers = await allUsers.json()
     // }
+
+    async deleteOwnAccount() {
+      this._isLoading = true
+      try {
+        const currentUser = getAuth().currentUser
+        if (!currentUser) {
+          throw new Error('User is not authenticated.')
+        }
+
+        const userDocRef = doc(db, 'users', currentUser.uid)
+        await deleteDoc(userDocRef)
+
+        await currentUser.delete()
+
+        Notify.create({
+          color: 'positive',
+          message: 'Your account has been deleted successfully.'
+        })
+
+        this.$reset()
+        LocalStorage.remove('user')
+      } catch (error) {
+        console.error('Error deleting account:', error)
+
+        if (error.code === 'auth/requires-recent-login') {
+          Notify.create({
+            color: 'negative',
+            message: 'Please log in again to delete your account.'
+          })
+        } else {
+          Notify.create({
+            color: 'negative',
+            message: 'Failed to delete your account. Please try again later.'
+          })
+        }
+      } finally {
+        this._isLoading = false
+      }
+    }
   }
 })
