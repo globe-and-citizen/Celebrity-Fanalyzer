@@ -22,6 +22,7 @@
               <q-btn
                 v-if="user[socialNetwork.name]"
                 flat
+                :data-test="socialNetwork.name + '-btn'"
                 :href="normalizeRedirectUrl(user[socialNetwork.name], socialNetwork.link)"
                 :icon="`img:/icons/${socialNetwork.name}.svg`"
                 round
