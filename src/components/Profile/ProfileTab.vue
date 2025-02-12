@@ -89,6 +89,7 @@
       :key="network.name"
       :label="capitalize(network.name)"
       :placeholder="network.link"
+      :data-test="'input-' + network.name"
       :model-value="user[network.name]"
       @update:model-value="(val) => (user[network.name] = val.replace(/\s+/g, ''))"
     />
