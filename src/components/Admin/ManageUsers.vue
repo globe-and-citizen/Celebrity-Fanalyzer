@@ -36,7 +36,7 @@
       <q-checkbox v-if="scope.row.role !== 'Admin'" v-model="scope.selected" />
     </template>
     <template v-slot:body-cell-role="props">
-      <q-td>
+      <q-td data-test="role-select">
         <q-select borderless dense :options="options" v-model="props.row.role" @update:model-value="userStore.updateRole(props.row)" />
       </q-td>
     </template>
