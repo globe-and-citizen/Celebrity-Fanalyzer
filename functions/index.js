@@ -112,16 +112,7 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be signed in.')
   }
-
-  const requesterUid = context.auth.uid
   const { uid } = data
-
-  // Optional: Check if the requester is an admin (if needed)
-  const userRecord = await admin.auth().getUser(requesterUid)
-  if (!userRecord.customClaims?.admin) {
-    throw new functions.https.HttpsError('permission-denied', 'Only admins can delete users.')
-  }
-
   try {
     await admin.auth().deleteUser(uid)
     await admin.firestore().collection('users').doc(uid).delete()
@@ -130,8 +121,3 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('internal', 'Failed to delete user', error.message)
   }
 })
-
-// const functions = require('firebase-functions');
-// const admin = require('firebase-admin');
-
-// admin.initializeApp();
