@@ -120,6 +120,7 @@
               v-model:arts="entry.showcase.arts"
               v-model:artist="entry.showcase.artist"
               @updateRecentUploads="updateRecentUploadsRef"
+              @updateRecentArtistImage="updateRecentArtistImageRef"
             />
           </q-step>
 
@@ -130,7 +131,15 @@
                 <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
               </template>
               <template v-else>
-                <q-btn flat rounded label="Cancel" @click="handleDeleteImagesOnCancel" v-close-popup :disable="promptStore.isLoading" />
+                <q-btn
+                  flat
+                  rounded
+                  label="Cancel"
+                  @click="handleDeleteImagesOnCancel"
+                  v-close-popup
+                  :disable="promptStore.isLoading"
+                  data-test="cancel-button"
+                />
                 <q-btn
                   color="primary"
                   data-test="button-submit"
@@ -203,6 +212,7 @@ const openCamera = ref(false)
 const todayDate = new Date().toISOString().replace(/[.:-]/g, '')
 const uploadedImages = ref([])
 const recentUploadsRef = ref([])
+const recentArtistImage = ref('')
 
 watch(
   () => entry.showcase.arts,
@@ -337,6 +347,11 @@ function captureCamera(imageBlob) {
 }
 
 function handleDeleteImagesOnCancel() {
+  if (!!recentArtistImage.value.length) {
+    storageStore.deleteFile(recentArtistImage.value)
+    entry.showcase.artist.photo = null
+  }
+
   storageStore.deleteMultipleFiles(entry.showcase.arts.length ? recentUploadsRef.value : entry.showcase.arts)
   entry.showcase.arts = entry.showcase.arts.filter((item) => {
     return !recentUploadsRef.value.includes(item)
@@ -345,5 +360,8 @@ function handleDeleteImagesOnCancel() {
 
 function updateRecentUploadsRef(updatedArts) {
   recentUploadsRef.value.push(updatedArts)
+}
+function updateRecentArtistImageRef(artistImage) {
+  recentArtistImage.value = artistImage
 }
 </script>
