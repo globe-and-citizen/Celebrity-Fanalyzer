@@ -153,7 +153,7 @@ export const usePromptStore = defineStore('prompts', {
         let queryRef = collection(db, 'prompts')
         queryRef = query(
           queryRef,
-          where('', '==', null),
+          where('hasWinner', '==', null),
           where('escrowId', '!=', null),
           where('publicationDate', '<=', formattedDate),
           where('endDate', '>=', formattedDate)
