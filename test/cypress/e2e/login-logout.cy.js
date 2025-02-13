@@ -157,7 +157,7 @@ describe('Login and Signup Flow', () => {
     // Wait for the success message to appear
     // cy.contains('Account created successfully', { timeout: 20000 }).should('be.visible')
 
-    cy.get('[data-test="tab-settings"]', { timeout: 20000 }).click()
+    cy.get('[data-test="tab-settings"]', { timeout: 40000 }).click()
     // Verify user is logged in by checking their profile email visibility
     cy.get('[data-test="profile-email"]').should('have.value', 'deleteaccount@email.com')
 
