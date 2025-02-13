@@ -5,8 +5,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  getAuth,
-  deleteUser as authDeleteUser
+  getAuth
 } from 'firebase/auth'
 import { collection, doc, deleteDoc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
@@ -225,30 +224,6 @@ export const useUserStore = defineStore('user', {
 
     setProfileTab(tab) {
       this.$patch({ _profileTab: tab })
-    },
-
-    async deleteUser(uid) {
-      this._isLoading = true
-      try {
-        await deleteDoc(doc(db, 'users', uid))
-
-        getAuth()
-        await authDeleteUser(uid)
-
-        Notify.create({
-          color: 'positive',
-          message: 'User deleted successfully'
-        })
-        this._users = this._users.filter((user) => user.uid !== uid)
-      } catch (error) {
-        console.error('Error deleting user: ', error)
-        Notify.create({
-          color: 'negative',
-          message: 'Error deleting user. Please try again.'
-        })
-      } finally {
-        this._isLoading = false
-      }
     },
 
     async deleteUser(uid) {

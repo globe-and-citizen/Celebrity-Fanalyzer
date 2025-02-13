@@ -87,19 +87,19 @@ describe('Login and Signup Flow', () => {
     cy.contains('This email does not exist').should('be.visible')
   })
 
-  // it('should reset password from the dialog', () => {
-  //   // Test reset password dialog with a valid email
-  //   // Switches to "Sign In" tab
-  //   cy.get('[data-test="signin-tab"]').click()
-  //   // Opens the reset password dialog
-  //   cy.get('[data-test="forgot-password-button"]').click()
-  //   // Inputs a valid email
-  //   cy.get('[data-test="reset-email-field"]').type('test@test.com')
-  //   // Clicks the "Ok" button
-  //   cy.get('button').contains('Ok').click()
-  //   // Verifies success message
-  //   cy.contains('Password reset link sent. Please check your email.').should('be.visible')
-  // })
+  it('should reset password from the dialog', () => {
+    // Test reset password dialog with a valid email
+    // Switches to "Sign In" tab
+    cy.get('[data-test="signin-tab"]').click()
+    // Opens the reset password dialog
+    cy.get('[data-test="forgot-password-button"]').click()
+    // Inputs a valid email
+    cy.get('[data-test="reset-email-field"]').type('test@test.com')
+    // Clicks the "Ok" button
+    cy.get('button').contains('Ok').click()
+    // Verifies success message
+    cy.contains('Password reset link sent. Please check your email.').should('be.visible')
+  })
 
   it('should validate fields during Sign Up', () => {
     // Switch to Sign Up tab
