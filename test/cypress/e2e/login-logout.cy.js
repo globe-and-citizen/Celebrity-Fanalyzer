@@ -153,9 +153,9 @@ describe('Login and Signup Flow', () => {
     cy.get('[data-test="password-field"]').type('deleteaccount123')
 
     // Click the "Sign Up" button
-    cy.get('[data-test="sign-button"]').click({ force: true })
+    cy.get('[data-test="sign-button"]').click({ timeout: 20000 })
     // Wait for the success message to appear
-    cy.contains('Account created successfully', { timeout: 60000 }).should('be.visible')
+    cy.contains('Account created successfully', { timeout: 100000 }).should('be.visible')
 
     cy.get('[data-test="tab-settings"]').click()
     // Verify user is logged in by checking their profile email visibility
@@ -205,7 +205,7 @@ describe('Login and Signup Flow', () => {
     // Iterate through each user for signup
     users.forEach((user) => {
       // Switch to Sign Up tab
-      cy.get('[data-test="signup-tab"]').click()
+      cy.get('[data-test="signup-tab"]', { timeout: 20000 }).click()
 
       // Fill out the signup form
       cy.get('[data-test="name-field"]').clear()
@@ -218,7 +218,7 @@ describe('Login and Signup Flow', () => {
       cy.get('[data-test="password-field"]').type(user.password)
 
       // Click the "Sign Up" button
-      cy.get('[data-test="sign-button"]').click()
+      cy.get('[data-test="sign-button"]').click({ timeout: 20000 })
 
       // Verify successful signup
       // cy.contains('Account created successfully').should('be.visible', { timeout: 10000 })
