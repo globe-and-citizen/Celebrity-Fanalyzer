@@ -157,10 +157,18 @@ describe('Login and Signup Flow', () => {
 
     // Click the "Sign Up" button
     cy.get('[data-test="sign-button"]').click()
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(40000)
     // Wait for the success message to appear
     // cy.get('.q-notification').find('.q-notification__message').should('contain', 'Account created successfully', { timeout: 50000 })
-    cy.get('.q-notification__message', { timeout: 200000 }).should('contain', 'Account created successfully')
-
+    cy.get('.q-notification__message').should('contain', 'Account created successfully', { timeout: 10000 })
+    //    cy.get('.q-notification__message', { timeout: 10000 }).should('exist').then(($notification) => {
+    //   if ($notification.length > 0) {
+    //     cy.wrap($notification).should('contain', 'Account created successfully')
+    //   } else {
+    //     cy.log('No success notification appeared, skipping this step.')
+    //   }
+    // })
     cy.get('[data-test="tab-settings"]').click()
     // Verify user is logged in by checking their profile email visibility
     cy.get('[data-test="profile-email"]').should('have.value', 'deleteaccount@email.com')
