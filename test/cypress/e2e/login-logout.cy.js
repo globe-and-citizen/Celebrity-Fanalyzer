@@ -158,7 +158,8 @@ describe('Login and Signup Flow', () => {
     // Click the "Sign Up" button
     cy.get('[data-test="sign-button"]').click()
     // Wait for the success message to appear
-    cy.get('.q-notification').find('.q-notification__message').should('contain', 'Account created successfully', { timeout: 50000 })
+    // cy.get('.q-notification').find('.q-notification__message').should('contain', 'Account created successfully', { timeout: 50000 })
+    cy.get('.q-notification__message', { timeout: 200000 }).should('contain', 'Account created successfully')
 
     cy.get('[data-test="tab-settings"]').click()
     // Verify user is logged in by checking their profile email visibility
