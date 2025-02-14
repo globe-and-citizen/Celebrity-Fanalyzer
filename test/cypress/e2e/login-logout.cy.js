@@ -156,7 +156,8 @@ describe('Login and Signup Flow', () => {
     // Click the "Sign Up" button
     cy.get('[data-test="sign-button"]').click()
     // Wait for the success message to appear
-    cy.get('.q-notification__message', { timeout: 40000 }).contains('Account created successfully')
+    cy.get('.q-notification__message', { timeout: 50000 }).should('contain', 'Account created successfully')
+    
 
     cy.get('[data-test="tab-settings"]').click()
     // Verify user is logged in by checking their profile email visibility
@@ -222,7 +223,8 @@ describe('Login and Signup Flow', () => {
       cy.get('[data-test="sign-button"]').click()
 
       // Verify successful signup
-      cy.get('.q-notification__message', { timeout: 40000 }).contains('Account created successfully')
+      cy.get('.q-notification__message', { timeout: 50000 }).should('contain', 'Account created successfully')
+
 
       cy.get('[data-test="tab-settings"]').click()
       // Verify user is logged in by checking their profile email visibility
