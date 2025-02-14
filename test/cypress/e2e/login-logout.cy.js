@@ -145,19 +145,20 @@ describe('Login and Signup Flow', () => {
 
   // locally working successfully
   it('should properly handle the delete account process', () => {
+    cy.visit('/profile')
+
     cy.get('[data-test="signup-tab"]').click()
 
     // Fill out the signup form
-    cy.get('[data-test="name-field"]').type('delete account')
     cy.get('[data-test="username-field"]').type('deleteaccount')
+    cy.get('[data-test="name-field"]').type('delete account')
     cy.get('[data-test="email-field"]').type('deleteaccount@email.com')
     cy.get('[data-test="password-field"]').type('deleteaccount123')
 
     // Click the "Sign Up" button
     cy.get('[data-test="sign-button"]').click()
     // Wait for the success message to appear
-    cy.get('.q-notification__message', { timeout: 50000 }).should('contain', 'Account created successfully')
-    
+    cy.get('.q-notification').find('.q-notification__message').should('contain', 'Account created successfully', { timeout: 50000 })
 
     cy.get('[data-test="tab-settings"]').click()
     // Verify user is logged in by checking their profile email visibility
@@ -224,7 +225,6 @@ describe('Login and Signup Flow', () => {
 
       // Verify successful signup
       cy.get('.q-notification__message', { timeout: 50000 }).should('contain', 'Account created successfully')
-
 
       cy.get('[data-test="tab-settings"]').click()
       // Verify user is logged in by checking their profile email visibility
