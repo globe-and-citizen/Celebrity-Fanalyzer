@@ -306,6 +306,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it("Should navigate to the author's profile page", () => {
+    cy.wait(2000)
+
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
 
     const authorUid = 'NQFZGO9mCYYyJUMdihfvYqy7df43'
@@ -319,6 +321,8 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should navigate to the prompt page when the title is clicked', () => {
+    cy.wait(2000)
+
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
 
     const promptSlug = '/hello-world-'
@@ -371,7 +375,7 @@ describe('Admin Prompt & Entry', () => {
 
   it("Should navigate to the entry author's profile page", () => {
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
-    cy.wait(5000)
+    cy.wait(2000)
     // Expand the table row if necessary
     cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
 
@@ -411,7 +415,6 @@ describe('Admin Prompt & Entry', () => {
   it('should test entry page tabs, comments interaction, edit dialog', () => {
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
     cy.wait(5000)
-
     // Expand the table row if necessary
     cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`).click()
 
@@ -490,6 +493,7 @@ describe('Admin Prompt & Entry', () => {
     // Get the second button (edit Prompt) and click it
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
     cy.wait(5000)
+
     // Get the edit button and click it
     cy.get(`[data-test="item-card"] > .text-right > [data-test="button-edit"]`, { timeout: 20000 }).click()
 
