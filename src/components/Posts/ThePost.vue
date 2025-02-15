@@ -85,6 +85,7 @@
             "
             :label="likeStore.getLikes?.length || 0"
             rounded
+            :loading="likeStore.getIsLoading"
             size="0.75rem"
             @click="like()"
           >
@@ -101,6 +102,7 @@
             "
             :label="likeStore.getDislikes?.length || 0"
             rounded
+            :loading="likeStore.getIsLoading"
             size="0.75rem"
             @click="dislike()"
           >
@@ -110,14 +112,19 @@
             data-test="comments"
             flat
             icon="chat_bubble_outline"
-            :label="commentStore.getCommentsCount"
+            :label="post.totalComments?.length || 0"
             rounded
             size="0.75rem"
             @click="$emit('clickComments')"
           >
             <q-tooltip anchor="bottom middle" self="center middle">Comments</q-tooltip>
           </q-btn>
-          <ShareComponent :label="shareStore.getShares ? shareStore.getShares : 0" :disable="shareStore.isLoading" @share="share($event)" />
+          <ShareComponent
+            :label="shareStore.getShares ? shareStore.getShares : 0"
+            :disable="shareStore.isLoading"
+            @share="share($event)"
+            :loading="shareStore.isLoading"
+          />
           <q-btn
             v-if="isAdd && post?.productLink"
             flat
@@ -168,7 +175,7 @@ import {
   useVisitorStore
 } from 'src/stores'
 import { dayMonthYear, formatMonthYear } from 'src/utils/date'
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
@@ -188,7 +195,7 @@ const userStore = useUserStore()
 const visitorStore = useVisitorStore()
 const statsStore = useStatStore()
 const promptStore = usePromptStore()
-
+console.log(props.post.totalComments)
 // const userRating = ref(0)
 const isPrompt = !!props.post?.entries
 const isEntry = props.post?.prompt
@@ -198,10 +205,10 @@ const userLocation = userStore.getUser?.location || userStore.getUserLocation
 
 onMounted(async () => {
   await statsStore.addUser(userId, userLocation)
-
-  if (props.post?.id) {
-    await commentStore.getTotalComments(props.collectionName, props.post?.id)
-  }
+  //
+  // if (props.post?.id) {
+  //   await commentStore.getTotalComments(props.collectionName, props.post?.id)
+  // }
   if (!props.isAdd || props.post?.status === 'Active') {
     await visitorStore.addVisitor(props.collectionName, props.post.id).catch((error) => errorStore.throwError(error))
   }
@@ -302,6 +309,12 @@ function manageEdit() {
 //     userRating.value = (statsStore.getUserRate / 100) * 5
 //   }
 // })
+
+onUnmounted(() => {
+  likeStore.resetLikesDislikes()
+  commentStore.resetComments()
+  shareStore.resetShares()
+})
 </script>
 
 <style scoped lang="scss">

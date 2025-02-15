@@ -6,6 +6,7 @@
     icon="share"
     :label="label"
     rounded
+    :loading="loading"
     :dense="dense"
     size="0.75rem"
     @click="onShare()"
@@ -20,7 +21,7 @@ import { copyToClipboard, useQuasar } from 'quasar'
 const $q = useQuasar()
 
 const emit = defineEmits(['share'])
-const props = defineProps(['label', 'disable', 'link', 'dense'])
+const props = defineProps(['label', 'disable', 'link', 'dense', 'loading'])
 
 function onShare() {
   $q.bottomSheet({
