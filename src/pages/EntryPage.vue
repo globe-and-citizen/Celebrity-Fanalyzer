@@ -69,10 +69,17 @@ const prompt = ref({})
 let entryId
 let entryAuthor
 const entry = computed(() => {
-  return entryStore.getEntries?.find(
-    (entry) =>
-      router.currentRoute.value.href === entry.slug ||
-      router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+  return (
+    entryStore.getEntries?.find(
+      (entry) =>
+        router.currentRoute.value.href === entry.slug ||
+        router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+    ) ||
+    entryStore.getUserRelatedEntries.find(
+      (entry) =>
+        router.currentRoute.value.href === entry.slug ||
+        router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+    )
   )
 })
 watchEffect(async () => {

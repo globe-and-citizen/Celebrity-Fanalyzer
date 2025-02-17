@@ -183,7 +183,8 @@ const promptOptions = computed(
       ?.map((prompt) => ({
         label: `${prompt.date || prompt.publicationDate} – ${prompt.title}`,
         value: prompt.id,
-        escrowId: prompt.escrowId
+        escrowId: prompt.escrowId,
+        date: prompt.date || prompt.creationDate
       }))
       .reverse() || []
 )
@@ -260,7 +261,7 @@ async function onSubmit() {
     $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
-  entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+  entry.slug = `/${entry.prompt.date.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
   if (Object.keys(imageModel.value ?? {}).length || imageModel.value?.type) {
