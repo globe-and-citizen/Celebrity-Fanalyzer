@@ -33,7 +33,7 @@
           <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
         </div>
         <!-- v-if="item.winnerAmount" -->
-        <div class="winner-amount-wrapper">
+        <div class="winner-amount-wrapper" v-if="item.rewardAmount">
           <div class="winner-amount">
             <span class="trophy-icon">🏆</span>
             <span>{{ item?.rewardAmount ?? 0 }}$</span>
