@@ -106,7 +106,7 @@
             icon="add_a_photo"
             class="self-center col"
             label="Capture Image"
-            @click="(openCamera = true)"
+            @click="openCamera = true"
           ></q-btn>
         </div>
         <div class="text-center">
@@ -180,7 +180,11 @@ const openCamera = ref(false)
 const promptOptions = computed(
   () =>
     promptStore._activePrompts
-      ?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
+      ?.map((prompt) => ({
+        label: `${prompt.date || prompt.publicationDate} – ${prompt.title}`,
+        value: prompt.date,
+        escrowId: prompt.escrowId
+      }))
       .reverse() || []
 )
 
