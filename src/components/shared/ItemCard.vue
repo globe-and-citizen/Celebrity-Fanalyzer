@@ -20,8 +20,8 @@
         </h2>
 
         <div v-if="item.description" class="q-my-none text-body2 text-secondary">
-          <p v-if="item.publicationDate">
-            {{ item?.publicationDate ? formatPublicationDate(item?.publicationDate) : '' }}&nbsp;•&nbsp;
+          <p v-if="item.publicationDate && item.endDate">
+            {{ `${formatPublicationDate(item.publicationDate)} - ${formatPublicationDate(item.endDate)}` }}&nbsp;•&nbsp;
             {{ giveReadingTime(item.description) }} min read
           </p>
           <p v-else>
