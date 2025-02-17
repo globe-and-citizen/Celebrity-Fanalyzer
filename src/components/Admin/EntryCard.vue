@@ -182,7 +182,7 @@ const promptOptions = computed(
     promptStore._activePrompts
       ?.map((prompt) => ({
         label: `${prompt.date || prompt.publicationDate} – ${prompt.title}`,
-        value: prompt.date,
+        value: prompt.id,
         escrowId: prompt.escrowId
       }))
       .reverse() || []
@@ -194,7 +194,7 @@ onMounted(() => {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
     entry.image = props.image
-    entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
+    entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.id }
     entry.title = props.title
   } else if (props.selectedPromptDate) {
     entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)

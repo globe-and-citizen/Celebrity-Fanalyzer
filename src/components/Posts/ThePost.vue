@@ -22,7 +22,7 @@
       </div>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
-          <p class="text-body2">{{ `Posted on ${post.publicationDate || post.date}` }}</p>
+          <p class="text-body2">{{ `Published on ${post.publicationDate || post.date}` }}</p>
           <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
               {{ category }}

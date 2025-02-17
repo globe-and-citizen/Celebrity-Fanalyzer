@@ -115,6 +115,20 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "author",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "prompt",
           "order": "ASCENDING"
         },
