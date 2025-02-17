@@ -140,7 +140,7 @@
   <!-- <q-separator color="primary" /> -->
 
   <TableEntry
-    v-if="!entryStore.isLoading && !userStore.isEditorOrAbove"
+    v-if="!userStore.isEditorOrAbove"
     :filter="filter"
     :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
     :loaded-entries="entryStore._loadedEntries"
@@ -149,7 +149,14 @@
   />
 
   <div class="row justify-center q-mr-md float-right">
-    <q-btn v-if="!entryStore.isLoading && !userStore.isEditorOrAbove" label="Load More" color="primary" data-test="load-more-btn" />
+    <q-btn
+      v-if="!userStore.isEditorOrAbove && entryStore.showLastVisible"
+      label="Load More"
+      color="primary"
+      data-test="load-more-btn"
+      :loading="entryStore.isLoading"
+      @click="loadMoreEntries"
+    />
   </div>
 
   <q-dialog v-model="deleteDialog.show">
@@ -226,7 +233,7 @@ const proceedDepositFundDialog = ref({})
 onMounted(async () => {
   entryStore._loadedEntries = []
   if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts(false, 5, true)
-  await entryStore.fetchUserRelatedEntries(userStore.getUserId)
+  await entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()
 })
@@ -278,6 +285,9 @@ const loadMorePrompts = async () => {
       await errorStore.throwError(error, 'Error loading more prompts')
     }
   }
+}
+function loadMoreEntries() {
+  entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
