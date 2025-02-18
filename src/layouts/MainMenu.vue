@@ -107,6 +107,11 @@ onMounted(async () => {
   if (params.id) {
     entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
   }
+  if (params.id) {
+    entriesStore
+      .fetchEntryBySlug(`/${params.year}/${params.month}/${params.day}/${params.id}`, true)
+      .catch((error) => errorStore.throwError(error))
+  }
 
   // if (href === '/month') {
   //   await promptStore.fetchMonthsPrompt()

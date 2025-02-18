@@ -195,7 +195,7 @@ onMounted(() => {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
     entry.image = props.image
-    entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.id }
+    entry.prompt = { label: `${props.prompt.date || props.prompt.publicationDate} – ${props.prompt.title}`, value: props.prompt.id }
     entry.title = props.title
   } else if (props.selectedPromptDate) {
     entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
@@ -261,7 +261,8 @@ async function onSubmit() {
     $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
-  entry.slug = `/${entry.prompt.date.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+  const date = props.id ? props.prompt.date || props.prompt.publicationDate : entry.prompt.date
+  entry.slug = `/${date.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
   if (Object.keys(imageModel.value ?? {}).length || imageModel.value?.type) {
