@@ -190,7 +190,7 @@ export const useEntryStore = defineStore('entries', {
         this._isLoading = false
         this._entries = [entry]
       } catch (e) {
-        // await promptStore.redirect()
+        await promptStore.redirect()
         console.error('Unable to fetch entry', e)
       }
     },

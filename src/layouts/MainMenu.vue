@@ -104,13 +104,12 @@ onMounted(async () => {
     promptStore.fetchPromptBySlug(`${params.year}-${params.month}`).catch((error) => errorStore.throwError(error))
   }
 
-  if (params.id) {
-    entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
-  }
-  if (params.id) {
+  if (params.id && params.day) {
     entriesStore
       .fetchEntryBySlug(`/${params.year}/${params.month}/${params.day}/${params.id}`, true)
       .catch((error) => errorStore.throwError(error))
+  } else if (params.id) {
+    entriesStore.fetchEntryBySlug(`/${params.year}/${params.month}/${params.id}`).catch((error) => errorStore.throwError(error))
   }
 
   // if (href === '/month') {
