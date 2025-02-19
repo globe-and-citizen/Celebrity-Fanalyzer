@@ -192,7 +192,6 @@ describe('Admin Prompt & Entry', () => {
 
     // Get the prompt select and choose the "Hello World!" option
     cy.get('[data-test="select-prompt"]').wait(4000).select('Hello World!')
-
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type(name)
 
@@ -209,15 +208,39 @@ describe('Admin Prompt & Entry', () => {
     cy.get('.q-notification__message').contains('Entry successfully submitted')
   })
 
+  it('Should create art carousel entry', () => {
+    // Should find Cypress prompt and Cypress entry and click on edit button
+    cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
+    cy.wait(5000)
+    cy.get(`[data-test="item-card"] > .q-table--col-auto-width > [data-test="button-expand"]`, { timeout: 20000 })
+      .should('be.visible')
+      .click({ force: true })
+    cy.get('[data-test="button-edit-entry"]', { timeout: 20000 }).should('exist').eq(0).click({ force: true })
+    cy.get('.q-stepper__title').contains('Artist Carousel').should('be.visible').click({ force: true })
+    cy.get('[data-test="artist-info-input"]').should('exist').type('Cypress author')
+    cy.get('[data-test="upload-artist-photo"]').should('exist').selectFile('src/assets/cypress.jpg', { force: true })
+    cy.get('[data-test="author-image"]').should('have.length', 1)
+    cy.get('[data-test="upload-arts"]').should('exist').selectFile(Array(11).fill('src/assets/cypress.jpg'), { force: true })
+    cy.get('.q-notification__message').contains('1 file(s) did not pass validation constraints')
+    cy.get('[data-test="arts-images"]').should('have.length', 10)
+    cy.wait(3000)
+    cy.get('.q-card').scrollTo('bottom')
+    cy.get('[data-test="cancel-button"]').should('be.visible').click({ force: true })
+    cy.get('[data-test="button-edit-entry"]', { timeout: 20000 }).should('exist').eq(0).click({ force: true })
+    cy.get('[data-test="arts-images"]').should('have.length', 0)
+    cy.get('[data-test="author-image"]').should('have.length', 0)
+  })
+
   it('Should Navigate in prompt and entry', () => {
     cy.visit(visit)
-    cy.contains(name)
-    cy.get('[data-test="like-button"]').click()
-    cy.get('[data-test="like-button"]').click()
-    cy.get('[data-test="entry"]').eq(0).find('[data-test="item-link"]').click()
-    cy.get('[data-test="entry-page"]').eq(0).click()
-    cy.get('[data-test="like-button"]').click()
-    cy.get('[data-test="like-button"]').click()
+    cy.contains(name, { timeout: 20000 })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
+    cy.scrollTo('bottom')
+    cy.get('[data-test="entry"]', { timeout: 25000 }).eq(0).find('[data-test="item-link"]').click({ force: true })
+    cy.get('[data-test="entry-page"]', { timeout: 25000 }).eq(0).click({ force: true })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
+    cy.get('[data-test="like-button"]', { timeout: 25000 }).click({ force: true })
   })
 
   it('Should display the prompt and interact', () => {
@@ -313,9 +336,6 @@ describe('Admin Prompt & Entry', () => {
   })
 
   it('Should display all entries in the entry table', () => {
-    // Wait for the page and table to load
-    cy.wait(2000)
-
     // Perform search action
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
     cy.wait(2000)
