@@ -114,6 +114,7 @@
             v-else
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
+            chilledEntryTable
             :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"
             @delete-entry="handleDeleteEntry"

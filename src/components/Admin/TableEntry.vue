@@ -2,14 +2,14 @@
   <q-table
     flat
     :hide-bottom="!!rows.length"
-    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove && !chilledEntryTable }"
     :columns="!!rows.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
-    :hide-header="userStore.isEditorOrAbove"
+    :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
     :pagination="pagination"
     :rows="rows"
-    :title="!userStore.isEditorOrAbove ? 'My Entries' : ''"
+    :title="!userStore.isEditorOrAbove && !chilledEntryTable ? 'My Entries' : ''"
     no-data-label="No entries found."
     :loading="entryStore.isLoading || promptStore.isLoading"
   >
@@ -221,6 +221,7 @@ const props = defineProps({
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
+  chilledEntryTable: { type: Boolean, required: false, default: false },
   maxWidth: { type: Number, required: false }
 })
 
