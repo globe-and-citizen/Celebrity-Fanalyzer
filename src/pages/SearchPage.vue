@@ -97,12 +97,19 @@ const today = new Date()
 
 const computedPromptsByStatus = computed(() => {
   let filteredPrompts = promptStore.getPrompts || []
+
+  if (status.value === 'Top') {
+    filteredPrompts = filteredPrompts.filter((prompt) => prompt.rewardAmount).sort((a, b) => (b.rewardAmount || 0) - (a.rewardAmount || 0))
+  }
+
   if (status.value === 'Active' || promptStore.filterOngoingCompetitions) {
-    filteredPrompts = filteredPrompts.filter((prompt) => {
-      const publicationDate = new Date(prompt.publicationDate)
-      const endDate = new Date(prompt.endDate)
-      return prompt.escrowId && publicationDate <= today && endDate >= today
-    })
+    filteredPrompts = filteredPrompts
+      .filter((prompt) => {
+        const publicationDate = new Date(prompt.publicationDate)
+        const endDate = new Date(prompt.endDate)
+        return prompt.escrowId && publicationDate <= today && endDate >= today
+      })
+      .sort((a, b) => new Date(a.publicationDate) - new Date(b.publicationDate))
   }
 
   if (status.value === 'Upcoming') {
@@ -123,7 +130,7 @@ const computedPromptsByStatus = computed(() => {
         const endDate = new Date(prompt.endDate)
         return prompt.escrowId && publicationDate <= today && endDate >= today
       })
-      .sort((a, b) => new Date(a.publicationDate) - new Date(b.publicationDate))
+      .sort((a, b) => new Date(b.publicationDate) - new Date(a.publicationDate))
   }
 
   return filteredPrompts
