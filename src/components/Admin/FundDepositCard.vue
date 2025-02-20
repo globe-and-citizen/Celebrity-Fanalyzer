@@ -84,7 +84,7 @@ async function onSubmit(event) {
           .then(() => {
             $q.notify({ type: 'info', message: 'Fund deposited successfully' })
             emit('paymentStatus', 'Payment successful')
-            emit('winnerReward', maticAmount.value)
+            emit('winnerReward', usdAmount.value)
           })
           .catch((error) => {
             errorStore.throwError(error, 'fund deposit failed on prompt edition')

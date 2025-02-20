@@ -377,7 +377,7 @@ async function onProceedDepositFundDialog() {
   } else {
     proceedDepositFundDialog.value.show = true
     proceedDepositFundDialog.value.walletAddress = customWeb3modal.getAddress()
-    proceedDepositFundDialog.value.prompt = null
+    proceedDepositFundDialog.value.prompt = prompt
   }
 }
 
