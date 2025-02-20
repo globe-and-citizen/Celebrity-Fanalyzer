@@ -204,6 +204,7 @@
               <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
               <q-btn
                 class="deposite-button"
+                :disable="!!prompt.rewardAmount"
                 :color="
                   prompt.paymentStatus === 'Pay later' ? 'orange' : prompt.paymentStatus === 'Payment successful' ? 'positive' : 'secondary'
                 "
@@ -211,7 +212,7 @@
                   prompt.paymentStatus === 'Pay later'
                     ? 'Pay later'
                     : prompt.paymentStatus === 'Payment successful'
-                      ? 'Funds Deposited'
+                      ? `${prompt.rewardAmount}$ Deposited`
                       : 'Deposit Funds'
                 "
                 :icon="
@@ -343,7 +344,8 @@ const prompt = reactive({
   publicationDate: '',
   endDate: '',
   creationDate: new Date().toISOString().split('T')[0],
-  paymentStatus: ''
+  paymentStatus: '',
+  rewardAmount: null
 })
 
 const proceedDepositFundDialog = ref({})
@@ -394,6 +396,7 @@ watchEffect(() => {
     prompt.showcase = props.showcase
     prompt.title = props.title
     prompt.paymentStatus = props.paymentStatus
+    prompt.rewardAmount = props.rewardAmount
     if (props.image) {
       imagePreview.value = props.image
     }
