@@ -34,7 +34,15 @@
             </q-badge>
           </div>
         </div>
-        <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
+        <div class="flex justify-between">
+          <h1 class="q-mt-none text-bold text-h5">{{ post?.title }}</h1>
+
+          <div v-if="isPrompt && post.rewardAmount" class="reward-container">
+            <span class="trophy-icon">🏆</span>
+            <span class="reward-amount">{{ post?.rewardAmount ?? 0 }}$</span>
+          </div>
+        </div>
+
         <q-separator spaced />
         <section
           v-if="post?.author && !isAdd"
@@ -315,5 +323,33 @@ function manageEdit() {
 
 .margin-bottom {
   margin-bottom: 6rem;
+}
+.reward-container {
+  display: flex;
+  align-items: center;
+  background-color: #f4e9b6;
+  padding: 5px 10px;
+  border-radius: 25px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #f9a826;
+  transition: all 0.3s ease;
+}
+
+.trophy-icon {
+  font-size: 1.2rem;
+  margin-right: 5px;
+  color: #f9a826;
+}
+
+.reward-amount {
+  color: #f9a826;
+  font-size: 1rem;
+}
+
+.reward-container span {
+  display: flex;
+  align-items: center;
 }
 </style>
