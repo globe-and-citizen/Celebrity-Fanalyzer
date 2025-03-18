@@ -21,6 +21,7 @@
         class="flex justify-center q-pa-none cursor-pointer"
         :key="index"
         :name="index"
+        style="max-height: 450px"
       >
         <q-img class="rounded-borders fixed-image" fit="contain" :src="art" @dblclick="openDialog = true">
           <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs">Art Photos</div>
@@ -118,7 +119,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .fixed-image {
-  height: 400px;
+  max-height: 450px;
   width: 100%;
   object-fit: contain;
 }

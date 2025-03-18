@@ -2,14 +2,14 @@
   <q-table
     flat
     :hide-bottom="!!rows.length"
-    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove && !chilledEntryTable }"
     :columns="!!rows.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
-    :hide-header="userStore.isEditorOrAbove"
+    :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
     :pagination="pagination"
     :rows="rows"
-    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+    :title="!userStore.isEditorOrAbove && !chilledEntryTable ? 'My Entries' : ''"
     no-data-label="No entries found."
     data-test="entry-table"
     :loading="entryStore.isLoading || promptStore.isLoading"
@@ -56,14 +56,8 @@
           <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
             <q-btn
               class="payment-buttons"
-              v-if="
-                userStore.isEditorOrAbove &&
-                props.row.isWinner !== true &&
-                _currentPrompt?.isTreated !== true &&
-                _currentPrompt?.hasWinner !== true
-              "
+              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
               color="black"
-              :disable="userStore.getUser.role !== 'Admin'"
               flat
               size="sm"
               icon="toggle_off"
@@ -211,7 +205,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore, useNotificationStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
 import { nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 import EntryCard from './EntryCard.vue'
@@ -228,6 +222,7 @@ const props = defineProps({
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
+  chilledEntryTable: { type: Boolean, required: false, default: false },
   maxWidth: { type: Number, required: false }
 })
 
@@ -264,7 +259,7 @@ const userStore = useUserStore()
 const cryptoTransactions = useCryptoTransactionStore()
 const router = useRouter()
 const shareStore = useShareStore()
-
+const notificationStore = useNotificationStore()
 const columns = [
   {},
   { name: 'created', align: 'left', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
@@ -283,8 +278,10 @@ const displayCrytptoTransactionDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
+  const i = props.id.lastIndexOf('T')
+  const promptId = props.id.slice(0, i)
   entry.value = props
-  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0])
+  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
   entry.value.dialog = true
 }
 
@@ -427,6 +424,13 @@ async function onSelectWinner(entry) {
           .finally(() => {
             selectWinnerDialog.value.show = false
           })
+
+        await notificationStore.notifyWinner(payload.entry.author.uid, {
+          link: '/admin',
+          slug: '/admin',
+          message: `Congratulations! You are selected winner for ${_currentPrompt.value.title} prompt. Click to withdraw the prize from admin panel`,
+          type: 'winner'
+        })
 
         selectWinnerDialog.value.show = false
       } else {
