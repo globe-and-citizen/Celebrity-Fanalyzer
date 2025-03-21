@@ -135,7 +135,7 @@
               mask="#.##"
               fill-mask="0"
               reverse-fill-mask
-              :rules="[() => (usdAmount < 0.01 ? 'Minimum allowed budget is 3 USD' : true)]"
+              :rules="[() => (usdAmount < 3 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
             <q-input

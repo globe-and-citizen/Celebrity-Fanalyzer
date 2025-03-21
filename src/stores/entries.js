@@ -239,7 +239,6 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(payload) {
-      console.log(payload)
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
 
