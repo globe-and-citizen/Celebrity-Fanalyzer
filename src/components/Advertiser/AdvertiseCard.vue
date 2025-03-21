@@ -135,7 +135,7 @@
               mask="#.##"
               fill-mask="0"
               reverse-fill-mask
-              :rules="[() => (usdAmount < 3 ? 'Minimum allowed budget is 3 USD' : true)]"
+              :rules="[() => (usdAmount < 0.01 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
             <q-input
@@ -150,6 +150,7 @@
         </q-step>
         <template v-slot:navigation>
           <q-stepper-navigation class="flex justify-end q-gutter-md">
+            <q-btn flat rounded label="Reset" @click="resetAd" v-if="parsedAd?.title" data-test="reset-button" />
             <q-btn flat rounded label="Cancel" v-close-popup />
             <q-btn
               rounded
@@ -175,7 +176,7 @@
 <script setup>
 import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
-import { useQuasar } from 'quasar'
+import { LocalStorage, useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
@@ -215,6 +216,8 @@ const usdAmount = ref(0)
 const maticRate = ref(0)
 const isEditing = ref(false)
 const editorRef = ref(null)
+const adFromLocalStorage = LocalStorage.getItem('ad')
+const parsedAd = reactive(JSON.parse(adFromLocalStorage) || undefined)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -242,7 +245,20 @@ const advertise = reactive({
 const step = ref(1)
 
 watchEffect(() => {
-  if (props.id) {
+  if (parsedAd && !props.id) {
+    advertise.author = parsedAd.author
+    advertise.categories = parsedAd.categories
+    advertise.date = parsedAd.date
+    advertise.content = parsedAd.content
+    advertise.id = parsedAd.id
+    advertise.title = parsedAd.title
+    advertise.productLink = parsedAd.productLink
+    advertise.publishDate = parsedAd.publishDate
+    advertise.type = parsedAd.type
+    advertise.duration = parsedAd.duration
+    advertise.status = parsedAd.status
+    advertise.contentURL = parsedAd.contentURL ?? ''
+  } else if (props.id) {
     advertise.author = props.author
     advertise.categories = props.categories
     advertise.date = props.date
@@ -359,6 +375,7 @@ async function onSubmit() {
         .finally(() => $q.loading.hide())
     } else {
       //call contract create function
+      // throw new Error('')
       const result = await createAdCampaign({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
         advertise.campaignCode = result.events[0].args.campaignCode
@@ -378,14 +395,38 @@ async function onSubmit() {
         $q.notify({ message: result?.error?.message, type: 'negative' })
         $q.loading.hide()
       }
+
+      if (parsedAd) {
+        LocalStorage.remove('ad')
+      }
     }
     emit('hideDialog')
   } catch (error) {
     $q.notify({ message: 'Advertise submission failed', type: 'negative' })
     errorStore.throwError(error, 'Advertise submission failed')
+    LocalStorage.set('ad', JSON.stringify(advertise))
     emit('hideDialog')
     $q.loading.hide()
   }
   emit('hideDialog')
+}
+
+function resetAd() {
+  LocalStorage.remove('ad')
+  parsedAd.title = ''
+  parsedAd.author = parsedAd.categories = null
+  parsedAd.date = null
+  parsedAd.content = ''
+  parsedAd.id = null
+  parsedAd.title = ''
+  parsedAd.productLink = ''
+  parsedAd.publishDate = null
+  parsedAd.type = null
+  parsedAd.duration = ''
+  parsedAd.status = ''
+  parsedAd.contentURL = ''
+  ;(advertise.budget = props.budget), (advertise.type = props.type)
+
+  $q.notify({ type: 'info', message: 'Prompt has been reset.' })
 }
 </script>

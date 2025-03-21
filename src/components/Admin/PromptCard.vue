@@ -288,6 +288,15 @@
               <q-btn v-if="step > 1" flat rounded @click="$refs.stepper.previous()" label="Back" :disable="promptStore.isLoading" />
 
               <q-btn
+                flat
+                rounded
+                label="Reset"
+                v-if="parsedPrompt?.title"
+                :disable="!parsedPrompt?.title"
+                data-test="button-reset"
+                @click="resetPrompt"
+              />
+              <q-btn
                 v-if="step === 3"
                 color="primary"
                 data-test="button-submit"
@@ -319,7 +328,7 @@
 </template>
 
 <script setup>
-import { useQuasar, date as dateUtils } from 'quasar'
+import { useQuasar, date as dateUtils, LocalStorage } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
 import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
@@ -360,6 +369,7 @@ const prompt = reactive({
   description: '',
   image: '',
   showcase: { arts: [], artist: { info: '', photo: '' } },
+  categories: null,
   title: '',
   publicationDate: '',
   endDate: '',
@@ -374,6 +384,8 @@ const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
+const promptFromLocalStorage = LocalStorage.getItem('prompt')
+const parsedPrompt = reactive(JSON.parse(promptFromLocalStorage) || undefined)
 
 function dateOptions(currentDate, creationDate = prompt.creationDate) {
   const timestamp = dateUtils.startOfDate(creationDate, 'day').getTime()
@@ -403,7 +415,19 @@ async function onProceedDepositFundDialog() {
 }
 
 watchEffect(() => {
-  if (props.id) {
+  if (parsedPrompt && !props.id) {
+    const parsedCategories = parsedPrompt?.categories || []
+    prompt.author = { label: parsedPrompt?.author.label, value: parsedPrompt?.author.value }
+    prompt.categories = [...new Set([...parsedCategories])]
+    prompt.description = parsedPrompt?.description
+    prompt.showcase = parsedPrompt?.showcase
+    prompt.title = parsedPrompt?.title
+    prompt.id = parsedPrompt?.id
+
+    if (parsedPrompt?.image) {
+      imagePreview.value = parsedPrompt?.image
+    }
+  } else if (props.id) {
     prompt.author = { label: props.author.displayName, value: props.author.uid }
     prompt.categories = props.categories
     prompt.creationDate = props.creationDate
@@ -423,6 +447,7 @@ watchEffect(() => {
     const collectionRef = collection(db, 'prompts')
     const docRef = doc(collectionRef)
     prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    prompt.description = ''
     prompt.categories = null
     prompt.id = docRef.id
   }
@@ -438,7 +463,7 @@ onMounted(() => {
 const disablePublicationDate = computed(() => {
   if (!props.id) return false
   const publicationDateData = new Date(props.publicationDate).getTime()
-  return Date.now() >= publicationDateData
+  return parsedPrompt?.publicationDate ?? Date.now() >= publicationDateData
 })
 
 const disableEndDate = computed(() => {
@@ -515,9 +540,15 @@ async function onSubmit() {
       }
     }
 
+    if (parsedPrompt) {
+      LocalStorage.remove('prompt')
+    }
+
     emit('hideDialog', prompt.slug)
   } catch (error) {
+    await storageStore.deleteFile(`images/prompt-${prompt.id}`)
     errorStore.throwError(error, props.id ? 'Prompt edit failed' : 'Prompt submission failed')
+    LocalStorage.set('prompt', JSON.stringify(prompt))
   }
 }
 
@@ -539,7 +570,7 @@ async function updatePaymentDetails(data) {
   prompt.paymentStatus = data.paymentStatus
   prompt.rewardAmount = data.rewardAmount
 
-  onSubmit()
+  await onSubmit()
 }
 
 const isNextStepDisabled = computed(() => {
@@ -553,6 +584,20 @@ const isNextStepDisabled = computed(() => {
     !prompt.endDate
   )
 })
+
+function resetPrompt() {
+  LocalStorage.remove('prompt')
+  parsedPrompt.title = ''
+  parsedPrompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+  parsedPrompt.categories = []
+  parsedPrompt.description = ''
+  parsedPrompt.image = null
+  prompt.showcase = { arts: [], artist: { info: '', photo: '' } }
+  imageModel.value = null
+  imagePreview.value = null
+
+  $q.notify({ type: 'info', message: 'Prompt has been reset.' })
+}
 </script>
 
 <style scoped lang="scss">

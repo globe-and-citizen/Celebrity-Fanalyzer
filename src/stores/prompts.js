@@ -301,6 +301,8 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async addPrompt(payload) {
+      console.log(payload)
+
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()
       const isTester = payload.author.label === 'Cypress Tester'
