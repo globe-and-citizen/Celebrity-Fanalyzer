@@ -51,9 +51,10 @@
             <q-field
               counter
               label="Description"
-              maxlength="400"
+              maxlength="6000"
               v-model="advertise.content"
               :hint="!advertise.content ? '*Description is required' : ''"
+              :rules="[(val) => val.length <= 6000 || 'Description cannot exceed 6000 characters']"
             >
               <template v-slot:control>
                 <q-editor
@@ -63,6 +64,7 @@
                   flat
                   min-height="5rem"
                   ref="editorRef"
+                  :max-length="6000"
                   :toolbar="[
                     [
                       {
@@ -84,6 +86,8 @@
                   ]"
                   v-model="advertise.content"
                   @paste="onPaste($event)"
+                  @keydown="onKeyDown($event)"
+                  style="word-break: break-all; overflow-wrap: break-word"
                 />
               </template>
             </q-field>
@@ -178,7 +182,7 @@ import { collection, doc } from 'firebase/firestore'
 import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { onMounted, reactive, ref, watchEffect, watch } from 'vue'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 import { fetchMaticRate } from 'app/src/web3/transfers.js'
@@ -215,6 +219,7 @@ const usdAmount = ref(0)
 const maticRate = ref(0)
 const isEditing = ref(false)
 const editorRef = ref(null)
+const lastDescriptionNotificationTime = ref(0)
 
 function openDatePicker() {
   datePickerVisible.value = true
@@ -310,16 +315,53 @@ function convertToMatic() {
   }
 }
 
+function showDescriptionNotification(message) {
+  const now = Date.now()
+  if (now - lastDescriptionNotificationTime.value > 1000) {
+    $q.notify({
+      type: 'warning',
+      message: message,
+      position: 'top',
+      timeout: 2000
+    })
+    lastDescriptionNotificationTime.value = now
+  }
+}
+
+function onKeyDown(event) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
+    return
+  }
+
+  if (advertise.content.length >= 6000) {
+    if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      showDescriptionNotification('Max 6000 characters reached')
+    }
+  }
+}
+
 function onPaste(evt) {
   if (evt.target.nodeName === 'INPUT') return
   let text, onPasteStripFormattingIEPaste
   evt.preventDefault()
   evt.stopPropagation()
+
+  const currentLength = advertise.content.length
+
   if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
     text = evt.originalEvent.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (evt.clipboardData && evt.clipboardData.getData) {
     text = evt.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (window.clipboardData && window.clipboardData.getData) {
     if (!onPasteStripFormattingIEPaste) {
@@ -329,6 +371,16 @@ function onPaste(evt) {
     onPasteStripFormattingIEPaste = false
   }
 }
+
+watch(
+  () => advertise.content,
+  (newContent) => {
+    if (newContent && newContent.length > 6000) {
+      advertise.content = newContent.substring(0, 6000)
+    }
+  },
+  { immediate: true }
+)
 
 async function onSubmit() {
   try {
@@ -358,11 +410,9 @@ async function onSubmit() {
         })
         .finally(() => $q.loading.hide())
     } else {
-      //call contract create function
       const result = await createAdCampaign({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
         advertise.campaignCode = result.events[0].args.campaignCode
-        //save advertisement to database
         await advertiseStore
           .addAdvertise(advertise)
           .then(() => {
