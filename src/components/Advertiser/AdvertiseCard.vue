@@ -97,7 +97,6 @@
               hide-hint
               class="q-mb-lg"
               label="Product URL"
-              maxlength="80"
               :rules="[(url) => (url ? isUrlValid(url) : true) || 'Please enter a valid url']"
             />
             <q-input
