@@ -61,7 +61,7 @@ import { useQuasar } from 'quasar'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { uid } from 'quasar'
 
-const props = defineProps(['arts', 'artist', 'collectionName', 'date', 'entryTitle'])
+const props = defineProps(['arts', 'artist', 'collectionName', 'id', 'entryTitle'])
 const emit = defineEmits(['update:arts', 'update:artist', 'updateRecentUploads', 'updateRecentArtistImage'])
 
 const errorStore = useErrorStore()
@@ -108,7 +108,7 @@ async function addArts(files) {
   const filesToUpload = files.slice(0, remainingImages)
 
   for (const index in filesToUpload) {
-    const uploaded = await uploadAndSetImage(filesToUpload[index], `images/${props.collectionName}-${props.date}-${uid()}`)
+    const uploaded = await uploadAndSetImage(filesToUpload[index], `images/${props.collectionName}-${props.id}-${uid()}`)
     modelArts.value.push(uploaded)
     emit('updateRecentUploads', uploaded)
   }
@@ -125,15 +125,31 @@ async function addArts(files) {
 
 function removeArt(file) {
   const index = modelArts.value.indexOf(file)
-  const imgId = file.match(/entry-[^?\/]+/)
-  storageStore
-    .deleteFile(`images/${imgId}`)
-    .then(() => modelArts.value.splice(index, 1))
-    .catch((error) => errorStore.throwError(error))
-  emit('update:arts', modelArts.value)
+  const imgId = file.match(new RegExp(`${props.collectionName}-[^?\/]+`))
+  if (imgId) {
+    storageStore
+      .deleteFile(`images/${imgId[0]}`)
+      .then(() => {
+        modelArts.value.splice(index, 1)
+        emit('update:arts', modelArts.value)
+      })
+      .catch((error) => errorStore.throwError(error))
+  }
 }
 
-function removeArtistPhoto() {
+async function removeArtistPhoto() {
+  if (modelArtistPhoto.value) {
+    const imgId = modelArtistPhoto.value.match(new RegExp(`${props.collectionName}-[^?\/]+`))
+    if (imgId) {
+      try {
+        await storageStore.deleteFile(`images/${imgId[0]}`)
+      } catch (error) {
+        errorStore.throwError(error)
+        return
+      }
+    }
+  }
+
   modelArtistPhoto.value = ''
   emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
   emit('updateRecentArtistImage', modelArtistPhoto.value)
@@ -141,7 +157,7 @@ function removeArtistPhoto() {
 
 async function addArtistPhoto(files) {
   modelArtistPhoto.value = ''
-  modelArtistPhoto.value = await uploadAndSetImage(files, `images/${props.collectionName}-${props.date}-artist`)
+  modelArtistPhoto.value = await uploadAndSetImage(files, `images/${props.collectionName}-${props.id}-artist`)
   emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
   emit('updateRecentArtistImage', modelArtistPhoto.value)
 }
