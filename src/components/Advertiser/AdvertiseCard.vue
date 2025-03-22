@@ -375,7 +375,6 @@ async function onSubmit() {
         .finally(() => $q.loading.hide())
     } else {
       //call contract create function
-      // throw new Error('')
       const result = await createAdCampaign({ budgetInMatic: advertise.budget })
       if (result.status.includes('success')) {
         advertise.campaignCode = result.events[0].args.campaignCode
@@ -393,6 +392,7 @@ async function onSubmit() {
           .finally(() => $q.loading.hide())
       } else {
         $q.notify({ message: result?.error?.message, type: 'negative' })
+        LocalStorage.set('ad', JSON.stringify(advertise))
         $q.loading.hide()
       }
 

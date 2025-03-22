@@ -240,7 +240,12 @@ watch(
 const promptOptions = computed(
   () =>
     promptStore._activePrompts
-      ?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
+      ?.map((prompt) => ({
+        label: `${prompt.date || prompt.publicationDate} – ${prompt.title}`,
+        value: prompt.id,
+        escrowId: prompt.escrowId,
+        date: prompt.date || prompt.creationDate
+      }))
       .reverse() || []
 )
 
