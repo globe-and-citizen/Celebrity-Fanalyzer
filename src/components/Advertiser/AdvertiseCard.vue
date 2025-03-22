@@ -390,14 +390,14 @@ async function onSubmit() {
             errorStore.throwError(error, 'Advertise submission failed')
           })
           .finally(() => $q.loading.hide())
+
+        if (parsedAd) {
+          LocalStorage.remove('ad')
+        }
       } else {
         $q.notify({ message: result?.error?.message, type: 'negative' })
         LocalStorage.set('ad', JSON.stringify(advertise))
         $q.loading.hide()
-      }
-
-      if (parsedAd) {
-        LocalStorage.remove('ad')
       }
     }
     emit('hideDialog')
