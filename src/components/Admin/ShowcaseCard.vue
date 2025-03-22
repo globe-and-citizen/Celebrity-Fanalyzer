@@ -60,6 +60,8 @@ import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { uid } from 'quasar'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from 'src/firebase'
 
 const props = defineProps(['arts', 'artist', 'collectionName', 'id', 'entryTitle'])
 const emit = defineEmits(['update:arts', 'update:artist', 'updateRecentUploads', 'updateRecentArtistImage'])
@@ -123,17 +125,20 @@ async function addArts(files) {
   }
 }
 
-function removeArt(file) {
+async function removeArt(file) {
   const index = modelArts.value.indexOf(file)
   const imgId = file.match(new RegExp(`${props.collectionName}-[^?\/]+`))
   if (imgId) {
-    storageStore
-      .deleteFile(`images/${imgId[0]}`)
-      .then(() => {
-        modelArts.value.splice(index, 1)
-        emit('update:arts', modelArts.value)
+    try {
+      await storageStore.deleteFile(`images/${imgId[0]}`)
+      modelArts.value.splice(index, 1)
+      emit('update:arts', modelArts.value)
+      await updateDoc(doc(db, props.collectionName + 's', props.id), {
+        'showcase.arts': modelArts.value
       })
-      .catch((error) => errorStore.throwError(error))
+    } catch (error) {
+      errorStore.throwError(error)
+    }
   }
 }
 
@@ -143,16 +148,18 @@ async function removeArtistPhoto() {
     if (imgId) {
       try {
         await storageStore.deleteFile(`images/${imgId[0]}`)
+        modelArtistPhoto.value = ''
+        emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
+        emit('updateRecentArtistImage', modelArtistPhoto.value)
+        await updateDoc(doc(db, props.collectionName + 's', props.id), {
+          'showcase.artist.photo': ''
+        })
       } catch (error) {
         errorStore.throwError(error)
         return
       }
     }
   }
-
-  modelArtistPhoto.value = ''
-  emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
-  emit('updateRecentArtistImage', modelArtistPhoto.value)
 }
 
 async function addArtistPhoto(files) {
