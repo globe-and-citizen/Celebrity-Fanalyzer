@@ -257,7 +257,6 @@ watchEffect(() => {
     advertise.type = parsedAd.type
     advertise.duration = parsedAd.duration
     advertise.status = parsedAd.status
-    advertise.contentURL = parsedAd.contentURL ?? ''
   } else if (props.id) {
     advertise.author = props.author
     advertise.categories = props.categories
