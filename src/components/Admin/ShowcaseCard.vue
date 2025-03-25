@@ -63,7 +63,7 @@ import { uid } from 'quasar'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from 'src/firebase'
 
-const props = defineProps(['arts', 'artist', 'collectionName', 'id', 'entryTitle'])
+const props = defineProps(['arts', 'artist', 'collectionName', 'id', 'entryTitle', 'isEditTime'])
 const emit = defineEmits(['update:arts', 'update:artist', 'updateRecentUploads', 'updateRecentArtistImage'])
 
 const errorStore = useErrorStore()
@@ -117,6 +117,14 @@ async function addArts(files) {
 
   emit('update:arts', modelArts.value)
 
+  if (props.isEditTime) {
+    const collectionNameSuffix =
+      props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
+    await updateDoc(doc(db, collectionNameSuffix, props.id), {
+      'showcase.arts': modelArts.value
+    })
+  }
+
   if (filesToUpload.length < files.length) {
     $q.notify({
       type: 'negative',
@@ -133,11 +141,13 @@ async function removeArt(file) {
       await storageStore.deleteFile(`images/${imgId[0]}`)
       modelArts.value.splice(index, 1)
       emit('update:arts', modelArts.value)
-      const collectionNameSuffix =
-        props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
-      await updateDoc(doc(db, collectionNameSuffix, props.id), {
-        'showcase.arts': modelArts.value
-      })
+      if (props.isEditTime) {
+        const collectionNameSuffix =
+          props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
+        await updateDoc(doc(db, collectionNameSuffix, props.id), {
+          'showcase.arts': modelArts.value
+        })
+      }
     } catch (error) {
       errorStore.throwError(error)
     }
@@ -153,11 +163,13 @@ async function removeArtistPhoto() {
         modelArtistPhoto.value = ''
         emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
         emit('updateRecentArtistImage', modelArtistPhoto.value)
-        const collectionNameSuffix =
-          props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
-        await updateDoc(doc(db, collectionNameSuffix, props.id), {
-          'showcase.artist.photo': ''
-        })
+        if (props.isEditTime) {
+          const collectionNameSuffix =
+            props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
+          await updateDoc(doc(db, collectionNameSuffix, props.id), {
+            'showcase.artist.photo': ''
+          })
+        }
       } catch (error) {
         errorStore.throwError(error)
         return
@@ -171,6 +183,13 @@ async function addArtistPhoto(files) {
   modelArtistPhoto.value = await uploadAndSetImage(files, `images/${props.collectionName}-${props.id}-artist`)
   emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
   emit('updateRecentArtistImage', modelArtistPhoto.value)
+  if (props.isEditTime) {
+    const collectionNameSuffix =
+      props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
+    await updateDoc(doc(db, collectionNameSuffix, props.id), {
+      'showcase.artist.photo': modelArtistPhoto.value
+    })
+  }
 }
 
 function addArtistInfo() {

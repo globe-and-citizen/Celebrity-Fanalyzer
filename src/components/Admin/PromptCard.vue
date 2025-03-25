@@ -217,6 +217,7 @@
             <div class="q-my-lg">
               <ShowcaseCard
                 collectionName="prompt"
+                :isEditTime="!!props.id"
                 :id="prompt?.date ? prompt.date : prompt.id"
                 v-model:arts="prompt.showcase.arts"
                 v-model:artist="prompt.showcase.artist"
