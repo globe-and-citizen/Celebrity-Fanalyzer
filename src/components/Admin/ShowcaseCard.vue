@@ -133,7 +133,9 @@ async function removeArt(file) {
       await storageStore.deleteFile(`images/${imgId[0]}`)
       modelArts.value.splice(index, 1)
       emit('update:arts', modelArts.value)
-      await updateDoc(doc(db, props.collectionName + 's', props.id), {
+      const collectionNameSuffix =
+        props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
+      await updateDoc(doc(db, collectionNameSuffix, props.id), {
         'showcase.arts': modelArts.value
       })
     } catch (error) {
@@ -151,7 +153,9 @@ async function removeArtistPhoto() {
         modelArtistPhoto.value = ''
         emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
         emit('updateRecentArtistImage', modelArtistPhoto.value)
-        await updateDoc(doc(db, props.collectionName + 's', props.id), {
+        const collectionNameSuffix =
+          props.collectionName === 'entry' ? 'entries' : props.collectionName === 'prompt' ? 'prompts' : props.collectionName
+        await updateDoc(doc(db, collectionNameSuffix, props.id), {
           'showcase.artist.photo': ''
         })
       } catch (error) {
