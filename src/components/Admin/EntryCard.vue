@@ -12,7 +12,7 @@
           behavior="menu"
           counter
           data-test="select-prompt"
-          :disable="Boolean(entry.id)"
+          :disable="Boolean(entry.id) || isNavigatingFromPrompt"
           :hint="entry.image ? 'Image is attached to this prompt' : ''"
           label="Prompt"
           :options="promptOptions"
@@ -150,13 +150,24 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate'])
+const props = defineProps([
+  'author',
+  'created',
+  'description',
+  'id',
+  'image',
+  'prompt',
+  'slug',
+  'title',
+  'selectedPromptDate',
+  'isNavigatingFromPrompt'
+])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -197,8 +208,15 @@ onMounted(() => {
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date || props.prompt.publicationDate} – ${props.prompt.title}`, value: props.prompt.id }
     entry.title = props.title
-  } else if (props.selectedPromptDate) {
-    entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
+  }
+})
+
+watchEffect(() => {
+  if (props.isNavigatingFromPrompt && props.selectedPromptDate && promptOptions.value.length && !entry.prompt) {
+    const selectedPrompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
+    if (selectedPrompt) {
+      entry.prompt = selectedPrompt
+    }
   }
 })
 
