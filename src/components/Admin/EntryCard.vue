@@ -237,7 +237,11 @@ onMounted(() => {
     entry.image = props.image
     entry.prompt = { label: `${props.prompt.date || props.prompt.publicationDate} – ${props.prompt.title}`, value: props.prompt.id }
     entry.title = props.title
-    entry.showcase = props.showcase
+    entry.showcase = {
+      arts: [],
+      artist: { info: '', photo: '' },
+      ...(props.showcase || {})
+    }
   } else if (props.selectedPromptDate) {
     entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
   }
