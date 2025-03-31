@@ -13,7 +13,10 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
-  where
+  where,
+  limit,
+  startAfter,
+  orderBy
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -48,13 +51,16 @@ function snapshotDocs(querySnapshot) {
 
 export const useEntryStore = defineStore('entries', {
   state: () => ({
-    _entries: undefined,
+    _entries: [],
     _isLoading: false,
     _unSubscribe: undefined,
     _tab: 'post',
     entryDialog: {},
     userRelatedEntries: [],
-    _loadedEntries: []
+    _loadedEntries: [],
+    loadCount: 5,
+    _lastVisibleEntry: null,
+    showLastVisible: true
   }),
 
   // persist: true,
@@ -64,7 +70,7 @@ export const useEntryStore = defineStore('entries', {
     resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab,
-    getUserRelatedEntries: (state) => state._userRelatedEntries,
+    getUserRelatedEntries: (state) => state.userRelatedEntries,
     getLoadedEntries: (state) => state._loadedEntries
   },
 
@@ -89,15 +95,28 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async fetchUserRelatedEntries(userId) {
+    async fetchUserRelatedEntries(userId, pagination = false) {
       const userStore = useUserStore()
 
       try {
         this._isLoading = true
 
         const userDocRef = doc(db, 'users', userId)
-        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('author', '==', userDocRef)))
+
+        const conditions = [where('author', '==', userDocRef)]
+        if (pagination) {
+          conditions.push(limit(this.loadCount), orderBy('created', 'desc'))
+        }
+        if (this._lastVisibleEntry) {
+          conditions.push(startAfter(this._lastVisibleEntry))
+        }
+
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), ...conditions))
         const entries = snapshotDocs(querySnapshot.docs)
+
+        if (pagination) {
+          this._lastVisibleEntry = querySnapshot.docs[querySnapshot.docs.length - 1]
+        }
 
         for (const entry of entries) {
           const promptId = entry.prompt.id
@@ -111,7 +130,11 @@ export const useEntryStore = defineStore('entries', {
             entry.escrowId = prompt?.escrowId
           }
         }
-        this._userRelatedEntries = entries
+
+        this.userRelatedEntries = pagination ? [...this.userRelatedEntries, ...entries] : entries
+        if (entries.length < 5 && pagination) {
+          this.showLastVisible = false
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -147,13 +170,19 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async fetchEntryBySlug(slug) {
+    async fetchEntryBySlug(slug, ignoreId = false) {
       const userStore = useUserStore()
       const promptStore = usePromptStore()
       const id = slug.slice(1, -3).replace('/', '-').replace('/', '')
       try {
         this._isLoading = true
-        const querySnapshot = await getDocs(query(collection(db, 'entries'), or(where('slug', '==', slug), where('id', '==', id))))
+        const conditions = [where('slug', '==', slug), where('id', '==', id)]
+        if (ignoreId) {
+          conditions.pop()
+        }
+        const querySnapshot = await getDocs(
+          query(collection(db, 'entries'), conditions.length > 1 ? or(...conditions) : where('slug', '==', slug))
+        )
         const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (entry.author.id) {
           entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
@@ -167,6 +196,12 @@ export const useEntryStore = defineStore('entries', {
     },
     async fetchEntryByPrompts(promptId) {
       const userStore = useUserStore()
+      if (!promptId) {
+        console.error('No promptId provided')
+        this._entries = []
+        return
+      }
+
       const promptDocRef = doc(db, 'prompts', promptId)
 
       try {
@@ -183,18 +218,20 @@ export const useEntryStore = defineStore('entries', {
         this._entries = await Promise.all(userPromises)
       } catch (e) {
         console.error('Unable to fetch entries', e)
+        this._entries = []
       }
     },
 
     hasEntry(promptId) {
       const userStore = useUserStore()
-
-      const filteredEntry = this.getEntries?.filter((entry) => entry.author.uid === userStore.getUserId && entry.prompt.id === promptId)
+      if (!this.getEntries || !promptId) return false
+      const filteredEntry = this.getEntries.filter((entry) => entry.author.uid === userStore.getUserId && entry.prompt.id === promptId)
       return !!filteredEntry.length
     },
 
     entryNameValidator(entryId, promptId, title, isEdit = false) {
-      const filteredEntry = this.getEntries?.filter((entry) =>
+      if (!this.getEntries || !promptId || !title) return false
+      const filteredEntry = this.getEntries.filter((entry) =>
         isEdit
           ? entryId !== entry?.id && entry.title === title && promptId === entry.prompt.id
           : entry.title === title && promptId === entry.prompt.id
@@ -203,10 +240,8 @@ export const useEntryStore = defineStore('entries', {
     },
 
     checkPromptRelatedEntry(promptId) {
-      if (!this.getEntries) {
-        return false
-      }
-      return !!this.getEntries?.find((entry) => entry.prompt.id === promptId)
+      if (!this.getEntries || !promptId) return false
+      return !!this.getEntries.find((entry) => entry.prompt.id === promptId)
     },
 
     async addEntry(payload) {
@@ -280,7 +315,7 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async deleteEntry(entryId) {
+    async deleteEntry(entryId, arts) {
       const commentStore = useCommentStore()
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
@@ -292,6 +327,7 @@ export const useEntryStore = defineStore('entries', {
       const entryRef = doc(db, 'entries', entryId)
 
       this._isLoading = true
+
       try {
         const deleteImage = deleteObject(ref(storage, `images/entry-${entryId}`))
         const deleteComments = commentStore.deleteCommentsCollection('entries', entryId)
@@ -312,6 +348,13 @@ export const useEntryStore = defineStore('entries', {
           deleteVisitors,
           deleteEntryFromStats
         ])
+
+        if (arts) {
+          for (const art of arts) {
+            const imgId = art.match(/entry-[^?\/]+/)
+            await deleteObject(ref(storage, `images/${imgId}`))
+          }
+        }
         this._entries = this._entries?.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')

@@ -16,8 +16,8 @@
     <q-spinner v-if="entryStore.isLoading" color="primary" size="3em" class="block q-mx-auto q-my-xl" />
     <h6 v-else-if="!entries?.length" class="text-center">NO ENTRIES</h6>
   </section>
-  <q-dialog full-width position="bottom" v-model="entry.dialog" data-test="entry-dialog">
-    <EntryCard v-bind="entry" @hideDialog="entry = {}" :selectedPromptDate="promptDate" />
+  <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
+    <EntryCard v-bind="entry" @hideDialog="entry = {}" :selectedPromptDate="promptDate" :isNavigatingFromPrompt="true" />
   </q-dialog>
 </template>
 
@@ -29,7 +29,7 @@ import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
-const props = defineProps(['entries', 'promptDate', 'hasWinner'])
+const props = defineProps(['entries', 'promptDate', 'hasWinner', 'ownPrompt'])
 
 const entryStore = useEntryStore()
 const userStore = useUserStore()
@@ -39,7 +39,7 @@ const $q = useQuasar()
 
 const showAddEntry = computed(() => {
   const entry = props.entries?.find((e) => e.author.uid === userStore.getUserId)
-  return !entry && !props.hasWinner
+  return !entry && !props.hasWinner && !props.ownPrompt
 })
 
 async function openEntryDialog() {

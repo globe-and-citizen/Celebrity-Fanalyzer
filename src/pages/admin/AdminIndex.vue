@@ -8,7 +8,7 @@
           data-test="posts-tab"
           name="prompts"
           icon="view_list"
-          :label="userStore.isEditorOrAbove ? 'Prompts & Entries' : 'Entries'"
+          :label="'Prompts & Entries'"
           :to="{ name: 'admin.prompts' }"
         />
         <q-route-tab
@@ -60,7 +60,7 @@
         <PromptCard v-bind="prompt" @hideDialog="prompt = {}" data-test="prompt-card" />
       </q-dialog>
 
-      <q-dialog full-width position="bottom" v-model="entry.dialog" data-test="entry-dialog">
+      <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
         <EntryCard v-bind="entry" @hideDialog="entry = {}" data-test="entry-card" />
       </q-dialog>
 
