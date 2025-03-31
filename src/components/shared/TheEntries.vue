@@ -17,7 +17,7 @@
     <h6 v-else-if="!entries?.length" class="text-center">NO ENTRIES</h6>
   </section>
   <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
-    <EntryCard v-bind="entry" @hideDialog="entry = {}" :selectedPromptDate="props.promptDate" :isNavigatingFromPrompt="true" />
+    <EntryCard v-bind="entry" @hideDialog="entry = {}" :selectedPromptDate="promptDate" :isNavigatingFromPrompt="true" />
   </q-dialog>
 </template>
 
