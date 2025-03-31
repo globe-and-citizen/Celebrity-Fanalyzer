@@ -235,7 +235,7 @@ onMounted(() => {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description
     entry.image = props.image
-    entry.prompt = { label: `${props.prompt.date} – ${props.prompt.title}`, value: props.prompt.date }
+    entry.prompt = { label: `${props.prompt.date || props.prompt.publicationDate} – ${props.prompt.title}`, value: props.prompt.id }
     entry.title = props.title
     entry.showcase = props.showcase
   } else if (props.selectedPromptDate) {
@@ -280,33 +280,49 @@ function onPaste(evt) {
 
 async function onSubmit() {
   entry.title = entry.title.trim()
-  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.prompt?.value)
+  const promptValue = entry.prompt?.value
 
-  if (!hasLoadedEntry) {
-    await entryStore.fetchEntryByPrompts(entry.prompt?.value)
-  }
-
-  const hasEntry = entryStore.hasEntry(entry.prompt?.value)
-
-  if (!props.id && hasEntry) {
+  if (!promptValue) {
     $q.notify({
-      type: 'info',
-      message: 'You have already submitted an entry for this prompt. Please select another prompt'
+      type: 'negative',
+      message: 'Please select a prompt before submitting.'
     })
     return
   }
 
-  const entryNameValidator = entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(promptValue)
+  if (!hasLoadedEntry) {
+    try {
+      await entryStore.fetchEntryByPrompts(promptValue)
+    } catch (e) {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to fetch entries for this prompt. Please try again.'
+      })
+      return
+    }
+  }
 
-  if (entryNameValidator) {
-    $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
+  const hasEntry = entryStore.hasEntry(promptValue)
+  if (!props.id && hasEntry) {
+    $q.notify({
+      type: 'info',
+      message: 'You have already submitted an entry for this prompt. Please select another prompt.'
+    })
     return
   }
+
+  const entryNameValidator = entryStore.entryNameValidator(props.id, promptValue, entry.title, !!props.id)
+  if (entryNameValidator) {
+    $q.notify({ type: 'negative', message: 'Entry with this title already exists. Please choose another title.' })
+    return
+  }
+
   entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
   if (Object.keys(imageModel.value ?? {}).length || imageModel.value?.type) {
-    entry.image = await uploadAndSetImage(imageModel.value, `images/entry-${entry.id}`)
+    entry.image = await uploadAndSetImage(imageModel?.value, `images/entry-${entry.id}`)
   } else {
     entry.image = props.image
   }
@@ -323,10 +339,10 @@ async function onSubmit() {
     if (href.includes('/admin') && !userStore.isEditorOrAbove) {
       await entryStore.fetchUserRelatedEntries(userStore.getUserId)
     } else {
-      const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
-      const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
+      const updatedPrompt = await promptStore.fetchPromptById(promptValue)
+      const updatedList = updatedPrompt.find((prompt) => prompt.id === promptValue).entries
       const res = await entryStore.fetchPromptsEntries(updatedList)
-      const loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === entry.prompt.value)
+      const loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === promptValue)
 
       if (loadedPrompt) {
         const emptyList = !loadedPrompt.entries.length
