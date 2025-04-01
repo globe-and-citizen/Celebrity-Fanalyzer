@@ -115,9 +115,10 @@
               <q-field
                 counter
                 label="Description"
-                maxlength="400"
+                maxlength="6000"
                 v-model="prompt.description"
                 :hint="!prompt.description ? '*Description is required' : ''"
+                :rules="[(val) => val.length <= 6000 || 'Description cannot exceed 6000 characters']"
               >
                 <template v-slot:control>
                   <q-editor
@@ -125,6 +126,7 @@
                     data-test="input-description"
                     dense
                     flat
+                    :max-length="6000"
                     min-height="5rem"
                     ref="editorRef"
                     style="width: 100%"
@@ -149,6 +151,7 @@
                     ]"
                     v-model="prompt.description"
                     @paste="onPaste($event)"
+                    @keydown="onKeyDown($event)"
                   />
                 </template>
               </q-field>
@@ -322,7 +325,7 @@
 import { useQuasar, date as dateUtils } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
+import { onMounted, reactive, ref, watchEffect, computed, watch } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import FundDepositCard from './FundDepositCard.vue'
@@ -374,6 +377,7 @@ const imageModel = ref(null)
 const imagePreview = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
+const lastDescriptionNotificationTime = ref(0)
 
 function dateOptions(currentDate, creationDate = prompt.creationDate) {
   const timestamp = dateUtils.startOfDate(creationDate, 'day').getTime()
@@ -428,6 +432,16 @@ watchEffect(() => {
   }
 })
 
+watch(
+  () => prompt.description,
+  (newDescription) => {
+    if (newDescription && newDescription.length > 6000) {
+      prompt.description = newDescription.substring(0, 6000)
+    }
+  },
+  { immediate: true }
+)
+
 onMounted(() => {
   userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
 
@@ -457,16 +471,50 @@ function uploadPhoto() {
   reader.onload = () => (prompt.image = reader.result)
 }
 
+function showDescriptionNotification(message) {
+  const now = Date.now()
+  if (now - lastDescriptionNotificationTime.value > 1000) {
+    $q.notify({
+      type: 'warning',
+      message: message,
+      position: 'top',
+      timeout: 2000
+    })
+    lastDescriptionNotificationTime.value = now
+  }
+}
+function onKeyDown(event) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
+    return
+  }
+  if (prompt.description.length >= 6000) {
+    if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      showDescriptionNotification('Max 6000 characters reached')
+    }
+  }
+}
+
 function onPaste(evt) {
   if (evt.target.nodeName === 'INPUT') return
   let text, onPasteStripFormattingIEPaste
   evt.preventDefault()
   evt.stopPropagation()
+  const currentLength = prompt.description.length
+
   if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
     text = evt.originalEvent.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (evt.clipboardData && evt.clipboardData.getData) {
     text = evt.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (window.clipboardData && window.clipboardData.getData) {
     if (!onPasteStripFormattingIEPaste) {

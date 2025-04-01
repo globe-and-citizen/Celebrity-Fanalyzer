@@ -41,9 +41,10 @@
             <q-field
               counter
               label="Description"
-              maxlength="400"
+              maxlength="6000"
               v-model="entry.description"
               :hint="!entry.description ? '*Description is required' : ''"
+              :rules="[(val) => val.length <= 6000 || 'Description cannot exceed 6000 characters']"
             >
               <template v-slot:control>
                 <q-editor
@@ -51,6 +52,7 @@
                   data-test="input-description"
                   dense
                   flat
+                  :maxlength="6000"
                   min-height="5rem"
                   ref="editorRef"
                   style="width: 100%"
@@ -75,6 +77,7 @@
                   ]"
                   v-model="entry.description"
                   @paste="onPaste($event)"
+                  @keydown="onKeyDown($event)"
                 />
               </template>
             </q-field>
@@ -213,6 +216,7 @@ const todayDate = new Date().toISOString().replace(/[.:-]/g, '')
 const uploadedImages = ref([])
 const recentUploadsRef = ref([])
 const recentArtistImage = ref('')
+const lastDescriptionNotificationTime = ref(0)
 
 watch(
   () => entry.showcase.arts,
@@ -220,6 +224,16 @@ watch(
     uploadedImages.value = newArts.map((art) => art.image)
   },
   { deep: true }
+)
+
+watch(
+  () => entry.description,
+  (newDescription) => {
+    if (newDescription && newDescription.length > 6000) {
+      entry.description = newDescription.substring(0, 6000)
+    }
+  },
+  { immediate: true }
 )
 
 const promptOptions = computed(
@@ -267,11 +281,21 @@ function onPaste(evt) {
   let text, onPasteStripFormattingIEPaste
   evt.preventDefault()
   evt.stopPropagation()
+  const currentLength = entry.description.length
+
   if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
     text = evt.originalEvent.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (evt.clipboardData && evt.clipboardData.getData) {
     text = evt.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (window.clipboardData && window.clipboardData.getData) {
     if (!onPasteStripFormattingIEPaste) {
@@ -279,6 +303,30 @@ function onPaste(evt) {
       editorRef.value.runCmd('ms-pasteTextOnly', text)
     }
     onPasteStripFormattingIEPaste = false
+  }
+}
+
+function showDescriptionNotification(message) {
+  const now = Date.now()
+  if (now - lastDescriptionNotificationTime.value > 1000) {
+    $q.notify({
+      type: 'warning',
+      message: message,
+      position: 'top',
+      timeout: 2000
+    })
+    lastDescriptionNotificationTime.value = now
+  }
+}
+function onKeyDown(event) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
+    return
+  }
+  if (entry.description.length >= 6000) {
+    if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      showDescriptionNotification('Max 6000 characters reached')
+    }
   }
 }
 
