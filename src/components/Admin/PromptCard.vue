@@ -167,6 +167,28 @@
                 :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
                 v-model="prompt.categories"
               />
+              <div class="cover-image-container">
+                <div class="cover-image-header text-subtitle1 text-weight-regular">Upload cover image for your prompt</div>
+                <div class="cover-image-subtitle text-secondary text-body2 q-mb-md">
+                  This image will be as primary visual for the prompt
+                </div>
+                <!-- If Conver Image Placeholder -->
+                <div class="cover-image-placeholder q-mt-xs">
+                  <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
+                </div>
+                <span class="cover-image-hint text-caption">*Image is required, Max size is 2MB</span>
+                <!-- <q-file
+                  accept=".jpg, image/*"
+                  data-test="file-image"
+                  :max-total-size="2097152"
+                  :required="!id"
+                  use-chips
+                  v-model="imageModel"
+                  @rejected="onRejected()"
+                  @update:model-value="uploadPhoto()"
+                ></q-file> -->
+              </div>
+              <!-- Old Cover Image Upload Design Starts Here -->
               <div class="row">
                 <div class="col-8">
                   <q-file
@@ -197,9 +219,12 @@
                   @click="openCamera = true"
                 ></q-btn>
               </div>
-              <div class="text-center">
+
+              <!-- Show Cover Image After Uploading -->
+              <!-- <div class="text-center">
                 <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
-              </div>
+              </div> -->
+              <!-- Old Conver Image Upload Design Ends Here -->
             </template>
           </q-card-section>
         </q-step>
@@ -597,6 +622,31 @@ const isNextStepDisabled = computed(() => {
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.cover-image-container {
+  position: relative;
+  margin: 1rem 1rem 1rem 0;
+  width: 100%;
+
+  .cover-image-hint {
+    color: #9e9e9e;
+  }
+
+  .cover-image-placeholder {
+    width: 200px;
+    height: 150px;
+    border-radius: 6px;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &-icon {
+      font-size: 2rem;
+      color: #9e9e9e;
+    }
   }
 }
 </style>
