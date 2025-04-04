@@ -51,7 +51,7 @@
                       required
                     >
                       <template v-slot:append>
-                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
+                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="publication-date-picker">
                           <q-popup-proxy>
                             <q-date
                               mask="YYYY-MM-DD"
@@ -59,9 +59,10 @@
                               v-model="prompt.publicationDate"
                               :options="dateOptions"
                               @update:model-value="updateEndDate"
+                              data-test="publication-date-calendar"
                             >
                               <div class="row items-center justify-end">
-                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close-publication-date" />
                               </div>
                             </q-date>
                           </q-popup-proxy>
@@ -88,11 +89,17 @@
                       :model-value="prompt.endDate || 'YYYY-MM-DD'"
                     >
                       <template v-slot:append>
-                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
+                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="end-date-picker">
                           <q-popup-proxy>
-                            <q-date mask="YYYY-MM-DD" minimal v-model="prompt.endDate" :options="endDateOptions">
+                            <q-date
+                              mask="YYYY-MM-DD"
+                              minimal
+                              v-model="prompt.endDate"
+                              :options="endDateOptions"
+                              data-test="end-date-calendar"
+                            >
                               <div class="row items-center justify-end">
-                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close-end-date" />
                               </div>
                             </q-date>
                           </q-popup-proxy>
@@ -302,6 +309,7 @@
                 v-if="step < 3"
                 color="primary"
                 :disable="isNextStepDisabled"
+                data-test="button-continue"
                 label="Continue"
                 :loading="promptStore.isLoading || storageStore.isLoading"
                 rounded
