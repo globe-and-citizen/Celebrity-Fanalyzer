@@ -167,64 +167,49 @@
                 :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
                 v-model="prompt.categories"
               />
+
               <div class="cover-image-container">
-                <div class="cover-image-header text-subtitle1 text-weight-regular">Upload cover image for your prompt</div>
-                <div class="cover-image-subtitle text-secondary text-body2 q-mb-md">
-                  This image will be as primary visual for the prompt
-                </div>
-                <!-- If Conver Image Placeholder -->
-                <div class="cover-image-placeholder q-mt-xs">
-                  <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
-                </div>
-                <span class="cover-image-hint text-caption">*Image is required, Max size is 2MB</span>
-                <!-- <q-file
-                  accept=".jpg, image/*"
-                  data-test="file-image"
-                  :max-total-size="2097152"
-                  :required="!id"
-                  use-chips
-                  v-model="imageModel"
-                  @rejected="onRejected()"
-                  @update:model-value="uploadPhoto()"
-                ></q-file> -->
-              </div>
-              <!-- Old Cover Image Upload Design Starts Here -->
-              <div class="row">
-                <div class="col-8">
+                <div class="cover-image-picker">
+                  <div class="cover-image-header text-subtitle1 text-weight-regular">Upload cover image for your prompt</div>
+
+                  <div class="cover-image-subtitle text-secondary text-body2 q-mb-md">
+                    This image will be as primary visual for the prompt
+                  </div>
+
+                  <div v-if="prompt.image" @click="$refs.file.pickFiles()" class="cover-image-viewer q-mb-xs">
+                    <q-img :src="prompt.image" fit="cover" style="height: 150px; width: 200px" />
+                  </div>
+
+                  <div v-else @click="$refs.file.pickFiles()" class="cover-image-placeholder q-mb-xs">
+                    <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
+                  </div>
+
                   <q-file
+                    class="hidden"
+                    ref="file"
                     accept=".jpg, image/*"
-                    counter
                     data-test="file-image"
-                    :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
-                    label="Select Prompt Image"
                     :max-total-size="2097152"
                     :required="!id"
-                    use-chips
                     v-model="imageModel"
                     @rejected="onRejected()"
                     @update:model-value="uploadPhoto()"
-                  >
-                    <template v-slot:append>
-                      <q-icon name="image" />
-                    </template>
-                  </q-file>
-                </div>
-                <div class="col-1 flex justify-center items-center"><p>or</p></div>
-                <q-btn
-                  color="primary"
-                  icon="add_a_photo"
-                  class="self-center"
-                  label="Capture Image"
-                  data-test="button-camera-capture"
-                  @click="openCamera = true"
-                ></q-btn>
-              </div>
+                  ></q-file>
 
-              <!-- Show Cover Image After Uploading -->
-              <!-- <div class="text-center">
-                <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
-              </div> -->
-              <!-- Old Conver Image Upload Design Ends Here -->
+                  <span class="cover-image-hint text-caption q-mt-xs">*Image is required, Max size is 2MB</span>
+
+                  <span class="block q-my-sm" style="font-size: 0.8rem; color: #9e9e9e">Or</span>
+
+                  <q-btn
+                    color="primary"
+                    icon="add_a_photo"
+                    class="self-center q-mb-sm"
+                    label="Capture Image"
+                    data-test="button-camera-capture"
+                    @click="openCamera = true"
+                  ></q-btn>
+                </div>
+              </div>
             </template>
           </q-card-section>
         </q-step>
@@ -627,25 +612,27 @@ const isNextStepDisabled = computed(() => {
 
 .cover-image-container {
   position: relative;
-  margin: 1rem 1rem 1rem 0;
+  margin: 1rem 0;
+  height: 360px;
   width: 100%;
-
-  .cover-image-hint {
-    color: #9e9e9e;
-  }
-
-  .cover-image-placeholder {
-    width: 200px;
-    height: 150px;
-    border-radius: 6px;
-    background-color: #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &-icon {
-      font-size: 2rem;
+  .cover-image-picker {
+    .cover-image-hint {
       color: #9e9e9e;
+    }
+
+    .cover-image-placeholder {
+      width: 200px;
+      height: 150px;
+      border-radius: 6px;
+      background-color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &-icon {
+        font-size: 2rem;
+        color: #9e9e9e;
+      }
     }
   }
 }

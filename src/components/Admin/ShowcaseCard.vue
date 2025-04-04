@@ -1,15 +1,17 @@
 <template>
-  <section class="text-center">
-    <q-input
-      autogrow
-      class="col-grow q-pb-xl"
-      hint="Max length 180 characters (optional)"
-      label="Artist info"
-      data-test="artist-info-input"
-      v-model="modelArtistInfo"
-      @update:model-value="addArtistInfo"
-      maxlength="180"
-    />
+  <section>
+    <div class="text-center">
+      <q-input
+        autogrow
+        class="col-grow q-pb-xl"
+        hint="Max length 180 characters (optional)"
+        label="Artist info"
+        data-test="artist-info-input"
+        v-model="modelArtistInfo"
+        @update:model-value="addArtistInfo"
+        maxlength="180"
+      />
+    </div>
     <q-file
       class="hidden"
       ref="artistFileRef"
