@@ -28,7 +28,7 @@
               <q-card class="q-pa-md header-card q-mb-lg" flat bordered>
                 <div class="row items-center">
                   <q-icon name="star" color="primary" class="text-h4 q-mr-sm" />
-                  <div class="q-my-none text-subtitle1 q-mt-xs text-primary">Competition</div>
+                  <div class="q-my-none text-subtitle1 q-mt-xs text-primary text-weight-medium block">Competition</div>
 
                   <div class="row items-center justify-end q-ml-auto no-wrap">
                     <q-icon name="info" class="cursor-pointer q-mr-sm" color="primary">
@@ -170,44 +170,48 @@
 
               <div class="cover-image-container">
                 <div class="cover-image-picker">
-                  <div class="cover-image-header text-subtitle1 text-weight-regular">Upload cover image for your prompt</div>
+                  <span class="cover-image-header block text-subtitle1 text-weight-regular">Upload cover image for your prompt</span>
 
-                  <div class="cover-image-subtitle text-secondary text-body2 q-mb-md">
+                  <span class="cover-image-subtitle block text-secondary text-body2 q-mb-md">
                     This image will be as primary visual for the prompt
+                  </span>
+                  <div class="row justify-start items-center no-wrap">
+                    <div>
+                      <div v-if="prompt.image" @click="$refs.file.pickFiles()" class="cover-image-placeholder q-mb-xs">
+                        <q-img :src="prompt.image" fit="cover" style="height: 150px; width: 200px" />
+                      </div>
+
+                      <div v-else @click="$refs.file.pickFiles()" class="cover-image-placeholder has-image q-mb-xs">
+                        <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
+                      </div>
+
+                      <q-file
+                        class="hidden"
+                        ref="file"
+                        accept=".jpg, image/*"
+                        data-test="file-image"
+                        :max-total-size="2097152"
+                        :required="!id"
+                        v-model="imageModel"
+                        @rejected="onRejected()"
+                        @update:model-value="uploadPhoto()"
+                      ></q-file>
+                    </div>
+
+                    <div class="row items-center no-wrap q-ml-md">
+                      <span class="text-grey-6 q-mr-sm">Or</span>
+                      <q-btn
+                        color="pink"
+                        icon="photo_camera"
+                        label="CAPTURE IMAGE"
+                        class="capture-btn q-ml-md"
+                        data-test="button-camera-capture"
+                        @click="openCamera = true"
+                        no-caps
+                      ></q-btn>
+                    </div>
                   </div>
-
-                  <div v-if="prompt.image" @click="$refs.file.pickFiles()" class="cover-image-viewer q-mb-xs">
-                    <q-img :src="prompt.image" fit="cover" style="height: 150px; width: 200px" />
-                  </div>
-
-                  <div v-else @click="$refs.file.pickFiles()" class="cover-image-placeholder q-mb-xs">
-                    <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
-                  </div>
-
-                  <q-file
-                    class="hidden"
-                    ref="file"
-                    accept=".jpg, image/*"
-                    data-test="file-image"
-                    :max-total-size="2097152"
-                    :required="!id"
-                    v-model="imageModel"
-                    @rejected="onRejected()"
-                    @update:model-value="uploadPhoto()"
-                  ></q-file>
-
-                  <span class="cover-image-hint text-caption q-mt-xs">*Image is required, Max size is 2MB</span>
-
-                  <span class="block q-my-sm" style="font-size: 0.8rem; color: #9e9e9e">Or</span>
-
-                  <q-btn
-                    color="primary"
-                    icon="add_a_photo"
-                    class="self-center q-mb-sm"
-                    label="Capture Image"
-                    data-test="button-camera-capture"
-                    @click="openCamera = true"
-                  ></q-btn>
+                  <span v-if="!prompt.image" class="cover-image-hint text-caption q-mt-xs">*Image is required, Max size is 2MB</span>
                 </div>
               </div>
             </template>
@@ -223,6 +227,18 @@
           title="Artist Carousel"
         >
           <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
+            <q-card class="q-pa-md header-card q-mb-lg" flat bordered>
+              <div class="row items-center no-wrap">
+                <q-icon name="star" color="primary" class="text-h4 q-mr-sm" />
+                <div class="q-my-none q-mt-xs">
+                  <span class="text-subtitle1 text-primary text-weight-medium block">Do you want to add more images?</span>
+                  <span class="block text-secondary text-body2 q-mb-sm">
+                    You can add up to 5 images to a carousel to display your artwork and share it with everyone.
+                  </span>
+                </div>
+              </div>
+            </q-card>
+            <span>Please provide a brief description of yourself so others can get to know you better.</span>
             <div class="q-my-lg">
               <ShowcaseCard
                 collectionName="prompt"
@@ -613,7 +629,6 @@ const isNextStepDisabled = computed(() => {
 .cover-image-container {
   position: relative;
   margin: 1rem 0;
-  height: 360px;
   width: 100%;
   .cover-image-picker {
     .cover-image-hint {
@@ -634,6 +649,23 @@ const isNextStepDisabled = computed(() => {
         color: #9e9e9e;
       }
     }
+
+    .has-image {
+      border: 2px dashed #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: var(--q-primary);
+        background-color: #f5f5f5;
+      }
+    }
   }
+}
+
+.capture-btn {
+  background-color: #ff0066 !important;
+  color: white;
 }
 </style>

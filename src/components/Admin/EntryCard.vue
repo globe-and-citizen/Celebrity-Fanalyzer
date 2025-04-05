@@ -79,39 +79,49 @@
               </template>
             </q-field>
 
-            <div class="flex justify-between items-center">
-              <div class="">
+            <!-- Entry Card Image Start -->
+
+            <div class="cover-image-picker">
+              <span class="cover-image-header block text-subtitle1 text-weight-regular">Upload cover image for your entry</span>
+
+              <span class="cover-image-subtitle block text-secondary text-body2 q-mb-md">
+                This image will be as primary visual for the entry
+              </span>
+              <div class="row justify-start items-center no-wrap">
+                <div v-if="entry.image" @click="$refs.entryFilePicker.pickFiles()" class="cover-image-placeholder q-mb-xs">
+                  <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />
+                </div>
+
+                <div v-else @click="$refs.entryFilePicker.pickFiles()" class="cover-image-placeholder has-image q-mb-xs">
+                  <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
+                </div>
+              </div>
+              <span class="block q-my-sm">or</span>
+              <div>
+                <q-btn
+                  style="max-height: 20px"
+                  :disable="!entry.prompt"
+                  color="primary"
+                  icon="add_a_photo"
+                  label="Capture Image"
+                  @click="openCamera = true"
+                ></q-btn>
                 <q-file
                   accept=".jpg, image/*"
-                  counter
+                  class="hidden"
+                  ref="entryFilePicker"
                   data-test="file-image"
                   :disable="!entry.prompt"
-                  :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : ''"
-                  label="Image"
                   :max-total-size="2097152"
                   :required="!id"
-                  use-chips
                   v-model="imageModel"
                   @rejected="onRejected()"
                   @update:model-value="uploadPhoto()"
-                >
-                  <template v-slot:append>
-                    <q-icon name="image" />
-                  </template>
-                </q-file>
+                />
               </div>
-              <q-btn
-                style="max-height: 20px"
-                :disable="!entry.prompt"
-                color="primary"
-                icon="add_a_photo"
-                label="Capture Image"
-                @click="openCamera = true"
-              ></q-btn>
             </div>
-            <div class="text-center">
-              <q-img v-if="entry.image" class="q-mt-md" :src="entry.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
-            </div>
+
+            <!-- Entry Card Image End -->
           </q-step>
           <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
             <ShowcaseCard
