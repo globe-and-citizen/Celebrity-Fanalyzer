@@ -168,21 +168,28 @@
                 v-model="prompt.categories"
               />
 
-              <div class="cover-image-container">
+              <div class="cover-image-wrapper">
                 <div class="cover-image-picker">
-                  <span class="cover-image-header block text-subtitle1 text-weight-regular">Upload cover image for your prompt</span>
+                  <span class="block text-subtitle1 text-weight-regular">Upload cover image for your prompt</span>
 
-                  <span class="cover-image-subtitle block text-secondary text-body2 q-mb-md">
-                    This image will be as primary visual for the prompt
-                  </span>
+                  <span class="block text-secondary text-body2 q-mb-md">This image will be as primary visual for the prompt</span>
                   <div class="row justify-start items-center no-wrap">
-                    <div>
-                      <div v-if="prompt.image" @click="$refs.file.pickFiles()" class="cover-image-placeholder q-mb-xs">
+                    <div class="cover-image-container">
+                      <div
+                        v-if="prompt.image"
+                        @click="$refs.file.pickFiles()"
+                        class="cover-image-placeholder relative-position q-mb-xs"
+                        :class="{ 'cursor-not-allowed': !!id }"
+                      >
                         <q-img :src="prompt.image" fit="cover" style="height: 150px; width: 200px" />
+                        <div class="upload-icon-wrapper absolute-center" :class="{ hidden: !!id }">
+                          <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />
+                        </div>
                       </div>
 
-                      <div v-else @click="$refs.file.pickFiles()" class="cover-image-placeholder has-image q-mb-xs">
-                        <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
+                      <div v-else @click="$refs.file.pickFiles()" class="cover-image-placeholder relative-position has-image q-mb-xs">
+                        <q-icon name="upload " color="grey" size="2rem" class="absolute-center upload" />
+                        <q-icon name="add_photo_alternate " color="grey" size="2rem" class="absolute-center add_photo_alternate" />
                       </div>
 
                       <q-file
@@ -192,6 +199,7 @@
                         data-test="file-image"
                         :max-total-size="2097152"
                         :required="!id"
+                        :disable="!!id"
                         v-model="imageModel"
                         @rejected="onRejected()"
                         @update:model-value="uploadPhoto()"
@@ -206,6 +214,7 @@
                         label="CAPTURE IMAGE"
                         class="capture-btn q-ml-md"
                         data-test="button-camera-capture"
+                        :disable="!!id"
                         @click="openCamera = true"
                         no-caps
                       ></q-btn>
@@ -626,7 +635,7 @@ const isNextStepDisabled = computed(() => {
   }
 }
 
-.cover-image-container {
+.cover-image-wrapper {
   position: relative;
   margin: 1rem 0;
   width: 100%;
@@ -634,31 +643,62 @@ const isNextStepDisabled = computed(() => {
     .cover-image-hint {
       color: #9e9e9e;
     }
+    .cover-image-container {
+      .cover-image-placeholder {
+        width: 200px;
+        height: 150px;
+        border-radius: 6px;
+        overflow: hidden;
+        background-color: #e0e0e0;
 
-    .cover-image-placeholder {
-      width: 200px;
-      height: 150px;
-      border-radius: 6px;
-      background-color: #e0e0e0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        .upload-icon-wrapper {
+          height: 100%;
+          width: 100%;
+          opacity: 0;
+          z-index: 99;
+          transition: all 0.3s ease;
+          background-color: rgba(0, 0, 0, 0.15);
 
-      &-icon {
-        font-size: 2rem;
-        color: #9e9e9e;
+          .upload-icon {
+            border-radius: 50%;
+            transition: all ease 0.3s;
+            border: 2px dashed var(--q-primary);
+          }
+        }
+
+        .upload {
+          opacity: 0;
+        }
+
+        .add_photo_alternate {
+          opacity: 1;
+        }
+
+        .upload,
+        .add_photo_alternate {
+          transition: all 0.3s ease;
+        }
+
+        &:hover {
+          .upload {
+            opacity: 1;
+          }
+          .add_photo_alternate {
+            opacity: 0;
+          }
+          .upload-icon-wrapper {
+            opacity: 1;
+          }
+        }
       }
-    }
 
-    .has-image {
-      border: 2px dashed #e0e0e0;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: all 0.3s ease;
+      .has-image {
+        border: 2px dashed #e0e0e0;
 
-      &:hover {
-        border-color: var(--q-primary);
-        background-color: #f5f5f5;
+        &:hover {
+          border-color: var(--q-primary);
+          background-color: #f5f5f5;
+        }
       }
     }
   }

@@ -71,7 +71,7 @@
           <div class="upload-placeholder cursor-pointer" @click="onUploadArts">
             <div class="upload-icon-wrapper">
               <q-icon name="add" size="24px" color="grey-7" />
-              <div class="text-caption text-grey-7 q-mt-sm">Add more</div>
+              <div class="text-caption text-grey-7 q-mt-sm">{{ modelArts.length === 0 ? 'Add your arts' : 'Add More' }}</div>
             </div>
           </div>
         </div>

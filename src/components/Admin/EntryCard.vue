@@ -78,50 +78,48 @@
                 />
               </template>
             </q-field>
-
-            <!-- Entry Card Image Start -->
-
-            <div class="cover-image-picker">
-              <span class="cover-image-header block text-subtitle1 text-weight-regular">Upload cover image for your entry</span>
-
-              <span class="cover-image-subtitle block text-secondary text-body2 q-mb-md">
-                This image will be as primary visual for the entry
-              </span>
-              <div class="row justify-start items-center no-wrap">
-                <div v-if="entry.image" @click="$refs.entryFilePicker.pickFiles()" class="cover-image-placeholder q-mb-xs">
+            <div class="cover-image-wrapper">
+              <span class="block text-subtitle1 text-weight-regular">Upload cover image for your entry</span>
+              <span class="block text-secondary text-body2 q-mb-md">This image will be as primary visual for the entry</span>
+              <div class="cover-image-container">
+                <div
+                  v-if="entry.image"
+                  @click="$refs.entryFilePicker.pickFiles()"
+                  class="cover-image-placeholder relative-position q-mb-xs"
+                >
                   <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />
+                  <div class="upload-icon-wrapper absolute-center">
+                    <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />
+                  </div>
                 </div>
 
-                <div v-else @click="$refs.entryFilePicker.pickFiles()" class="cover-image-placeholder has-image q-mb-xs">
-                  <q-icon name="add_photo_alternate " class="cover-image-placeholder-icon" />
+                <div
+                  v-else
+                  @click="$refs.entryFilePicker.pickFiles()"
+                  class="cover-image-placeholder relative-position has-image q-mb-xs"
+                  :class="{ 'cursor-not-allowed': !entry.prompt }"
+                >
+                  <q-icon name="upload " color="grey" size="2rem" class="absolute-center upload" />
+                  <q-icon name="add_photo_alternate " color="grey" size="2rem" class="absolute-center add_photo_alternate" />
                 </div>
               </div>
-              <span class="block q-my-sm">or</span>
-              <div>
-                <q-btn
-                  style="max-height: 20px"
-                  :disable="!entry.prompt"
-                  color="primary"
-                  icon="add_a_photo"
-                  label="Capture Image"
-                  @click="openCamera = true"
-                ></q-btn>
-                <q-file
-                  accept=".jpg, image/*"
-                  class="hidden"
-                  ref="entryFilePicker"
-                  data-test="file-image"
-                  :disable="!entry.prompt"
-                  :max-total-size="2097152"
-                  :required="!id"
-                  v-model="imageModel"
-                  @rejected="onRejected()"
-                  @update:model-value="uploadPhoto()"
-                />
-              </div>
+              <q-file
+                accept=".jpg, image/*"
+                class="hidden"
+                ref="entryFilePicker"
+                :disable="!entry.prompt"
+                data-test="file-image"
+                :max-total-size="2097152"
+                :required="!id"
+                v-model="imageModel"
+                @rejected="onRejected()"
+                @update:model-value="uploadPhoto()"
+              />
+              <span v-if="!entry.prompt" class="cover-image-hint text-caption q-mt-xs">Select prompt first</span>
+              <span v-else-if="entry.prompt && !entry.image" class="cover-image-hint text-caption q-mt-xs">
+                *Image size exceeds the 2MB limit.
+              </span>
             </div>
-
-            <!-- Entry Card Image End -->
           </q-step>
           <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
             <ShowcaseCard
@@ -158,22 +156,23 @@
                   :loading="entryStore.isLoading || entryStore.isLoading"
                   rounded
                   type="submit"
-                />
-                <q-tooltip
-                  v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
-                  class="text-center"
-                  style="white-space: pre-line"
                 >
-                  {{
-                    !entry.title || !entry.description
-                      ? 'Please make sure you have a title and description'
-                      : !entry.prompt
-                        ? 'Please select a prompt'
-                        : !entry.image
-                          ? 'Please select an image'
-                          : 'Please make sure all fields are filled'
-                  }}
-                </q-tooltip>
+                  <q-tooltip
+                    v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
+                    class="text-center"
+                    style="white-space: pre-line"
+                  >
+                    {{
+                      !entry.title || !entry.description
+                        ? 'Please make sure you have a title and description'
+                        : !entry.prompt
+                          ? 'Please select a prompt'
+                          : !entry.image
+                            ? 'Please select an image'
+                            : 'Please make sure all fields are filled'
+                    }}
+                  </q-tooltip>
+                </q-btn>
               </template>
             </q-stepper-navigation>
           </template>
@@ -395,3 +394,70 @@ function updateRecentArtistImageRef(artistImage) {
   recentArtistImage.value = artistImage
 }
 </script>
+
+<style lang="scss" scoped>
+.cover-image-wrapper {
+  .cover-image-hint {
+    color: #9e9e9e;
+  }
+  .cover-image-container {
+    .cover-image-placeholder {
+      position: relative;
+      width: 200px;
+      height: 150px;
+      border-radius: 6px;
+      overflow: hidden;
+      background-color: #e0e0e0;
+
+      .upload-icon-wrapper {
+        height: 150px;
+        width: 200px;
+        opacity: 0;
+        z-index: 99;
+        transition: all 0.3s ease;
+        background-color: rgba(0, 0, 0, 0.15);
+
+        .upload-icon {
+          border-radius: 50%;
+          transition: all ease 0.3s;
+          border: 2px dashed var(--q-primary);
+        }
+      }
+
+      .upload {
+        opacity: 0;
+      }
+
+      .add_photo_alternate {
+        opacity: 1;
+      }
+
+      .upload,
+      .add_photo_alternate {
+        transition: all 0.3s ease;
+      }
+
+      &:hover {
+        .upload {
+          opacity: 1;
+        }
+        .add_photo_alternate {
+          opacity: 0;
+        }
+        .upload-icon-wrapper {
+          opacity: 1;
+        }
+      }
+    }
+
+    .has-image {
+      border: 2px dashed #e0e0e0;
+
+      &:hover {
+        border-color: var(--q-primary);
+        background-color: #f5f5f5;
+      }
+    }
+  }
+}
+</style>
