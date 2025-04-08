@@ -3,7 +3,7 @@
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
-      <q-btn flat round icon="close" @click="handleDeleteImagesOnCancel" v-close-popup data-test="close-button" />
+      <q-btn flat round icon="close" v-close-popup />
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
@@ -14,7 +14,7 @@
               behavior="menu"
               counter
               data-test="select-prompt"
-              :disable="Boolean(entry.id)"
+              :disable="Boolean(entry.id) || isNavigatingFromPrompt"
               :hint="entry.image ? 'Image is attached to this prompt' : ''"
               label="Prompt"
               :options="promptOptions"
@@ -79,8 +79,8 @@
               </template>
             </q-field>
 
-            <div class="flex justify-between items-center">
-              <div class="">
+            <div class="row no-wrap">
+              <div class="col-9">
                 <q-file
                   accept=".jpg, image/*"
                   counter
@@ -91,6 +91,7 @@
                   :max-total-size="2097152"
                   :required="!id"
                   use-chips
+                  class="full-width"
                   v-model="imageModel"
                   @rejected="onRejected()"
                   @update:model-value="uploadPhoto()"
@@ -100,11 +101,12 @@
                   </template>
                 </q-file>
               </div>
+              <div class="col-1 flex justify-center items-center"><p>OR</p></div>
               <q-btn
-                style="max-height: 20px"
                 :disable="!entry.prompt"
                 color="primary"
                 icon="add_a_photo"
+                class="self-center col"
                 label="Capture Image"
                 @click="openCamera = true"
               ></q-btn>
@@ -143,27 +145,28 @@
                 <q-btn
                   color="primary"
                   data-test="button-submit"
-                  :disable="!entry.title || !entry.description || !entry.image || entryStore.isLoading"
+                  :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
                   :label="id ? 'Save Edits' : 'Submit Entry'"
-                  :loading="entryStore.isLoading || entryStore.isLoading"
+                  :loading="promptStore.isLoading || storageStore.isLoading"
                   rounded
                   type="submit"
-                />
-                <q-tooltip
-                  v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
-                  class="text-center"
-                  style="white-space: pre-line"
                 >
-                  {{
-                    !entry.title || !entry.description
-                      ? 'Please make sure you have a title and description'
-                      : !entry.prompt
-                        ? 'Please select a prompt'
-                        : !entry.image
-                          ? 'Please select an image'
-                          : 'Please make sure all fields are filled'
-                  }}
-                </q-tooltip>
+                  <q-tooltip
+                    v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
+                    class="text-center"
+                    style="white-space: pre-line"
+                  >
+                    {{
+                      !entry.title || !entry.description
+                        ? 'Please make sure you have a title and description'
+                        : !entry.prompt
+                          ? 'Please select a prompt'
+                          : !entry.image
+                            ? 'Please select an image'
+                            : 'Please make sure all fields are filled'
+                    }}
+                  </q-tooltip>
+                </q-btn>
               </template>
             </q-stepper-navigation>
           </template>
@@ -180,14 +183,26 @@
 <script setup>
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import { uploadAndSetImage } from 'src/utils/imageConvertor'
 import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import ShowcaseCard from 'components/Admin/ShowcaseCard.vue'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate', 'showcase'])
+const props = defineProps([
+  'author',
+  'created',
+  'description',
+  'id',
+  'image',
+  'prompt',
+  'slug',
+  'title',
+  'selectedPromptDate',
+  'isNavigatingFromPrompt',
+  'showcase'
+])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -225,7 +240,12 @@ watch(
 const promptOptions = computed(
   () =>
     promptStore._activePrompts
-      ?.map((prompt) => ({ label: `${prompt.date} – ${prompt.title}`, value: prompt.date, escrowId: prompt.escrowId }))
+      ?.map((prompt) => ({
+        label: `${prompt.date || prompt.publicationDate} – ${prompt.title}`,
+        value: prompt.id,
+        escrowId: prompt.escrowId,
+        date: prompt.date || prompt.creationDate
+      }))
       .reverse() || []
 )
 
@@ -242,8 +262,15 @@ onMounted(() => {
       artist: { info: '', photo: '' },
       ...(props.showcase || {})
     }
-  } else if (props.selectedPromptDate) {
-    entry.prompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
+  }
+})
+
+watchEffect(() => {
+  if (props.isNavigatingFromPrompt && props.selectedPromptDate && promptOptions.value.length && !entry.prompt) {
+    const selectedPrompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
+    if (selectedPrompt) {
+      entry.prompt = selectedPrompt
+    }
   }
 })
 
@@ -284,49 +311,34 @@ function onPaste(evt) {
 
 async function onSubmit() {
   entry.title = entry.title.trim()
-  const promptValue = entry.prompt?.value
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.prompt?.value)
 
-  if (!promptValue) {
-    $q.notify({
-      type: 'negative',
-      message: 'Please select a prompt before submitting.'
-    })
-    return
-  }
-
-  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(promptValue)
   if (!hasLoadedEntry) {
-    try {
-      await entryStore.fetchEntryByPrompts(promptValue)
-    } catch (e) {
-      $q.notify({
-        type: 'negative',
-        message: 'Failed to fetch entries for this prompt. Please try again.'
-      })
-      return
-    }
+    await entryStore.fetchEntryByPrompts(entry.prompt?.value)
   }
 
-  const hasEntry = entryStore.hasEntry(promptValue)
+  const hasEntry = entryStore.hasEntry(entry.prompt?.value)
+
   if (!props.id && hasEntry) {
     $q.notify({
       type: 'info',
-      message: 'You have already submitted an entry for this prompt. Please select another prompt.'
+      message: 'You have already submitted an entry for this prompt. Please select another prompt'
     })
     return
   }
 
-  const entryNameValidator = entryStore.entryNameValidator(props.id, promptValue, entry.title, !!props.id)
+  const entryNameValidator = entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
+
   if (entryNameValidator) {
-    $q.notify({ type: 'negative', message: 'Entry with this title already exists. Please choose another title.' })
+    $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
-
-  entry.slug = `/${entry.prompt.value.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+  const date = props.id ? props.prompt.date || props.prompt.publicationDate : entry.prompt.date
+  entry.slug = `/${date.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
   entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
   if (Object.keys(imageModel.value ?? {}).length || imageModel.value?.type) {
-    entry.image = await uploadAndSetImage(imageModel?.value, `images/entry-${entry.id}`)
+    entry.image = await uploadAndSetImage(imageModel.value, `images/entry-${entry.id}`)
   } else {
     entry.image = props.image
   }
@@ -343,10 +355,10 @@ async function onSubmit() {
     if (href.includes('/admin') && !userStore.isEditorOrAbove) {
       await entryStore.fetchUserRelatedEntries(userStore.getUserId)
     } else {
-      const updatedPrompt = await promptStore.fetchPromptById(promptValue)
-      const updatedList = updatedPrompt.find((prompt) => prompt.id === promptValue).entries
+      const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
+      const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
       const res = await entryStore.fetchPromptsEntries(updatedList)
-      const loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === promptValue)
+      const loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === entry.prompt.value)
 
       if (loadedPrompt) {
         const emptyList = !loadedPrompt.entries.length
