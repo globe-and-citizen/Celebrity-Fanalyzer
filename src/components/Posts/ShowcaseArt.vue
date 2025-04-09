@@ -33,7 +33,14 @@
         :name="showcase?.arts.length"
         style="max-height: 450px"
       >
-        <q-img v-if="showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
+        <q-img
+          v-if="showcase.artist.photo"
+          class="col-sm-6 col-xs-12 rounded-borders"
+          :src="showcase.artist.photo"
+          @dblclick="openDialog = true"
+        >
+          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs">Artist Photo</div>
+        </q-img>
         <p v-if="showcase?.artist?.info" class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
@@ -58,7 +65,9 @@
         </q-img>
       </q-carousel-slide>
       <q-carousel-slide v-if="showcase.artist.info || showcase.artist.photo" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
+        <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo">
+          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs relative-position">Artist Photo</div>
+        </q-img>
         <div v-if="showcase.artist.info" class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
           <p style="width: 100%; padding: 8px">{{ showcase.artist.info }}</p>
         </div>
