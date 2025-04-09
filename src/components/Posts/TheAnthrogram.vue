@@ -71,9 +71,12 @@
           </div>
         </div>
 
-        <q-separator spaced="xl" />
-        <div class="row q-mb-lg" v-if="!!statStore.getAllInteractionsByCountry?.response?.length">
-          <div class="col-12 relative-position" data-test="leaflet-map">
+        <div
+          class="row q-mt-lg q-mb-lg justify-between"
+          style="justify-content: space-between; gap: 10px"
+          v-if="!!statStore.getAllInteractionsByCountry?.response?.length"
+        >
+          <div class="col-12 map-border relative-position" data-test="leaflet-map">
             <LeafletMap />
           </div>
         </div>
@@ -141,6 +144,13 @@ onUnmounted(() => {
   border-radius: 10px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
   padding: 20px;
+}
+
+.map-border {
+  border: 0.5px solid rgba(128, 128, 128, 0.45);
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  padding: 10px;
 }
 
 .rating-chart {
