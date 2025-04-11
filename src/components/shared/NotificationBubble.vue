@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { useEntryStore, useNotificationStore, usePromptStore } from 'app/src/stores'
+import { useEntryStore, useNotificationStore, usePromptStore, useCommentStore } from 'app/src/stores'
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -60,6 +60,7 @@ const router = useRouter()
 const entryStore = useEntryStore()
 const notificationStore = useNotificationStore()
 const promptStore = usePromptStore()
+const commentStore = useCommentStore()
 
 onMounted(async () => {
   await notificationStore.readList()
@@ -80,12 +81,28 @@ function markAllAsRead() {
 function goToLink(notification) {
   markOneAsRead(notification.id)
 
-  if (notification.type === 'comment') {
+  if (notification.type === 'comment' || notification.type === 'mention') {
+    console.log('notification', notification)
     markAllAsRead(notification.link)
+    if (notification.commentId) {
+      commentStore.setCommentId(notification.commentId)
+    }
   }
   if (notification.collection === 'prompts') {
-    router.push(notification.link || '/')
-    promptStore.setTab('comments')
+    const prompt = promptStore.getPrompts?.find((p) => p.slug === notification.slug)
+    if (!prompt) {
+      promptStore.fetchPromptBySlug(notification.slug).then(() => {
+        router.push({
+          path: notification.slug || notification.link || '/'
+        })
+        promptStore.setTab('comments')
+      })
+    } else {
+      router.push({
+        path: notification.slug || notification.link || '/'
+      })
+      promptStore.setTab('comments')
+    }
   }
   if (notification.collection === 'entries') {
     const entry = notification.slug || notification.link.slice(0, 8) + '/' + notification.link.slice(8) + '_id'

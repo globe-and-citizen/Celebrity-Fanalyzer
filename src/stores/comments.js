@@ -41,7 +41,9 @@ export const useCommentStore = defineStore('comments', {
     _unSubscribe: undefined,
     _isLoading: false,
     _initialLoading: false,
-    _replyTo: ''
+    _replyTo: '',
+    _scrollToComment: false,
+    _scrollToCommentId: ''
   }),
 
   // persist: true,
@@ -53,9 +55,11 @@ export const useCommentStore = defineStore('comments', {
      * @returns undefined|Object
      */
     getCommentById: (state) => (commentId) => state._comments?.find((comment) => comment.id === commentId),
+    getScrollToCommentId: (state) => state._scrollToCommentId,
     isLoading: (state) => state._isLoading,
     isLoaded: (state) => !!state._comments,
     isInitialLoading: (state) => state._initialLoading,
+    isScrollToComment: (state) => state._scrollToComment,
     /**
      * Return A comment children
      * @param state
@@ -166,6 +170,7 @@ export const useCommentStore = defineStore('comments', {
 
       this._isLoading = true
       await setDoc(doc(db, collectionName, document.id, 'comments', comment.id), comment).finally(() => (this._isLoading = false))
+      return comment.id
     },
 
     async editComment(collectionName, documentId, id, editedComment, userId) {
@@ -291,6 +296,28 @@ export const useCommentStore = defineStore('comments', {
 
     async resetComments() {
       this._comments = undefined
+    },
+
+    setCommentId(commentId) {
+      this._scrollToComment = true
+      this._scrollToCommentId = commentId
+    },
+
+    scrollToTheComment() {
+      if (this._scrollToCommentId && this._scrollToComment) {
+        const element = document.getElementById(this._scrollToCommentId)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          setTimeout(() => {
+            element.style.backgroundColor = '#e3f2fd'
+            setTimeout(() => {
+              element.style.backgroundColor = ''
+            }, 2000)
+          }, 800)
+        }
+        this._scrollToComment = false
+        this._scrollToCommentId = ''
+      }
     }
   }
 })
