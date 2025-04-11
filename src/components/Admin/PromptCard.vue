@@ -187,14 +187,13 @@
                 counter
                 data-test="select-categories"
                 hide-dropdown-icon
-                :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
+                :hint="!prompt.categories ? 'Tag is required. Click Enter ↵ to add a new Tag' : ''"
                 input-debounce="0"
-                label="Categories"
+                label="Tags (optional)"
                 multiple
                 new-value-mode="add-unique"
                 use-input
                 use-chips
-                :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
                 v-model="prompt.categories"
               />
 
@@ -543,15 +542,7 @@ async function updatePaymentDetails(data) {
 }
 
 const isNextStepDisabled = computed(() => {
-  return (
-    !prompt.title ||
-    !prompt.description ||
-    !prompt.categories?.length ||
-    !prompt.image ||
-    promptStore.isLoading ||
-    !prompt.publicationDate ||
-    !prompt.endDate
-  )
+  return !prompt.title || !prompt.description || !prompt.image || promptStore.isLoading || !prompt.publicationDate || !prompt.endDate
 })
 </script>
 
