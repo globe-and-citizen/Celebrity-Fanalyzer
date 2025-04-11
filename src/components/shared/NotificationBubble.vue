@@ -82,7 +82,6 @@ function goToLink(notification) {
   markOneAsRead(notification.id)
 
   if (notification.type === 'comment' || notification.type === 'mention') {
-    console.log('notification', notification)
     markAllAsRead(notification.link)
     if (notification.commentId) {
       commentStore.setCommentId(notification.commentId)
