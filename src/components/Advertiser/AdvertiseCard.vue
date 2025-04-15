@@ -138,7 +138,6 @@
               mask="#.##"
               fill-mask="0"
               reverse-fill-mask
-              // TEMPORARY ADJUSTMENT FOR TESTING PURPOSES
               :rules="[() => (usdAmount < 0.01 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
