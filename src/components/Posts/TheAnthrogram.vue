@@ -10,19 +10,19 @@
         </q-tabs>
         <q-separator spaced="xl" />
 
-        <div class="row justify-between" style="justify-content: space-between; gap: 10px">
+        <div class="row justify-between chart-row">
           <div
             v-if="!!visitorStore?.getVisitors?.length"
-            v-bind:class="statStore.getStats && hasValidStats ? 'col-md-6' : 'col-md-12'"
-            class="col-12 anthogram-border"
+            :class="hasValidStats && statStore.getStats ? 'col-12 chart-flex' : 'col-12'"
+            class="anthogram-border"
             data-test="visitors-bar"
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
           <div
             v-if="hasValidStats && statStore.getStats"
-            v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
-            class="col-12 anthogram-border"
+            :class="visitorStore?.getVisitors?.length ? 'col-12 chart-flex' : 'col-12'"
+            class="anthogram-border"
             data-test="half-donought"
           >
             <HalfDonought :stats="statStore.getStats" :title="'User\'s total activity'" />
@@ -32,39 +32,39 @@
           <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
         </div>
 
-        <div class="row" style="justify-content: space-between; gap: 10px; margin-top: 10px">
+        <div class="row chart-row" style="margin-top: 10px">
           <div
-            class="col-12 anthogram-border"
             v-if="!!shareStore?.getSharesStats?.length"
-            v-bind:class="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length ? 'col-md-6' : 'col-md-12'"
+            :class="likeStore.getLikes?.length || likeStore.getDislikes?.length ? 'col-12 chart-flex' : 'col-12'"
+            class="anthogram-border"
             data-test="shares-pie"
           >
             <q-skeleton v-if="shareStore?.isLoading" width="100%" height="40vh" />
             <SharesPie v-else :data="shareStore?.getSharesStats" :interval="interval" />
           </div>
           <div
-            class="col-12 anthogram-border"
             v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
-            v-bind:class="!!shareStore?.getSharesStats?.length ? 'col-md-6' : 'col-md-12'"
+            :class="shareStore?.getSharesStats?.length ? 'col-12 chart-flex' : 'col-12'"
+            class="anthogram-border"
             data-test="likes-bar"
           >
             <LikesBar :data="{ likes: likeStore.getLikes ?? [], dislikes: likeStore.getDislikes ?? [] }" :interval="interval" />
           </div>
         </div>
 
-        <div class="row" style="justify-content: space-between; gap: 10px">
+        <div class="row chart-row">
           <div
-            class="col-12 anthogram-border rating-chart"
             v-if="!!statStore.getArticleRate"
-            v-bind:class="!!statStore.getUserRate ? 'col-md-6' : 'col-md-12'"
+            :class="statStore.getUserRate ? 'col-12 chart-flex' : 'col-12'"
+            class="anthogram-border rating-chart"
             data-test="article-popularity"
           >
             <PopularityGauge :ratingValue="statStore.getArticleRate" :title="'Post popularity rating'" />
           </div>
           <div
-            class="col-12 anthogram-border rating-chart"
             v-if="!!statStore.getUserRate"
-            v-bind:class="!!statStore.getArticleRate ? 'col-md-6' : 'col-md-12'"
+            :class="statStore.getArticleRate ? 'col-12 chart-flex' : 'col-12'"
+            class="anthogram-border rating-chart"
             data-test="user-popularity"
           >
             <PopularityGauge :ratingValue="statStore.getUserRate" :title="'User rating'" />
@@ -161,5 +161,26 @@ onUnmounted(() => {
   }
 
   margin-top: 10px;
+}
+
+.chart-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.chart-flex {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .chart-row {
+    flex-wrap: wrap;
+  }
+  .chart-flex {
+    flex: 0 0 100%;
+  }
 }
 </style>
