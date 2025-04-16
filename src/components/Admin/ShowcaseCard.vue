@@ -20,7 +20,7 @@
       accept="image/*"
       data-test="upload-artist-photo"
     />
-    <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
+    <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" data-test="upload-artist-photo-btn" />
     <div v-if="modelArtistPhoto" class="items-center no-wrap q-my-md q-pa-md rounded-borders col shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
       <q-img
@@ -45,7 +45,7 @@
       :max-files="10"
       data-test="upload-arts"
     />
-    <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts">
+    <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" data-test="upload-arts-btn">
       <q-tooltip>Max 10 Images</q-tooltip>
     </q-btn>
     <div v-if="modelArts.length" class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
