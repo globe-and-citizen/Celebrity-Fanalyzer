@@ -51,7 +51,7 @@
                       required
                     >
                       <template v-slot:append>
-                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
+                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="publication-date-picker">
                           <q-popup-proxy>
                             <q-date
                               mask="YYYY-MM-DD"
@@ -59,9 +59,10 @@
                               v-model="prompt.publicationDate"
                               :options="dateOptions"
                               @update:model-value="updateEndDate"
+                              data-test="publication-date-calendar"
                             >
                               <div class="row items-center justify-end">
-                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close-publication-date" />
                               </div>
                             </q-date>
                           </q-popup-proxy>
@@ -88,11 +89,17 @@
                       :model-value="prompt.endDate || 'YYYY-MM-DD'"
                     >
                       <template v-slot:append>
-                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="date-picker">
+                        <q-icon name="event" class="cursor-pointer q-ml-none" color="primary" data-test="end-date-picker">
                           <q-popup-proxy>
-                            <q-date mask="YYYY-MM-DD" minimal v-model="prompt.endDate" :options="endDateOptions">
+                            <q-date
+                              mask="YYYY-MM-DD"
+                              minimal
+                              v-model="prompt.endDate"
+                              :options="endDateOptions"
+                              data-test="end-date-calendar"
+                            >
                               <div class="row items-center justify-end">
-                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                                <q-btn v-close-popup label="Close" color="primary" flat data-test="close-end-date" />
                               </div>
                             </q-date>
                           </q-popup-proxy>
@@ -115,9 +122,10 @@
               <q-field
                 counter
                 label="Description"
-                maxlength="400"
+                maxlength="6000"
                 v-model="prompt.description"
                 :hint="!prompt.description ? '*Description is required' : ''"
+                :rules="[(val) => val.length <= 6000 || 'Description cannot exceed 6000 characters']"
               >
                 <template v-slot:control>
                   <q-editor
@@ -125,6 +133,7 @@
                     data-test="input-description"
                     dense
                     flat
+                    :max-length="6000"
                     min-height="5rem"
                     ref="editorRef"
                     style="width: 100%"
@@ -148,7 +157,8 @@
                       ['undo', 'redo']
                     ]"
                     v-model="prompt.description"
-                    @paste="handlePaste($event)"
+                    @paste="onPaste($event)"
+                    @keydown="onKeyDown($event)"
                   />
                 </template>
               </q-field>
@@ -187,14 +197,13 @@
                 counter
                 data-test="select-categories"
                 hide-dropdown-icon
-                :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
+                :hint="!prompt.categories ? 'Tag is required. Click Enter ↵ to add a new Tag' : ''"
                 input-debounce="0"
-                label="Categories"
+                label="Tags (optional)"
                 multiple
                 new-value-mode="add-unique"
                 use-input
                 use-chips
-                :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
                 v-model="prompt.categories"
               />
 
@@ -311,6 +320,7 @@
                 v-if="step < 3"
                 color="primary"
                 :disable="isNextStepDisabled"
+                data-test="button-continue"
                 label="Continue"
                 :loading="promptStore.isLoading || storageStore.isLoading"
                 rounded
@@ -335,7 +345,6 @@ import { onMounted, reactive, ref, watchEffect, computed, watch, toRaw, nextTick
 import CaptureCamera from '../shared/CameraCapture.vue'
 import FundDepositCard from './FundDepositCard.vue'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
-import { onPaste } from 'src/utils/helpers'
 import { indexedDb } from 'src/utils/indexeddb'
 
 const emit = defineEmits(['hideDialog'])
@@ -384,6 +393,7 @@ const step = ref(1)
 const uploadedImage = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
+const lastDescriptionNotificationTime = ref(0)
 const parsedPrompt = ref(null)
 
 function dateOptions(currentDate, creationDate = prompt.value.creationDate) {
@@ -440,6 +450,20 @@ async function loadPromptFromDexie() {
   }
 }
 
+watch(
+  () => prompt.value.description,
+  (newDescription) => {
+    if (newDescription && newDescription.length > 6000) {
+      prompt.value.description = newDescription.substring(0, 6000)
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
+})
+
 const disablePublicationDate = computed(() => {
   if (!props.id) return false
   const publicationDateData = new Date(prompt.value.publicationDate).getTime()
@@ -487,19 +511,57 @@ function captureCamera(imageBlob) {
   uploadPhoto()
 }
 
-function handlePaste(event) {
-  if (!editorRef.value) {
-    const unwatch = watch(
-      () => editorRef.value,
-      (newVal) => {
-        if (newVal) {
-          onPaste(event, editorRef)
-          unwatch()
-        }
-      }
-    )
-  } else {
-    onPaste(event, editorRef)
+function showDescriptionNotification(message) {
+  const now = Date.now()
+  if (now - lastDescriptionNotificationTime.value > 1000) {
+    $q.notify({
+      type: 'warning',
+      message: message,
+      position: 'top',
+      timeout: 2000
+    })
+    lastDescriptionNotificationTime.value = now
+  }
+}
+function onKeyDown(event) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
+    return
+  }
+  if (prompt.value.description.length >= 6000) {
+    if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      showDescriptionNotification('Max 6000 characters reached')
+    }
+  }
+}
+
+function onPaste(evt) {
+  if (evt.target.nodeName === 'INPUT') return
+  let text, onPasteStripFormattingIEPaste
+  evt.preventDefault()
+  evt.stopPropagation()
+  const currentLength = prompt.value.description.length
+
+  if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
+    text = evt.originalEvent.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
+    editorRef.value.runCmd('insertText', text)
+  } else if (evt.clipboardData && evt.clipboardData.getData) {
+    text = evt.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
+    editorRef.value.runCmd('insertText', text)
+  } else if (window.clipboardData && window.clipboardData.getData) {
+    if (!onPasteStripFormattingIEPaste) {
+      onPasteStripFormattingIEPaste = true
+      editorRef.value.runCmd('ms-pasteTextOnly', text)
+    }
+    onPasteStripFormattingIEPaste = false
   }
 }
 

@@ -3,7 +3,7 @@
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
-      <q-btn flat round icon="close" @click="handleDeleteImagesOnCancel" v-close-popup data-test="close-button" />
+      <q-btn flat round icon="close" v-close-popup data-test="close-button" />
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
@@ -14,7 +14,7 @@
               behavior="menu"
               counter
               data-test="select-prompt"
-              :disable="Boolean(entry.id)"
+              :disable="Boolean(entry.id) || isNavigatingFromPrompt"
               :hint="entry.image ? 'Image is attached to this prompt' : ''"
               label="Prompt"
               :options="promptOptions"
@@ -41,9 +41,10 @@
             <q-field
               counter
               label="Description"
-              maxlength="400"
+              maxlength="6000"
               v-model="entry.description"
               :hint="!entry.description ? '*Description is required' : ''"
+              :rules="[(val) => val.length <= 6000 || 'Description cannot exceed 6000 characters']"
             >
               <template v-slot:control>
                 <q-editor
@@ -51,6 +52,7 @@
                   data-test="input-description"
                   dense
                   flat
+                  :maxlength="6000"
                   min-height="5rem"
                   ref="editorRef"
                   style="width: 100%"
@@ -74,20 +76,24 @@
                     ['undo', 'redo']
                   ]"
                   v-model="entry.description"
-                  @paste="handlePaste($event)"
+                  @paste="onPaste($event)"
+                  @keydown="onKeyDown($event)"
                 />
               </template>
             </q-field>
-            <div class="flex justify-between items-center">
-              <div class="">
+
+            <div class="row no-wrap">
+              <div class="col-9">
                 <q-file
                   accept=".jpg, image/*"
                   counter
                   data-test="file-image"
                   :disable="!entry.prompt"
-                  :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : 'Image loaded'"
+                  :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : ''"
                   label="Image"
                   :max-total-size="2097152"
+                  use-chips
+                  class="full-width"
                   :required="!id && !entry.image"
                   v-model="uploadedImage"
                   @rejected="onRejected()"
@@ -98,11 +104,12 @@
                   </template>
                 </q-file>
               </div>
+              <div class="col-1 flex justify-center items-center"><p>OR</p></div>
               <q-btn
-                style="max-height: 20px"
                 :disable="!entry.prompt"
                 color="primary"
                 icon="add_a_photo"
+                class="self-center col"
                 label="Capture Image"
                 @click="openCamera = true"
               ></q-btn>
@@ -150,27 +157,28 @@
                 <q-btn
                   color="primary"
                   data-test="button-submit"
-                  :disable="!entry.title || !entry.description || !entry.image || entryStore.isLoading"
+                  :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
                   :label="id ? 'Save Edits' : 'Submit Entry'"
-                  :loading="entryStore.isLoading || entryStore.isLoading"
+                  :loading="promptStore.isLoading || storageStore.isLoading"
                   rounded
                   type="submit"
-                />
-                <q-tooltip
-                  v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
-                  class="text-center"
-                  style="white-space: pre-line"
                 >
-                  {{
-                    !entry.title || !entry.description
-                      ? 'Please make sure you have a title and description'
-                      : !entry.prompt
-                        ? 'Please select a prompt'
-                        : !entry.image
-                          ? 'Please select an image'
-                          : 'Please make sure all fields are filled'
-                  }}
-                </q-tooltip>
+                  <q-tooltip
+                    v-if="!entry.title || !entry.description || !entry.prompt || !entry.image"
+                    class="text-center"
+                    style="white-space: pre-line"
+                  >
+                    {{
+                      !entry.title || !entry.description
+                        ? 'Please make sure you have a title and description'
+                        : !entry.prompt
+                          ? 'Please select a prompt'
+                          : !entry.image
+                            ? 'Please select an image'
+                            : 'Please make sure all fields are filled'
+                    }}
+                  </q-tooltip>
+                </q-btn>
               </template>
             </q-stepper-navigation>
           </template>
@@ -186,15 +194,28 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref, toRaw, watch, watchEffect } from 'vue'
+import { computed, onMounted, ref, toRaw, watch, watchEffect } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useStorageStore } from 'src/stores'
+
+import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import ShowcaseCard from 'components/Admin/ShowcaseCard.vue'
-import { onPaste } from 'src/utils/helpers'
 import { indexedDb } from 'src/utils/indexeddb'
 
 const emit = defineEmits(['hideDialog'])
-const props = defineProps(['author', 'created', 'description', 'id', 'image', 'prompt', 'slug', 'title', 'selectedPromptDate', 'showcase'])
+const props = defineProps([
+  'author',
+  'created',
+  'description',
+  'id',
+  'image',
+  'prompt',
+  'slug',
+  'title',
+  'selectedPromptDate',
+  'isNavigatingFromPrompt',
+  'showcase'
+])
 
 const $q = useQuasar()
 const entryStore = useEntryStore()
@@ -219,6 +240,19 @@ const todayDate = new Date().toISOString().replace(/[.:-]/g, '')
 const recentUploadsRef = ref([])
 const recentArtistImage = ref('')
 const parsedEntry = ref(null)
+const storageStore = useStorageStore()
+
+const lastDescriptionNotificationTime = ref(0)
+
+watch(
+  () => entry.value.description,
+  (newDescription) => {
+    if (newDescription && newDescription.length > 6000) {
+      entry.value.description = newDescription.substring(0, 6000)
+    }
+  },
+  { immediate: true }
+)
 
 const promptOptions = computed(
   () =>
@@ -241,7 +275,9 @@ async function loadEntryFromDexie() {
     parsedEntry.value = null
   }
 }
+
 onMounted(async () => {
+  promptStore.activePromptsListener()
   await loadEntryFromDexie()
   if (parsedEntry.value && !props.id) {
     entry.value = {
@@ -263,23 +299,71 @@ onMounted(async () => {
   await promptStore.activePromptsListener()
 })
 
+watchEffect(() => {
+  if (props.isNavigatingFromPrompt && props.selectedPromptDate && promptOptions.value.length && !entry.value.prompt) {
+    const selectedPrompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
+    if (selectedPrompt) {
+      entry.value.prompt = selectedPrompt
+    }
+  }
+})
+
 function onRejected() {
   $q.notify({ type: 'negative', message: `Image did not pass validation constraints` })
 }
 
-function handlePaste(event) {
-  if (!editorRef.value) {
-    const unwatch = watch(
-      () => editorRef.value,
-      (newVal) => {
-        if (newVal) {
-          onPaste(event, editorRef)
-          unwatch()
-        }
-      }
-    )
-  } else {
-    onPaste(event, editorRef)
+function onPaste(evt) {
+  // Let inputs do their thing, so we don't break pasting of links.
+  if (evt.target.nodeName === 'INPUT') return
+  let text, onPasteStripFormattingIEPaste
+  evt.preventDefault()
+  evt.stopPropagation()
+  const currentLength = entry.value.description.length
+
+  if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
+    text = evt.originalEvent.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
+    editorRef.value.runCmd('insertText', text)
+  } else if (evt.clipboardData && evt.clipboardData.getData) {
+    text = evt.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
+    editorRef.value.runCmd('insertText', text)
+  } else if (window.clipboardData && window.clipboardData.getData) {
+    if (!onPasteStripFormattingIEPaste) {
+      onPasteStripFormattingIEPaste = true
+      editorRef.value.runCmd('ms-pasteTextOnly', text)
+    }
+    onPasteStripFormattingIEPaste = false
+  }
+}
+
+function showDescriptionNotification(message) {
+  const now = Date.now()
+  if (now - lastDescriptionNotificationTime.value > 1000) {
+    $q.notify({
+      type: 'warning',
+      message: message,
+      position: 'top',
+      timeout: 2000
+    })
+    lastDescriptionNotificationTime.value = now
+  }
+}
+function onKeyDown(event) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
+    return
+  }
+  if (entry.value.description.length >= 6000) {
+    if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      showDescriptionNotification('Max 6000 characters reached')
+    }
   }
 }
 

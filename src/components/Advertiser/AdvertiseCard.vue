@@ -97,7 +97,6 @@
               hide-hint
               class="q-mb-lg"
               label="Product URL"
-              maxlength="80"
               :rules="[(url) => (url ? isUrlValid(url) : true) || 'Please enter a valid url']"
             />
             <q-input
@@ -139,7 +138,7 @@
               mask="#.##"
               fill-mask="0"
               reverse-fill-mask
-              :rules="[() => (usdAmount < 0.1 ? 'Minimum allowed budget is 3 USD' : true)]"
+              :rules="[() => (usdAmount < 0.01 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
             <q-input
