@@ -18,8 +18,8 @@
           />
         </div>
       </q-responsive>
-      <div v-else-if="post.contentURL" class="bg-blur flex">
-        <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
+      <div v-else-if="post.image" class="bg-blur flex">
+        <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.image" />
       </div>
       <q-dialog v-model="openDialog" ref="dialogRef" backdrop-filter="blur(1px)" auto-close>
         <q-img
@@ -98,7 +98,7 @@
         <q-separator v-if="!isAdd" spaced />
         <p v-if="isAdd" v-html="post?.content" class="q-mt-sm text-body1"></p>
         <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
-        <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
+        <ShowcaseArt v-if="post?.showcase?.arts?.length || post?.showcase?.artist?.preview" :showcase="post.showcase" />
         <q-separator v-if="!isAdd" inset />
         <div class="text-center q-pt-md">
           <q-btn

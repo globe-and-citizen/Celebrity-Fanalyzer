@@ -24,10 +24,24 @@ import {
   useLikeStore,
   useShareStore,
   useStatStore,
+  useStorageStore,
   useUserStore,
   useVisitorStore
 } from 'src/stores'
 import { Notify } from 'quasar'
+import { convertImage } from 'src/utils/imageConvertor'
+
+async function uploadImage(image, adId) {
+  const storageStore = useStorageStore()
+  try {
+    const resizedImg = await convertImage(image)
+    const imagePath = `advertise/content-${adId}`
+    return await storageStore.uploadFile(resizedImg, imagePath)
+  } catch (error) {
+    console.error('Image upload failed:', error)
+    throw new Error('Failed to upload image')
+  }
+}
 
 export const useAdvertiseStore = defineStore('advertises', {
   state: () => ({
@@ -150,6 +164,16 @@ export const useAdvertiseStore = defineStore('advertises', {
         advertise.isApproved = true
         advertise.status = 'Active'
 
+        delete advertise.image
+        delete advertise.imagePath
+
+        if (!advertise.imageFile) {
+          delete advertise.imageFile
+        } else if (advertise.imageFile instanceof Blob) {
+          advertise.image = await uploadImage(advertise.imageFile, advertise.id)
+          delete advertise.imageFile
+        }
+
         this._isLoading = true
         await setDoc(doc(db, 'advertises', advertise.id), advertise)
         this._advertises = [advertise, ...this._advertises]
@@ -164,10 +188,17 @@ export const useAdvertiseStore = defineStore('advertises', {
       try {
         const advertise = { ...payload }
         advertise.updated = Timestamp.fromDate(new Date())
-
         advertise.author = doc(db, 'users', advertise.author.id)
+        delete advertise.categories
 
         this._isLoading = true
+        if (!advertise.imageFile) {
+          delete advertise.imageFile
+        } else if (advertise.imageFile instanceof Blob) {
+          advertise.image = await uploadImage(advertise.imageFile, advertise.id)
+          delete advertise.imageFile
+        }
+
         await runTransaction(db, async (transaction) => {
           transaction.update(doc(db, 'advertises', advertise.id), advertise)
         })

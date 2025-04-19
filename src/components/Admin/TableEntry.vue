@@ -130,7 +130,7 @@
     </template>
   </q-table>
 
-  <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss>
+  <q-dialog full-width position="bottom" v-model="entry.dialog">
     <EntryCard v-bind="entry" @hideDialog="entry = {}" @forward-update-entry="forwardHandleUpdateEntry" />
   </q-dialog>
 

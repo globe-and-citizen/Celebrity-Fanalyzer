@@ -30,8 +30,10 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
-import { Notify } from 'quasar'
+import { Notify, uid } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
+import { uploadImage } from 'src/utils/helpers'
+import { convertImage } from 'src/utils/imageConvertor'
 
 let updatedBefore = false
 const getPrompts = async (querySnapshot, userStore) => {
@@ -301,23 +303,68 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async addPrompt(payload) {
+      this._isLoading = true
+      const collectionRef = collection(db, 'prompts')
+      const docRef = doc(collectionRef)
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()
-      const isTester = payload.author.label === 'Cypress Tester'
-      const prompt = isTester ? { ...payload, escrowId: '0.0000000000000000001' } : { ...payload }
-      prompt.author = doc(db, 'users', prompt.author.value)
+      const isTester = payload.value.author?.label === 'Cypress Tester'
+      const prompt = isTester ? { ...payload.value, escrowId: '0.0000000000000000001' } : { ...payload.value }
+
+      prompt.author = doc(db, 'users', prompt.author?.value)
       prompt.created = Timestamp.fromDate(new Date())
-      prompt.id = payload.id
+      prompt.id = docRef.id
       prompt.hasWinner = null
 
-      this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
+      delete prompt.image
+      delete prompt.imagePath
+      delete prompt.showcase.imageFiles
 
+      //PROMPT IMAGE
+      if (!prompt.imageFile) {
+        delete prompt.imageFile
+      } else if (prompt.imageFile instanceof Blob) {
+        prompt.image = await uploadImage(prompt.imageFile, `prompt-${prompt.id}`)
+        delete prompt.imageFile
+      }
+      //AUTHOR IMAGE
+
+      if (!prompt.showcase?.artist.file) {
+        delete prompt.imageFile
+      } else if (prompt.showcase?.artist.file instanceof Blob) {
+        prompt.showcase.artist.preview = await uploadImage(prompt.showcase.artist.file, `artist-${prompt.id}`)
+        delete prompt.showcase.artist.file
+        delete prompt.showcase.artist.photo
+      }
+
+      //ARTS IMAGE
+
+      if (prompt.showcase?.arts?.length > 0) {
+        try {
+          const uploadedArts = []
+          for (const art of prompt.showcase.arts) {
+            if (art.file instanceof Blob) {
+              const imagePath = `arts/arts-${uid()}`
+              const downloadUrl = await uploadImage(art.file, imagePath)
+              uploadedArts.push({ preview: downloadUrl })
+            } else {
+              uploadedArts.push({ preview: art.url || '' })
+            }
+          }
+          prompt.showcase.arts = uploadedArts
+        } catch (error) {
+          console.error('Image upload failed:', error)
+          this._isLoading = false
+          throw new Error('Failed to upload image')
+        }
+      }
+
+      await setDoc(doc(db, 'prompts', prompt.id), prompt)
       prompt.author = await userStore.fetchUser(prompt.author.id)
       prompt.entries = []
       this._prompts = this.getPrompts ? [prompt, ...this.getPrompts] : [prompt]
-
       await notificationStore.toggleSubscription('prompts', prompt.id)
+      this._isLoading = false
     },
 
     async editPrompt(payload) {
@@ -326,6 +373,37 @@ export const usePromptStore = defineStore('prompts', {
 
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
+
+      if (!prompt.imageFile) {
+        delete prompt.imageFile
+        delete prompt.imagePreview
+      } else if (prompt.imageFile instanceof Blob) {
+        prompt.image = await uploadImage(prompt.imageFile, `prompt-${prompt.id}`)
+        delete prompt.imageFile
+        delete prompt.imagePreview
+      }
+
+      if (prompt.showcase?.arts?.length > 0) {
+        try {
+          const uploadedArts = []
+          for (const art of prompt.showcase.arts) {
+            if (art.file instanceof Blob) {
+              const imagePath = `arts/arts-${uid()}`
+              const downloadUrl = await uploadImage(art.file, imagePath)
+              uploadedArts.push({ preview: downloadUrl })
+            } else {
+              uploadedArts.push({ preview: art.preview || '' })
+            }
+          }
+          prompt.showcase.arts = uploadedArts
+        } catch (error) {
+          console.error('Image upload failed:', error)
+          this._isLoading = false
+          throw new Error('Failed to upload image')
+        }
+      }
+
+      delete prompt.date
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
