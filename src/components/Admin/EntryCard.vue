@@ -126,6 +126,7 @@
               v-model:artist="entry.showcase.artist"
               @updateRecentUploads="updateRecentUploadsRef"
               @updateRecentArtistImage="updateRecentArtistImageRef"
+              @update:artsToRemove="imagesToRemoveList"
             />
           </q-step>
 
@@ -159,7 +160,7 @@
                   data-test="button-submit"
                   :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
                   :label="id ? 'Save Edits' : 'Submit Entry'"
-                  :loading="promptStore.isLoading || storageStore.isLoading"
+                  :loading="entryStore.isLoading || storageStore.isLoading"
                   rounded
                   type="submit"
                 >
@@ -196,8 +197,6 @@
 import { useQuasar } from 'quasar'
 import { computed, onMounted, ref, toRaw, watch, watchEffect } from 'vue'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useStorageStore } from 'src/stores'
-
-import { useRouter } from 'vue-router'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import ShowcaseCard from 'components/Admin/ShowcaseCard.vue'
 import { indexedDb } from 'src/utils/indexeddb'
@@ -254,6 +253,10 @@ watch(
   { immediate: true }
 )
 
+const imagesToRemoveList = (e) => {
+  entry.value.artsToRemove = [...e]
+}
+
 const promptOptions = computed(
   () =>
     promptStore._activePrompts
@@ -277,7 +280,7 @@ async function loadEntryFromDexie() {
 }
 
 onMounted(async () => {
-  promptStore.activePromptsListener()
+  await promptStore.activePromptsListener()
   await loadEntryFromDexie()
   if (parsedEntry.value && !props.id) {
     entry.value = {
@@ -400,7 +403,6 @@ async function onSubmit() {
   const failureMessage = props.id ? 'Entry edit failed' : 'Entry submission failed'
 
   try {
-    // throw new Error('')
     await action(entry.value)
 
     if (props.id) {

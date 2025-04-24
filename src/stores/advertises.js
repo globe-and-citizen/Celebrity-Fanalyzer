@@ -157,8 +157,8 @@ export const useAdvertiseStore = defineStore('advertises', {
       this._isLoading = false
     },
     async addAdvertise(payload) {
+      const advertise = { ...payload }
       try {
-        const advertise = { ...payload }
         advertise.author = doc(db, 'users', advertise.author.uid)
         advertise.created = Timestamp.fromDate(new Date())
         advertise.isApproved = true
@@ -190,6 +190,11 @@ export const useAdvertiseStore = defineStore('advertises', {
         advertise.updated = Timestamp.fromDate(new Date())
         advertise.author = doc(db, 'users', advertise.author.id)
         delete advertise.categories
+        delete advertise.date
+
+        if (advertise.status === 'Published') {
+          advertise.status = 'Active'
+        }
 
         this._isLoading = true
         if (!advertise.imageFile) {

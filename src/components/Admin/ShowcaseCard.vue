@@ -56,11 +56,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeMount } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 
 const props = defineProps(['arts', 'artist', 'collectionName', 'date', 'entryTitle'])
-const emit = defineEmits(['update:arts', 'update:artist'])
+const emit = defineEmits(['update:arts', 'update:artist', 'update:artsToRemove'])
 const $q = useQuasar()
 const artsFileRef = ref(null)
 const artistFileRef = ref(null)
@@ -69,6 +69,7 @@ const modelArtistInfo = ref(props.artist?.info || '')
 const modelArtistPhoto = ref(props.artist?.preview || '')
 const modelFileArt = ref(null)
 const modelFileArtist = ref(null)
+const artsToRemove = ref([])
 
 // File size validation
 function checkFileSize(files) {
@@ -145,6 +146,12 @@ function removeArt(index) {
   if (art.preview?.startsWith('blob:')) {
     URL.revokeObjectURL(art.preview)
   }
+
+  if (art?.preview?.startsWith('https://') || (typeof art === 'string' && art.startsWith('https://'))) {
+    artsToRemove.value.push(art.preview ?? art)
+    emit('update:artsToRemove', [...artsToRemove.value])
+  }
+
   modelArts.value.splice(index, 1)
   emit('update:arts', modelArts.value)
 }

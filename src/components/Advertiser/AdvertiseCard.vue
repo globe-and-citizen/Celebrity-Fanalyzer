@@ -258,7 +258,7 @@ onMounted(async () => {
     advertise.value = {
       ...advertise.value,
       ...parsedAd.value,
-      author: userStore.isAuthenticated ? { id: userStore.getUser.uid } : null,
+      author: userStore.isAuthenticated ? { uid: userStore.getUser.uid } : null,
       id: docRef.id
     }
 
@@ -281,6 +281,7 @@ onMounted(async () => {
     advertise.value.duration = props.duration
     advertise.value.status = props.status
     advertise.value.contentURL = props.contentURL ?? ''
+    advertise.value.campaignCode = props.campaignCode ?? ''
   } else {
     advertise.value = {
       ...advertise.value,
@@ -428,13 +429,6 @@ async function onSubmit() {
     $q.loading.show()
     advertise.value.endDate = calculateEndDate(advertise.value.publishDate, advertise.value.duration)
     if (advertise.value.type === 'Text') advertise.value.contentURL = ''
-    // if (Object.keys(contentModel.value).length && advertise.value.type === 'Banner') {
-    //   await storageStore
-    //     .uploadFile(contentModel.value, `advertise/content-${advertise.value.id}`)
-    //     .then((url) => (advertise.value.contentURL = url))
-    //     .catch((error) => errorStore.throwError(error))
-    // }
-
     if (props.id) {
       if (props.type === 'Banner' && advertise.value.type === 'Text') {
         const imagePath = `advertise/content-${advertise.value.id}`
@@ -452,7 +446,6 @@ async function onSubmit() {
       const result = await createAdCampaign({ budgetInMatic: advertise.value.budget })
       if (result.status.includes('success')) {
         advertise.value.campaignCode = result.events[0].args.campaignCode
-        // throw new Error('')
         await advertiseStore
           .addAdvertise(advertise.value)
           .then(() => {

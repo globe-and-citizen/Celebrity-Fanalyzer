@@ -225,6 +225,7 @@
           <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
             <div class="q-my-lg">
               <ShowcaseCard
+                @update:artsToRemove="imagesToRemoveList"
                 collectionName="prompt"
                 :date="prompt.date"
                 v-model:arts="prompt.showcase.arts"
@@ -287,7 +288,7 @@
         </q-step>
 
         <template v-slot:navigation>
-          <q-stepper-navigation class="flex justify-end q-gutter-md">
+          <q-stepper-navigation class="flex justify-end q-gutter-md" style="padding: 16px">
             <template v-if="promptStore.isLoading">
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 100px" />
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
@@ -423,6 +424,11 @@ async function onProceedDepositFundDialog() {
   }
 }
 
+const imagesToRemoveList = (e) => {
+  console.log(e)
+  prompt.value.artsToRemove = [...e]
+}
+
 onMounted(async () => {
   await loadPromptFromDexie()
   if (parsedPrompt.value && !props.id) {
@@ -459,10 +465,6 @@ watch(
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-})
 
 const disablePublicationDate = computed(() => {
   if (!props.id) return false
@@ -586,11 +588,11 @@ async function onSubmit() {
   }
 
   try {
+    emit('hideDialog', prompt.value.slug)
     if (props.id) {
       await promptStore.editPrompt(prompt.value)
       $q.notify({ type: 'info', message: 'Prompt successfully edited' })
     } else {
-      // throw new Error('')
       await promptStore.addPrompt(prompt)
       if (prompt.value.paymentStatus === 'Payment successful') {
         $q.notify({ type: 'positive', message: 'Prompt successfully submitted.' })
@@ -598,9 +600,9 @@ async function onSubmit() {
         $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' })
       }
     }
-    emit('hideDialog', prompt.value.slug)
     indexedDb.prompt?.clear()
   } catch (error) {
+    emit('hideDialog', prompt.value.slug)
     const promptToSave = {
       author: toRaw(prompt.value.author),
       description: toRaw(prompt.value.description),
@@ -626,7 +628,6 @@ async function onSubmit() {
     }
 
     parsedPrompt.value = { ...prompt }
-    emit('hideDialog', prompt.value.slug)
     errorStore.throwError(error, props.id ? 'Prompt edit failed' : 'Prompt submission failed')
   }
 }
@@ -651,7 +652,6 @@ const isNextStepDisabled = computed(() => {
   return (
     !prompt.value.title ||
     !prompt.value.description ||
-    !prompt.value.categories?.length ||
     !prompt.value.image ||
     promptStore.isLoading ||
     !prompt.value.publicationDate ||

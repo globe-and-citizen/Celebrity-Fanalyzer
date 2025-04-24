@@ -148,13 +148,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn
-          color="negative"
-          data-test="confirm-delete-entry"
-          flat
-          label="Delete"
-          @click="onDeleteEntry(deleteDialog.entry.id, deleteDialog.entry.prompt.id, deleteDialog.entry.showcase.arts)"
-        />
+        <q-btn color="negative" data-test="confirm-delete-entry" flat label="Delete" @click="onDeleteEntry(deleteDialog.entry)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -375,14 +369,14 @@ function forwardHandleUpdateEntry(payload) {
   emit('update-entry', payload)
 }
 
-function onDeleteEntry(entryId, promptId, arts) {
+function onDeleteEntry(entry) {
   entryStore
-    .deleteEntry(entryId, arts)
+    .deleteEntry(entry)
     .then(() => {
       if (!userStore.isEditorOrAbove) {
         entryStore.fetchUserRelatedEntries(userStore.getUserId)
       } else if (userStore.isEditorOrAbove) {
-        emit('delete-entry', entryId, promptId)
+        emit('delete-entry', entry.id, entry.prompt.id)
       }
     })
     .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))
