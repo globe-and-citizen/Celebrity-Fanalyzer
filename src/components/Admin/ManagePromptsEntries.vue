@@ -179,7 +179,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -275,9 +275,9 @@ function openDeleteDialog(prompt) {
   deleteDialog.value.prompt = prompt
 }
 
-function onDeletePrompt(id) {
+function onDeletePrompt(prompt) {
   promptStore
-    .deletePrompt(id)
+    .deletePrompt(prompt)
     .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
 

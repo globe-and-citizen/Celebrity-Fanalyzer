@@ -1,10 +1,5 @@
-import { useStorageStore, useErrorStore } from 'src/stores'
-
-export async function uploadAndSetImage(imageFile, filePathAndName) {
-  const storageStore = useStorageStore()
-  const errorStore = useErrorStore()
+export async function convertImage(imageFile) {
   return new Promise((resolve, reject) => {
-    // Validate imageFile
     if (!(imageFile instanceof Blob)) {
       const errorMessage = 'Invalid file type. Expected a Blob or File.'
       console.error(errorMessage, imageFile)
@@ -12,12 +7,10 @@ export async function uploadAndSetImage(imageFile, filePathAndName) {
     }
 
     const reader = new FileReader()
-
-    reader.onload = async (event) => {
+    reader.onload = (event) => {
       const imageDataURL = event?.target?.result
       const img = new Image()
-
-      img.onload = async () => {
+      img.onload = () => {
         const MAX_WIDTH = 2560
         const MAX_HEIGHT = 1440
         let width = img.width
@@ -36,20 +29,30 @@ export async function uploadAndSetImage(imageFile, filePathAndName) {
         const ctx = canvas.getContext('2d')
         canvas.width = width
         canvas.height = height
-
         ctx.drawImage(img, 0, 0, width, height)
 
-        canvas.toBlob(async (blob) => {
-          try {
-            const imageUrl = await storageStore.uploadFile(blob, filePathAndName)
-            resolve(imageUrl)
-          } catch (error) {
-            await errorStore.throwError(error, 'Image upload failed')
-            reject(error)
-          }
-        }, 'image/webp')
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              reject(new Error('Failed to create Blob from canvas'))
+            }
+          },
+          'image/webp',
+          0.95
+        )
       }
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image for resizing'))
+      }
+
       img.src = imageDataURL
+    }
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read image file'))
     }
 
     reader.readAsDataURL(imageFile)

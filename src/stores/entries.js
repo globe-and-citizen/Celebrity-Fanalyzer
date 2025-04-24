@@ -1,7 +1,6 @@
 import {
   arrayRemove,
   arrayUnion,
-  and,
   collection,
   deleteDoc,
   doc,
@@ -32,6 +31,8 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
+import { uploadImage } from 'src/utils/helpers'
+import { uid } from 'quasar'
 
 function snapshotDocs(querySnapshot) {
   const entries = []
@@ -245,51 +246,138 @@ export const useEntryStore = defineStore('entries', {
     },
 
     async addEntry(payload) {
+      this._isLoading = true
       const notificationStore = useNotificationStore()
       const promptStore = usePromptStore()
-
       const entry = { ...payload }
 
       const promptId = entry.prompt.value
       const escrowId = entry.prompt.escrowId
       const entryRef = doc(db, 'entries', entry.id)
-
       entry.author = doc(db, 'users', entry.author.value)
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.escrowId = escrowId || null
 
-      this._isLoading = true
-      await setDoc(entryRef, entry).finally(() => (this._isLoading = false))
+      delete entry.image
+      delete entry.imagePath
 
-      await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
+      if (!entry.imageFile) {
+        delete entry.imageFile
+      } else if (entry.imageFile instanceof Blob) {
+        entry.image = await uploadImage(entry.imageFile, `entry-${entry.id}`)
+        delete entry.imageFile
+      }
+      if (!entry.showcase?.artist.file) {
+        delete entry.imageFile
+      } else if (entry.showcase?.artist.file instanceof Blob) {
+        entry.showcase.artist.preview = await uploadImage(entry.showcase.artist.file, `artist-${entry.id}`)
+        delete entry.showcase.artist.file
+        delete entry.showcase.artist.photo
+      }
 
-      await notificationStore.toggleSubscription('entries', entry.id)
+      if (entry.showcase?.arts?.length > 0) {
+        try {
+          const uploadedArts = []
+          for (const art of entry.showcase.arts) {
+            if (art.file instanceof Blob) {
+              const imagePath = `arts/arts-${uid()}`
+              const downloadUrl = await uploadImage(art.file, imagePath)
+              uploadedArts.push({ preview: downloadUrl })
+            } else {
+              uploadedArts.push({ preview: art.url || '' })
+            }
+          }
+          entry.showcase.arts = uploadedArts
+        } catch (error) {
+          console.error('Image upload failed:', error)
+          this._isLoading = false
+          throw new Error('Failed to upload image')
+        }
+      }
+
+      try {
+        await setDoc(entryRef, entry)
+        await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
+        await notificationStore.toggleSubscription('entries', entry.id)
+      } catch (error) {
+        console.error('Failed to add entry:', error)
+        throw error
+      } finally {
+        this._isLoading = false
+      }
     },
 
     async editEntry(payload) {
+      this._isLoading = true
       const promptStore = usePromptStore()
-
       const entry = { ...payload }
-
+      const artsToRemove = entry.artsToRemove
       entry.author = doc(db, 'users', entry.author.value)
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.updated = Timestamp.fromDate(new Date())
 
-      this._isLoading = true
+      delete entry.imagePreview
+      delete entry.selectedPromptDate
+      delete entry.isNavigatingFromPrompt
+
+      if (artsToRemove?.length) {
+        for (const art of artsToRemove) {
+          const imageRef = ref(storage, art)
+          await deleteObject(imageRef)
+        }
+        delete entry.artsToRemove
+      } else {
+        delete entry.artsToRemove
+      }
+
+      if (!entry.imageFile) {
+        delete entry.imageFile
+      } else if (entry.imageFile instanceof Blob) {
+        entry.image = await uploadImage(entry.imageFile, `entry-${entry.id}`)
+        delete entry.imageFile
+      }
+
+      if (entry.showcase?.arts?.length > 0) {
+        try {
+          const uploadedArts = []
+          for (const art of entry.showcase.arts) {
+            if (art.file instanceof Blob) {
+              const imagePath = `arts/arts-${uid()}`
+              const downloadUrl = await uploadImage(art.file, imagePath)
+              uploadedArts.push({ preview: downloadUrl })
+            } else {
+              uploadedArts.push({ preview: art.preview || '' })
+            }
+          }
+          entry.showcase.arts = uploadedArts
+        } catch (error) {
+          console.error('Image upload failed:', error)
+          this._isLoading = false
+          throw new Error('Failed to upload image')
+        }
+      }
+
+      if (!entry.showcase?.artist.file) {
+        delete entry.imageFile
+      } else if (entry.showcase?.artist.file instanceof Blob) {
+        entry.showcase.artist.preview = await uploadImage(entry.showcase.artist.file, `artist-${entry.id}`)
+        delete entry.showcase.artist.file
+        delete entry.showcase.artist.photo
+      }
+
       await runTransaction(db, async (transaction) => {
         transaction.update(doc(db, 'entries', entry.id), { ...entry })
       })
-      this._isLoading = false
       const prompt = promptStore.getPromptRef(entry.prompt?.id)
       const updatedEntryDoc = await getDoc(doc(db, 'entries', entry.id))
       const updatedPromptDoc = await getDoc(doc(db, 'prompts', prompt.id))
 
+      this._isLoading = false
       return {
         _entry: updatedEntryDoc.data(),
         _prompt: updatedPromptDoc.data()
       }
-      //}).finally(() => (this._isLoading = false))
     },
 
     //update not coming from form submission
@@ -315,7 +403,9 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async deleteEntry(entryId, arts) {
+    async deleteEntry(entry) {
+      let entryData
+      const entryRef = entry.length ? doc(db, 'entries', entry) : doc(db, 'entries', entry.id)
       const commentStore = useCommentStore()
       const errorStore = useErrorStore()
       const likeStore = useLikeStore()
@@ -323,8 +413,20 @@ export const useEntryStore = defineStore('entries', {
       const visitorStore = useVisitorStore()
       const statStore = useStatStore()
 
-      const promptId = entryId.split('T')[0]
-      const entryRef = doc(db, 'entries', entryId)
+      // If "entry" is an id, get the entry reference
+      if (entry.length) {
+        if (entryRef) {
+          const entryDoc = await getDoc(entryRef)
+          entryData = entryDoc.data()
+        }
+      } else {
+        entryData = entry
+      }
+
+      const promptId = entryData.prompt?.id.split('T')[0]
+      const entryId = entryData.id
+      const arts = entryData.showcase?.arts
+      const artistImage = entryData.showcase?.artist.preview
 
       this._isLoading = true
 
@@ -349,12 +451,20 @@ export const useEntryStore = defineStore('entries', {
           deleteEntryFromStats
         ])
 
-        if (arts) {
+        if (arts && arts.length) {
           for (const art of arts) {
-            const imgId = art.match(/entry-[^?\/]+/)
-            await deleteObject(ref(storage, `images/${imgId}`))
+            if (art.preview?.length) {
+              const imageRef = ref(storage, art.preview)
+              await deleteObject(imageRef)
+            }
           }
         }
+
+        if (artistImage?.length) {
+          const imageRef = ref(storage, artistImage)
+          await deleteObject(imageRef)
+        }
+
         this._entries = this._entries?.filter((entry) => entry.id !== entryId)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting entry')

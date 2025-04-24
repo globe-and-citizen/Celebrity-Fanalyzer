@@ -109,7 +109,7 @@
                   </div>
                 </div>
               </q-card>
-              <q-select data-test="select-author" disable label="Author" :options="authorOptions" v-model="prompt.author" />
+              <q-select data-test="select-author" disable label="Author" v-model="prompt.author" />
               <q-input
                 counter
                 data-test="input-title"
@@ -165,7 +165,7 @@
               <div class="row">
                 <div class="col-8">
                   <q-file
-                    accept=".jpg, image/*"
+                    accept=".jpg, .webp, image/*"
                     counter
                     data-test="file-image"
                     :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
@@ -173,7 +173,7 @@
                     :max-total-size="2097152"
                     :required="!id"
                     use-chips
-                    v-model="imageModel"
+                    v-model="uploadedImage"
                     @rejected="onRejected()"
                     @update:model-value="uploadPhoto()"
                   >
@@ -225,6 +225,7 @@
           <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
             <div class="q-my-lg">
               <ShowcaseCard
+                @update:artsToRemove="imagesToRemoveList"
                 collectionName="prompt"
                 :date="prompt.date"
                 v-model:arts="prompt.showcase.arts"
@@ -287,7 +288,7 @@
         </q-step>
 
         <template v-slot:navigation>
-          <q-stepper-navigation class="flex justify-end q-gutter-md">
+          <q-stepper-navigation class="flex justify-end q-gutter-md" style="padding: 16px">
             <template v-if="promptStore.isLoading">
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 100px" />
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
@@ -296,6 +297,15 @@
               <q-btn v-if="step < 2" flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" data-test="button-cancel" />
               <q-btn v-if="step > 1" flat rounded @click="$refs.stepper.previous()" label="Back" :disable="promptStore.isLoading" />
 
+              <q-btn
+                flat
+                rounded
+                label="Reset"
+                v-if="parsedPrompt?.title"
+                :disable="!parsedPrompt?.title"
+                data-test="button-reset"
+                @click="resetPrompt"
+              />
               <q-btn
                 v-if="step === 3"
                 color="primary"
@@ -332,13 +342,11 @@
 import { useQuasar, date as dateUtils } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref, watchEffect, computed, watch } from 'vue'
-import { uploadAndSetImage } from 'src/utils/imageConvertor'
+import { onMounted, reactive, ref, watchEffect, computed, watch, toRaw, nextTick } from 'vue'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import FundDepositCard from './FundDepositCard.vue'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
-import { collection, doc } from 'firebase/firestore'
-import { db } from 'src/firebase'
+import { indexedDb } from 'src/utils/indexeddb'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
@@ -365,28 +373,31 @@ const promptStore = usePromptStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
 
-const authorOptions = reactive([])
-const prompt = reactive({
+const prompt = ref({
   description: '',
-  image: '',
-  showcase: { arts: [], artist: { info: '', photo: '' } },
+  image: null,
+  imageFile: null,
+  imagePath: null,
+  showcase: { arts: [], imageFiles: [], artist: { info: '', photo: '', imageFile: null } },
+  categories: null,
   title: '',
   publicationDate: '',
   endDate: '',
   creationDate: new Date().toISOString().split('T')[0],
   paymentStatus: '',
-  rewardAmount: null
+  rewardAmount: null,
+  author: userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
 })
 
 const proceedDepositFundDialog = ref({})
 const step = ref(1)
-const imageModel = ref(null)
-const imagePreview = ref(null)
+const uploadedImage = ref(null)
 const editorRef = ref(null)
 const openCamera = ref(false)
 const lastDescriptionNotificationTime = ref(0)
+const parsedPrompt = ref(null)
 
-function dateOptions(currentDate, creationDate = prompt.creationDate) {
+function dateOptions(currentDate, creationDate = prompt.value.creationDate) {
   const timestamp = dateUtils.startOfDate(creationDate, 'day').getTime()
   const today = new Date()
   const todayTimestamp = dateUtils.startOfDate(today, 'day').getTime()
@@ -396,7 +407,7 @@ function dateOptions(currentDate, creationDate = prompt.creationDate) {
 }
 
 function endDateOptions(currentDate) {
-  const publicationDate = dateUtils.addToDate(new Date(prompt.publicationDate), { days: 1 })
+  const publicationDate = dateUtils.addToDate(new Date(prompt.value.publicationDate), { days: 1 })
   const timestamp = dateUtils.startOfDate(publicationDate, 'day').getTime()
   const dateObj = dateUtils.extractDate(currentDate, 'YYYY/MM/DD')
   const limitObj = dateUtils.addToDate(timestamp, { months: 6 })
@@ -413,53 +424,52 @@ async function onProceedDepositFundDialog() {
   }
 }
 
-watchEffect(() => {
-  if (props.id) {
-    prompt.author = { label: props.author.displayName, value: props.author.uid }
-    prompt.categories = props.categories
-    prompt.creationDate = props.creationDate
-    prompt.publicationDate = props.publicationDate
-    prompt.endDate = props.endDate
-    prompt.description = props.description
-    prompt.id = props.id
-    prompt.image = props.image
-    prompt.showcase = props.showcase
-    prompt.title = props.title
-    prompt.paymentStatus = props.paymentStatus
-    prompt.rewardAmount = props.rewardAmount
-    if (props.image) {
-      imagePreview.value = props.image
+const imagesToRemoveList = (e) => {
+  console.log(e)
+  prompt.value.artsToRemove = [...e]
+}
+
+onMounted(async () => {
+  await loadPromptFromDexie()
+  if (parsedPrompt.value && !props.id) {
+    prompt.value = {
+      ...prompt.value,
+      ...parsedPrompt.value,
+      author: userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
     }
-  } else {
-    const collectionRef = collection(db, 'prompts')
-    const docRef = doc(collectionRef)
-    prompt.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
-    prompt.categories = null
-    prompt.id = docRef.id
+    if (parsedPrompt.value.imageFile instanceof Blob) {
+      prompt.value.image = URL.createObjectURL(parsedPrompt.value.imageFile)
+      uploadedImage.value = parsedPrompt.value.imageFile
+    }
+  } else if (props.id) {
+    prompt.value = { ...props, author: { label: props.author.displayName, value: props.author.uid } }
   }
 })
 
+async function loadPromptFromDexie() {
+  try {
+    const prompts = await indexedDb.prompt.toArray()
+    parsedPrompt.value = prompts[prompts.length - 1] || null
+  } catch (error) {
+    console.error('Failed to load entries from Dexie:', error)
+    parsedPrompt.value = null
+  }
+}
+
 watch(
-  () => prompt.description,
+  () => prompt.value.description,
   (newDescription) => {
     if (newDescription && newDescription.length > 6000) {
-      prompt.description = newDescription.substring(0, 6000)
+      prompt.value.description = newDescription.substring(0, 6000)
     }
   },
   { immediate: true }
 )
 
-onMounted(() => {
-  userStore.getAdminsAndEditors.forEach((user) => authorOptions.push({ label: user.displayName, value: user.uid }))
-
-  if (!props.id) {
-    prompt.publicationDate = ''
-  }
-})
 const disablePublicationDate = computed(() => {
   if (!props.id) return false
-  const publicationDateData = new Date(props.publicationDate).getTime()
-  return Date.now() >= publicationDateData
+  const publicationDateData = new Date(prompt.value.publicationDate).getTime()
+  return publicationDateData <= Date.now()
 })
 
 const disableEndDate = computed(() => {
@@ -468,14 +478,39 @@ const disableEndDate = computed(() => {
   return Date.now() >= endDateData
 })
 
-function uploadPhoto() {
-  prompt.image = ''
-  if (!imageModel.value) {
+async function uploadPhoto() {
+  if (!uploadedImage.value) {
+    if (prompt.value.image && !prompt.value.imagePath) {
+      URL.revokeObjectURL(prompt.value.image)
+    }
+    prompt.value.image = null
+    prompt.value.imageFile = null
     return
   }
-  const reader = new FileReader()
-  reader.readAsDataURL(imageModel.value)
-  reader.onload = () => (prompt.image = reader.result)
+
+  if (uploadedImage.value instanceof Blob) {
+    if (prompt.value.image && !prompt.value.imagePath) {
+      URL.revokeObjectURL(prompt.value.image)
+    }
+    prompt.value.imageFile = uploadedImage.value
+    prompt.value.image = URL.createObjectURL(prompt.value.imageFile)
+
+    // Update IndexedDB with only the image changes if record exists
+    if (parsedPrompt.value && parsedPrompt.value.id) {
+      await indexedDb.prompt.update(parsedPrompt.value.id, {
+        image: prompt.value.image,
+        imageFile: prompt.value.imageFile
+      })
+      parsedPrompt.value.image = prompt.value.image
+      parsedPrompt.value.imageFile = prompt.value.imageFile
+    }
+  }
+}
+
+function captureCamera(imageBlob) {
+  uploadedImage.value = imageBlob
+  prompt.value.imageFile = imageBlob
+  uploadPhoto()
 }
 
 function showDescriptionNotification(message) {
@@ -494,7 +529,7 @@ function onKeyDown(event) {
   if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
     return
   }
-  if (prompt.description.length >= 6000) {
+  if (prompt.value.description.length >= 6000) {
     if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
       event.preventDefault()
       showDescriptionNotification('Max 6000 characters reached')
@@ -507,7 +542,7 @@ function onPaste(evt) {
   let text, onPasteStripFormattingIEPaste
   evt.preventDefault()
   evt.stopPropagation()
-  const currentLength = prompt.description.length
+  const currentLength = prompt.value.description.length
 
   if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
     text = evt.originalEvent.clipboardData.getData('text/plain')
@@ -533,45 +568,66 @@ function onPaste(evt) {
 }
 
 async function onSubmit() {
-  prompt.slug = '/' + prompt.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
-
-  if (!prompt.publicationDate) {
+  prompt.value.slug = '/' + prompt.value.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')
+  if (!prompt.value.publicationDate) {
     $q.notify({ type: 'negative', message: 'Publication Date is required.' })
     return
   }
+
   if (!promptStore.getPrompts) {
-    const hasPrompt = await promptStore.hasPrompt(prompt.date, prompt.title, prompt.slug, !!props.id)
+    const hasPrompt = await promptStore.hasPrompt(prompt.value.date, prompt.value.title, prompt.value.slug, !!props.id)
     if (hasPrompt) {
       return
     }
   } else if (
-    promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.title.toLowerCase() && p.id !== prompt.id) ||
-    prompt.title.toLowerCase() === 'month'
+    promptStore.getPrompts?.find((p) => p.title.toLowerCase() === prompt.value.title.toLowerCase() && p.id !== prompt.value.id) ||
+    prompt.value.title.toLowerCase() === 'month'
   ) {
     $q.notify({ type: 'negative', message: 'Prompt with this title already exists. Please choose another title.' })
     return
   }
 
-  if (imageModel.value) {
-    const id = `${prompt.id}`
-    prompt.image = await uploadAndSetImage(imageModel.value, `images/prompt-${id}`)
-  }
-
   try {
+    emit('hideDialog', prompt.value.slug)
     if (props.id) {
-      await promptStore.editPrompt(prompt)
+      await promptStore.editPrompt(prompt.value)
       $q.notify({ type: 'info', message: 'Prompt successfully edited' })
     } else {
       await promptStore.addPrompt(prompt)
-      if (prompt.paymentStatus === 'Payment successful') {
+      if (prompt.value.paymentStatus === 'Payment successful') {
         $q.notify({ type: 'positive', message: 'Prompt successfully submitted.' })
       } else {
         $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' })
       }
     }
-
-    emit('hideDialog', prompt.slug)
+    indexedDb.prompt?.clear()
   } catch (error) {
+    emit('hideDialog', prompt.value.slug)
+    const promptToSave = {
+      author: toRaw(prompt.value.author),
+      description: toRaw(prompt.value.description),
+      showcase: toRaw(prompt.value.showcase),
+      title: toRaw(prompt.value.title),
+      categories: toRaw(prompt.value.categories),
+      publicationDate: toRaw(prompt.value.publicationDate),
+      endDate: toRaw(prompt.value.endDate),
+      creationDate: new Date().toISOString().split('T')[0],
+      imagePath: toRaw(prompt.value.imagePath),
+      paymentStatus: toRaw(prompt.value.paymentStatus),
+      rewardAmount: toRaw(prompt.value.rewardAmount)
+    }
+
+    if (parsedPrompt.value && parsedPrompt.value.id) {
+      await indexedDb.prompt.update(parsedPrompt.value.id, promptToSave)
+    } else {
+      await indexedDb.prompt.add({
+        ...promptToSave,
+        imageFile: prompt.value.imageFile,
+        image: prompt.value.image
+      })
+    }
+
+    parsedPrompt.value = { ...prompt }
     errorStore.throwError(error, props.id ? 'Prompt edit failed' : 'Prompt submission failed')
   }
 }
@@ -580,26 +636,69 @@ function onRejected() {
   $q.notify({ type: 'negative', message: 'File size is too big. Max file size is 2MB.' })
 }
 
-function captureCamera(imageBlob) {
-  imageModel.value = imageBlob
-  uploadPhoto()
-}
-
 function updatepaymentStatus(data) {
-  prompt.paymentStatus = data
+  prompt.value.paymentStatus = data
 }
 
 async function updatePaymentDetails(data) {
-  prompt.escrowId = data.escrowId
-  prompt.paymentStatus = data.paymentStatus
-  prompt.rewardAmount = data.rewardAmount
+  prompt.value.escrowId = data.escrowId
+  prompt.value.paymentStatus = data.paymentStatus
+  prompt.value.rewardAmount = data.rewardAmount
 
-  onSubmit()
+  await onSubmit()
 }
 
 const isNextStepDisabled = computed(() => {
-  return !prompt.title || !prompt.description || !prompt.image || promptStore.isLoading || !prompt.publicationDate || !prompt.endDate
+  return (
+    !prompt.value.title ||
+    !prompt.value.description ||
+    !prompt.value.image ||
+    promptStore.isLoading ||
+    !prompt.value.publicationDate ||
+    !prompt.value.endDate
+  )
 })
+
+function resetPrompt() {
+  indexedDb.prompt?.clear()
+  const clearedPrompt = {
+    image: null,
+    imageFile: null,
+    imagePath: null,
+    showcase: { arts: [], artist: { info: '', photo: '' } },
+    categories: null,
+    title: '',
+    publicationDate: '',
+    endDate: '',
+    creationDate: new Date().toISOString().split('T')[0],
+    paymentStatus: '',
+    rewardAmount: '',
+    author: userStore.isAuthenticated
+      ? {
+          label: userStore.getUser.displayName,
+          value: userStore.getUser.uid
+        }
+      : null
+  }
+
+  prompt.value = { ...clearedPrompt }
+  uploadedImage.value = null
+  parsedPrompt.value = null
+
+  nextTick(() => {
+    $q.notify({ type: 'info', message: 'Prompt has been reset.' })
+  })
+}
+
+function updateEndDate() {
+  if (prompt.value.publicationDate && prompt.value.endDate) {
+    const pubDate = new Date(prompt.value.publicationDate)
+    const endDate = new Date(prompt.value.endDate)
+    if (endDate <= pubDate) {
+      prompt.value.endDate = dateUtils.addToDate(pubDate, { days: 1 }).toISOString().split('T')[0]
+    }
+  }
+}
 </script>
 
 <style scoped lang="scss">
