@@ -69,7 +69,7 @@
           data-test="confirm-delete-entry"
           flat
           label="Delete"
-          @click="onDeleteEntry(deleteEntryDialog.entry.id, deleteEntryDialog.entry.prompt.id, deleteEntryDialog.entry.showcase.arts)"
+          @click="onDeleteEntry(deleteEntryDialog.entry.id, deleteEntryDialog.entry.prompt.id, deleteEntryDialog.entry?.showcase?.arts)"
         />
       </q-card-actions>
     </q-card>

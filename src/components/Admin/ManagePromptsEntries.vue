@@ -71,7 +71,7 @@
           </div>
         </q-td>
         <q-td class="text-right">
-          <span v-if="!props.row?.escrowId">
+          <span v-if="!props.row.rewardAmount">
             <q-btn
               flat
               round
@@ -129,16 +129,6 @@
       </q-tr>
     </template>
   </q-table>
-  <TableEntry
-    v-else
-    :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
-    :currentPrompt="props.row"
-    chilledEntryTable
-    :loaded-entries="entryStore._loadedEntries"
-    @update-entry="handleUpdateEntry"
-    @delete-entry="handleDeleteEntry"
-    :maxWidth="maxWidth"
-  />
   <div class="row justify-center q-mr-md float-right">
     <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
     <q-btn
@@ -247,10 +237,11 @@ const prompts = ref([])
 const proceedDepositFundDialog = ref({})
 
 onMounted(async () => {
-  entryStore._loadedEntries = []
-  if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts(false, 5, true)
-  if (!entryStore.getUserRelatedEntries.length) {
-    await entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
+  if (userStore.isEditorOrAbove) {
+    entryStore._loadedEntries = []
+    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
+  } else {
+    await entryStore.fetchUserRelatedEntries(userStore.getUserId)
   }
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()
