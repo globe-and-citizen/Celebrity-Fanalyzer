@@ -18,8 +18,8 @@
           />
         </div>
       </q-responsive>
-      <div v-else-if="post.contentURL" class="bg-blur flex">
-        <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.contentURL" />
+      <div v-else-if="post.image" class="bg-blur flex">
+        <q-img class="rounded-borders full-width height-auto q-mt-lg" :src="post.image" />
       </div>
       <q-dialog v-model="openDialog" ref="dialogRef" backdrop-filter="blur(1px)" auto-close>
         <q-img
@@ -37,8 +37,11 @@
       </q-dialog>
       <section class="q-pa-md q-pb-none" :class="{ 'margin-bottom': isAdd }">
         <div class="flex justify-between">
-          <p class="text-body2">
-            {{ isPrompt ? `Prompt of ${formatMonthYear(post?.date || 'unknown')}` : `Posted on ${dayMonthYear(post.created)}` }}
+          <p class="text-body2" v-if="post?.publicationDate && isPrompt">
+            {{ `Prompt Started on ${formatDate(post?.publicationDate)} - End on ${formatDate(post?.endDate)}` }}
+          </p>
+          <p class="text-body2" v-else>
+            {{ isPrompt ? `Prompt of ${formatMonthYear(post?.date)}` : `Posted on ${dayMonthYear(post.created)}` }}
           </p>
           <div v-show="!isAdd">
             <q-badge v-for="(category, index) of post?.categories" class="q-mx-xs" :key="index" rounded>
@@ -46,7 +49,15 @@
             </q-badge>
           </div>
         </div>
-        <h1 class="q-mt-none text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
+        <div class="flex justify-between items-center no-wrap">
+          <h1 class="text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
+
+          <div v-if="isPrompt && post.rewardAmount" class="reward-container flex items-center no-wrap">
+            <span class="trophy-icon">🏆</span>
+            <span class="reward-amount">{{ post?.rewardAmount ?? 0 }}$</span>
+          </div>
+        </div>
+
         <q-separator spaced />
         <section
           v-if="post?.author && !isAdd"
@@ -87,7 +98,7 @@
         <q-separator v-if="!isAdd" spaced />
         <p v-if="isAdd" v-html="post?.content" class="q-mt-sm text-body1"></p>
         <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
-        <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
+        <ShowcaseArt v-if="post?.showcase?.arts?.length || post?.showcase?.artist?.preview" :showcase="post.showcase" />
         <q-separator v-if="!isAdd" inset />
         <div class="text-center q-pt-md">
           <q-btn
@@ -194,7 +205,7 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
-import { dayMonthYear, formatMonthYear } from 'src/utils/date'
+import { dayMonthYear, formatMonthYear, formatDate } from 'src/utils/date'
 import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareComponent from './ShareComponent.vue'
@@ -344,5 +355,35 @@ function manageDelete() {
 
 .margin-bottom {
   margin-bottom: 6rem;
+}
+.reward-container {
+  display: flex;
+  align-items: center;
+  background-color: #f4e9b6;
+  padding: 5px 10px;
+  border-radius: 25px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #f9a826;
+  transition: all 0.3s ease;
+  justify-content: flex-end;
+}
+
+.trophy-icon {
+  font-size: 1.2rem;
+  margin-right: 5px;
+  color: #f9a826;
+}
+
+.reward-amount {
+  color: #f9a826;
+  font-size: 1rem;
+  margin-left: 5px;
+}
+
+.reward-container span {
+  display: flex;
+  align-items: center;
 }
 </style>

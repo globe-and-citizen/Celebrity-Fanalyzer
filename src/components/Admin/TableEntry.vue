@@ -2,14 +2,14 @@
   <q-table
     flat
     :hide-bottom="!!rows.length"
-    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove && !chilledEntryTable }"
     :columns="!!rows.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
-    :hide-header="userStore.isEditorOrAbove"
+    :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
     :pagination="pagination"
-    :rows="rowData"
-    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+    :rows="rows"
+    :title="!userStore.isEditorOrAbove && !chilledEntryTable ? 'My Entries' : ''"
     no-data-label="No entries found."
     data-test="entry-table"
     :loading="entryStore.isLoading || promptStore.isLoading"
@@ -56,14 +56,8 @@
           <span v-if="_currentPrompt?.escrowId || (userRelatedTable && props.row.prompt.hasWinner !== true)">
             <q-btn
               class="payment-buttons"
-              v-if="
-                userStore.isEditorOrAbove &&
-                props.row.isWinner !== true &&
-                _currentPrompt?.isTreated !== true &&
-                _currentPrompt?.hasWinner !== true
-              "
+              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
               color="black"
-              :disable="userStore.getUser.role !== 'Admin'"
               flat
               size="sm"
               icon="toggle_off"
@@ -136,7 +130,7 @@
     </template>
   </q-table>
 
-  <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss>
+  <q-dialog full-width position="bottom" v-model="entry.dialog">
     <EntryCard v-bind="entry" @hideDialog="entry = {}" @forward-update-entry="forwardHandleUpdateEntry" />
   </q-dialog>
 
@@ -154,13 +148,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn
-          color="negative"
-          data-test="confirm-delete-entry"
-          flat
-          label="Delete"
-          @click="onDeleteEntry(deleteDialog.entry.id, deleteDialog.entry.prompt.id, deleteDialog.entry.showcase.arts)"
-        />
+        <q-btn color="negative" data-test="confirm-delete-entry" flat label="Delete" @click="onDeleteEntry(deleteDialog.entry)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -211,7 +199,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore, useNotificationStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
 import { nextTick, onMounted, ref, watch, watchEffect, computed } from 'vue'
 import EntryCard from './EntryCard.vue'
@@ -228,8 +216,8 @@ const props = defineProps({
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
-  maxWidth: { type: Number, required: false },
-  userRelatedTable: { type: Boolean, default: false }
+  chilledEntryTable: { type: Boolean, required: false, default: false },
+  maxWidth: { type: Number, required: false }
 })
 
 const widthStyle = ref({ width: `${props.maxWidth}px` })
@@ -265,7 +253,7 @@ const userStore = useUserStore()
 const cryptoTransactions = useCryptoTransactionStore()
 const router = useRouter()
 const shareStore = useShareStore()
-
+const notificationStore = useNotificationStore()
 const columns = [
   {},
   { name: 'created', align: 'left', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
@@ -283,16 +271,11 @@ const proceedPaymentDialog = ref({})
 const displayCrytptoTransactionDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-const rowData = computed(() => (props.userRelatedTable ? entryStore.getUserRelatedEntries ?? [] : props.rows))
-
-function onEditDialog(data) {
-  entry.value = data
-  if (props.userRelatedTable) {
-    entry.value.prompt = data.prompt
-  } else {
-    entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === data.id.split('T')[0] || prompt.id === data.prompt.id)
-  }
-
+function onEditDialog(props) {
+  const i = props.id.lastIndexOf('T')
+  const promptId = props.id.slice(0, i)
+  entry.value = props
+  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
   entry.value.dialog = true
 }
 
@@ -386,14 +369,14 @@ function forwardHandleUpdateEntry(payload) {
   emit('update-entry', payload)
 }
 
-function onDeleteEntry(entryId, promptId, arts) {
+function onDeleteEntry(entry) {
   entryStore
-    .deleteEntry(entryId, arts)
+    .deleteEntry(entry)
     .then(() => {
       if (!userStore.isEditorOrAbove) {
         entryStore.fetchUserRelatedEntries(userStore.getUserId)
       } else if (userStore.isEditorOrAbove) {
-        emit('delete-entry', entryId, promptId)
+        emit('delete-entry', entry.id, entry.prompt.id)
       }
     })
     .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))
@@ -435,6 +418,13 @@ async function onSelectWinner(entry) {
           .finally(() => {
             selectWinnerDialog.value.show = false
           })
+
+        await notificationStore.notifyWinner(payload.entry.author.uid, {
+          link: '/admin',
+          slug: '/admin',
+          message: `Congratulations! You are selected winner for ${_currentPrompt.value.title} prompt. Click to withdraw the prize from admin panel`,
+          type: 'winner'
+        })
 
         selectWinnerDialog.value.show = false
       } else {

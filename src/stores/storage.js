@@ -15,10 +15,11 @@ export const useStorageStore = defineStore('storage', {
     async uploadFile(file, filePathAndName) {
       const storageRef = ref(storage, filePathAndName)
 
-      this._isLoading = true
-      await uploadBytes(storageRef, file).finally(() => (this._isLoading = false))
-
-      return getDownloadURL(storageRef).then((url) => url)
+      // this._isLoading = true
+      await uploadBytes(storageRef, file)
+      // .finally(() => (this._isLoading = false))
+      const url = getDownloadURL(storageRef).then((url) => url)
+      return url
     },
 
     async deleteFile(filePathAndName) {

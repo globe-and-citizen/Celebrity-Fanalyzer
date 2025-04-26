@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   or,
   orderBy,
   query,
@@ -29,8 +30,10 @@ import {
   useUserStore,
   useVisitorStore
 } from 'src/stores'
-import { Notify } from 'quasar'
+import { Notify, uid } from 'quasar'
 import { currentYearMonth } from 'src/utils/date'
+import { uploadImage } from 'src/utils/helpers'
+import { convertImage } from 'src/utils/imageConvertor'
 
 let updatedBefore = false
 const getPrompts = async (querySnapshot, userStore) => {
@@ -40,7 +43,6 @@ const getPrompts = async (querySnapshot, userStore) => {
     const promptData = doc.data()
     const authorId = promptData.author.id
     const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
-
     prompts.push({
       id: doc.id,
       ...promptData,
@@ -63,7 +65,9 @@ export const usePromptStore = defineStore('prompts', {
     loadCount: 6,
     _totalPrompts: undefined,
     _lastVisible: null,
-    _hasMore: true
+    _hasMore: true,
+    filterOngoingCompetitions: false,
+    unsubscribe: null
   }),
 
   getters: {
@@ -92,22 +96,28 @@ export const usePromptStore = defineStore('prompts', {
       }, 6000)
     },
 
-    async fetchPrompts(loadMore = false, count) {
+    async fetchPrompts(loadMore = false, count, managePrompts = false) {
       const userStore = useUserStore()
       this._isLoading = true
 
       try {
         let queryRef = collection(db, 'prompts')
         const limitCount = count ?? this.loadCount
+        const conditions = [limit(limitCount)]
 
+        if (!userStore.isEditorOrAbove && managePrompts) {
+          const userRef = doc(db, 'users', userStore.getUser.uid)
+          conditions.push(where('author', '==', userRef))
+        }
         if (loadMore) {
           queryRef = this._lastVisible
-            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(limitCount))
-            : query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), ...conditions)
+            : query(queryRef, orderBy('id', 'desc'), ...conditions)
         } else {
-          queryRef = query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+          queryRef = query(queryRef, orderBy('id', 'desc'), ...conditions)
         }
         const querySnapshot = await getDocs(queryRef)
+
         const newPrompts = await getPrompts(querySnapshot, userStore)
 
         if (newPrompts.length > 0) {
@@ -116,7 +126,7 @@ export const usePromptStore = defineStore('prompts', {
         if (newPrompts.length > 4) this._hasMore = true
         else this._hasMore = false
 
-        this._prompts = loadMore ? [...(this._prompts?.length > 5 ? this._prompts : []), ...newPrompts] : newPrompts
+        this._prompts = loadMore ? [...(this._prompts?.length >= 5 ? this._prompts : []), ...newPrompts] : newPrompts
 
         return newPrompts
       } catch (error) {
@@ -136,18 +146,33 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchActivePrompts() {
+    async activePromptsListener() {
       const userStore = useUserStore()
       this._isLoading = true
+      const today = new Date()
+      const formattedDate = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
       try {
         let queryRef = collection(db, 'prompts')
-        queryRef = query(queryRef, where('hasWinner', '==', null), where('escrowId', '!=', null))
+        const queryConstraints = [where('hasWinner', '==', null), where('escrowId', '!=', null)]
 
-        const querySnapshot = await getDocs(queryRef)
-        const activePrompts = await getPrompts(querySnapshot, userStore)
-        this._activePrompts = activePrompts
-        return activePrompts
+        queryRef = query(queryRef, ...queryConstraints)
+
+        onSnapshot(queryRef, (querySnapshot) => {
+          const activePrompts = []
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data()
+
+            if ((!data.publicationDate || data.publicationDate <= formattedDate) && (!data.endDate || data.endDate >= formattedDate)) {
+              if (data.author.id !== userStore.getUser.uid) {
+                activePrompts.push({ id: doc.id, ...data })
+              }
+            }
+          })
+
+          this._activePrompts = activePrompts
+        })
       } catch (error) {
         console.error('Error fetching prompts:', error)
       } finally {
@@ -278,31 +303,124 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async addPrompt(payload) {
+      this._isLoading = true
+      const collectionRef = collection(db, 'prompts')
+      const docRef = doc(collectionRef)
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()
-      const isTester = payload.author.label === 'Cypress Tester'
-      const prompt = isTester ? { ...payload, escrowId: '0.0000000000000000001' } : { ...payload }
-      prompt.author = doc(db, 'users', prompt.author.value)
+      const isTester = payload.value.author?.label === 'Cypress Tester'
+      const prompt = isTester ? { ...payload.value, escrowId: '0.0000000000000000001' } : { ...payload.value }
+
+      prompt.author = doc(db, 'users', prompt.author?.value)
       prompt.created = Timestamp.fromDate(new Date())
-      prompt.id = prompt.date
+      prompt.id = docRef.id
       prompt.hasWinner = null
 
-      this._isLoading = true
-      await setDoc(doc(db, 'prompts', prompt.id), prompt).finally(() => (this._isLoading = false))
+      delete prompt.image
+      delete prompt.imagePath
+      delete prompt.showcase.imageFiles
 
+      //PROMPT IMAGE
+      if (!prompt.imageFile) {
+        delete prompt.imageFile
+      } else if (prompt.imageFile instanceof Blob) {
+        prompt.image = await uploadImage(prompt.imageFile, `prompt-${prompt.id}`)
+        delete prompt.imageFile
+      }
+      //AUTHOR IMAGE
+
+      if (!prompt.showcase?.artist.file) {
+        delete prompt.imageFile
+      } else if (prompt.showcase?.artist.file instanceof Blob) {
+        prompt.showcase.artist.preview = await uploadImage(prompt.showcase.artist.file, `artist-${prompt.id}`)
+        delete prompt.showcase.artist.file
+        delete prompt.showcase.artist.photo
+      }
+
+      //ARTS IMAGE
+
+      if (prompt.showcase?.arts?.length > 0) {
+        try {
+          const uploadedArts = []
+          for (const art of prompt.showcase.arts) {
+            if (art.file instanceof Blob) {
+              const imagePath = `arts/arts-${uid()}`
+              const downloadUrl = await uploadImage(art.file, imagePath)
+              uploadedArts.push({ preview: downloadUrl })
+            } else {
+              uploadedArts.push({ preview: art.url || '' })
+            }
+          }
+          prompt.showcase.arts = uploadedArts
+        } catch (error) {
+          console.error('Image upload failed:', error)
+          this._isLoading = false
+          throw new Error('Failed to upload image')
+        }
+      }
+
+      await setDoc(doc(db, 'prompts', prompt.id), prompt)
       prompt.author = await userStore.fetchUser(prompt.author.id)
       prompt.entries = []
       this._prompts = this.getPrompts ? [prompt, ...this.getPrompts] : [prompt]
-
       await notificationStore.toggleSubscription('prompts', prompt.id)
+      this._isLoading = false
     },
 
     async editPrompt(payload) {
       const prompt = { ...payload }
       const userStore = useUserStore()
-
+      const artsToRemove = prompt.artsToRemove
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
+
+      if (artsToRemove?.length) {
+        for (const art of artsToRemove) {
+          const imageRef = ref(storage, art)
+          await deleteObject(imageRef)
+        }
+        delete prompt.artsToRemove
+      } else {
+        delete prompt.artsToRemove
+      }
+
+      if (!prompt.imageFile) {
+        delete prompt.imageFile
+        delete prompt.imagePreview
+      } else if (prompt.imageFile instanceof Blob) {
+        prompt.image = await uploadImage(prompt.imageFile, `prompt-${prompt.id}`)
+        delete prompt.imageFile
+        delete prompt.imagePreview
+      }
+
+      if (prompt.showcase?.arts?.length > 0) {
+        try {
+          const uploadedArts = []
+          for (const art of prompt.showcase.arts) {
+            if (art.file instanceof Blob) {
+              const imagePath = `arts/arts-${uid()}`
+              const downloadUrl = await uploadImage(art.file, imagePath)
+              uploadedArts.push({ preview: downloadUrl })
+            } else {
+              uploadedArts.push({ preview: art.preview || '' })
+            }
+          }
+          prompt.showcase.arts = uploadedArts
+        } catch (error) {
+          console.error('Image upload failed:', error)
+          this._isLoading = false
+          throw new Error('Failed to upload image')
+        }
+      }
+      if (!prompt.showcase?.artist.file) {
+        delete prompt.imageFile
+      } else if (prompt.showcase?.artist.file instanceof Blob) {
+        prompt.showcase.artist.preview = await uploadImage(prompt.showcase.artist.file, `artist-${prompt.id}`)
+        delete prompt.showcase.artist.file
+        delete prompt.showcase.artist.photo
+      }
+
+      delete prompt.date
 
       this._isLoading = true
       await runTransaction(db, async (transaction) => {
@@ -319,7 +437,7 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async updateEscrowId(payload) {
-      const { promptId, escrowId } = payload
+      const { promptId, escrowId, paymentStatus, rewardAmount } = payload
 
       if (!promptId || !escrowId) {
         throw new Error('Both promptId and escrowId are required.')
@@ -337,14 +455,20 @@ export const usePromptStore = defineStore('prompts', {
 
           const prompt = promptDoc.data()
           prompt.escrowId = escrowId
+          prompt.rewardAmount = rewardAmount
+          prompt.paymentStatus = paymentStatus
           prompt.updated = Timestamp.fromDate(new Date())
 
           transaction.update(promptDocRef, prompt)
         })
 
         // Update local state or cache if needed
-        this._prompts = this._prompts?.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
-        this._monthPrompt = this._monthPrompt?.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
+        this._prompts = this._prompts?.map((element) =>
+          element.id === promptId ? { ...element, escrowId, rewardAmount, paymentStatus } : element
+        )
+        this._monthPrompt = this._monthPrompt?.map((element) =>
+          element.id === promptId ? { ...element, escrowId, rewardAmount, paymentStatus } : element
+        )
       } catch (error) {
         console.error('Error updating escrowId:', error)
       } finally {
@@ -352,7 +476,8 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async deletePrompt(id) {
+    async deletePrompt(prompt) {
+      const id = prompt.id
       const commentStore = useCommentStore()
       const entryStore = useEntryStore()
       const errorStore = useErrorStore()
@@ -360,27 +485,55 @@ export const usePromptStore = defineStore('prompts', {
       const shareStore = useShareStore()
       const visitorStore = useVisitorStore()
       const statStore = useStatStore()
-
+      const artsToRemove = prompt.showcase?.arts
+      const artistImage = prompt.showcase?.artist?.preview
       const relatedEntries = this._prompts.find((prompt) => prompt.id === id)?.entries || []
-
       this._isLoading = true
-      if (relatedEntries.length) {
-        for (const entryId of relatedEntries) {
-          await entryStore.deleteEntry(entryId)
-        }
-      }
+
+      const promptRef = doc(db, 'prompts', id)
+      const promptSnapshot = await getDoc(promptRef)
 
       try {
-        const deleteImage = deleteObject(ref(storage, `images/prompt-${id}`))
-        const deleteComments = commentStore.deleteCommentsCollection('prompts', id)
-        const deleteLikes = likeStore.deleteAllLikesDislikes('prompts', id)
-        const deletePromptDoc = deleteDoc(doc(db, 'prompts', id))
-        const deleteShares = shareStore.deleteAllShares('prompts', id)
-        const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
-        const deletePromptFromStats = statStore.removeTopic(id)
+        await Promise.all([
+          deleteObject(ref(storage, `images/prompt-${id}`)).catch((err) => {
+            console.warn(`Failed to delete image for prompt ${id}:`, err)
+            return null
+          }),
+          commentStore.deleteCommentsCollection('prompts', id),
+          likeStore.deleteAllLikesDislikes('prompts', id),
+          shareStore.deleteAllShares('prompts', id),
+          visitorStore.deleteAllVisitors('prompts', id),
+          statStore.removeTopic(id)
+        ])
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors, deletePromptFromStats])
+        if (relatedEntries.length) {
+          for (const entryId of relatedEntries) {
+            await entryStore.deleteEntry(entryId)
+          }
+        }
+
+        if (promptSnapshot.exists()) {
+          await deleteDoc(promptRef)
+          console.log(`Document ${id} deleted successfully`)
+        } else {
+          console.log(`Document ${id} does not exist, skipping deletion`)
+        }
+
         this._prompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
+
+        if (artsToRemove.length > 0) {
+          for (const art of artsToRemove) {
+            if (art.preview?.length) {
+              const url = art.preview ? art.preview : art
+              const imageRef = ref(storage, url)
+              await deleteObject(imageRef)
+            }
+          }
+        }
+        if (artistImage?.length) {
+          const imageRef = ref(storage, artistImage)
+          await deleteObject(imageRef)
+        }
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting prompt')
       }
