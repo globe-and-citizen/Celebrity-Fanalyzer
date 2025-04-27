@@ -128,6 +128,7 @@ const entry = computed(() => {
     )
   )
 })
+
 watchEffect(async () => {
   // if (entry.value?.author?.uid) {
   //   await statStore.getUserRating(entry.value?.author?.uid)

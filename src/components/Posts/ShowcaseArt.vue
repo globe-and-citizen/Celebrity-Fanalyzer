@@ -1,6 +1,6 @@
 <template>
   <q-separator inset />
-  <div class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
+  <div class="q-gutter-xs q-pa-md text-center">
     <q-carousel
       id="dialog"
       @mousedown.stop.prevent
@@ -23,11 +23,25 @@
         :name="index"
         style="max-height: 450px"
       >
-        <q-img class="rounded-borders" fit="contain" :src="art.preview ?? art" @click.stop="openDialog = true" />
+        <q-img class="rounded-borders fixed-image" fit="contain" :src="art" @dblclick="openDialog = true">
+          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs">Art Photos</div>
+        </q-img>
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
-        <q-img v-if="showcase.artist.preview" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.preview" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist?.info }}</p>
+      <q-carousel-slide
+        v-if="showcase.artist.info || showcase.artist.photo"
+        class="q-pa-none"
+        :name="showcase?.arts.length"
+        style="max-height: 450px"
+      >
+        <q-img
+          v-if="showcase.artist.photo"
+          class="col-sm-6 col-xs-12 rounded-borders"
+          :src="showcase.artist.photo"
+          @dblclick="openDialog = true"
+        >
+          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs">Artist Photo</div>
+        </q-img>
+        <p v-if="showcase?.artist?.info" class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
   </div>
@@ -46,12 +60,16 @@
       v-model="slide"
     >
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
-        <q-img class="rounded-borders" fit="contain" :src="art.preview ?? art" />
+        <q-img class="rounded-borders fixed-image" fit="contain" :src="art">
+          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs relative-position">Art Photos</div>
+        </q-img>
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img v-if="!!showcase.artist.preview" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.preview" />
-        <div class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
-          <p style="width: 100%; padding: 8px">{{ showcase.artist?.info }}</p>
+      <q-carousel-slide v-if="showcase.artist.info || showcase.artist.photo" class="q-pa-none" :name="showcase?.arts.length">
+        <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo">
+          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs relative-position">Artist Photo</div>
+        </q-img>
+        <div v-if="showcase.artist.info" class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
+          <p style="width: 100%; padding: 8px">{{ showcase.artist.info }}</p>
         </div>
       </q-carousel-slide>
     </q-carousel>
@@ -100,6 +118,12 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.fixed-image {
+  max-height: 450px;
+  width: 100%;
+  object-fit: contain;
+}
+
 .art-img {
   cursor: pointer;
   filter: grayscale(100%);

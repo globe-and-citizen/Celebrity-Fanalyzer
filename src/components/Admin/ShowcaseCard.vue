@@ -1,56 +1,94 @@
 <template>
-  <section class="text-center">
-    <q-input
-      autogrow
-      class="col-grow q-pb-xl"
-      hint="Max length 180 characters (optional)"
-      label="Artist info"
-      data-test="artist-info-input"
-      v-model="modelArtistInfo"
-      @update:model-value="addArtistInfo"
-      maxlength="180"
-    />
-    <q-file
-      class="hidden"
-      ref="artistFileRef"
-      v-model="modelFileArtist"
-      @update:model-value="uploadArtistPhoto"
-      :filter="checkFileSize"
-      @rejected="onRejected"
-      accept="image/*"
-      data-test="upload-artist-photo"
-    />
-    <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" data-test="upload-artist-photo-btn" />
-    <div v-if="modelArtistPhoto" class="items-center no-wrap q-my-md q-pa-md rounded-borders col shadow-1">
-      <q-img
-        class="artist-img q-mr-md rounded-borders"
-        fit="contain"
-        :src="modelArtistPhoto"
-        spinner-color="primary"
-        data-test="author-image"
+  <section>
+    <!-- Artist Info Section -->
+    <div class="text-left q-mb-lg">
+      <h6 class="text-weight-medium q-my-none">Upload your artist photo</h6>
+      <p class="text-caption text-grey-7 q-mt-sm q-mb-md">This photo will be used as a separate carousel slide with your artist info</p>
+
+      <div class="row q-col-gutter-md reverse-wrap aritst-wrapper">
+        <!-- Artist Photo Upload -->
+        <div class="col-12 col-md-4 col-lg-3">
+          <div class="upload-placeholder cursor-pointer" @click="onUploadArtist" :class="{ 'has-image': modelArtistPhoto }">
+            <template v-if="modelArtistPhoto">
+              <q-img :src="modelArtistPhoto" fit="contain" style="height: 100%; width: 100%" />
+            </template>
+            <template v-else>
+              <div class="upload-icon-wrapper">
+                <q-icon name="add_photo_alternate" size="24px" color="grey-7" />
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Artist Info Input -->
+        <div class="col-12 col-md-8 col-lg-9">
+          <q-input
+            autogrow
+            class="artist-info-input"
+            :hint="!modelArtistInfo ? 'Max length 180 characters' : ''"
+            label="Artist info (optional)"
+            data-test="artist-info-input"
+            stack-label
+            v-model.trim="modelArtistInfo"
+            @update:model-value="addArtistInfo"
+            maxlength="180"
+          />
+        </div>
+      </div>
+
+      <q-file
+        class="hidden"
+        ref="artistFileRef"
+        v-model="modelFileArtist"
+        @update:model-value="uploadArtistPhoto"
+        :filter="checkFileSize"
+        @rejected="onRejected"
+        accept="image/*"
+        data-test="upload-artist-photo"
       />
     </div>
 
-    <q-file
-      class="hidden"
-      ref="artsFileRef"
-      v-model="modelFileArt"
-      @update:model-value="uploadArts"
-      :filter="checkFileSize"
-      @rejected="onRejected"
-      accept="image/*"
-      multiple
-      :max-files="10"
-      data-test="upload-arts"
-    />
-    <q-btn flat icon="add_circle_outline" label="Upload Art" rounded @click="onUploadArts" data-test="upload-arts-btn">
-      <q-tooltip>Max 10 Images</q-tooltip>
-    </q-btn>
-    <div v-if="modelArts.length" class="items-center q-my-md q-pa-md rounded-borders row shadow-1">
-      <div v-for="(art, index) in modelArts" class="art-img q-ma-xs relative-position" :key="index">
-        <q-img class="rounded-borders" fit="cover" :ratio="1" :src="art.preview ?? art" style="width: 10rem" data-test="arts-images" />
-        <q-btn class="trash-icon" color="negative" icon="delete" round size="sm" @click="removeArt(index)" data-test="remove-art-btn" />
+    <!-- Artwork Upload Section -->
+    <div class="text-left q-mt-xl">
+      <h6 class="text-weight-medium q-my-none">Upload your art</h6>
+      <p class="text-caption text-grey-7 q-mt-sm q-mb-md">
+        These images will be featured in the carousel to showcase your artwork. You can upload up to 5 images.
+      </p>
+
+      <div class="row q-col-gutter-md art-grid">
+        <!-- Existing Art Images -->
+        <template v-for="(art, index) in modelArts" :key="index">
+          <div class="col-2">
+            <div class="upload-placeholder has-image relative-position">
+              <q-img :src="art.preview ?? art" style="height: 100%; width: 100%" />
+              <q-btn class="trash-icon" round flat dense icon="delete" @click="removeArt(index)" data-test="remove-art-btn" />
+            </div>
+          </div>
+        </template>
+
+        <!-- Add More Button -->
+        <div class="col-2" v-if="modelArts.length < 10">
+          <div class="upload-placeholder cursor-pointer" @click="onUploadArts">
+            <div class="upload-icon-wrapper">
+              <q-icon name="add" size="24px" color="grey-7" />
+              <div class="text-caption text-grey-7 q-mt-sm">{{ modelArts.length === 0 ? 'Add your arts' : 'Add More' }}</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <q-file
+        class="hidden"
+        ref="artsFileRef"
+        v-model="modelFileArt"
+        @update:model-value="uploadArts"
+        :filter="checkFileSize"
+        @rejected="onRejected"
+        accept="image/*"
+        multiple
+        :max-files="5"
+        data-test="upload-arts"
+      />
     </div>
   </section>
 </template>
@@ -187,20 +225,94 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.upload-placeholder {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--q-primary);
+    background-color: #f5f5f5;
+  }
+
+  &.has-image {
+    border-style: solid;
+    border-color: #e0e0e0;
+
+    &:hover {
+      .trash-icon {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+  }
+}
+
+.upload-icon-wrapper {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .trash-icon {
   position: absolute;
-  right: -5px;
-  top: -5px;
+  right: 5px;
+  top: 5px;
+  opacity: 0;
   visibility: hidden;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
   z-index: 1;
+  color: var(--q-primary);
+
+  &:hover {
+    background: var(--q-primary);
+    color: white;
+  }
 }
 
-.art-img:hover .trash-icon {
-  visibility: visible;
+.artist-info-input {
+  height: 50%;
+
+  :deep(.q-field__control) {
+    height: 50%;
+    min-height: 120px;
+  }
 }
 
-.artist-img {
-  max-height: 12rem;
-  max-width: 50%;
+.art-grid {
+  .col-2 {
+    width: 20%;
+  }
+
+  .upload-placeholder {
+    height: 200px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 850px) {
+  .aritst-wrapper {
+    flex-direction: column-reverse;
+  }
+  .upload-placeholder {
+    height: 180px;
+  }
+
+  .art-grid {
+    .col-2 {
+      width: 50%;
+    }
+  }
+}
+
+@media (max-width: 599px) {
 }
 </style>
