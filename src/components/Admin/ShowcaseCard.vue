@@ -94,94 +94,134 @@
 </template>
 
 <script setup>
-import { useErrorStore, useStorageStore } from 'src/stores'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { uploadAndSetImage } from 'src/utils/imageConvertor'
-import { uid } from 'quasar'
 
 const props = defineProps(['arts', 'artist', 'collectionName', 'date', 'entryTitle'])
-const emit = defineEmits(['update:arts', 'update:artist', 'updateRecentUploads', 'updateRecentArtistImage'])
-
-const errorStore = useErrorStore()
-const storageStore = useStorageStore()
-
+const emit = defineEmits(['update:arts', 'update:artist', 'update:artsToRemove'])
+const $q = useQuasar()
 const artsFileRef = ref(null)
 const artistFileRef = ref(null)
-const modelArts = ref(props.arts || [])
-const modelArtistInfo = ref(props.artist.info)
-const modelArtistPhoto = ref(props.artist.photo)
+const modelArts = ref([])
+const modelArtistInfo = ref(props.artist?.info || '')
+const modelArtistPhoto = ref(props.artist?.preview || '')
 const modelFileArt = ref(null)
 const modelFileArtist = ref(null)
-const $q = useQuasar()
+const artsToRemove = ref([])
 
-function onUploadArts() {
-  artsFileRef.value.pickFiles()
-}
-
-function onUploadArtist() {
-  artistFileRef.value.pickFiles()
-}
-
+// File size validation
 function checkFileSize(files) {
-  return files.filter((file) => file.size > 2048)
+  return files.filter((file) => file.size <= 2097152)
 }
 
-function onRejected(rejectedEntries) {
+// Notify on rejected files
+function onRejected() {
   $q.notify({
     type: 'negative',
-    message: `${rejectedEntries.length} file(s) did not pass validation constraints`
+    message: `File size is too big. Max file size is 2MB.`
   })
 }
 
-async function addArts(files) {
-  const maxImages = 5
-  const remainingImages = maxImages - modelArts.value.length
+// Trigger artist photo upload
+function onUploadArtist() {
+  artistFileRef.value?.pickFiles()
+}
 
-  if (remainingImages <= 0) {
-    $q.notify({ type: 'negative', message: `You can only upload ${maxImages} images` })
-    await errorStore.throwError(`You can only upload ${maxImages} images`)
+// Trigger arts upload
+function onUploadArts() {
+  artsFileRef.value?.pickFiles()
+}
+
+// Handle artist photo upload
+async function uploadArtistPhoto(file) {
+  if (!file) {
+    if (modelArtistPhoto.value && modelArtistPhoto.value.startsWith('blob:')) {
+      URL.revokeObjectURL(modelArtistPhoto.value)
+    }
+    modelArtistPhoto.value = ''
+    modelFileArtist.value = null
+    emit('update:artist', { info: modelArtistInfo.value, photo: '', file: null })
     return
   }
 
-  const filesToUpload = files.slice(0, remainingImages)
-
-  for (const index in filesToUpload) {
-    const uploaded = await uploadAndSetImage(filesToUpload[index], `images/${props.collectionName}-${props.date}-${uid()}`)
-    modelArts.value.push(uploaded)
-    emit('updateRecentUploads', uploaded)
-  }
-
-  emit('update:arts', modelArts.value)
-
-  if (filesToUpload.length < files.length) {
-    $q.notify({
-      type: 'negative',
-      message: `${filesToUpload.length} file(s) were uploaded. You can upload maximum 5 images`
+  if (file instanceof Blob) {
+    if (modelArtistPhoto.value && modelArtistPhoto.value.startsWith('blob:')) {
+      URL.revokeObjectURL(modelArtistPhoto.value)
+    }
+    modelFileArtist.value = file
+    modelArtistPhoto.value = URL.createObjectURL(file)
+    emit('update:artist', {
+      info: modelArtistInfo.value,
+      photo: modelArtistPhoto.value,
+      file: modelFileArtist.value
     })
   }
 }
 
-function removeArt(file) {
-  const index = modelArts.value.indexOf(file)
-  const imgId = file.match(/entry-[^?\/]+/)
-  storageStore
-    .deleteFile(`images/${imgId}`)
-    .then(() => modelArts.value.splice(index, 1))
-    .catch((error) => errorStore.throwError(error))
+// Handle arts upload
+async function uploadArts(files) {
+  const maxImages = 10
+  const remainingImages = maxImages - modelArts.value.length
+
+  if (!files || files.length === 0) return
+  if (remainingImages <= 0) {
+    $q.notify({ type: 'negative', message: `You can only upload ${maxImages} images` })
+    return
+  }
+  const filesToPreview = Array.from(files).slice(0, remainingImages)
+
+  filesToPreview.forEach((file) => {
+    if (file instanceof Blob) {
+      modelArts.value.push({ file: file, preview: URL.createObjectURL(file) })
+    }
+  })
   emit('update:arts', modelArts.value)
 }
 
-async function addArtistPhoto(files) {
-  modelArtistPhoto.value = ''
-  modelArtistPhoto.value = await uploadAndSetImage(files, `images/${props.collectionName}-${props.date}-artist`)
-  emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
-  emit('updateRecentArtistImage', modelArtistPhoto.value)
+// Remove an art item
+function removeArt(index) {
+  const art = modelArts.value[index]
+  if (art.preview?.startsWith('blob:')) {
+    URL.revokeObjectURL(art.preview)
+  }
+
+  if (art?.preview?.startsWith('https://') || (typeof art === 'string' && art.startsWith('https://'))) {
+    artsToRemove.value.push(art.preview ?? art)
+    emit('update:artsToRemove', [...artsToRemove.value])
+  }
+
+  modelArts.value.splice(index, 1)
+  emit('update:arts', modelArts.value)
 }
 
+// Update artist info
 function addArtistInfo() {
-  emit('update:artist', { ...props.artist, info: modelArtistInfo.value })
+  emit('update:artist', {
+    info: modelArtistInfo.value,
+    photo: modelArtistPhoto.value,
+    file: modelFileArtist.value
+  })
 }
+
+onMounted(async () => {
+  if (props) {
+    if (props.artist && props.artist.file instanceof Blob) {
+      modelArtistPhoto.value = URL.createObjectURL(props.artist.file)
+    }
+
+    if (props.arts) {
+      props.arts.forEach((art) => {
+        if (art && art.file instanceof Blob) {
+          art = { file: art.file, preview: URL.createObjectURL(art.file) }
+          modelArts.value.push(art)
+          return art
+        } else {
+          modelArts.value.push(art)
+        }
+      })
+    }
+  }
+})
 </script>
 
 <style lang="scss" scoped>

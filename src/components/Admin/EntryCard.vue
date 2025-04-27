@@ -3,7 +3,7 @@
     <q-card-section class="row items-baseline no-wrap">
       <h2 class="q-my-none text-h6">{{ id ? 'Edit Entry' : 'New Entry' }}</h2>
       <q-space />
-      <q-btn flat round icon="close" v-close-popup />
+      <q-btn flat round icon="close" v-close-popup data-test="close-button" />
     </q-card-section>
     <q-card-section class="q-pt-none">
       <q-form @submit.prevent="onSubmit()">
@@ -41,9 +41,10 @@
             <q-field
               counter
               label="Description"
-              maxlength="400"
+              maxlength="6000"
               v-model="entry.description"
               :hint="!entry.description ? '*Description is required' : ''"
+              :rules="[(val) => val.length <= 6000 || 'Description cannot exceed 6000 characters']"
             >
               <template v-slot:control>
                 <q-editor
@@ -51,6 +52,7 @@
                   data-test="input-description"
                   dense
                   flat
+                  :maxlength="6000"
                   min-height="5rem"
                   ref="editorRef"
                   style="width: 100%"
@@ -75,6 +77,7 @@
                   ]"
                   v-model="entry.description"
                   @paste="onPaste($event)"
+                  @keydown="onKeyDown($event)"
                 />
               </template>
             </q-field>
@@ -129,6 +132,7 @@
               v-model:artist="entry.showcase.artist"
               @updateRecentUploads="updateRecentUploadsRef"
               @updateRecentArtistImage="updateRecentArtistImageRef"
+              @update:artsToRemove="imagesToRemoveList"
             />
           </q-step>
 
@@ -142,8 +146,17 @@
                 <q-btn
                   flat
                   rounded
+                  label="Reset"
+                  @click="resetEntry"
+                  v-if="parsedEntry?.title"
+                  :disable="promptStore.isLoading"
+                  data-test="reset-button"
+                />
+                <q-btn
+                  flat
+                  rounded
                   label="Cancel"
-                  @click="handleDeleteImagesOnCancel"
+                  @click="() => {}"
                   v-close-popup
                   :disable="promptStore.isLoading"
                   data-test="cancel-button"
@@ -153,7 +166,7 @@
                   data-test="button-submit"
                   :disable="!entry.title || !entry.description || !entry.prompt || !entry.image"
                   :label="id ? 'Save Edits' : 'Submit Entry'"
-                  :loading="promptStore.isLoading || storageStore.isLoading"
+                  :loading="entryStore.isLoading || storageStore.isLoading"
                   rounded
                   type="submit"
                 >
@@ -188,12 +201,11 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
-import { uploadAndSetImage } from 'src/utils/imageConvertor'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref, toRaw, watch, watchEffect } from 'vue'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useStorageStore } from 'src/stores'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import ShowcaseCard from 'components/Admin/ShowcaseCard.vue'
+import { indexedDb } from 'src/utils/indexeddb'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
@@ -214,34 +226,42 @@ const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
 const promptStore = usePromptStore()
-const storageStore = useStorageStore()
 const userStore = useUserStore()
-const router = useRouter()
-const { href } = router.currentRoute.value
 const step = ref(1)
 const editorRef = ref(null)
-const entry = reactive({
+const entry = ref({
   author: { label: userStore.getUser.displayName, value: userStore.getUser.uid },
   description: '',
-  image: '',
-  showcase: { arts: [], artist: { info: '', photo: '' } },
-  title: ''
+  showcase: { arts: [], artist: { info: '', photo: '', file: null } },
+  title: '',
+  prompt: null,
+  image: null,
+  imageFile: null,
+  imagePath: null
 })
-
-const imageModel = ref([])
+const uploadedImage = ref(null)
 const openCamera = ref(false)
 const todayDate = new Date().toISOString().replace(/[.:-]/g, '')
-const uploadedImages = ref([])
 const recentUploadsRef = ref([])
 const recentArtistImage = ref('')
+const parsedEntry = ref(null)
+const storageStore = useStorageStore()
+
+const lastDescriptionNotificationTime = ref(0)
 
 watch(
-  () => entry.showcase.arts,
-  (newArts) => {
-    uploadedImages.value = newArts.map((art) => art.image)
+  () => entry.value.description,
+  (newDescription) => {
+    if (newDescription && newDescription.length > 6000) {
+      entry.value.description = newDescription.substring(0, 6000)
+    }
   },
-  { deep: true }
+  { immediate: true }
 )
+
+const imagesToRemoveList = (e) => {
+  entry.value.artsToRemove = [...e]
+}
 
 const promptOptions = computed(
   () =>
@@ -255,40 +275,47 @@ const promptOptions = computed(
       .reverse() || []
 )
 
-onMounted(() => {
-  promptStore.activePromptsListener()
-  if (props.id) {
-    entry.author = { label: props.author?.displayName, value: props.author?.uid }
-    entry.description = props.description
-    entry.image = props.image
-    entry.prompt = { label: `${props.prompt.date || props.prompt.publicationDate} – ${props.prompt.title}`, value: props.prompt.id }
-    entry.title = props.title
-    entry.showcase = {
-      arts: [],
-      artist: { info: '', photo: '' },
-      ...(props.showcase || {})
+async function loadEntryFromDexie() {
+  try {
+    const entries = await indexedDb.entry.toArray()
+    parsedEntry.value = entries[entries.length - 1] || null
+  } catch (error) {
+    console.error('Failed to load entries from Dexie:', error)
+    parsedEntry.value = null
+  }
+}
+
+onMounted(async () => {
+  await promptStore.activePromptsListener()
+  await loadEntryFromDexie()
+  if (parsedEntry.value && !props.id) {
+    entry.value = {
+      ...entry.value,
+      ...parsedEntry.value,
+      author: userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+    }
+    if (parsedEntry.value.imageFile instanceof Blob) {
+      entry.value.image = URL.createObjectURL(parsedEntry.value.imageFile)
+      uploadedImage.value = parsedEntry.value.imageFile
+    }
+  } else if (props.id) {
+    entry.value = {
+      ...props,
+      author: { label: props.author.displayName, value: props.author.uid },
+      prompt: { label: `${props.prompt.date || props.prompt.publicationDate} – ${props.prompt.title}`, value: props.prompt.id }
     }
   }
+  await promptStore.activePromptsListener()
 })
 
 watchEffect(() => {
-  if (props.isNavigatingFromPrompt && props.selectedPromptDate && promptOptions.value.length && !entry.prompt) {
+  if (props.isNavigatingFromPrompt && props.selectedPromptDate && promptOptions.value.length && !entry.value.prompt) {
     const selectedPrompt = promptOptions.value.find((prompt) => prompt.value === props.selectedPromptDate)
     if (selectedPrompt) {
-      entry.prompt = selectedPrompt
+      entry.value.prompt = selectedPrompt
     }
   }
 })
-
-function uploadPhoto() {
-  entry.image = ''
-  if (!imageModel.value) {
-    return
-  }
-  const reader = new FileReader()
-  reader.readAsDataURL(imageModel.value)
-  reader.onload = () => (entry.image = reader.result)
-}
 
 function onRejected() {
   $q.notify({ type: 'negative', message: `Image did not pass validation constraints` })
@@ -300,11 +327,21 @@ function onPaste(evt) {
   let text, onPasteStripFormattingIEPaste
   evt.preventDefault()
   evt.stopPropagation()
+  const currentLength = entry.value.description.length
+
   if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
     text = evt.originalEvent.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (evt.clipboardData && evt.clipboardData.getData) {
     text = evt.clipboardData.getData('text/plain')
+    if (currentLength + text.length > 6000) {
+      showDescriptionNotification('Cannot paste: Would exceed 6000 character limit')
+      return
+    }
     editorRef.value.runCmd('insertText', text)
   } else if (window.clipboardData && window.clipboardData.getData) {
     if (!onPasteStripFormattingIEPaste) {
@@ -315,15 +352,39 @@ function onPaste(evt) {
   }
 }
 
+function showDescriptionNotification(message) {
+  const now = Date.now()
+  if (now - lastDescriptionNotificationTime.value > 1000) {
+    $q.notify({
+      type: 'warning',
+      message: message,
+      position: 'top',
+      timeout: 2000
+    })
+    lastDescriptionNotificationTime.value = now
+  }
+}
+function onKeyDown(event) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'y')) {
+    return
+  }
+  if (entry.value.description.length >= 6000) {
+    if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      showDescriptionNotification('Max 6000 characters reached')
+    }
+  }
+}
+
 async function onSubmit() {
-  entry.title = entry.title.trim()
-  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.prompt?.value)
+  entry.value.title = entry.value.title.trim()
+  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(entry.value.prompt?.value)
 
   if (!hasLoadedEntry) {
-    await entryStore.fetchEntryByPrompts(entry.prompt?.value)
+    await entryStore.fetchEntryByPrompts(entry.value.prompt?.value)
   }
 
-  const hasEntry = entryStore.hasEntry(entry.prompt?.value)
+  const hasEntry = entryStore.hasEntry(entry.value.prompt?.value)
 
   if (!props.id && hasEntry) {
     $q.notify({
@@ -333,74 +394,119 @@ async function onSubmit() {
     return
   }
 
-  const entryNameValidator = entryStore.entryNameValidator(props.id, entry.prompt?.value, entry.title, !!props.id)
-
-  if (entryNameValidator) {
+  const titleExists = entryStore.entryNameValidator(props.id, entry.value.prompt?.value, entry.value.title, !!props.id)
+  if (titleExists) {
     $q.notify({ message: 'Entry with this title already exists. Please choose another title.', type: 'negative' })
     return
   }
-  const date = props.id ? props.prompt.date || props.prompt.publicationDate : entry.prompt.date
-  entry.slug = `/${date.replace(/\-/g, '/')}/${entry.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
-  entry.id = props.id || `${entry.prompt?.value}T${Date.now()}`
 
-  if (Object.keys(imageModel.value ?? {}).length || imageModel.value?.type) {
-    entry.image = await uploadAndSetImage(imageModel.value, `images/entry-${entry.id}`)
-  } else {
-    entry.image = props.image
-  }
+  const date = props.id ? props.prompt.date || props.prompt.publicationDate : entry.value.prompt.date
+  entry.value.slug = `/${date.replace(/\-/g, '/')}/${entry.value.title.toLowerCase().replace(/[^0-9a-z]+/g, '-')}`
+  entry.value.id = props.id || `${entry.value.prompt?.value}T${Date.now()}`
 
   const action = props.id ? entryStore.editEntry : entryStore.addEntry
   const successMessage = props.id ? 'Entry successfully edited' : 'Entry successfully submitted'
   const failureMessage = props.id ? 'Entry edit failed' : 'Entry submission failed'
 
   try {
-    await action(entry)
+    await action(entry.value)
+
     if (props.id) {
       await entryStore.fetchUserRelatedEntries(userStore.getUserId)
     }
-    if (href.includes('/admin') && !userStore.isEditorOrAbove) {
-      await entryStore.fetchUserRelatedEntries(userStore.getUserId)
-    } else {
-      const updatedPrompt = await promptStore.fetchPromptById(entry.prompt.value)
-      const updatedList = updatedPrompt.find((prompt) => prompt.id === entry.prompt.value).entries
-      const res = await entryStore.fetchPromptsEntries(updatedList)
-      const loadedPrompt = entryStore._loadedEntries.find((el) => el.promptId === entry.prompt.value)
 
-      if (loadedPrompt) {
-        const emptyList = !loadedPrompt.entries.length
-        loadedPrompt.entries = res
-        emptyList && (await promptStore.fetchPrompts())
-      }
-    }
     $q.notify({ type: 'positive', message: successMessage })
+    emit('hideDialog', entry.value.slug)
+    indexedDb.entry?.clear()
   } catch (e) {
+    const entryToSave = {
+      author: toRaw(entry.value.author),
+      description: entry.value.description,
+      showcase: toRaw(entry.value.showcase),
+      title: entry.value.title,
+      prompt: toRaw(entry.value.prompt),
+      imagePath: entry.value.imagePath,
+      slug: entry.value.slug,
+      id: entry.value.id
+    }
+    if (parsedEntry.value && parsedEntry.value.id) {
+      await indexedDb.entry.update(parsedEntry.value.id, entryToSave)
+    } else if (!props.id) {
+      await indexedDb.entry.add({
+        ...entryToSave,
+        imageFile: entry.value.imageFile
+      })
+    }
+    emit('hideDialog', entry.value.slug)
+
+    parsedEntry.value = { ...entry }
     await errorStore.throwError(e, failureMessage)
   }
-  emit('hideDialog', entry.slug)
+}
+
+// ----- Image selection / uploading ----- \\
+async function uploadPhoto() {
+  if (!uploadedImage.value) {
+    if (entry.value.image && !entry.value.imagePath) {
+      URL.revokeObjectURL(entry.value.image)
+    }
+    entry.value.image = null
+    entry.value.imageFile = null
+    return
+  }
+
+  if (uploadedImage.value instanceof Blob) {
+    if (entry.value.image && !entry.value.imagePath) {
+      URL.revokeObjectURL(entry.value.image)
+    }
+
+    entry.value.imageFile = uploadedImage.value
+    entry.value.image = URL.createObjectURL(entry.value.imageFile)
+    if (parsedEntry.value) {
+      parsedEntry.value.image = URL.createObjectURL(entry.value.imageFile)
+    }
+    // UPDATE INDEXEDDB IMAGE IF IT EXISTS
+    if (parsedEntry.value && parsedEntry.value.id) {
+      await indexedDb.entry.update(parsedEntry.value.id, {
+        image: entry.value.image,
+        imageFile: entry.value.imageFile
+      })
+      parsedEntry.value.image = entry.value.image
+      parsedEntry.value.imageFile = entry.value.imageFile
+    }
+  }
 }
 
 function captureCamera(imageBlob) {
-  imageModel.value = imageBlob
+  uploadedImage.value = imageBlob
   uploadPhoto()
-}
-
-function handleDeleteImagesOnCancel() {
-  if (!!recentArtistImage.value.length) {
-    storageStore.deleteFile(recentArtistImage.value)
-    entry.showcase.artist.photo = null
-  }
-
-  storageStore.deleteMultipleFiles(entry.showcase.arts.length ? recentUploadsRef.value : entry.showcase.arts)
-  entry.showcase.arts = entry.showcase.arts.filter((item) => {
-    return !recentUploadsRef.value.includes(item)
-  })
 }
 
 function updateRecentUploadsRef(updatedArts) {
   recentUploadsRef.value.push(updatedArts)
 }
+
 function updateRecentArtistImageRef(artistImage) {
   recentArtistImage.value = artistImage
+}
+
+function resetEntry() {
+  indexedDb.entry?.clear()
+  parsedEntry.value = null
+  entry.value.author = userStore.isAuthenticated ? { label: userStore.getUser.displayName, value: userStore.getUser.uid } : null
+  entry.value.description = ''
+  entry.value.title = ''
+  entry.value.image = null
+  entry.value.prompt = null
+  entry.value.showcase = { arts: [], artist: { info: '', photo: '', file: null } }
+  if (entry.value.image && !entry.value.imagePath) {
+    URL.revokeObjectURL(entry.value.image)
+  }
+  entry.value.image = null
+  entry.value.imageFile = null
+  uploadedImage.value = null
+
+  $q.notify({ type: 'info', message: 'Entry has been reset.' })
 }
 </script>
 

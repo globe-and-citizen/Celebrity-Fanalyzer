@@ -22,7 +22,7 @@
             </div>
             <q-file
               v-if="advertise.type === 'Banner'"
-              v-model="contentModel"
+              v-model="uploadedImage"
               counter
               class="q-mb-lg"
               data-test="file-image"
@@ -41,11 +41,11 @@
             </q-file>
             <div v-if="advertise.type === 'Banner'" class="text-center">
               <q-img
-                v-if="advertise.contentURL"
+                v-if="advertise.image"
                 class="q-mt-md"
                 fit="contain"
                 style="max-height: 40vh; max-width: 80vw"
-                :src="advertise.contentURL"
+                :src="advertise.image"
               />
             </div>
             <q-field
@@ -131,18 +131,18 @@
               :rules="[(duration) => duration > 0 || 'Enter a positive number']"
             />
             <q-input
-              v-if="!isEditing"
+              v-if="!props.id"
               v-model="usdAmount"
               label="Price in USD"
               :hint="!usdAmount ? '*Minimum Price is required' : ''"
               mask="#.##"
               fill-mask="0"
               reverse-fill-mask
-              :rules="[() => (usdAmount < 3 ? 'Minimum allowed budget is 3 USD' : true)]"
+              :rules="[() => (usdAmount < 0.01 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
             <q-input
-              v-if="!isEditing"
+              v-if="!props.id"
               v-model="advertise.budget"
               readonly
               label="Budget In POL"
@@ -153,6 +153,7 @@
         </q-step>
         <template v-slot:navigation>
           <q-stepper-navigation class="flex justify-end q-gutter-md">
+            <q-btn flat rounded label="Reset" @click="resetAd" v-if="parsedAd?.title" data-test="reset-button" />
             <q-btn flat rounded label="Cancel" v-close-popup />
             <q-btn
               rounded
@@ -164,7 +165,7 @@
                 !advertise.content ||
                 !advertise.duration ||
                 !advertise.publishDate ||
-                (advertise.type === 'Banner' && (fileError || (contentModel.length <= 0 && advertise.contentURL.length <= 0)))
+                (advertise.type === 'Banner' && (fileError || (uploadedImage?.length <= 0 && advertise.contentURL.length <= 0)))
               "
               :label="id ? 'Save Edits' : 'Submit '"
             />
@@ -178,18 +179,18 @@
 <script setup>
 import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
-import { useQuasar } from 'quasar'
+import { LocalStorage, useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
-import { onMounted, reactive, ref, watchEffect, watch } from 'vue'
+import { onMounted, ref, watch, toRaw, nextTick } from 'vue'
 import { contractCreateAdCampaign } from 'app/src/web3/adCampaignManager'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 import { fetchMaticRate } from 'app/src/web3/transfers.js'
+import { indexedDb } from 'src/utils/indexeddb'
 
 const emit = defineEmits(['hideDialog'])
 const props = defineProps([
   'author',
-  'categories',
   'date',
   'content',
   'id',
@@ -199,6 +200,7 @@ const props = defineProps([
   'type',
   'content',
   'duration',
+  'image',
   'status',
   'contentURL',
   'budget',
@@ -210,19 +212,34 @@ const errorStore = useErrorStore()
 const advertiseStore = useAdvertiseStore()
 const storageStore = useStorageStore()
 const userStore = useUserStore()
-const contentModel = ref([])
 const datePickerVisible = ref(false)
 const fileErrorMessage = ref('')
 const fileError = ref(false)
 const usdAmount = ref(0)
 const maticRate = ref(0)
-const isEditing = ref(false)
 const editorRef = ref(null)
+const uploadedImage = ref(null)
 const lastDescriptionNotificationTime = ref(0)
+const parsedAd = ref(null)
+const advertise = ref({
+  content: '',
+  title: '',
+  productLink: '',
+  contentURL: '',
+  campaignCode: '',
+  type: '',
+  image: '',
+  imageFile: '',
+  imagePath: '',
+  author: ''
+})
 
+const collectionRef = collection(db, 'advertises')
+const docRef = doc(collectionRef)
 function openDatePicker() {
   datePickerVisible.value = true
 }
+
 onMounted(async () => {
   if (!customWeb3modal.getAddress()) {
     customWeb3modal.open()
@@ -234,62 +251,86 @@ onMounted(async () => {
   } else {
     $q.notify({ type: 'negative', message: 'Failed to fetch Pol rate' })
   }
-})
 
-const advertise = reactive({
-  content: '',
-  title: '',
-  productLink: '',
-  contentURL: '',
-  campaignCode: ''
-})
-const step = ref(1)
+  await loadPromptFromDexie()
+  if (parsedAd.value && !props.id) {
+    usdAmount.value = parsedAd.value.usdAmount
+    advertise.value = {
+      ...advertise.value,
+      ...parsedAd.value,
+      author: userStore.isAuthenticated ? { uid: userStore.getUser.uid } : null,
+      id: docRef.id
+    }
 
-watchEffect(() => {
-  if (props.id) {
-    advertise.author = props.author
-    advertise.categories = props.categories
-    advertise.date = props.date
-    advertise.content = props.content
-    advertise.id = props.id
-    advertise.title = props.title
-    advertise.productLink = props.productLink
-    advertise.publishDate = props.publishDate
-    advertise.type = props.type
-    advertise.duration = props.duration
-    advertise.status = props.status
-    advertise.contentURL = props.contentURL ?? ''
-    ;(advertise.budget = props.budget), (advertise.type = props.type)
-    isEditing.value = true
+    if (parsedAd.value.imageFile instanceof Blob) {
+      advertise.value.image = URL.createObjectURL(parsedAd.value.imageFile)
+      uploadedImage.value = parsedAd.value.imageFile
+    }
+  } else if (props.id) {
+    advertise.value.author = props.author
+    advertise.value.categories = props.categories
+    advertise.value.date = props.date
+    advertise.value.content = props.content
+    advertise.value.id = props.id
+    advertise.value.title = props.title
+    advertise.value.image = props.image || ''
+    advertise.value.productLink = props.productLink
+    advertise.value.publishDate = props.publishDate
+    advertise.value.type = props.type
+    advertise.value.budget = props.budget
+    advertise.value.duration = props.duration
+    advertise.value.status = props.status
+    advertise.value.contentURL = props.contentURL ?? ''
+    advertise.value.campaignCode = props.campaignCode ?? ''
   } else {
-    const collectionRef = collection(db, 'advertises')
-    const docRef = doc(collectionRef)
-
-    advertise.author = userStore.isAuthenticated ? { userName: userStore.getUser.displayName, uid: userStore.getUser.uid } : null
-    advertise.categories = []
-    advertise.type = 'Banner'
-    advertise.date = currentYearMonth()
-    advertise.status = 'Inactive'
-    advertise.cost = 0
-    advertise.id = docRef.id
-    isEditing.value = false
+    advertise.value = {
+      ...advertise.value,
+      author: userStore.isAuthenticated ? { uid: userStore.getUser.uid } : null,
+      id: docRef.id
+    }
   }
 })
 
-function uploadPhoto() {
-  advertise.contentURL = ''
-  const reader = new FileReader()
-  reader.readAsDataURL(contentModel.value)
-  reader.onload = () => (advertise.contentURL = reader.result)
-  reader.onloadend = function (e) {
-    const image = new Image()
-    image.src = e.target.result
-    image.onload = function () {
-      if (image.width < 500 || image.height < 252) {
-        $q.notify({ type: 'negative', message: `Please select an image with minimum 500px width & 252px height for better view` })
-        fileErrorMessage.value = 'Select an image with minimum 500px width & 252px height '
-        fileError.value = true
-      } else fileError.value = false
+async function loadPromptFromDexie() {
+  try {
+    const ads = await indexedDb.ad.toArray()
+    parsedAd.value = ads[ads.length - 1] || null
+  } catch (error) {
+    console.error('Failed to load entries from Dexie:', error)
+    parsedAd.value = null
+  }
+}
+
+const step = ref(1)
+
+async function uploadPhoto() {
+  if (!uploadedImage.value) {
+    if (advertise.value.image && !advertise.value.imagePath) {
+      URL.revokeObjectURL(advertise.value.image)
+    }
+    advertise.value.image = null
+    advertise.value.imageFile = null
+    return
+  }
+
+  if (uploadedImage.value instanceof Blob) {
+    if (advertise.value.image && !advertise.value.imagePath) {
+      URL.revokeObjectURL(advertise.value.image)
+    }
+    advertise.value.imageFile = uploadedImage.value
+    advertise.value.image = URL.createObjectURL(advertise.value.imageFile)
+    if (parsedAd.value) {
+      parsedAd.value.image = URL.createObjectURL(advertise.value.imageFile)
+    }
+    // UPDATE INDEXEDDB IMAGE IF IT EXISTS
+    if (parsedAd.value && parsedAd.value.id) {
+      await indexedDb.ad.update(parsedAd.value.id, {
+        image: advertise.value.image,
+        imageFile: advertise.value.imageFile
+      })
+
+      parsedAd.value.image = advertise.value.image
+      parsedAd.value.imageFile = advertise.value.imageFile
     }
   }
 }
@@ -310,7 +351,7 @@ async function createAdCampaign(payload) {
 }
 function convertToMatic() {
   if (maticRate.value && usdAmount.value && maticRate.value) {
-    advertise.budget = (usdAmount.value / maticRate.value).toFixed(6)
+    advertise.value.budget = (usdAmount.value / maticRate.value).toFixed(6)
   }
 }
 
@@ -332,7 +373,7 @@ function onKeyDown(event) {
     return
   }
 
-  if (advertise.content.length >= 6000) {
+  if (advertise.value.content.length >= 6000) {
     if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
       event.preventDefault()
       showDescriptionNotification('Max 6000 characters reached')
@@ -346,7 +387,7 @@ function onPaste(evt) {
   evt.preventDefault()
   evt.stopPropagation()
 
-  const currentLength = advertise.content.length
+  const currentLength = advertise.value.content.length
 
   if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
     text = evt.originalEvent.clipboardData.getData('text/plain')
@@ -372,10 +413,10 @@ function onPaste(evt) {
 }
 
 watch(
-  () => advertise.content,
+  () => advertise.value.content,
   (newContent) => {
     if (newContent && newContent.length > 6000) {
-      advertise.content = newContent.substring(0, 6000)
+      advertise.value.content = newContent.substring(0, 6000)
     }
   },
   { immediate: true }
@@ -383,58 +424,111 @@ watch(
 
 async function onSubmit() {
   try {
-    if (!advertise.budget) advertise.budget = 0
+    if (!advertise.value.budget) advertise.value.budget = 0
 
     $q.loading.show()
-    advertise.endDate = calculateEndDate(advertise.publishDate, advertise.duration)
-    if (advertise.type === 'Text') advertise.contentURL = ''
-    else if (Object.keys(contentModel.value).length && advertise.type === 'Banner') {
-      await storageStore
-        .uploadFile(contentModel.value, `advertise/content-${advertise.id}`)
-        .then((url) => (advertise.contentURL = url))
-        .catch((error) => errorStore.throwError(error))
-    }
-
+    advertise.value.endDate = calculateEndDate(advertise.value.publishDate, advertise.value.duration)
+    if (advertise.value.type === 'Text') advertise.value.contentURL = ''
     if (props.id) {
-      if (props.type === 'Banner' && advertise.type === 'Text') {
-        const imagePath = `advertise/content-${advertise.id}`
+      if (props.type === 'Banner' && advertise.value.type === 'Text') {
+        const imagePath = `advertise/content-${advertise.value.id}`
         storageStore.deleteFile(imagePath).catch((error) => console.log(error))
-        advertise.contentURL = ''
+        advertise.value.contentURL = ''
       }
       await advertiseStore
-        .editAdvertise(advertise)
+        .editAdvertise(advertise.value)
         .then(() => $q.notify({ type: 'info', message: 'Advertise successfully edited' }))
         .catch((error) => {
           errorStore.throwError(error, 'Advertise edit failed')
         })
         .finally(() => $q.loading.hide())
     } else {
-      const result = await createAdCampaign({ budgetInMatic: advertise.budget })
+      const result = await createAdCampaign({ budgetInMatic: advertise.value.budget })
       if (result.status.includes('success')) {
-        advertise.campaignCode = result.events[0].args.campaignCode
+        advertise.value.campaignCode = result.events[0].args.campaignCode
         await advertiseStore
-          .addAdvertise(advertise)
+          .addAdvertise(advertise.value)
           .then(() => {
             $q.notify({ type: 'positive', message: 'Advertise successfully submitted' })
             emit('hideDialog')
           })
           .catch((error) => {
-            console.log(error)
+            saveDraftAd()
             errorStore.throwError(error, 'Advertise submission failed')
           })
-          .finally(() => $q.loading.hide())
+          .finally(() => {
+            resetAd()
+            $q.loading.hide()
+          })
       } else {
         $q.notify({ message: result?.error?.message, type: 'negative' })
         $q.loading.hide()
+        await saveDraftAd()
       }
     }
     emit('hideDialog')
   } catch (error) {
     $q.notify({ message: 'Advertise submission failed', type: 'negative' })
-    errorStore.throwError(error, 'Advertise submission failed')
+    await errorStore.throwError(error, 'Advertise submission failed')
+    await saveDraftAd()
     emit('hideDialog')
     $q.loading.hide()
   }
   emit('hideDialog')
+}
+
+async function saveDraftAd() {
+  const adToSave = {
+    content: toRaw(advertise.value.content),
+    usdAmount: toRaw(usdAmount.value),
+    title: toRaw(advertise.value.title),
+    publishDate: toRaw(advertise.value.publishDate),
+    campaignCode: toRaw(advertise.value.campaignCode),
+    contentURL: toRaw(advertise.value.contentURL),
+    duration: toRaw(advertise.value.duration),
+    endDate: toRaw(advertise.value.endDate),
+    image: toRaw(advertise.value.image),
+    imageFile: toRaw(advertise.value.imageFile),
+    productLink: toRaw(advertise.value.productLink),
+    type: toRaw(advertise.value.type),
+    budget: toRaw(advertise.value.budget),
+    author: toRaw(advertise.value.author),
+    id: docRef.id,
+    date: currentYearMonth()
+  }
+
+  if (parsedAd.value && parsedAd.value.id) {
+    await indexedDb.ad.update(parsedAd.value.id, adToSave)
+  } else {
+    await indexedDb.ad.add(adToSave)
+  }
+}
+
+function resetAd() {
+  indexedDb.ad?.clear()
+  const clearedAd = {
+    content: '',
+    usdAmount: '',
+    title: '',
+    publishDate: '',
+    campaignCode: '',
+    contentURL: '',
+    duration: '',
+    endDate: '',
+    image: null,
+    imageFile: null,
+    productLink: '',
+    type: '',
+    budget: '',
+    author: ''
+  }
+  usdAmount.value = 0
+  advertise.value = { ...clearedAd }
+  uploadedImage.value = null
+  parsedAd.value = null
+
+  nextTick(() => {
+    $q.notify({ type: 'info', message: 'Advertisement has been reset.' })
+  })
 }
 </script>
