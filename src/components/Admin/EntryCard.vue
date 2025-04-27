@@ -114,7 +114,7 @@
                 data-test="file-image"
                 :max-total-size="2097152"
                 :required="!id"
-                v-model="imageModel"
+                v-model="uploadedImage"
                 @rejected="onRejected()"
                 @update:model-value="uploadPhoto()"
               />

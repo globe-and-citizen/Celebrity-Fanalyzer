@@ -162,36 +162,6 @@
                   />
                 </template>
               </q-field>
-              <div class="row">
-                <div class="col-8">
-                  <q-file
-                    accept=".jpg, .webp, image/*"
-                    counter
-                    data-test="file-image"
-                    :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
-                    label="Choose File"
-                    :max-total-size="2097152"
-                    :required="!id"
-                    use-chips
-                    v-model="uploadedImage"
-                    @rejected="onRejected()"
-                    @update:model-value="uploadPhoto()"
-                  >
-                    <template v-slot:append>
-                      <q-icon name="image" />
-                    </template>
-                  </q-file>
-                </div>
-                <div class="col-1 flex justify-center items-center"><p>or</p></div>
-                <q-btn
-                  color="primary"
-                  icon="add_a_photo"
-                  class="self-center"
-                  label="Capture Image"
-                  data-test="button-camera-capture"
-                  @click="openCamera = true"
-                ></q-btn>
-              </div>
               <q-select
                 behavior="menu"
                 counter
@@ -239,7 +209,7 @@
                         :max-total-size="2097152"
                         :required="!id"
                         :disable="!!id"
-                        v-model="imageModel"
+                        v-model="uploadedImage"
                         @rejected="onRejected()"
                         @update:model-value="uploadPhoto()"
                       ></q-file>
@@ -406,7 +376,7 @@
 import { useQuasar, date as dateUtils } from 'quasar'
 import ShowcaseCard from 'src/components/Admin/ShowcaseCard.vue'
 import { useErrorStore, usePromptStore, useStorageStore, useUserStore } from 'src/stores'
-import { onMounted, reactive, ref, watchEffect, computed, watch, toRaw, nextTick } from 'vue'
+import { onMounted, ref, computed, watch, toRaw, nextTick } from 'vue'
 import CaptureCamera from '../shared/CameraCapture.vue'
 import FundDepositCard from './FundDepositCard.vue'
 import { customWeb3modal } from 'app/src/web3/walletConnect'

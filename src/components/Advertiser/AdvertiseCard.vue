@@ -179,7 +179,7 @@
 <script setup>
 import { db } from 'src/firebase'
 import { collection, doc } from 'firebase/firestore'
-import { LocalStorage, useQuasar } from 'quasar'
+import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useStorageStore, useUserStore } from 'src/stores'
 import { calculateEndDate, currentYearMonth, getCurrentDate } from 'src/utils/date'
 import { onMounted, ref, watch, toRaw, nextTick } from 'vue'

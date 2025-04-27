@@ -10,7 +10,7 @@
         <div class="col-12 col-md-4 col-lg-3">
           <div class="upload-placeholder cursor-pointer" @click="onUploadArtist" :class="{ 'has-image': modelArtistPhoto }">
             <template v-if="modelArtistPhoto">
-              <q-img :src="modelArtistPhoto" fit="fill" style="height: 100%; width: 100%" />
+              <q-img :src="modelArtistPhoto" fit="contain" style="height: 100%; width: 100%" />
             </template>
             <template v-else>
               <div class="upload-icon-wrapper">
@@ -40,7 +40,7 @@
         class="hidden"
         ref="artistFileRef"
         v-model="modelFileArtist"
-        @update:model-value="addArtistPhoto"
+        @update:model-value="uploadArtistPhoto"
         :filter="checkFileSize"
         @rejected="onRejected"
         accept="image/*"
@@ -60,14 +60,14 @@
         <template v-for="(art, index) in modelArts" :key="index">
           <div class="col-2">
             <div class="upload-placeholder has-image relative-position">
-              <q-img :src="art" style="height: 100%; width: 100%" />
-              <q-btn class="trash-icon" round flat dense icon="delete" @click="removeArt(art)" data-test="remove-art-btn" />
+              <q-img :src="art.preview ?? art" style="height: 100%; width: 100%" />
+              <q-btn class="trash-icon" round flat dense icon="delete" @click="removeArt(index)" data-test="remove-art-btn" />
             </div>
           </div>
         </template>
 
         <!-- Add More Button -->
-        <div class="col-2" v-if="modelArts.length < 5">
+        <div class="col-2" v-if="modelArts.length < 10">
           <div class="upload-placeholder cursor-pointer" @click="onUploadArts">
             <div class="upload-icon-wrapper">
               <q-icon name="add" size="24px" color="grey-7" />
@@ -81,7 +81,7 @@
         class="hidden"
         ref="artsFileRef"
         v-model="modelFileArt"
-        @update:model-value="addArts"
+        @update:model-value="uploadArts"
         :filter="checkFileSize"
         @rejected="onRejected"
         accept="image/*"

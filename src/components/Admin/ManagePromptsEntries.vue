@@ -71,7 +71,7 @@
           </div>
         </q-td>
         <q-td class="text-right">
-          <span v-if="!props.row?.escrowId">
+          <span v-if="props.row?.paymentStatus !== 'Payment successful'">
             <q-btn
               flat
               round
