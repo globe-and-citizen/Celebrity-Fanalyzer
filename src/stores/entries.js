@@ -125,9 +125,11 @@ export const useEntryStore = defineStore('entries', {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }
 
+          const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', promptId)))
+          const prompt = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
+          entry.prompt = prompt
+
           if (!entry.escrowId) {
-            const promptSnapshot = await getDocs(query(collection(db, 'prompts'), where('id', '==', promptId)))
-            const prompt = promptSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
             entry.escrowId = prompt?.escrowId
           }
         }

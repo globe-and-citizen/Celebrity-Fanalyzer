@@ -71,7 +71,7 @@
           </div>
         </q-td>
         <q-td class="text-right">
-          <span v-if="!props.row.rewardAmount">
+          <span v-if="!props.row?.escrowId">
             <q-btn
               flat
               round
@@ -152,6 +152,7 @@
     :loaded-entries="entryStore._loadedEntries"
     @update-entry="handleUpdateEntry"
     @delete-entry="handleDeleteEntry"
+    user-related-table
   />
 
   <div class="q-ma-md row justify-center q-mr-md float-right">
@@ -236,11 +237,10 @@ const prompts = ref([])
 const proceedDepositFundDialog = ref({})
 
 onMounted(async () => {
-  if (userStore.isEditorOrAbove) {
-    entryStore._loadedEntries = []
-    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
-  } else {
-    await entryStore.fetchUserRelatedEntries(userStore.getUserId)
+  entryStore._loadedEntries = []
+  if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts(false, 5, true)
+  if (!entryStore.getUserRelatedEntries.length) {
+    await entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
   }
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()

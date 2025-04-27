@@ -1,15 +1,15 @@
 <template>
   <q-table
     flat
-    :hide-bottom="!!rows.length"
-    :class="{ 'entries-table ': !userStore.isEditorOrAbove && !chilledEntryTable }"
-    :columns="!!rows.length ? columns : []"
+    :hide-bottom="!!rowData.length"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
+    :columns="!!rowData.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
-    :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
+    :hide-header="userStore.isEditorOrAbove"
     :pagination="pagination"
-    :rows="rows"
-    :title="!userStore.isEditorOrAbove && !chilledEntryTable ? 'My Entries' : ''"
+    :rows="rowData"
+    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
     no-data-label="No entries found."
     data-test="entry-table"
     :loading="entryStore.isLoading || promptStore.isLoading"
@@ -53,11 +53,17 @@
           </a>
         </q-td>
         <q-td class="text-right">
-          <span v-if="_currentPrompt?.escrowId || (userRelatedTable && props.row.prompt.hasWinner !== true)">
+          <span v-if="props.row.prompt?.hasWinner !== true">
             <q-btn
               class="payment-buttons"
-              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
+              v-if="
+                userStore.isEditorOrAbove &&
+                props.row.isWinner !== true &&
+                _currentPrompt?.isTreated !== true &&
+                _currentPrompt?.hasWinner !== true
+              "
               color="black"
+              :disable="userStore.getUser.role !== 'Admin'"
               flat
               size="sm"
               icon="toggle_off"
@@ -93,8 +99,8 @@
               <q-tooltip class="positive" :offset="[10, 10]">View transaction detail</q-tooltip>
             </q-btn>
 
-            <span v-if="_currentPrompt?.hasWinner !== true || (userRelatedTable && props.row.prompt.hasWinner !== true)">
-              <span v-if="props.row.isWinner !== true">
+            <span v-if="!props.row.prompt?.hasWinner">
+              <span v-if="!props.row.isWinner">
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="warning"
@@ -108,7 +114,7 @@
                   <q-tooltip>Edit</q-tooltip>
                 </q-btn>
               </span>
-              <span v-if="props.row.isWinner !== true">
+              <span v-if="!props.row.isWinner">
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="negative"
@@ -130,7 +136,7 @@
     </template>
   </q-table>
 
-  <q-dialog full-width position="bottom" v-model="entry.dialog">
+  <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss>
     <EntryCard v-bind="entry" @hideDialog="entry = {}" @forward-update-entry="forwardHandleUpdateEntry" />
   </q-dialog>
 
@@ -148,7 +154,13 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-delete-entry" flat label="Delete" @click="onDeleteEntry(deleteDialog.entry)" />
+        <q-btn
+          color="negative"
+          data-test="confirm-delete-entry"
+          flat
+          label="Delete"
+          @click="onDeleteEntry(deleteDialog.entry.id, deleteDialog.entry.prompt.id, deleteDialog.entry.showcase.arts)"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -201,7 +213,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore, useNotificationStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
-import { nextTick, onMounted, ref, watch, watchEffect, computed } from 'vue'
+import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
@@ -217,10 +229,12 @@ const props = defineProps({
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
   chilledEntryTable: { type: Boolean, required: false, default: false },
-  maxWidth: { type: Number, required: false }
+  maxWidth: { type: Number, required: false },
+  userRelatedTable: { type: Boolean, default: false }
 })
 
 const widthStyle = ref({ width: `${props.maxWidth}px` })
+const rowData = computed(() => (props.userRelatedTable ? entryStore.getUserRelatedEntries ?? [] : props.rows))
 
 watch(
   () => props.maxWidth,
@@ -272,10 +286,7 @@ const displayCrytptoTransactionDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
-  const i = props.id.lastIndexOf('T')
-  const promptId = props.id.slice(0, i)
   entry.value = props
-  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
   entry.value.dialog = true
 }
 
