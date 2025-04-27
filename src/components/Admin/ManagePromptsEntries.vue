@@ -152,9 +152,10 @@
     :loaded-entries="entryStore._loadedEntries"
     @update-entry="handleUpdateEntry"
     @delete-entry="handleDeleteEntry"
+    user-related-table
   />
 
-  <div class="row justify-center q-mr-md float-right">
+  <div class="q-ma-md row justify-center q-mr-md float-right">
     <q-btn
       v-if="!userStore.isEditorOrAbove && entryStore.showLastVisible"
       label="Load More"
@@ -209,7 +210,6 @@ import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
-import TheHeader from 'components/shared/TheHeader.vue'
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
