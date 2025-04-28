@@ -130,6 +130,21 @@ watchEffect(async () => {
   )
 })
 
+watchEffect(async () => {
+  if (commentStore.isScrollToComment && commentStore.getScrollToCommentId) {
+    const unwatch = watch(
+      () => commentStore.getComments?.length,
+      async (length) => {
+        if (length > 0) {
+          await nextTick()
+          commentStore.scrollToTheComment()
+          unwatch()
+        }
+      }
+    )
+  }
+})
+
 function mentionUser(mentioned) {
   commentValue.value = commentValue.value.slice(0, -1) + '@' + mentioned.name.split(' ')[0] + ' '
   mentionedUsers.value.push(mentioned.id)
@@ -154,20 +169,22 @@ async function addComment() {
 
   commentStore
     .addComment(props.collectionName, comment, props.post)
-    .then(() => {
+    .then((commentId) => {
       notificationStore.create(props.post.subscribers, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
         slug: props.post.slug,
         message: 'New comment: ' + comment.text,
-        type: 'comment'
+        type: 'comment',
+        commentId: commentId
       })
       notificationStore.create(mentionedUsers.value, {
         collection: props.collectionName,
         link: '/' + props.post.id.replace(/-/g, '/'),
         slug: props.post.slug,
         message: userStore.getUser.displayName + ' mentioned you: ' + comment.text,
-        type: 'mention'
+        type: 'mention',
+        commentId: commentId
       })
     })
     .then(() => {
