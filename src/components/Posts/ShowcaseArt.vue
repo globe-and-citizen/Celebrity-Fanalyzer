@@ -23,24 +23,15 @@
         :name="index"
         style="max-height: 450px"
       >
-        <q-img class="rounded-borders fixed-image" fit="contain" :src="art" @dblclick="openDialog = true">
-          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs">Art Photos</div>
-        </q-img>
+        <q-img class="rounded-borders" fit="contain" :src="art.preview ?? art" @click.stop="openDialog = true" />
       </q-carousel-slide>
-      <q-carousel-slide
-        v-if="showcase.artist.info || showcase.artist.photo"
-        class="q-pa-none"
-        :name="showcase?.arts.length"
-        style="max-height: 450px"
-      >
+      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
         <q-img
-          v-if="showcase.artist.photo"
+          v-if="showcase.artist.preview"
           class="col-sm-6 col-xs-12 rounded-borders"
-          :src="showcase.artist.photo"
+          :src="showcase.artist.preview"
           @dblclick="openDialog = true"
-        >
-          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs">Artist Photo</div>
-        </q-img>
+        />
         <p v-if="showcase?.artist?.info" class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
@@ -60,14 +51,10 @@
       v-model="slide"
     >
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
-        <q-img class="rounded-borders fixed-image" fit="contain" :src="art">
-          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs relative-position">Art Photos</div>
-        </q-img>
+        <q-img class="rounded-borders fixed-image" fit="contain" :src="art.preview ?? art" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info || showcase.artist.photo" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo">
-          <div class="absolute-top text-center bg-primary text-bold text-white q-pa-xs relative-position">Artist Photo</div>
-        </q-img>
+      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length">
+        <q-img v-if="!!showcase.artist.preview" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.preview" />
         <div v-if="showcase.artist.info" class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
           <p style="width: 100%; padding: 8px">{{ showcase.artist.info }}</p>
         </div>
