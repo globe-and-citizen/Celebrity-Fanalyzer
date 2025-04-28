@@ -6,8 +6,8 @@
 
 describe('Admin Prompt & Entry', () => {
   const name = 'Hello World!'
-  let date = ''
-  let visit = '/'
+  const date = ''
+  const visit = '/'
   beforeEach(() => {
     cy.viewport('macbook-16')
     Cypress.on('uncaught:exception', (err, runnable) => {
@@ -31,24 +31,6 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', '/404')
     cy.get('.q-btn').click()
     cy.location('pathname').should('eq', '/')
-  })
-
-  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
-    // Clear local storage
-    cy.clearLocalStorage()
-
-    cy.visit('/month')
-    // Ensure the "Create Entry" button exists and is visible
-    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
-
-    // Click the "Create entry" button without login
-    cy.get('[data-test="create-entry"]').click()
-
-    // Assert that the user is redirected to the login page
-    cy.url().should('include', '/profile')
-
-    // Assert the notification message
-    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
   })
 
   it('Cleanup: Delete Existing "Cypress Tester" Prompts Before Test', () => {
@@ -130,16 +112,42 @@ describe('Admin Prompt & Entry', () => {
     cy.get('[data-test="dropdown-menu"]').click()
     // Get the first button (New Prompt) and click it
     cy.get('[data-test="create-prompt"]').should('be.visible').click()
-    // Get the date input and choose the last option
-    cy.get('[data-test="date-picker"]').should('be.visible').click()
-    cy.get('[data-test="close-btn"]').click()
-    cy.get('input[data-test="date"]')
-      .invoke('val')
-      .then((value) => {
-        date = value
-        visit += value.replace('-', '/')
-      })
 
+    // Step 1: Competition Dates
+    // Set publication date (today)
+    cy.get('[data-test="publication-date-picker"]').should('be.visible').click()
+
+    // Wait for the calendar to be visible
+    cy.get('[data-test="publication-date-calendar"]').should('be.visible')
+
+    // Select today's date
+    cy.get('[data-test="publication-date-calendar"] .q-date__today').should('be.visible').click()
+    cy.get('[data-test="close-publication-date"]').click()
+
+    // Set end date (2 days from today)
+    cy.get('[data-test="end-date-picker"]').should('be.visible').click()
+
+    // Wait for the calendar to be visible
+    cy.get('[data-test="end-date-calendar"]').should('be.visible')
+
+    // Get today's date and calculate 2 days from now
+    const today = new Date()
+    const endDate = new Date(today)
+    endDate.setDate(today.getDate() + 2)
+
+    // Get the day number for the end date
+    const endDay = endDate.getDate()
+
+    // Select the end date by finding the button with the exact day number
+    cy.get(`[data-test="end-date-calendar"] .q-date__calendar-item button`).each(($button) => {
+      const buttonText = $button.find('.block').text().trim()
+      if (buttonText === endDay.toString()) {
+        cy.wrap($button).click()
+      }
+    })
+    cy.get('[data-test="close-end-date"]').click()
+
+    // Step 2: Prompt Details
     // Get the title input and type 'Hello World!' into it
     cy.get('[data-test="input-title"]').type(name)
 
@@ -152,12 +160,97 @@ describe('Admin Prompt & Entry', () => {
     // Get the categories select and choose add 'Cypress' and 'Test' categories
     cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
 
-    // Get the submit button and click it
-    cy.get('[data-test="button-submit"] > .q-btn__content').click()
-    // cy.get('[data-test="button-submit"]').click()
+    // Continue to next step
+    cy.get('[data-test="button-continue"]').click()
 
-    //Check the Prompt is submitted successfully
+    // Step 3: Artist Carousel (Optional)
+    // Skip artist carousel for first prompt
+    cy.get('[data-test="button-continue"]').click()
+
+    // Step 4: Payment Options
+    // Select "Pay later" option
+    cy.get('.deposite-button').click()
+    cy.get('.deposite-menu').contains('Pay later').click()
+
+    // Submit the prompt
+    cy.get('[data-test="button-submit"]').click()
+
+    // Check the Prompt is submitted successfully
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
+
+    // Create second prompt with artist carousel
+    cy.get('[data-test="dropdown-menu"]').click()
+    cy.get('[data-test="create-prompt"]').should('be.visible').click()
+
+    // Set same dates as first prompt
+    cy.get('[data-test="publication-date-picker"]').should('be.visible').click()
+    cy.get('[data-test="publication-date-calendar"]').should('be.visible')
+    cy.get('[data-test="publication-date-calendar"] .q-date__today').should('be.visible').click()
+    cy.get('[data-test="close-publication-date"]').click()
+
+    cy.get('[data-test="end-date-picker"]').should('be.visible').click()
+    cy.get('[data-test="end-date-calendar"]').should('be.visible')
+    cy.get(`[data-test="end-date-calendar"] .q-date__calendar-item button`).each(($button) => {
+      const buttonText = $button.find('.block').text().trim()
+      if (buttonText === endDay.toString()) {
+        cy.wrap($button).click()
+      }
+    })
+    cy.get('[data-test="close-end-date"]').click()
+
+    // Fill prompt details
+    cy.get('[data-test="input-title"]').type('Hello World! With Arts')
+    cy.get('[data-test="input-description"]').type('This is a sample prompt with arts')
+    cy.get('[data-test="file-image"]').selectFile('src/assets/cypress.jpg')
+    cy.get('[data-test="select-categories"]').type('Cypress{enter}').type('Test{enter}')
+
+    // Continue to next step
+    cy.get('[data-test="button-continue"]').click()
+
+    // Add artist carousel details
+    cy.get('[data-test="artist-info-input"]').type('Cypress Artist')
+    cy.get('[data-test="upload-artist-photo-btn"]').should('exist').click()
+    cy.get('[data-test="upload-artist-photo"]').selectFile('src/assets/cypress.jpg', { force: true })
+    cy.get('[data-test="upload-arts-btn"]').should('exist').click()
+    cy.get('[data-test="upload-arts"]').selectFile(Array(5).fill('src/assets/cypress.jpg'), { force: true })
+
+    // Wait for file uploads to complete
+    cy.get('[data-test="arts-images"]').should('have.length', 5)
+    cy.get('[data-test="author-image"]').should('have.length', 1)
+
+    // Wait for any loading states to complete
+    cy.wait(2000)
+
+    // Continue to payment step
+    cy.get('[data-test="button-continue"]', { timeout: 20000 }).should('be.visible').click()
+
+    // Select "Pay later" option
+    cy.get('.deposite-button', { timeout: 20000 }).should('be.visible').click()
+    cy.get('.deposite-menu').contains('Pay later').click()
+
+    // Submit the prompt
+    cy.get('[data-test="button-submit"]').click()
+
+    // Check the Prompt is submitted successfully
+    cy.get('.q-notification__message').contains('Prompt successfully submitted')
+  })
+
+  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
+    // Clear local storage
+    cy.clearLocalStorage()
+
+    cy.visit('/hello-world-')
+    // Ensure the "Create Entry" button exists and is visible
+    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
+
+    // Click the "Create entry" button without login
+    cy.get('[data-test="create-entry"]').click()
+
+    // Assert that the user is redirected to the login page
+    cy.url().should('include', '/profile')
+
+    // Assert the notification message
+    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
   })
 
   it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {

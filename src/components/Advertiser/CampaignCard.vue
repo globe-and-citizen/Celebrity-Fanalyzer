@@ -9,7 +9,7 @@
     <q-img
       v-if="advertise.type === 'Banner'"
       class="post-image"
-      :src="advertise.type === 'Text' && !advertise.contentURl ? 'https://cdn.quasar.dev/img/parallax2.jpg' : advertise.contentURL"
+      :src="advertise.type === 'Text' && !advertise.image ? 'https://cdn.quasar.dev/img/parallax2.jpg' : advertise.image"
     />
     <div class="article-details">
       <h4 class="post-category">Advertise</h4>

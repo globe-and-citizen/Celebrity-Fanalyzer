@@ -71,7 +71,7 @@
           </div>
         </q-td>
         <q-td class="text-right">
-          <span v-if="!props.row?.escrowId">
+          <span v-if="props.row?.paymentStatus !== 'Payment successful'">
             <q-btn
               flat
               round
@@ -152,9 +152,10 @@
     :loaded-entries="entryStore._loadedEntries"
     @update-entry="handleUpdateEntry"
     @delete-entry="handleDeleteEntry"
+    user-related-table
   />
 
-  <div class="row justify-center q-mr-md float-right">
+  <div class="q-ma-md row justify-center q-mr-md float-right">
     <q-btn
       v-if="!userStore.isEditorOrAbove && entryStore.showLastVisible"
       label="Load More"
@@ -179,7 +180,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" flat label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt.id)" />
+        <q-btn color="negative" data-test="confirm-delete-prompt" flat label="Delete" @click="onDeletePrompt(deleteDialog.prompt)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -209,7 +210,6 @@ import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 import { useRouter } from 'vue-router'
 import ShareComponent from 'src/components/Posts/ShareComponent.vue'
-import TheHeader from 'components/shared/TheHeader.vue'
 const $q = useQuasar()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
@@ -275,9 +275,9 @@ function openDeleteDialog(prompt) {
   deleteDialog.value.prompt = prompt
 }
 
-function onDeletePrompt(id) {
+function onDeletePrompt(prompt) {
   promptStore
-    .deletePrompt(id)
+    .deletePrompt(prompt)
     .then(() => $q.notify({ type: 'positive', message: 'Prompt successfully deleted' }))
     .catch((error) => errorStore.throwError(error, 'Prompt deletion failed'))
 

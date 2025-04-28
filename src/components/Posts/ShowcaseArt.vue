@@ -1,6 +1,6 @@
 <template>
   <q-separator inset />
-  <div class="q-gutter-xs q-pa-md text-center" @click.stop="openDialog = true">
+  <div class="q-gutter-xs q-pa-md text-center">
     <q-carousel
       id="dialog"
       @mousedown.stop.prevent
@@ -23,11 +23,16 @@
         :name="index"
         style="max-height: 450px"
       >
-        <q-img class="rounded-borders" fit="contain" :src="art" @click.stop="openDialog = true" />
+        <q-img class="rounded-borders" fit="contain" :src="art.preview ?? art" @click.stop="openDialog = true" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
-        <q-img v-if="showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
+      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
+        <q-img
+          v-if="showcase.artist.preview"
+          class="col-sm-6 col-xs-12 rounded-borders"
+          :src="showcase.artist.preview"
+          @dblclick="openDialog = true"
+        />
+        <p v-if="showcase?.artist?.info" class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
     </q-carousel>
   </div>
@@ -46,11 +51,11 @@
       v-model="slide"
     >
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
-        <q-img class="rounded-borders" fit="contain" :src="art" />
+        <q-img class="rounded-borders fixed-image" fit="contain" :src="art.preview ?? art" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
-        <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
-        <div class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
+      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length">
+        <q-img v-if="!!showcase.artist.preview" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.preview" />
+        <div v-if="showcase.artist.info" class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
           <p style="width: 100%; padding: 8px">{{ showcase.artist.info }}</p>
         </div>
       </q-carousel-slide>
@@ -61,7 +66,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 
-defineProps({
+const props = defineProps({
   showcase: { type: Object, required: true, default: () => {} }
 })
 
@@ -100,6 +105,12 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.fixed-image {
+  max-height: 450px;
+  width: 100%;
+  object-fit: contain;
+}
+
 .art-img {
   cursor: pointer;
   filter: grayscale(100%);

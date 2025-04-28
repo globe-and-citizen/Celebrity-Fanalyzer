@@ -219,6 +219,7 @@ watch(searchDate, async (val) => {
     await promptStore.fetchPrompts(true)
   }
 })
+
 watch(
   () => promptStore.filterOngoingCompetitions,
   (val) => {
@@ -237,6 +238,9 @@ onMounted(async () => {
 
     if (!advertiseStore.getActiveAdvertises?.length) {
       await advertiseStore.getActiveAdvertise()
+      if (computedPromptsByStatus.value.length === 0) {
+        status.value = 'All'
+      }
     }
   } catch (error) {
     await errorStore.throwError(error, 'Error fetching prompts and ads')

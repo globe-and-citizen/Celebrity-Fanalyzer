@@ -1,9 +1,9 @@
 <template>
   <q-table
     flat
-    :hide-bottom="!!rows.length"
-    :class="{ 'entries-table ': !userStore.isEditorOrAbove && !chilledEntryTable }"
-    :columns="!!rows.length ? columns : []"
+    :hide-bottom="!!rowData.length"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
+    :columns="!!rowData.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
     :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
@@ -207,7 +207,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore, useNotificationStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
-import { nextTick, onMounted, ref, watch, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
@@ -227,6 +227,7 @@ const props = defineProps({
 })
 
 const widthStyle = ref({ width: `${props.maxWidth}px` })
+const rowData = computed(() => (props.userRelatedTable ? entryStore.getUserRelatedEntries ?? [] : props.rows))
 
 watch(
   () => props.maxWidth,

@@ -1,6 +1,6 @@
 <template>
   <q-list>
-    <div style="border-left: black solid 1px; padding-left: 2%; margin-bottom: 15px">
+    <div :id="comment.id" style="border-left: black solid 1px; padding-left: 2%; margin-bottom: 15px">
       <q-item class="q-px-none">
         <q-item-section avatar>
           <q-avatar>
