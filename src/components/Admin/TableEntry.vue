@@ -6,10 +6,10 @@
     :columns="!!rowData.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
-    :hide-header="userStore.isEditorOrAbove"
+    :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
     :pagination="pagination"
-    :rows="rowData"
-    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+    :rows="rows"
+    :title="!userStore.isEditorOrAbove && !chilledEntryTable ? 'My Entries' : ''"
     no-data-label="No entries found."
     data-test="entry-table"
     :loading="entryStore.isLoading || promptStore.isLoading"
@@ -53,17 +53,11 @@
           </a>
         </q-td>
         <q-td class="text-right">
-          <span v-if="props.row.prompt?.hasWinner !== true">
+          <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
             <q-btn
               class="payment-buttons"
-              v-if="
-                userStore.isEditorOrAbove &&
-                props.row.isWinner !== true &&
-                _currentPrompt?.isTreated !== true &&
-                _currentPrompt?.hasWinner !== true
-              "
+              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
               color="black"
-              :disable="userStore.getUser.role !== 'Admin'"
               flat
               size="sm"
               icon="toggle_off"
@@ -99,8 +93,8 @@
               <q-tooltip class="positive" :offset="[10, 10]">View transaction detail</q-tooltip>
             </q-btn>
 
-            <span v-if="!props.row.prompt?.hasWinner">
-              <span v-if="!props.row.isWinner">
+            <span v-if="_currentPrompt?.hasWinner !== true">
+              <span v-if="props.row.isWinner !== true">
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="warning"
@@ -114,7 +108,7 @@
                   <q-tooltip>Edit</q-tooltip>
                 </q-btn>
               </span>
-              <span v-if="!props.row.isWinner">
+              <span v-if="props.row.isWinner !== true">
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="negative"
@@ -229,8 +223,7 @@ const props = defineProps({
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
   chilledEntryTable: { type: Boolean, required: false, default: false },
-  maxWidth: { type: Number, required: false },
-  userRelatedTable: { type: Boolean, default: false }
+  maxWidth: { type: Number, required: false }
 })
 
 const widthStyle = ref({ width: `${props.maxWidth}px` })
@@ -286,7 +279,10 @@ const displayCrytptoTransactionDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
+  const i = props.id.lastIndexOf('T')
+  const promptId = props.id.slice(0, i)
   entry.value = props
+  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
   entry.value.dialog = true
 }
 
@@ -380,14 +376,14 @@ function forwardHandleUpdateEntry(payload) {
   emit('update-entry', payload)
 }
 
-function onDeleteEntry(entry) {
+function onDeleteEntry(entryId, promptId, arts) {
   entryStore
-    .deleteEntry(entry)
+    .deleteEntry(entryId, arts)
     .then(() => {
       if (!userStore.isEditorOrAbove) {
         entryStore.fetchUserRelatedEntries(userStore.getUserId)
       } else if (userStore.isEditorOrAbove) {
-        emit('delete-entry', entry.id, entry.prompt.id)
+        emit('delete-entry', entryId, promptId)
       }
     })
     .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))

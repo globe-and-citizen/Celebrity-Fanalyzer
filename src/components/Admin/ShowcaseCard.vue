@@ -52,7 +52,7 @@
     <div class="text-left q-mt-xl">
       <h6 class="text-weight-medium q-my-none">Upload your art</h6>
       <p class="text-caption text-grey-7 q-mt-sm q-mb-md">
-        These images will be featured in the carousel to showcase your artwork. You can upload up to 5 images.
+        These images will be featured in the carousel to showcase your artwork. You can upload up to 10 images.
       </p>
 
       <div class="row q-col-gutter-md art-grid">
@@ -86,7 +86,7 @@
         @rejected="onRejected"
         accept="image/*"
         multiple
-        :max-files="5"
+        :max-files="10"
         data-test="upload-arts"
       />
     </div>
