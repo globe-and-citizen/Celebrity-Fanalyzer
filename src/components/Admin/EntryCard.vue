@@ -84,44 +84,45 @@
             <div class="cover-image-wrapper">
               <span class="block text-subtitle1 text-weight-regular">Upload cover image for your entry</span>
               <span class="block text-secondary text-body2 q-mb-md">This image will be as primary visual for the entry</span>
-              <div class="cover-image-container">
-                <div
-                  v-if="entry.image"
-                  @click="$refs.entryFilePicker.pickFiles()"
-                  class="cover-image-placeholder relative-position q-mb-xs"
-                >
-                  <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />
-                  <div class="upload-icon-wrapper absolute-center">
-                    <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />
+              <div class="row justify-start items-center no-wrap">
+                <div class="cover-image-container">
+                  <div @click="!entry.image && $refs.entryFilePicker.pickFiles()" class="cover-image-placeholder relative-position q-mb-xs">
+                    <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />
+                    <div class="upload-icon-wrapper absolute-center">
+                      <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />
+                    </div>
                   </div>
                 </div>
-
-                <div
-                  v-else
-                  @click="$refs.entryFilePicker.pickFiles()"
-                  class="cover-image-placeholder relative-position has-image q-mb-xs"
-                  :class="{ 'cursor-not-allowed': !entry.prompt }"
-                >
-                  <q-icon name="upload " color="grey" size="2rem" class="absolute-center upload" />
-                  <q-icon name="add_photo_alternate " color="grey" size="2rem" class="absolute-center add_photo_alternate" />
+                <q-file
+                  accept=".jpg, image/*"
+                  class="hidden"
+                  ref="entryFilePicker"
+                  :disable="!entry.prompt && !!id"
+                  data-test="file-image"
+                  :max-total-size="2097152"
+                  :required="!id"
+                  v-model="uploadedImage"
+                  @rejected="onRejected()"
+                  @update:model-value="uploadPhoto()"
+                />
+                <div class="row items-center no-wrap q-ml-md">
+                  <span class="text-grey-6 q-mr-sm">Or</span>
+                  <q-btn
+                    color="pink"
+                    icon="photo_camera"
+                    label="CAPTURE IMAGE"
+                    class="capture-btn q-ml-md"
+                    data-test="button-camera-capture"
+                    :disable="!!id"
+                    @click="openCamera = true"
+                    no-caps
+                  ></q-btn>
                 </div>
+                <span v-if="!entry.prompt" class="cover-image-hint text-caption q-mt-xs">Select prompt first</span>
+                <span v-else-if="entry.prompt && !entry.image" class="cover-image-hint text-caption q-mt-xs">
+                  *Image size exceeds the 2MB limit.
+                </span>
               </div>
-              <q-file
-                accept=".jpg, image/*"
-                class="hidden"
-                ref="entryFilePicker"
-                :disable="!entry.prompt"
-                data-test="file-image"
-                :max-total-size="2097152"
-                :required="!id"
-                v-model="uploadedImage"
-                @rejected="onRejected()"
-                @update:model-value="uploadPhoto()"
-              />
-              <span v-if="!entry.prompt" class="cover-image-hint text-caption q-mt-xs">Select prompt first</span>
-              <span v-else-if="entry.prompt && !entry.image" class="cover-image-hint text-caption q-mt-xs">
-                *Image size exceeds the 2MB limit.
-              </span>
             </div>
           </q-step>
           <q-step caption="Optional" :done="step > 2" icon="create_new_folder" :name="2" title="Artist Carousel">
@@ -133,6 +134,7 @@
               @updateRecentUploads="updateRecentUploadsRef"
               @updateRecentArtistImage="updateRecentArtistImageRef"
               @update:artsToRemove="imagesToRemoveList"
+              @update:artistImageToRemove="artistImageToRemove"
             />
           </q-step>
 
@@ -261,6 +263,10 @@ watch(
 
 const imagesToRemoveList = (e) => {
   entry.value.artsToRemove = [...e]
+}
+
+const artistImageToRemove = (i) => {
+  entry.value.artistImageToRemove = i
 }
 
 const promptOptions = computed(
@@ -513,6 +519,7 @@ function resetEntry() {
 <style lang="scss" scoped>
 .cover-image-wrapper {
   .cover-image-hint {
+    padding-left: 12px;
     color: #9e9e9e;
   }
   .cover-image-container {

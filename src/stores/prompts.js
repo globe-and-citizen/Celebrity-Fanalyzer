@@ -371,6 +371,7 @@ export const usePromptStore = defineStore('prompts', {
       const prompt = { ...payload }
       const userStore = useUserStore()
       const artsToRemove = prompt.artsToRemove
+      const artistImageToRemove = prompt.artistImageToRemove
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.updated = Timestamp.fromDate(new Date())
 
@@ -382,6 +383,14 @@ export const usePromptStore = defineStore('prompts', {
         delete prompt.artsToRemove
       } else {
         delete prompt.artsToRemove
+      }
+
+      if (artistImageToRemove) {
+        const artistImageRef = ref(storage, artistImageToRemove)
+        await deleteObject(artistImageRef)
+        delete prompt.artistImageToRemove
+      } else {
+        delete prompt.artistImageToRemove
       }
 
       if (!prompt.imageFile) {

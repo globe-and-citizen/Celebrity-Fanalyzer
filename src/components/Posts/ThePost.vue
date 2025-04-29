@@ -248,7 +248,13 @@ onMounted(async () => {
 
 watchEffect(async () => {
   if (isPrompt) {
-    await statsStore.addTopic(props.post?.id, props.post.author?.uid, props.post?.title, props.post?.description, props.post?.categories)
+    await statsStore.addTopic(
+      props.post?.id,
+      props.post.author?.uid,
+      props.post?.title,
+      props.post?.description,
+      props.post?.categories ?? []
+    )
   }
 
   if (isEntry) {
