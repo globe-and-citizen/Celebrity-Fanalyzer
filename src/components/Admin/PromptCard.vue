@@ -261,9 +261,11 @@
               <ShowcaseCard
                 @update:artsToRemove="imagesToRemoveList"
                 collectionName="prompt"
-                :date="prompt.date"
+                :isEditTime="!!props.id"
+                :id="prompt?.date ? prompt.date : prompt.id"
                 v-model:arts="prompt.showcase.arts"
                 v-model:artist="prompt.showcase.artist"
+                @update:artistImageToRemove="artistImageToRemove"
               />
             </div>
           </q-card-section>
@@ -459,8 +461,11 @@ async function onProceedDepositFundDialog() {
 }
 
 const imagesToRemoveList = (e) => {
-  console.log(e)
   prompt.value.artsToRemove = [...e]
+}
+
+const artistImageToRemove = (i) => {
+  prompt.value.artistImageToRemove = i
 }
 
 onMounted(async () => {

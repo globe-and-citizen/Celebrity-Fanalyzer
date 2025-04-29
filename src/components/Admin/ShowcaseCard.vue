@@ -8,9 +8,14 @@
       <div class="row q-col-gutter-md reverse-wrap aritst-wrapper">
         <!-- Artist Photo Upload -->
         <div class="col-12 col-md-4 col-lg-3">
-          <div class="upload-placeholder cursor-pointer" @click="onUploadArtist" :class="{ 'has-image': modelArtistPhoto }">
+          <div
+            class="upload-placeholder cursor-pointer relative-position"
+            @click="onUploadArtist"
+            :class="{ 'has-image': modelArtistPhoto }"
+          >
             <template v-if="modelArtistPhoto">
               <q-img :src="modelArtistPhoto" fit="contain" style="height: 100%; width: 100%" />
+              <q-btn class="trash-icon" round flat dense icon="delete" @click.stop="removeArtistPhoto" data-test="remove-art-btn" />
             </template>
             <template v-else>
               <div class="upload-icon-wrapper">
@@ -98,7 +103,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 
 const props = defineProps(['arts', 'artist', 'collectionName', 'date', 'entryTitle'])
-const emit = defineEmits(['update:arts', 'update:artist', 'update:artsToRemove'])
+const emit = defineEmits(['update:arts', 'update:artist', 'update:artsToRemove', 'update:artistImageToRemove'])
 const $q = useQuasar()
 const artsFileRef = ref(null)
 const artistFileRef = ref(null)
@@ -108,7 +113,7 @@ const modelArtistPhoto = ref(props.artist?.preview || '')
 const modelFileArt = ref(null)
 const modelFileArtist = ref(null)
 const artsToRemove = ref([])
-
+const artistImageUrlToRemove = ref('')
 // File size validation
 function checkFileSize(files) {
   return files.filter((file) => file.size <= 2097152)
@@ -192,6 +197,22 @@ function removeArt(index) {
 
   modelArts.value.splice(index, 1)
   emit('update:arts', modelArts.value)
+}
+
+function removeArtistPhoto() {
+  if (modelArtistPhoto.value && modelArtistPhoto.value.startsWith('blob:')) {
+    URL.revokeObjectURL(modelArtistPhoto.value)
+  } else if (
+    modelArtistPhoto?.value.startsWith('https://') ||
+    (typeof modelArtistPhoto?.value === 'string' && modelArtistPhoto?.value('https://'))
+  ) {
+    artistImageUrlToRemove.value = modelArtistPhoto.value
+    emit('update:artistImageToRemove', artistImageUrlToRemove.value)
+  }
+
+  modelArtistPhoto.value = ''
+  modelFileArtist.value = null
+  emit('update:artist', { info: modelArtistInfo.value, photo: '', file: null })
 }
 
 // Update artist info

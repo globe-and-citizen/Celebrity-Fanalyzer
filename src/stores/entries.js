@@ -315,6 +315,7 @@ export const useEntryStore = defineStore('entries', {
       const promptStore = usePromptStore()
       const entry = { ...payload }
       const artsToRemove = entry.artsToRemove
+      const artistImageToRemove = entry.artistImageToRemove
       entry.author = doc(db, 'users', entry.author.value)
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.updated = Timestamp.fromDate(new Date())
@@ -331,6 +332,14 @@ export const useEntryStore = defineStore('entries', {
         delete entry.artsToRemove
       } else {
         delete entry.artsToRemove
+      }
+
+      if (artistImageToRemove) {
+        const artistImageRef = ref(storage, artistImageToRemove)
+        await deleteObject(artistImageRef)
+        delete entry.artistImageToRemove
+      } else {
+        delete entry.artistImageToRemove
       }
 
       if (!entry.imageFile) {
