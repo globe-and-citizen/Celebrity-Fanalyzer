@@ -230,7 +230,6 @@ export const usePromptStore = defineStore('prompts', {
 
         const promptDocRef = doc(db, 'prompts', currentYearMonth())
         const promptSnapshotRef = await getDoc(promptDocRef)
-
         if (promptSnapshotRef.exists()) {
           const promptSnapshot = { id: promptSnapshotRef.id, ...promptSnapshotRef.data() }
 
@@ -246,7 +245,9 @@ export const usePromptStore = defineStore('prompts', {
             }
           ]
         } else {
-          const lastPromptAvailableRef = await getDocs(query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1)))
+          const lastPromptAvailableRef = await getDocs(
+            query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1), where('escrowId', '!=', null))
+          )
           const lastPrompt = lastPromptAvailableRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
           if (lastPrompt.author && lastPrompt.author.id) {
