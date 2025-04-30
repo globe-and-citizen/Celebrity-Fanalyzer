@@ -113,13 +113,6 @@
                     <q-icon name="upload " color="grey" size="2rem" class="absolute-center upload" />
                     <q-icon name="add_photo_alternate " color="grey" size="2rem" class="absolute-center add_photo_alternate" />
                   </div>
-
-                  <!--                  <div @click="!entry.image && $refs.entryFilePicker.pickFiles()" class="cover-image-placeholder relative-position q-mb-xs">-->
-                  <!--                    <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />-->
-                  <!--                    <div class="upload-icon-wrapper absolute-center">-->
-                  <!--                      <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />-->
-                  <!--                    </div>-->
-                  <!--                  </div>-->
                 </div>
                 <q-file
                   accept=".jpg, image/*"
