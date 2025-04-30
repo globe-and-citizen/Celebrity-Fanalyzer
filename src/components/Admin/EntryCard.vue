@@ -86,12 +86,40 @@
               <span class="block text-secondary text-body2 q-mb-md">This image will be as primary visual for the entry</span>
               <div class="row justify-start items-center no-wrap">
                 <div class="cover-image-container">
-                  <div @click="!entry.image && $refs.entryFilePicker.pickFiles()" class="cover-image-placeholder relative-position q-mb-xs">
+                  <div
+                    v-if="entry.image"
+                    @click="!entry.prompt ? null : $refs.entryFilePicker.pickFiles()"
+                    class="cover-image-placeholder relative-position q-mb-xs"
+                    :class="{ 'cursor-not-allowed': !entry.prompt }"
+                  >
                     <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />
-                    <div class="upload-icon-wrapper absolute-center">
-                      <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />
+                    <div class="upload-icon-wrapper absolute-center" :class="{ hidden: !entry.prompt }">
+                      <q-icon
+                        name="upload"
+                        size="1.7rem"
+                        color="primary"
+                        class="upload-icon absolute-center bg-red-2 q-pa-xs"
+                        :class="{ 'cursor-not-allowed': !entry.prompt }"
+                      />
                     </div>
                   </div>
+
+                  <div
+                    v-else
+                    @click="!entry.prompt ? null : $refs.entryFilePicker.pickFiles()"
+                    class="cover-image-placeholder relative-position has-image q-mb-xs"
+                    :class="{ 'cursor-not-allowed': !entry.prompt }"
+                  >
+                    <q-icon name="upload " color="grey" size="2rem" class="absolute-center upload" />
+                    <q-icon name="add_photo_alternate " color="grey" size="2rem" class="absolute-center add_photo_alternate" />
+                  </div>
+
+                  <!--                  <div @click="!entry.image && $refs.entryFilePicker.pickFiles()" class="cover-image-placeholder relative-position q-mb-xs">-->
+                  <!--                    <q-img :src="entry.image" fit="cover" style="height: 150px; width: 200px" />-->
+                  <!--                    <div class="upload-icon-wrapper absolute-center">-->
+                  <!--                      <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />-->
+                  <!--                    </div>-->
+                  <!--                  </div>-->
                 </div>
                 <q-file
                   accept=".jpg, image/*"
@@ -114,7 +142,8 @@
                     class="capture-btn q-ml-md"
                     data-test="button-camera-capture"
                     :disable="!!id"
-                    @click="openCamera = true"
+                    :class="{ 'cursor-not-allowed': !entry.prompt }"
+                    @click="!entry.prompt ? null : (openCamera = true)"
                     no-caps
                   ></q-btn>
                 </div>
@@ -248,7 +277,7 @@ const recentUploadsRef = ref([])
 const recentArtistImage = ref('')
 const parsedEntry = ref(null)
 const storageStore = useStorageStore()
-
+console.log(entry.value, '')
 const lastDescriptionNotificationTime = ref(0)
 
 watch(
@@ -523,6 +552,7 @@ function resetEntry() {
     color: #9e9e9e;
   }
   .cover-image-container {
+    cursor: pointer;
     .cover-image-placeholder {
       position: relative;
       width: 200px;

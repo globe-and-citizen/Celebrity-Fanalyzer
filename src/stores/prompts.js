@@ -150,12 +150,11 @@ export const usePromptStore = defineStore('prompts', {
       const userStore = useUserStore()
       this._isLoading = true
       const today = new Date()
-      const formattedDate = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+      const formattedDate = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getUTCDate()).padStart(2, '0')}`
 
       try {
         let queryRef = collection(db, 'prompts')
         const queryConstraints = [where('hasWinner', '==', null), where('escrowId', '!=', null)]
-
         queryRef = query(queryRef, ...queryConstraints)
 
         onSnapshot(queryRef, (querySnapshot) => {
@@ -163,11 +162,12 @@ export const usePromptStore = defineStore('prompts', {
 
           querySnapshot.forEach((doc) => {
             const data = doc.data()
+            const todayDate = new Date(formattedDate)
+            const publishDate = new Date(data.publicationDate)
+            const endDate = new Date(data.endDate)
 
-            if ((!data.publicationDate || data.publicationDate <= formattedDate) && (!data.endDate || data.endDate >= formattedDate)) {
-              if (data.author.id !== userStore.getUser.uid) {
-                activePrompts.push({ id: doc.id, ...data })
-              }
+            if (todayDate >= publishDate && todayDate <= endDate && data.author.id !== userStore.getUser.uid) {
+              activePrompts.push({ id: doc.id, ...data })
             }
           })
 
@@ -179,7 +179,6 @@ export const usePromptStore = defineStore('prompts', {
         this._isLoading = false
       }
     },
-
     async fetchPromptById(id) {
       const userStore = useUserStore()
 
