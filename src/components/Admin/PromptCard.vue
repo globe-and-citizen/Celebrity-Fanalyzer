@@ -184,12 +184,7 @@
                   <span class="block text-secondary text-body2 q-mb-md">This image will be as primary visual for the prompt</span>
                   <div class="row justify-start items-center no-wrap">
                     <div class="cover-image-container">
-                      <div
-                        v-if="prompt.image"
-                        @click="$refs.file.pickFiles()"
-                        class="cover-image-placeholder relative-position q-mb-xs"
-                        :class="{ 'cursor-not-allowed': !!id }"
-                      >
+                      <div v-if="prompt.image" @click="$refs.file.pickFiles()" class="cover-image-placeholder relative-position q-mb-xs">
                         <q-img :src="prompt.image" fit="cover" style="height: 150px; width: 200px" />
                         <div class="upload-icon-wrapper absolute-center" :class="{ hidden: !!id }">
                           <q-icon name="upload" size="1.7rem" color="primary" class="upload-icon absolute-center bg-red-2 q-pa-xs" />
