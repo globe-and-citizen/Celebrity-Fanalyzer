@@ -260,7 +260,7 @@ export const useEntryStore = defineStore('entries', {
       entry.created = Timestamp.fromDate(new Date())
       entry.prompt = promptStore.getPromptRef(entry.prompt.value)
       entry.escrowId = escrowId || null
-
+      entry.isWinner = false
       delete entry.image
       delete entry.imagePath
 
@@ -302,6 +302,7 @@ export const useEntryStore = defineStore('entries', {
         await setDoc(entryRef, entry)
         await updateDoc(doc(db, 'prompts', promptId), { entries: arrayUnion(entryRef) })
         await notificationStore.toggleSubscription('entries', entry.id)
+        await this.fetchUserRelatedEntries(entry.author.id)
       } catch (error) {
         console.error('Failed to add entry:', error)
         throw error

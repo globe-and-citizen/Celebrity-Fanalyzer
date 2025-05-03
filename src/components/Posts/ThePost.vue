@@ -23,7 +23,7 @@
       </div>
       <q-dialog v-model="openDialog" ref="dialogRef" backdrop-filter="blur(1px)" auto-close>
         <q-img
-          style="max-height: 100%; height: fit-content; max-width: 90vw; width: 90rem; cursor: pointer"
+          style="max-height: 100%; height: fit-content; max-width: 90vw; width: 90rem; cursor: pointer; overflow: hidden"
           fit="contain"
           ratio="1"
           spinner-color="primary"
