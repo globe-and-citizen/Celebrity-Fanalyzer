@@ -25,7 +25,12 @@
       >
         <q-img class="rounded-borders" fit="contain" :src="art.preview ?? art" @click.stop="openDialog = true" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
+      <q-carousel-slide
+        v-if="showcase.artist?.info || !!showcase.artist?.preview"
+        class="q-pa-none"
+        :name="showcase?.arts.length"
+        style="max-height: 450px"
+      >
         <q-img
           v-if="showcase.artist.preview"
           class="col-sm-6 col-xs-12 rounded-borders"
@@ -53,7 +58,7 @@
       <q-carousel-slide v-for="(art, index) in showcase?.arts" class="flex justify-center q-pa-none" :key="index" :name="index">
         <q-img class="rounded-borders fixed-image" fit="contain" :src="art.preview ?? art" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist?.info" class="q-pa-none" :name="showcase?.arts.length">
+      <q-carousel-slide v-if="showcase.artist?.info || !!showcase.artist?.preview" class="q-pa-none" :name="showcase?.arts.length">
         <q-img v-if="!!showcase.artist.preview" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.preview" />
         <div v-if="showcase.artist.info" class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
           <p style="width: 100%; padding: 8px">{{ showcase.artist.info }}</p>
