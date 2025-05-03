@@ -270,7 +270,7 @@ const recentUploadsRef = ref([])
 const recentArtistImage = ref('')
 const parsedEntry = ref(null)
 const storageStore = useStorageStore()
-console.log(entry.value, '')
+
 const lastDescriptionNotificationTime = ref(0)
 
 watch(

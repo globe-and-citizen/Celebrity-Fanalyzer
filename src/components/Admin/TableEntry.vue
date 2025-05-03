@@ -53,10 +53,15 @@
           </a>
         </q-td>
         <q-td class="text-right">
-          <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
+          <span v-if="_currentPrompt?.escrowId || props.row?.isWinner || props.row.prompt?.escrowId || props.row?.isWinner">
             <q-btn
               class="payment-buttons"
-              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
+              v-if="
+                props.row.isWinner !== true &&
+                _currentPrompt?.isTreated !== true &&
+                _currentPrompt?.hasWinner !== true &&
+                userStore.getUser.uid !== props.row.author.uid
+              "
               color="black"
               flat
               size="sm"
@@ -93,8 +98,8 @@
               <q-tooltip class="positive" :offset="[10, 10]">View transaction detail</q-tooltip>
             </q-btn>
 
-            <span v-if="_currentPrompt?.hasWinner !== true">
-              <span v-if="props.row.isWinner !== true">
+            <span v-if="!props.row.prompt?.hasWinner">
+              <span v-if="!props.row.isWinner">
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
                   color="warning"
@@ -223,11 +228,11 @@ const props = defineProps({
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
   chilledEntryTable: { type: Boolean, required: false, default: false },
-  maxWidth: { type: Number, required: false }
+  maxWidth: { type: Number, required: false },
+  userRelatedTable: { default: false }
 })
 
 const widthStyle = ref({ width: `${props.maxWidth}px` })
-const rowData = computed(() => (props.userRelatedTable ? entryStore.getUserRelatedEntries ?? [] : props.rows))
 
 watch(
   () => props.maxWidth,
@@ -268,7 +273,7 @@ const columns = [
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   {}
 ]
-
+const rowData = computed(() => (props.userRelatedTable ? entryStore?.getUserRelatedEntries : props.rows))
 const deleteDialog = ref({})
 const entry = ref({})
 const selectWinnerDialog = ref({})
@@ -282,7 +287,9 @@ function onEditDialog(props) {
   const i = props.id.lastIndexOf('T')
   const promptId = props.id.slice(0, i)
   entry.value = props
-  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
+  if (userStore.isAdmin) {
+    entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
+  }
   entry.value.dialog = true
 }
 

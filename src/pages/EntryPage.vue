@@ -23,8 +23,8 @@
         title="Entry Page"
         style="padding-bottom: 7rem"
         :isEntry="true"
-        :showEdit="checkEditDeletePermissions"
-        :showDelete="checkEditDeletePermissions"
+        :showEdit="checkEditDeletePermissions()"
+        :showDelete="checkEditDeletePermissions()"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
         @onEntryDelete="openEntryDeleteDialog"
@@ -86,9 +86,9 @@ import {
   useEntryStore,
   useErrorStore,
   useLikeStore,
+  usePromptStore,
   useShareStore,
   useStatStore,
-  usePromptStore,
   useUserStore
 } from 'src/stores'
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
@@ -150,7 +150,8 @@ onMounted(async () => {
 })
 
 function checkEditDeletePermissions() {
-  return !prompt.value?.hasWinner && (userStore.getUserId === entry.value.author.uid || userStore.isEditorOrAbove)
+  const isAdminOrAuthor = userStore.getUserId === entry.value.author.uid || userStore.isEditorOrAbove
+  return !prompt.value?.hasWinner && isAdminOrAuthor
 }
 
 onUnmounted(async () => {
