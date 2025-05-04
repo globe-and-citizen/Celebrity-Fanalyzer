@@ -24,7 +24,7 @@
           </q-responsive>
         </RouterLink>
         <p class="q-my-md text-body1">
-          This Month's Prompt:
+          Latest Prompt:
           <br />
           <RouterLink to="month">
             {{ monthPrompt?.title }}
