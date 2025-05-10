@@ -1,5 +1,4 @@
-import { getAdCampaignCosts } from 'app/src/web3/adCampaignManager'
-
+const { getAdCampaignCosts } = require('./lib/serverAdCampaignManager')
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 admin.initializeApp()
@@ -16,7 +15,6 @@ async function calculateTotalImpressions(advertiseDocRef) {
       totalImpressions += data.impression
     }
   })
-
   return totalImpressions
 }
 
@@ -50,7 +48,7 @@ async function calculateTotalVisits(advertiseDocRef) {
 
 async function calculateAmountSpent(totalClicks, totalImpressions, totalVisits) {
   const advertiseCosts = await getAdCampaignCosts()
-  if (advertiseCosts.status !== 'success') {
+  if (advertiseCosts.status === 'success') {
     const result =
       parseFloat(advertiseCosts.data.costPerClick) * totalClicks +
       parseFloat(advertiseCosts.data.costPerImpression) * totalImpressions +
