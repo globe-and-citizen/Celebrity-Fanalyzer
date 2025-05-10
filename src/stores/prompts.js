@@ -62,7 +62,7 @@ export const usePromptStore = defineStore('prompts', {
     _tab: 'post',
     promptDialog: false,
     entryDialog: {},
-    loadCount: 6,
+    loadCount: 10,
     _totalPrompts: undefined,
     _lastVisible: null,
     _hasMore: true,
@@ -109,12 +109,13 @@ export const usePromptStore = defineStore('prompts', {
           const userRef = doc(db, 'users', userStore.getUser.uid)
           conditions.push(where('author', '==', userRef))
         }
+        console.log(this._lastVisible)
         if (loadMore) {
           queryRef = this._lastVisible
-            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), ...conditions)
-            : query(queryRef, orderBy('id', 'desc'), ...conditions)
+            ? query(queryRef, orderBy('created', 'desc'), startAfter(this._lastVisible), ...conditions)
+            : query(queryRef, orderBy('created', 'desc'), ...conditions)
         } else {
-          queryRef = query(queryRef, orderBy('id', 'desc'), ...conditions)
+          queryRef = query(queryRef, orderBy('created', 'desc'), ...conditions)
         }
         const querySnapshot = await getDocs(queryRef)
 
@@ -166,7 +167,7 @@ export const usePromptStore = defineStore('prompts', {
             const publishDate = new Date(data.publicationDate)
             const endDate = new Date(data.endDate)
 
-            if (todayDate >= publishDate && todayDate <= endDate && data.author.id !== userStore.getUser.uid) {
+            if (todayDate >= publishDate && todayDate <= endDate) {
               activePrompts.push({ id: doc.id, ...data })
             }
           })
@@ -227,39 +228,21 @@ export const usePromptStore = defineStore('prompts', {
         this._isLoading = true
         const userStore = useUserStore()
 
-        const promptDocRef = doc(db, 'prompts', currentYearMonth())
-        const promptSnapshotRef = await getDoc(promptDocRef)
-        if (promptSnapshotRef.exists()) {
-          const promptSnapshot = { id: promptSnapshotRef.id, ...promptSnapshotRef.data() }
+        const lastPromptAvailableRef = await getDocs(
+          query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1), where('escrowId', '!=', null))
+        )
+        const lastPrompt = lastPromptAvailableRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
 
-          if (promptSnapshot.author && promptSnapshot.author.id) {
-            promptSnapshot.author = userStore.getUserById(promptSnapshot.author.id) || (await userStore.fetchUser(promptSnapshot.author.id))
-          }
-
-          this._isLoading = false
-          this._monthPrompt = [
-            {
-              ...promptSnapshot,
-              entries: promptSnapshot?.entries?.map((entry) => entry.id) || []
-            }
-          ]
-        } else {
-          const lastPromptAvailableRef = await getDocs(
-            query(collection(db, 'prompts'), orderBy('created', 'desc'), limit(1), where('escrowId', '!=', null))
-          )
-          const lastPrompt = lastPromptAvailableRef.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
-
-          if (lastPrompt.author && lastPrompt.author.id) {
-            lastPrompt.author = userStore.getUserById(lastPrompt.author.id) || (await userStore.fetchUser(lastPrompt.author.id))
-          }
-          this._isLoading = false
-          this._monthPrompt = [
-            {
-              ...lastPrompt,
-              entries: lastPrompt?.entries?.map((entry) => entry.id) || []
-            }
-          ]
+        if (lastPrompt.author && lastPrompt.author.id) {
+          lastPrompt.author = userStore.getUserById(lastPrompt.author.id) || (await userStore.fetchUser(lastPrompt.author.id))
         }
+        this._isLoading = false
+        this._monthPrompt = [
+          {
+            ...lastPrompt,
+            entries: lastPrompt?.entries?.map((entry) => entry.id) || []
+          }
+        ]
       } catch (e) {
         await this.redirect()
         console.error('Error fetching months prompts:', e)
@@ -544,7 +527,7 @@ export const usePromptStore = defineStore('prompts', {
           await deleteObject(imageRef)
         }
       } catch (error) {
-        await errorStore.throwError(error, 'Error deleting prompt')
+        await errorStore.throwError(error, 'There was an error while deleting the prompt.')
       }
       this._isLoading = false
     },
